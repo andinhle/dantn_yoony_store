@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base{
+  *{
+    font-family: "Roboto", sans-serif;
+    font-optical-sizing: auto;
+    box-sizing: border-box;
+  }
+}
+
+.active {
+  background-color: #ff9900;
+  color: rgb(255, 255, 255);
+}
+
+.active:hover {
+  background-color: #ff9900 !important;
+  color: white !important;
+}
+
+.css-3dzjca-MuiPaper-root-MuiPopover-paper-MuiMenu-paper{
+  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px !important;
+}
