@@ -19,5 +19,15 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::apiResource('category', CategoryController::class);  
+Route::apiResource('category', CategoryController::class);
 Route::patch('category/{id}/is-active', [CategoryController::class, 'updateIsActive'])->name('category.updateIsActive');
+
+
+
+
+use App\Http\Controllers\Admin\BannerController;
+Route::apiResource('banners', BannerController::class);
+
+
+use App\Http\Controllers\Admin\BlogController;
+Route::apiResource('blogs', BlogController::class);
