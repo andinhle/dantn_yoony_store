@@ -31,3 +31,4 @@ Route::apiResource('banners', BannerController::class);
 
 use App\Http\Controllers\Admin\BlogController;
 Route::apiResource('blogs', BlogController::class);
+Route::patch('blogs/{id}/is-active', [BlogController::class, 'updateIsActive'])->name('blogs.updateIsActive');

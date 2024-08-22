@@ -10,13 +10,11 @@ use App\Models\Blog;
 
 class BlogController extends Controller
 {
-
     public function index()
     {
         $blogs = Blog::all();
         return BlogResource::collection($blogs);
     }
-
 
     public function store(StoreBlogRequest $request)
     {
@@ -27,7 +25,6 @@ class BlogController extends Controller
             'blog' => new BlogResource($blog)
         ], 201);
     }
-
 
     public function show($id)
     {
@@ -42,11 +39,23 @@ class BlogController extends Controller
         $blog->update($request->validated());
 
         return response()->json([
-            'message' => 'cập nhập Blog thành công',
+            'message' => 'Blog updated successfully!',
             'blog' => new BlogResource($blog)
         ], 200);
     }
 
+ 
+    public function updateIsActive(UpdateBlogRequest $request, $id)
+    {
+        $blog = Blog::findOrFail($id);
+
+        $blog->update(['is_active' => $request->validated()['is_active']]);
+
+        return response()->json([
+            'message' => 'Blog is_active updated successfully!',
+            'blog' => new BlogResource($blog)
+        ], 200);
+    }
 
     public function destroy($id)
     {
