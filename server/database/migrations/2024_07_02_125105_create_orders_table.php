@@ -17,14 +17,14 @@ return new class extends Migration
             $table->integer('grand_total');
             $table->integer('final_total')->nullable();
             $table->string('payment_method');
-            $table->string('payment_status')->default('pending');
-            $table->string('status')->default('new');
+            $table->string('status');
+            $table->string('code');
             $table->text('notes')->nullable();
-            $table->string('full_name');
-            $table->string('phone_number');
-            $table->string('city');
-            $table->string('district');
+            $table->string('name');
+            $table->string('tel');
             $table->string('address');
+            $table->timestamp('paid_at')->nullable();
+            $table->timestamp('completed_at')->nullable();
             $table->timestamps();
         });
     }
