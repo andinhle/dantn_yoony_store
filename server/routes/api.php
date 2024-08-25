@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Admin\CategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -28,3 +29,15 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     });
     Route::post('/logout', [AuthController::class, 'logout']);
 });
+Route::apiResource('category', CategoryController::class);
+Route::patch('category/{id}/is-active', [CategoryController::class, 'updateIsActive'])->name('category.updateIsActive');
+
+
+
+
+use App\Http\Controllers\Admin\BannerController;
+Route::apiResource('banners', BannerController::class);
+
+
+use App\Http\Controllers\Admin\BlogController;
+Route::apiResource('blogs', BlogController::class);
