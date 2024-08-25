@@ -12,7 +12,8 @@ class BlogController extends Controller
 {
     public function index()
     {
-        $blogs = Blog::all();
+        $blogs = Blog::latest('id')->paginate(5);
+
         return BlogResource::collection($blogs);
     }
 
@@ -21,7 +22,7 @@ class BlogController extends Controller
         $blog = Blog::create($request->validated());
 
         return response()->json([
-            'message' => 'Blog created successfully!',
+            'message' => 'Blog đã được thêm thành công!',
             'blog' => new BlogResource($blog)
         ], 201);
     }
@@ -39,12 +40,12 @@ class BlogController extends Controller
         $blog->update($request->validated());
 
         return response()->json([
-            'message' => 'Blog updated successfully!',
+            'message' => 'Blog đã được sửa thành công!',
             'blog' => new BlogResource($blog)
         ], 200);
     }
 
- 
+
     public function updateIsActive(UpdateBlogRequest $request, $id)
     {
         $blog = Blog::findOrFail($id);
@@ -52,7 +53,7 @@ class BlogController extends Controller
         $blog->update(['is_active' => $request->validated()['is_active']]);
 
         return response()->json([
-            'message' => 'Blog is_active updated successfully!',
+            'message' => 'Banner trạng thái đã được cập nhật thành công!',
             'blog' => new BlogResource($blog)
         ], 200);
     }
@@ -63,7 +64,7 @@ class BlogController extends Controller
         $blog->delete();
 
         return response()->json([
-            'message' => 'Blog deleted successfully!',
+            'message' => 'Blog đã được xóa thành công!',
         ], 204);
     }
 }

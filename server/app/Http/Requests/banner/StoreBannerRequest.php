@@ -23,6 +23,7 @@ class StoreBannerRequest extends FormRequest
     {
         return [
             'image' => 'required|url|max:255',
+            'is_active' => 'boolean',
         ];
     }
 

@@ -23,6 +23,7 @@ class UpdateBannerRequest extends FormRequest
     {
         return [
             'image' => 'nullable|url|max:255',
+            'is_active' => 'boolean',
         ];
     }
 
