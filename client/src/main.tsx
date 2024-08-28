@@ -7,7 +7,15 @@ import LayoutUser from "./layouts/LayoutUser.tsx";
 import LayoutAdmin from "./layouts/LayoutAdmin.tsx";
 import DashboardAdmin from "./pages/admin/DashboardAdmin.tsx";
 import CategorysAdmin from "./pages/admin/CategorysAdmin.tsx";
-import ProductList from "./pages/admin/ProductAdmin.tsx";
+import ProductList from "./pages/admin/ProductsList.tsx";
+import Orders from "./pages/admin/Order.tsx";
+import Rates from "./pages/admin/Evaluate.tsx";
+import OrderDetails from "./pages/admin/OrderDetails.tsx";
+import AddProduct from "./pages/admin/products/AddProduct.tsx";
+import EditProduct from "./pages/admin/products/EditProduct.tsx";
+import Varriant from "./pages/admin/varriant/AddVarriant.tsx";
+import ListVarriant from "./pages/admin/varriant/Listvarriant.tsx";
+import VarriantValue from "./pages/admin/varriant/VarriantValue.tsx";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
@@ -22,6 +30,14 @@ createRoot(document.getElementById("root")!).render(
             <Route index element={<DashboardAdmin />}/>
             <Route path='categorys' element={<CategorysAdmin />}/>
             <Route path='products' element={<ProductList />}/>
+            <Route path='products/add' element={<AddProduct />}/>
+            <Route path='products/edit/:id' element={<EditProduct />}/>
+            <Route path='orders' element={<Orders />}/>
+            <Route path='products/varriant' element={<ListVarriant />}/>
+            <Route path='products/varriant/add' element={<Varriant />}/>
+            <Route path='products/varriant/addValue' element={<VarriantValue />}/>
+            <Route path='orders/orderDetails' element={<OrderDetails/>}/>
+            <Route path='rates' element={<Rates/>}/>
           </Route>
         </Route>
       </Routes>

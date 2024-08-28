@@ -99,9 +99,9 @@ const HeaderAdmin = () => {
           >
             <Avatar
               alt="andinhle"
-              src="../../../src/assets/images/profile-DjY0gYaN.jpg"
+              src="../../../src/assets/images/profileH.jpg"
             />
-            <span className="text-primary hidden md:block">andinhle</span>
+            <span className="text-primary hidden md:block">Le Cong Hung</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
