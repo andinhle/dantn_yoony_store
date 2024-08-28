@@ -24,7 +24,7 @@ class InsertCategoryRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:categories,slug',
-            'image' => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'required',
         ];
     }
     
@@ -38,9 +38,7 @@ class InsertCategoryRequest extends FormRequest
             'slug.string' => 'Slug phải là một chuỗi ký tự.',
             'slug.max' => 'Slug không được vượt quá 255 ký tự.',
             'slug.unique' => 'Slug này đã tồn tại.',
-            'image.required' => 'Hình ảnh là bắt buộc.',
-            'image.mimes' => 'Hình ảnh phải là một tệp loại: jpeg, png, jpg, gif, svg.',
-            'image.max' => 'Kích thước hình ảnh không được vượt quá 2MB.',
+            'image.required' => 'Hình ảnh là bắt buộc.'
         ];
     }
     
