@@ -1,6 +1,11 @@
+
+
+import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 
 const SideBarAdmin = () => {
+  const [isProductsOpen, setIsProductsOpen] = useState(false);
+
   return (
     <>
       <nav className="fixed bg-util backdrop-blur top-0 max-w-[225px] left-0 bottom-0 w-full z-50 hidden lg:block transition-all shadow-sm">
@@ -19,7 +24,7 @@ const SideBarAdmin = () => {
               <NavLink
                 to={"/admin"}
                 className={
-                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
+                  "shadow-lg rounded-md flex items-center gap-2 py-[10px] px-2 hover:bg-[#f2f2f7] hover:text-hover transition-all"
                 }
                 end
               >
@@ -78,7 +83,7 @@ const SideBarAdmin = () => {
               <NavLink
                 to={"categorys"}
                 className={
-                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
+                  "shadow-lg rounded-md flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
                 }
                 end
               >
@@ -99,13 +104,10 @@ const SideBarAdmin = () => {
                 Danh mục
               </NavLink>
             </li>
-            <li>
-              <NavLink
-                to={"products"}
-                className={
-                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
-                }
-                end
+            <li className="relative">
+              <button
+                onClick={() => setIsProductsOpen(!isProductsOpen)}
+                className="flex items-center gap-2 py-[10px] px-2 w-full text-left rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -121,47 +123,219 @@ const SideBarAdmin = () => {
                     d="M6 6.878V6a2.25 2.25 0 0 1 2.25-2.25h7.5A2.25 2.25 0 0 1 18 6v.878m-12 0c.235-.083.487-.128.75-.128h10.5c.263 0 .515.045.75.128m-12 0A2.25 2.25 0 0 0 4.5 9v.878m13.5-3A2.25 2.25 0 0 1 19.5 9v.878m0 0a2.246 2.246 0 0 0-.75-.128H5.25c-.263 0-.515.045-.75.128m15 0A2.25 2.25 0 0 1 21 12v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6c0-.98.626-1.813 1.5-2.122"
                   />
                 </svg>
-                Sản phẩm
+                <ul className="absolute left-0 mt-2 w-full bg-white shadow-lg rounded-md overflow-hidden">
+                  <li>
+                    <NavLink
+                      to="/admin/products"
+                      className="block px-4 py-2 hover:bg-[#f2f2f7] hover:text-hover transition-all"
+                      onClick={() => setIsProductsOpen(false)}
+                    >
+                      Sản phẩm
+                    </NavLink>
+                  </li>
+                </ul>
+
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className={`size-4 ml-auto transition-transform ${isProductsOpen ? "rotate-180" : "rotate-0"}`}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              {isProductsOpen && (
+                <ul className="absolute left-0 mt-2 w-full bg-white shadow-lg rounded-md overflow-hidden">
+                  <li className="">
+                    <NavLink
+                      to="/admin/products/add"
+                      className="block px-4 py-2 hover:bg-[#f2f2f7] hover:text-hover transition-all"
+                      onClick={() => setIsProductsOpen(true)}
+                    >
+                      Thêm sản phẩm mới
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      to="/admin/products/varriant"
+                      className="block px-4 py-2 hover:bg-[#f2f2f7] hover:text-hover transition-all"
+                      onClick={() => setIsProductsOpen(true)}
+                    >
+                      Biến thể
+                    </NavLink>
+                  </li>
+                 
+                </ul>
+              )}
+            </li>
+            {/* <li>
+              <details className="group [&_summary::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
+                  <span className="text-sm font-medium"> Teams </span>
+                  <span className="shrink-0 transition duration-300 group-open:-rotate-180">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="size-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </span>
+                </summary>
+                <ul className="mt-2 space-y-1 px-4">
+                  <li>
+                    <a
+                      href="#"
+                      className="block rounded-lg px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                    >
+                      Banned Users
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="block rounded-lg px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                    >
+                      Calendar
+                    </a>
+                  </li>
+                </ul>
+              </details>
+            </li> */}
+            <li>
+              <NavLink
+                to={"orders"}
+                className={
+                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover shadow-lg rounded-md transition-all"
+                }
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"
+                  />
+                </svg>
+                Đơn hàng
               </NavLink>
             </li>
             <li>
               <NavLink
-                to={"comment"}
+                to={"rates"}
+                className={
+                  "shadow-lg rounded-md flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
+                }
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"
+                  />
+                </svg>
+                Đánh giá
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to={"vouchers"}
+                className={
+                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
+                }
+              >
+                 <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z"
+                />
+              </svg>
+                Voucher
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to={"users"}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
                 }
               >
                 <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  className="size-6 inline"
-                  fill="currentColor"
-                >
-                  <path d="M14 21C13.4477 21 13 20.5523 13 20V12C13 11.4477 13.4477 11 14 11H20C20.5523 11 21 11.4477 21 12V20C21 20.5523 20.5523 21 20 21H14ZM4 13C3.44772 13 3 12.5523 3 12V4C3 3.44772 3.44772 3 4 3H10C10.5523 3 11 3.44772 11 4V12C11 12.5523 10.5523 13 10 13H4ZM9 11V5H5V11H9ZM4 21C3.44772 21 3 20.5523 3 20V16C3 15.4477 3.44772 15 4 15H10C10.5523 15 11 15.4477 11 16V20C11 20.5523 10.5523 21 10 21H4ZM5 19H9V17H5V19ZM15 19H19V13H15V19ZM13 4C13 3.44772 13.4477 3 14 3H20C20.5523 3 21 3.44772 21 4V8C21 8.55228 20.5523 9 20 9H14C13.4477 9 13 8.55228 13 8V4ZM15 5V7H19V5H15Z"></path>
-                </svg>{" "}
-                DashBoard
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"
+                />
+              </svg>
+                Users
               </NavLink>
             </li>
             <li>
               <NavLink
-                to={"thongke"}
+                to={"Blogs"}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
                 }
               >
                 <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  className="size-6 inline"
-                  fill="currentColor"
-                >
-                  <path d="M14 21C13.4477 21 13 20.5523 13 20V12C13 11.4477 13.4477 11 14 11H20C20.5523 11 21 11.4477 21 12V20C21 20.5523 20.5523 21 20 21H14ZM4 13C3.44772 13 3 12.5523 3 12V4C3 3.44772 3.44772 3 4 3H10C10.5523 3 11 3.44772 11 4V12C11 12.5523 10.5523 13 10 13H4ZM9 11V5H5V11H9ZM4 21C3.44772 21 3 20.5523 3 20V16C3 15.4477 3.44772 15 4 15H10C10.5523 15 11 15.4477 11 16V20C11 20.5523 10.5523 21 10 21H4ZM5 19H9V17H5V19ZM15 19H19V13H15V19ZM13 4C13 3.44772 13.4477 3 14 3H20C20.5523 3 21 3.44772 21 4V8C21 8.55228 20.5523 9 20 9H14C13.4477 9 13 8.55228 13 8V4ZM15 5V7H19V5H15Z"></path>
-                </svg>{" "}
-                DashBoard
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
+                />
+              </svg>
+                Blogs
               </NavLink>
             </li>
           </ul>
-          <div className="px-[20px] text-primary mb-7 btn-logout ">
+          <div className="px-[20px] text-primary mb-7 btn-logout">
             <Link
               to={"logout"}
               className="py-[10px] bg-primary/20 px-2 w-full flex items-center gap-2 rounded-md"
@@ -182,5 +356,9 @@ const SideBarAdmin = () => {
     </>
   );
 };
-
 export default SideBarAdmin;
+
+
+
+
+
