@@ -11,4 +11,8 @@ class Banner extends Model
 
 
     protected $fillable = ['image','is_active'];
+
+    // public function users(){
+    //     return $this->hasMany(User::class);
+    // }
 }

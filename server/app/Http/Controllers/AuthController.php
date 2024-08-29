@@ -29,7 +29,7 @@ class AuthController extends Controller
                 'message' => 'Đăng nhập thành công!',
                 'user' => $user,
                 'token' => $user->createToken('API Token')->plainTextToken
-            ], 200); 
+            ], 200);
 
         } catch (\Exception $e) {
             Log::error('Có lỗi xảy ra: ' . $e->getMessage());
@@ -43,18 +43,18 @@ class AuthController extends Controller
     {
         try {
             $request->validated($request->all());
-            
+
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => bcrypt($request->password),
             ]);
-            
+
             return response()->json([
                 'message' => 'Đăng ký thành công!',
                 'user' => $user,
                 'token' => $user->createToken('API Token')->plainTextToken
-            ], 200); 
+            ], 200);
         } catch (\Exception $e) {
             Log::error('Có lỗi xảy ra: ' . $e->getMessage());
             return response()->json([
@@ -72,3 +72,4 @@ class AuthController extends Controller
         ], 200);
     }
 }
+//test

@@ -2,11 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+
 @layer base{
   *{
     font-family: "Roboto", sans-serif;
     font-optical-sizing: auto;
     box-sizing: border-box;
+  }
+}
+.container-main{
+  @apply w-full max-w-[1200px] mx-auto px-5 
+}
+
+@media (min-width: 1201px) {
+  .container-main {
+    @apply px-0;
   }
 }
 
@@ -22,4 +32,86 @@
 
 .css-3dzjca-MuiPaper-root-MuiPopover-paper-MuiMenu-paper{
   box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px !important;
+}
+
+a:hover .text-secondary {
+  color: #fff; /* or any other white color code */
+}
+
+a:hover .fill-icon {
+  stroke: #fff;
+}
+#btn-account:hover .fill-icon{
+  stroke: #fff;
+}
+a:hover .fill-icon-check-order {
+  fill: #fff;
+}
+
+a:hover .number-cart{
+  background-color: white;
+  color: #ff9900;
+}
+.swiper-button-prev, .swiper-button-next{
+  height: 30px !important;
+  width: 30px !important;
+  background-color: #ff9900;
+  border-radius: 100%;
+}
+
+
+/* Tùy chỉnh biểu tượng trong nút điều hướng */
+.swiper-button-prev::after, 
+.swiper-button-next::after {
+  font-size: 12px !important;
+  color: #fff;
+}
+
+.swiper-pagination-bullet-active{
+  background-color: #ff9900 !important;
+}
+
+.swiper-button-prev:hover{
+  background-color: #fff !important;
+  transition: 0.5s;
+} 
+.swiper-button-next:hover{
+  background-color: #fff !important;
+  transition: 0.5s;
+}
+
+.swiper-button-next:hover::after{
+  color: #ff9900 !important;
+}
+.swiper-button-prev:hover::after{
+  color: #ff9900 !important;
+}
+
+@keyframes slide {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.slide {
+  animation: slide 3s infinite ease-in-out;
+}
+
+::-webkit-scrollbar{
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-thumb{
+  background-color: #ff9900;
+  border-radius: 20px;
+}
+
+[type='text']:focus, [type='email']:focus, [type='url']:focus, [type='password']:focus, [type='number']:focus, [type='date']:focus, [type='datetime-local']:focus, [type='month']:focus, [type='search']:focus, [type='tel']:focus, [type='time']:focus, [type='week']:focus, [multiple]:focus, textarea:focus, select:focus{
+  --tw-ring-shadow:none !important;
 }

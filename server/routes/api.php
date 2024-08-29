@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use Illuminate\Http\Request;
@@ -20,6 +21,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::apiResource('voucher', VoucherController::class);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -29,10 +31,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     });
     Route::post('/logout', [AuthController::class, 'logout']);
 });
+
 Route::apiResource('category', CategoryController::class);
 Route::patch('category/{id}/is-active', [CategoryController::class, 'updateIsActive'])->name('category.updateIsActive');
-
-
 
 
 use App\Http\Controllers\Admin\BannerController;
@@ -43,3 +44,6 @@ Route::patch('banners/{id}/is-active', [BannerController::class, 'updateIsActive
 use App\Http\Controllers\Admin\BlogController;
 Route::apiResource('blogs', BlogController::class);
 Route::patch('blogs/{id}/is-active', [BlogController::class, 'updateIsActive'])->name('blogs.updateIsActive');
+
+use App\Http\Controllers\Admin\RoleController;
+Route::apiResource('roles', RoleController::class);
