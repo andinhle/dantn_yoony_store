@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\banner\StoreBannerRequest;
-use App\Http\Requests\banner\UpdateBannerRequest;
+use App\Http\Requests\Banners\StoreBannerRequest;
+use App\Http\Requests\Banners\UpdateBannerRequest;
 use App\Http\Resources\BannerResource;
 use App\Models\Banner;
 
@@ -63,6 +63,6 @@ class BannerController extends Controller
 
         return response()->json([
             'message' => 'Banner đã được xóa thành công!',
-        ], 204);
+        ], 200);
     }
 }

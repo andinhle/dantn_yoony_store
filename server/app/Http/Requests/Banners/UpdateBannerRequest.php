@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\banner;
+namespace App\Http\Requests\Banners;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -22,15 +22,15 @@ class UpdateBannerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'image' => 'nullable|url|max:255',
+            'image' => 'nullable|max:255',
             'is_active' => 'boolean',
         ];
     }
-
+    // |url
     public function messages()
     {
         return [
-            'image.url' => 'Định dạng hình ảnh không hợp lệ.',
+            // 'image.url' => 'Định dạng hình ảnh không hợp lệ.',
             'image.max' => 'Đường dẫn hình ảnh không được vượt quá 255 ký tự.',
         ];
     }

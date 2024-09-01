@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\banner;
+namespace App\Http\Requests\Banners;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -22,16 +22,16 @@ class StoreBannerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'image' => 'required|url|max:255',
+            'image' => 'required|max:255',
             'is_active' => 'boolean',
         ];
     }
-
+    // |url
     public function messages()
     {
         return [
             'image.required' => 'Hình ảnh là bắt buộc.',
-            'image.url' => 'Định dạng hình ảnh không hợp lệ.',
+            // 'image.url' => 'Định dạng hình ảnh không hợp lệ.',
             'image.max' => 'Đường dẫn hình ảnh không được vượt quá 255 ký tự.',
         ];
     }
