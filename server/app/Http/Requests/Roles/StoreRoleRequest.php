@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\banner;
+namespace App\Http\Requests\Roles;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreBannerRequest extends FormRequest
+class StoreRoleRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,16 +22,7 @@ class StoreBannerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'image' => 'required|url|max:255',
-        ];
-    }
-
-    public function messages()
-    {
-        return [
-            'image.required' => 'Hình ảnh là bắt buộc.',
-            'image.url' => 'Định dạng hình ảnh không hợp lệ.',
-            'image.max' => 'Đường dẫn hình ảnh không được vượt quá 255 ký tự.',
+            'name' => 'required|string|max:255|unique:roles,name,' . $this->route('role'),
         ];
     }
 }
