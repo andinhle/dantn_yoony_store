@@ -83,7 +83,7 @@ const SideBarAdmin = () => {
               <NavLink
                 to={"categorys"}
                 className={
-                  "shadow-lg rounded-md flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
+                  "shadow-lg rounded-md flex items-center gap-2 py-[10px] px-2 hover:bg-[#f2f2f7] hover:text-hover transition-all"
                 }
                 end
               >
