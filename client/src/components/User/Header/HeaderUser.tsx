@@ -3,7 +3,7 @@ import SearchBar from "./SearchBar";
 import NavMenuUser from "./NavMenuUser";
 const HeaderUser = () => {
   return (
-    <header className="h-[60px] lg:h-[65px] flex items-center border-b border-primary/50">
+    <header className="h-[60px] lg:h-[65px] flex items-center border-b border-primary/25 sticky top-0 z-[60] bg-util/80 backdrop-blur">
       <div className="flex container-main items-center justify-between">
         <div className="max-w-[65px] md:max-w-[75px] lg:max-w-full">
           <Link to={"/"}>

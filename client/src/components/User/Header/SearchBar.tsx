@@ -1,7 +1,7 @@
 const SearchBar = () => {
   return (
     <form action="" className="hidden md:block overflow-hidden">
-      <div className="flex border rounded-full">
+      <div className="flex border rounded-full bg-util">
         <div className="h-[36px] lg:h-[40px] min-w-[250px] lg:min-w-[275px]">
           <input type="search" id="searchInput" placeholder="Tìm sàn phẩm" className="text-sm w-full rounded-full h-full border-none focus:!outline-none" />
         </div>
