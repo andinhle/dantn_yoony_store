@@ -38,7 +38,12 @@ Route::patch('category/{id}/is-active', [CategoryController::class, 'updateIsAct
 
 use App\Http\Controllers\Admin\BannerController;
 Route::apiResource('banners', BannerController::class);
+Route::patch('banners/{id}/is-active', [BannerController::class, 'updateIsActive'])->name('blogs.updateIsActive');
 
 
 use App\Http\Controllers\Admin\BlogController;
 Route::apiResource('blogs', BlogController::class);
+Route::patch('blogs/{id}/is-active', [BlogController::class, 'updateIsActive'])->name('blogs.updateIsActive');
+
+use App\Http\Controllers\Admin\RoleController;
+Route::apiResource('roles', RoleController::class);

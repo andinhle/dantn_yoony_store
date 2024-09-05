@@ -19,7 +19,7 @@ const BannerHome = () => {
         }
         navigation={true}
         modules={[Pagination, Navigation,Autoplay]}
-        className="mySwiper w-full md:h-full min-h-[200px] md:min-h-[225px] lg:min-h-[250px] rounded-lg col-span-7 md:col-span-5"
+        className="mySwiper max-h-[265px] w-full lg:w-[75%] h-full rounded-lg"
       >
         <SwiperSlide>
             <img src="../../../src/assets/images/banner-polo-99k.png" alt="banner-polo-99k" className="w-full h-full object-cover hover:cursor-pointer" />
