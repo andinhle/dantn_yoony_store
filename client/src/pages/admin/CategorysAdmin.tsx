@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ICategory } from "../../intrefaces/ICategory";
-import instance from "../../axios/instance";
+import instance from "../../instance/instance";
 import { toast } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
-import swal from 'sweetalert';
+import swal from 'sweetalert'
 const CategoryList: React.FC = () => {
   // State để quản lý việc hiển thị pop-up
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -39,7 +38,7 @@ const CategoryList: React.FC = () => {
   const name = watch("name");
   useEffect(() => {
     (async () => {
-      const { data } = await instance.get("/api/category");
+      const { data } = await instance.get("category");
       console.log(data)
       setCategories(data.data);
     })();
@@ -56,7 +55,7 @@ const CategoryList: React.FC = () => {
   }, [isPopupOpen === false]);
   const fetchCategories = async () => {
     try {
-      const { data } = await instance.get("/api/category");
+      const { data } = await instance.get("category");
       setCategories(data.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -69,8 +68,8 @@ const CategoryList: React.FC = () => {
       setSlug(generatedSlug);
     }
   }, [name]);
-  const preset_key = "hnikyo4v";
-  const cloud_name = "du6gje8od";
+  const preset_key = import.meta.env.VITE_PRESET_KEY_CLOADINARY;
+  const cloud_name = import.meta.env.VITE_CLOUD_NAME_CLOADINARY;
   const image_type = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
   const [imageCategory, setImageCategory] = useState<string>("");
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,7 +124,7 @@ const CategoryList: React.FC = () => {
         dangerMode: true,
       })
       if (willDelete) {
-        await instance.delete(`/api/category/${_id}`)
+        await instance.delete(`category/${_id}`)
         fetchCategories();
         toast.success("Deleted")
       }
@@ -141,7 +140,7 @@ const CategoryList: React.FC = () => {
       formData.append('slug', slug); // Sử dụng slug đã tạo
       formData.append('is_active', dataForm.is_active ? '1' : '0');
       formData.append('image', imageCategory)
-      await instance.post('/api/category', formData);
+      await instance.post('category', formData);
       console.log("formData", formData);
       reset();
       setImageCategory('');
@@ -159,7 +158,7 @@ const CategoryList: React.FC = () => {
   };
   const handleToggleActive = async (id: string, isActive: boolean) => {
     try {
-      await instance.patch(`/api/category/${id}/is-active`, { is_active: isActive ? 1 : 0 });
+      await instance.patch(`category/${id}/is-active`, { is_active: isActive ? 1 : 0 });
       fetchCategories();
       toast.success("Cập nhật trạng thái thành công");
     } catch (error) {
@@ -187,7 +186,7 @@ const CategoryList: React.FC = () => {
   const handleUpdate = async (dataForm: ICategory) => {
     console.log('Form Data:', dataForm);
     try {
-      await instance.put(`/api/category/${currentCategory?.id}`, {
+      await instance.put(`category/${currentCategory?.id}`, {
         name: dataForm.name,
         slug: slug,
         image: imageCategory,
