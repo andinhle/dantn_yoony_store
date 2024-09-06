@@ -14,7 +14,7 @@ const NavMenuUser = () => {
     <nav className="hidden lg:block">
       <ul className="flex items-center gap-3">
         <li>
-          <Link className="flex gap-2 items-center py-2.5 px-4 rounded-lg  hover:bg-primary hover:text-util transition-all">
+          <Link className="flex gap-2 items-center py-2 px-3.5 rounded-md  hover:bg-primary hover:text-util transition-all">
             <svg
               width="24"
               height="24"
@@ -34,7 +34,7 @@ const NavMenuUser = () => {
           </Link>
         </li>
         <li>
-          <Link className="flex gap-2 items-center py-2.5 px-4 rounded-lg  hover:bg-primary hover:text-util transtition-all">
+          <Link className="flex gap-2 items-center py-2 px-3.5 rounded-md  hover:bg-primary hover:text-util transtition-all">
             <div className="relative">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -60,7 +60,7 @@ const NavMenuUser = () => {
         </li>
         <li>
           <button
-            className="flex gap-2 items-center py-2.5 px-4 rounded-lg  hover:bg-primary hover:text-util transtition-all"
+            className="flex gap-2 items-center py-2 px-3.5 rounded-md  hover:bg-primary hover:text-util transtition-all"
             id="btn-account"
             onClick={handleClick}
           >
@@ -90,11 +90,11 @@ const NavMenuUser = () => {
             }}
           >
             <MenuList sx={{ width: 135, maxWidth: "100%", padding: 0 }}>
-              <MenuItem
-                onClick={handleClose}
-                className=" hover:!text-primary transition-all py-2"
-              >
-                <Link to={"/register"} className={'flex items-center gap-2'}>
+              <Link to={"/register"}>
+                <MenuItem
+                  onClick={handleClose}
+                  className=" hover:!text-primary transition-all py-2 flex items-center gap-2"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -114,13 +114,13 @@ const NavMenuUser = () => {
                   >
                     Đăng kí
                   </ListItemText>
-                </Link>
-              </MenuItem>
-              <MenuItem
-                onClick={handleClose}
-                className=" hover:!text-primary transition-all"
-              >
-                <Link to={"/login"} className={'flex items-center gap-2'}>
+                </MenuItem>
+              </Link>
+              <Link to={"/login"}>
+                <MenuItem
+                  onClick={handleClose}
+                  className=" hover:!text-primary transition-all flex items-center gap-2"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -140,8 +140,8 @@ const NavMenuUser = () => {
                   >
                     Đăng nhập
                   </ListItemText>
-                </Link>
-              </MenuItem>
+                </MenuItem>
+              </Link>
             </MenuList>
           </Menu>
         </li>
