@@ -14,7 +14,7 @@ const NavMenuUser = () => {
     <nav className="hidden lg:block">
       <ul className="flex items-center gap-3">
         <li>
-          <Link className="flex gap-2 items-center py-2.5 px-4 rounded-lg  hover:bg-primary hover:text-util transition-all">
+          <Link className="flex gap-2 items-center py-2 px-3.5 rounded-md  hover:bg-primary hover:text-util transition-all">
             <svg
               width="24"
               height="24"
@@ -34,7 +34,7 @@ const NavMenuUser = () => {
           </Link>
         </li>
         <li>
-          <Link className="flex gap-2 items-center py-2.5 px-4 rounded-lg  hover:bg-primary hover:text-util transtition-all">
+          <Link className="flex gap-2 items-center py-2 px-3.5 rounded-md  hover:bg-primary hover:text-util transtition-all">
             <div className="relative">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -60,7 +60,7 @@ const NavMenuUser = () => {
         </li>
         <li>
           <button
-            className="flex gap-2 items-center py-2.5 px-4 rounded-lg  hover:bg-primary hover:text-util transtition-all"
+            className="flex gap-2 items-center py-2 px-3.5 rounded-md  hover:bg-primary hover:text-util transtition-all"
             id="btn-account"
             onClick={handleClick}
           >
