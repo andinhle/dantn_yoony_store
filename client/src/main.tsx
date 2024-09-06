@@ -9,7 +9,7 @@ import DashboardAdmin from "./pages/admin/DashboardAdmin.tsx";
 import VouchersAdmin from "./pages/admin/VouchersAdmin.tsx";
 import UsersAdmin from "./pages/admin/UserAdmin.tsx";
 import BlogsAdmin from "./pages/admin/BlogsAdmin.tsx";
-// import CategorysAdmin from "./pages/admin/CategorysAdmin.tsx";
+import CategorysAdmin from "./pages/admin/CategorysAdmin.tsx";
 import Register from "./components/User/Auth/Register.tsx";
 import "swiper/css";
 import "swiper/css/pagination";
@@ -48,7 +48,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="vouchers" element={<VouchersAdmin />} />
             <Route path="users" element={<UsersAdmin />} />
             <Route path="blogs" element={<BlogsAdmin />} />
-            {/* <Route path='categorys' element={<CategorysAdmin />}/> */}
+            <Route path='categorys' element={<CategorysAdmin />}/>
             <Route path="products" element={<ProductList />} />
             <Route path="products/add" element={<AddProduct />} />
             <Route path="products/edit/:id" element={<EditProduct />} />
