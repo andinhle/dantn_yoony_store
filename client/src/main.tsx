@@ -26,6 +26,9 @@ import EditProduct from "./pages/admin/products/EditProduct.tsx";
 import Varriant from "./pages/admin/varriant/AddVarriant.tsx";
 import ListVarriant from "./pages/admin/varriant/Listvarriant.tsx";
 import VarriantValue from "./pages/admin/varriant/VarriantValue.tsx";
+import ScrollToTop from "./utils/ScrollToTop.tsx";
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
@@ -57,7 +60,7 @@ createRoot(document.getElementById("root")!).render(
           </Route>
         </Route>
       </Routes>
+      <ToastContainer autoClose={3000} newestOnTop={true} />
     </BrowserRouter>
-
   </StrictMode>
 );
