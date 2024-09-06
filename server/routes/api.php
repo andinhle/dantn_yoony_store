@@ -3,6 +3,10 @@
 use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\BannerController;
+use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\Admin\RoleController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -32,13 +36,19 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 });
 
+
+Route::post('/auth/password/request-reset', [AuthController::class, 'requestPasswordReset'])->name('password.request');
+Route::post('/auth/password/reset', [AuthController::class, 'resetPassword'])->name('password.reset');
+
 Route::apiResource('category', CategoryController::class);
 Route::patch('category/{id}/is-active', [CategoryController::class, 'updateIsActive'])->name('category.updateIsActive');
 
 
-use App\Http\Controllers\Admin\BannerController;
 Route::apiResource('banners', BannerController::class);
+Route::patch('banners/{id}/is-active', [BannerController::class, 'updateIsActive'])->name('blogs.updateIsActive');
 
 
-use App\Http\Controllers\Admin\BlogController;
 Route::apiResource('blogs', BlogController::class);
+Route::patch('blogs/{id}/is-active', [BlogController::class, 'updateIsActive'])->name('blogs.updateIsActive');
+
+Route::apiResource('roles', RoleController::class);

@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\StoreVoucherRequest;
+use App\Http\Requests\Api\UpdateVoucherRequest;
 use App\Models\Voucher;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Log;
+use Illuminate\Support\Facades\Log;
 
 class VoucherController extends Controller
 {
@@ -34,7 +35,7 @@ class VoucherController extends Controller
             return response()->json([
                 'message' => 'Lỗi tải trang',
                 'status' => 'error',
-                
+
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -80,7 +81,7 @@ class VoucherController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateVoucherRequest $request, string $id)
     {
         try {
             $model = Voucher::query()->findOrFail($id);
