@@ -8,14 +8,15 @@ use App\Models\Role;
 use App\Http\Requests\Roles\StoreRoleRequest;
 use App\Http\Requests\Roles\UpdateRoleRequest;
 use App\Http\Resources\Roles\RoleResource;
-use App\Http\Resources\Roles\RoleCollection;
+// use App\Http\Resources\Roles\RoleCollection;
 
 class RoleController extends Controller
 {
     public function index()
     {
         $roles = Role::paginate(10);
-        return new RoleCollection($roles);
+        return RoleResource::collection($roles);
+
         // return response()->json([
         //     'message' => 'Lấy danh sách role thành công!',
         //     'data' => new RoleCollection($roles)
@@ -53,6 +54,6 @@ class RoleController extends Controller
         $role->delete();
         return response()->json([
             'message' => 'Xóa role thành công!'
-        ], 204); 
+        ], 200);
     }
 }
