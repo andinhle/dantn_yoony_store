@@ -3,6 +3,8 @@ import BannerHome from "../../components/User/Banner/BannerHome";
 import CategorysList from "../../components/User/Categorys/CategorysList";
 import ProductClothes from "../../components/User/Products/ProductClothes";
 import ProductFeature from "../../components/User/Products/ProductFeature";
+import ProductGlasses from "../../components/User/Products/ProductGlasses";
+import ProductUniForm from "../../components/User/Products/ProductUniForm";
 // import CardPolicyList from "../../components/User/Banner/CardPolicyList";
 import VoucherList from "../../components/User/Voucher/VoucherList";
 
@@ -17,6 +19,8 @@ const MainContentUser = () => {
       <CategorysList />
       <ProductFeature />
       <ProductClothes />
+      <ProductUniForm />
+      <ProductGlasses />
     </>
   );
 };
