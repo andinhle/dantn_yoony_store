@@ -32,6 +32,7 @@ const Register = () => {
         toast.success('Đăng ký tài khoản thành công!')
       }
     } catch (error) {
+      console.log(error)
       if (axios.isAxiosError(error)) {
         toast.error(error.response?.data?.message);
       } else if (error instanceof Error) {
