@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Resources\UserResource;
-
+use App\Notifications\ResetPasswordNotification;
 
 class AuthController extends Controller
 {
@@ -76,21 +76,30 @@ class AuthController extends Controller
             'message' => 'Đăng Xuất thành công!'
         ], 200);
     }
+
     public function requestPasswordReset(RequestPasswordResetRequest $request)
     {
         try {
-            $status = Password::sendResetLink($request->only('email'));
+            // Kiểm tra xem email có tồn tại trong cơ sở dữ liệu
+            $user = User::where('email', $request->email)->first();
 
-            if ($status === Password::RESET_LINK_SENT) {
+            if (!$user) {
                 return response()->json([
-                    'message' => 'Link đổi mật khẩu đã được gửi đến email của bạn.'
-                ], 200);
+                    'message' => 'Email không tồn tại trong hệ thống.'
+                ], 404); // 404 Not Found
             }
 
+            // Tạo token cho người dùng
+            $token = app('auth.password.broker')->createToken($user); // Tạo token
+
+            // Gửi thông báo ResetPasswordNotification cho người dùng
+            $user->notify(new ResetPasswordNotification($token));
+
             return response()->json([
-                'message' => 'Có lỗi xảy ra khi gửi link đổi mật khẩu.',
-                'status' => $status
-            ], 500);
+                'message' => 'Link đổi mật khẩu đã được gửi đến email của bạn.',
+                'token' => $token // Trả về token trong phản hồi
+            ], 200);
+
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()

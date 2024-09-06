@@ -11,12 +11,14 @@ class ResetPasswordNotification extends Notification
 {
     use Queueable;
 
+    protected $token;
+
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    public function __construct($token)
     {
-        //
+        $this->token = $token;
     }
 
     /**
@@ -35,9 +37,10 @@ class ResetPasswordNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+                    ->line('Bạn đã yêu cầu đặt lại mật khẩu.')
+                    ->action('Đặt lại mật khẩu', 'http://localhost:5173/' . $this->token)
+                    ->line('Nếu bạn không yêu cầu đặt lại mật khẩu, không cần thực hiện thêm hành động nào.')
+                    ->line('Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!');
     }
 
     /**
