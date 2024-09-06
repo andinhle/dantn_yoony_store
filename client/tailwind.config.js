@@ -1,4 +1,4 @@
-/** @type {import('tailwindcss').Config} */
+// tailwind.config.js
 import flowbite from 'flowbite-react/tailwind'
 export default {
   content: [
@@ -25,6 +25,9 @@ export default {
         "md":"8px",
         "lg":"10px",
         "xl":"16px"
+      },
+      backgroundImage: {
+        'custom-gradient-hover': 'linear-gradient(180deg, rgba(255, 153, 0, 0.45) 52.76%, #FFF 106.15%)',
       }
     },
   },
