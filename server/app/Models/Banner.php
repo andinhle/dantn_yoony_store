@@ -8,7 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Banner extends Model
 {
     use HasFactory;
-    
 
-    protected $fillable = ['image'];
+
+    protected $fillable = ['image','is_active'];
+
+    // public function users(){
+    //     return $this->hasMany(User::class);
+    // }
 }

@@ -7,8 +7,9 @@ import ListItemText from "@mui/material/ListItemText";
 import Avatar from "@mui/material/Avatar";
 import { MouseEvent, useState } from "react";
 import Badge from "@mui/material/Badge";
-import { Link } from "react-router-dom";
 import { IconButton } from "@mui/material";
+import { Link } from "react-router-dom";
+
 
 const HeaderAdmin = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -100,9 +101,9 @@ const HeaderAdmin = () => {
           >
             <Avatar
               alt="andinhle"
-              src="../../../src/assets/images/profile-DjY0gYaN.jpg"
+              src="../../../src/assets/images/profileH.jpg"
             />
-            <span className="text-primary hidden md:block">andinhle</span>
+            <span className="text-primary hidden md:block">Le Cong Hung</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"

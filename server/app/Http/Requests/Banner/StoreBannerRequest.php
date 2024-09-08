@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\banner;
+namespace App\Http\Requests\Banner;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateBannerRequest extends FormRequest
+class StoreBannerRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,14 +22,16 @@ class UpdateBannerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'image' => 'nullable|url|max:255',
+            'image' => 'required|max:255',
+            'is_active' => 'boolean',
         ];
     }
-
+    // |url
     public function messages()
     {
         return [
-            'image.url' => 'Định dạng hình ảnh không hợp lệ.',
+            'image.required' => 'Hình ảnh là bắt buộc.',
+            // 'image.url' => 'Định dạng hình ảnh không hợp lệ.',
             'image.max' => 'Đường dẫn hình ảnh không được vượt quá 255 ký tự.',
         ];
     }

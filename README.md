@@ -1,13 +1,13 @@
 # CÁCH CHẠY DỰ ÁN
 
 Phía [FE] các bước như sau: 
-- B1: git clone https://github.com/andinhle/dantn_seven_store.git
+- B1: git clone https://github.com/andinhle/dantn_yoony_store.git
 - B2: cd client
 - B3: npm run dev
 
 
 Phía [BE] các bước như sau: 
-- B1: git clone https://github.com/andinhle/dantn_seven_store.git
+- B1: git clone https://github.com/andinhle/dantn_yoony_store.git
 - B2: cd server
 - B3: composer install
 - B4: cp .env.example .env
