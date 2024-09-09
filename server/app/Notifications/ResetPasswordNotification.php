@@ -36,13 +36,14 @@ class ResetPasswordNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
-                    ->line('Bạn đã yêu cầu đặt lại mật khẩu.')
-                    ->action('Đặt lại mật khẩu', 'http://localhost:5173/' . $this->token)
-                    ->line('Nếu bạn không yêu cầu đặt lại mật khẩu, không cần thực hiện thêm hành động nào.')
-                    ->line('Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!');
-    }
+        $url = 'http://localhost:5173/reset-password/' . $this->token ;
 
+        return (new MailMessage)
+            ->line('Bạn đã yêu cầu đặt lại mật khẩu.')
+            ->action('Đặt lại mật khẩu', $url)
+            ->line('Nếu bạn không yêu cầu đặt lại mật khẩu, không cần thực hiện thêm hành động nào.')
+            ->line('Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!');
+    }
     /**
      * Get the array representation of the notification.
      *
