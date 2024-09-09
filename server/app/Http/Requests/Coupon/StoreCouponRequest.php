@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Api;
+namespace App\Http\Requests\Coupon;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -8,7 +8,7 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
 
-class UpdateVoucherRequest extends FormRequest
+class StoreCouponRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,7 +26,7 @@ class UpdateVoucherRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => 'required|max:255|unique:vouchers', 
+            'code' => 'required|max:255|unique:coupons', 
             'discount' => 'required',
             'discount_type' => 'required',
             'usage_limit' => 'required',

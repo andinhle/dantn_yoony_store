@@ -1,6 +1,8 @@
 <?php
 
-use App\Http\Controllers\Admin\VoucherController;
+use App\Http\Controllers\Admin\AttributeController;
+use App\Http\Controllers\Admin\AttributeValueController;
+use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\BannerController;
@@ -25,7 +27,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::apiResource('voucher', VoucherController::class);
+Route::apiResource('coupon', CouponController::class);
+Route::apiResource('attribute', AttributeController::class);
+Route::apiResource('attribute-value', AttributeValueController::class);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -46,7 +50,6 @@ Route::patch('category/{id}/is-active', [CategoryController::class, 'updateIsAct
 
 Route::apiResource('banners', BannerController::class);
 Route::patch('banners/{id}/is-active', [BannerController::class, 'updateIsActive'])->name('blogs.updateIsActive');
-
 
 Route::apiResource('blogs', BlogController::class);
 Route::patch('blogs/{id}/is-active', [BlogController::class, 'updateIsActive'])->name('blogs.updateIsActive');
