@@ -29,6 +29,7 @@ import VarriantValue from "./pages/admin/varriant/VarriantValue.tsx";
 import ScrollToTop from "./utils/ScrollToTop.tsx";
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
+import ResetPassword from "./components/User/Auth/ResetPassword.tsx";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
@@ -40,6 +41,7 @@ createRoot(document.getElementById("root")!).render(
             <Route index  element={<MainContentUser />}/>
             <Route path='register' element={<Register />}/>
             <Route path='login' element={<Login />}/>
+            <Route path='reset-password' element={<ResetPassword />}/>
           </Route>
           {/* Admin */}
           <Route path="admin" element={<LayoutAdmin />}>
