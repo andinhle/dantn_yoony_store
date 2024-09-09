@@ -7,8 +7,7 @@ use App\Http\Requests\Attribute\StoreAttributeRequest;
 use App\Http\Requests\Attribute\UpdateAttributeRequest;
 use App\Models\Attribute;
 use Illuminate\Http\Response;
-use Log;
-use Str;
+use Illuminate\Support\Facades\Log;
 
 class AttributeController extends Controller
 {
