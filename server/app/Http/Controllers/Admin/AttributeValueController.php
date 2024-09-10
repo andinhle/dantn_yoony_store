@@ -3,30 +3,24 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\StoreVoucherRequest;
-use App\Http\Requests\Api\UpdateVoucherRequest;
-use App\Models\Voucher;
+use App\Models\AttributeValue;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 
-class VoucherController extends Controller
+
+class AttributeValueController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         try {
-            $data = Voucher::query()->latest('id')->paginate(5);
-
+            $data = AttributeValue::query()->latest('id')->paginate(5);
             return response()->json([
-                'message' => 'Danh sách người dùng trang ' . request('page', 1),
+                'message' => 'Danh sách' . request('page', 1),
                 'status' => 'success',
-                'data' => $data
+                'data' => $data 
             ]);
-        } catch (\Exception $th) {
-
+        } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
                 'message' => $th->getMessage()
@@ -35,23 +29,25 @@ class VoucherController extends Controller
             return response()->json([
                 'message' => 'Lỗi tải trang',
                 'status' => 'error',
-
+                
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreVoucherRequest $request)
+    public function store(Request $request)
     {
         try {
-            $data = $request->all();
+            $data = $request->validate([
+                'value' => 'required',
+                'attribute_id' => 'required'
+            ]);
+            
+            // $data = $request->all();
 
-            Voucher::query()->create($data);
+            AttributeValue::query()->create($data);
 
             return response()->json([
-                'message' => 'Thêm mới voucher thành công',
+                'message' => 'Thêm mới Attribute value thành công',
                 'status' => 'success',
                 'data' => $data
             ], Response::HTTP_CREATED);
@@ -63,28 +59,25 @@ class VoucherController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Thêm voucher thất bại',
+                'message' => 'Thêm attribute value thất bại',
                 'status' => 'error',
 
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateVoucherRequest $request, string $id)
+    public function update(Request  $request, AttributeValue $attributeValue)
     {
         try {
-            $model = Voucher::query()->findOrFail($id);
+            $idExits = AttributeValue::query()->where('id', $attributeValue->id)->exists();
+            if(!$idExits){
+                return response()->json([
+                    'status' => 'error',
+                    'messages' =>  'Không tìm thấy'
+                ], Response::HTTP_NOT_FOUND);
+            }
+            $model = AttributeValue::query()->findOrFail($attributeValue->id);
+
 
             $data = $request->all();
 
@@ -93,7 +86,7 @@ class VoucherController extends Controller
             return response()->json([
                 'data' => $model,
                 'status' => 'success',
-                'messages' =>  'Cập nhật voucher thành công'
+                'messages' =>  'Cập nhật attribute thành công'
             ], Response::HTTP_CREATED);
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
@@ -101,23 +94,20 @@ class VoucherController extends Controller
                 'message' => $th->getMessage()
             ]);
             return response()->json([
-                'messages' => 'Cập nhật voucher thất bại',
+                'messages' => 'Cập nhật attribute thất bại',
                 'status' => 'error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(AttributeValue $attributeValue)
     {
         try {
-            $model = Voucher::findOrFail($id);
+            $model = AttributeValue::findOrFail($attributeValue->id);
             $model->delete();
 
             return response()->json([
-                'messages' => 'Xóa voucher thành công',
+                'messages' => 'Xóa attribute thành công',
                 'status' => 'success'
             ], Response::HTTP_OK);
         } catch (\Throwable $th) {
@@ -126,9 +116,10 @@ class VoucherController extends Controller
                 'message' => $th->getMessage()
             ]);
             return response()->json([
-                'messages' => 'Xóa voucher thất bại',
+                'messages' => 'Xóa attribute thất bại',
                 'status' => 'error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    
 }

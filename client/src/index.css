@@ -120,7 +120,17 @@ a:hover .number-cart{
   content:"";
   width: 5px;
   height: 30px;
-  background-color: #ff9900;
+  background-color: rgb(255, 153, 0);
   display: inline-block;
   line-height: 30px;
+}
+
+.css-6rg9iv-MuiStack-root{
+  display: block !important;
+}
+.css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root{
+  border-radius: 10px !important;
+}
+.rc-anchor-light.rc-anchor-normal,.rc-anchor-light.rc-anchor-compact {
+  border: 1px solid #f6f6f6 !important;
 }

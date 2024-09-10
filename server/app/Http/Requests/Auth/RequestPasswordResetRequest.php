@@ -22,7 +22,7 @@ class RequestPasswordResetRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|exists:users,email', // Kiểm tra email có tồn tại trong bảng users
+            'email' => 'required|email|exists:users,email', 
         ];
     }
 

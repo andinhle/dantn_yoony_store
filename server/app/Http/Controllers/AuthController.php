@@ -52,7 +52,7 @@ class AuthController extends Controller
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => bcrypt($request->password),
+                'password' => bcrypt($request->password)
             ]);
 
             return response()->json([
@@ -80,24 +80,21 @@ class AuthController extends Controller
     public function requestPasswordReset(RequestPasswordResetRequest $request)
     {
         try {
-            // Kiểm tra xem email có tồn tại trong cơ sở dữ liệu
             $user = User::where('email', $request->email)->first();
 
             if (!$user) {
                 return response()->json([
                     'message' => 'Email không tồn tại trong hệ thống.'
-                ], 404); // 404 Not Found
+                ], 404);
             }
 
-            // Tạo token cho người dùng
-            $token = app('auth.password.broker')->createToken($user); // Tạo token
+            $token = app('auth.password.broker')->createToken($user);
 
-            // Gửi thông báo ResetPasswordNotification cho người dùng
             $user->notify(new ResetPasswordNotification($token));
 
             return response()->json([
                 'message' => 'Link đổi mật khẩu đã được gửi đến email của bạn.',
-                'token' => $token // Trả về token trong phản hồi
+                'token' => $token
             ], 200);
 
         } catch (\Exception $e) {

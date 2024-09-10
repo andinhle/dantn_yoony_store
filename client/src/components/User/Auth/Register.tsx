@@ -6,11 +6,8 @@ import { zodResolver } from "../../../../node_modules/@hookform/resolvers/zod/sr
 import instance from "../../../instance/instance";
 import { toast } from "react-toastify";
 import axios from "axios";
-// import { generateSecret } from "../../../utils/generateSecret";
-// import * as OTPAuth from "otpauth";
-// import { useState } from "react";
+import { generateSecret } from "../../../utils/generateSecret";
 const Register = () => {
-  // const [isVerified, setIsVerified] = useState<boolean | null>(null);
   const {
     register,
     formState: { errors },
@@ -23,29 +20,29 @@ const Register = () => {
   const onSubmit = async (dataForm: IUser) => {
     try {
       const {name,email,password}=dataForm
-      // const { secret } = generateSecret(dataForm)
+      const { secret } = generateSecret(dataForm)
       const data=await instance.post('register',{
-        name,email,password
+        name,email,password,
+        secret_code:secret
       })
       if (data) {
         reset()
         toast.success('Đăng ký tài khoản thành công!')
       }
     } catch (error) {
-      console.log(error)
       if (axios.isAxiosError(error)) {
         toast.error(error.response?.data?.message);
       } else if (error instanceof Error) {
         console.log(error.message);
       } else {
-        console.log('An unexpected error occurred');
+        console.log('Đã xảy ra lỗi không mong muốn');
       }
     }
   };
   return (
     <section className="flex items-center justify-evenly mt-14">
       <form
-        className="max-w-[400px] space-y-5"
+        className="max-w-[350px] space-y-5"
         onSubmit={handleSubmit(onSubmit)}
       >
         <h2 className="font-[500] text-[32px] text-primary text-center">
@@ -60,7 +57,7 @@ const Register = () => {
               type="text"
               placeholder="Username"
               id="username-input"
-              className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none"
+              className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none text-sm"
               {...register("name")}
             />
             <span className="block text-sm text-red-500 mt-1">
@@ -75,7 +72,7 @@ const Register = () => {
               type="text"
               placeholder="Email"
               id="email-input"
-              className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none"
+              className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none text-sm"
               {...register("email")}
             />
             <span className="block text-sm text-red-500 mt-1">
@@ -91,7 +88,7 @@ const Register = () => {
                 type="password"
                 placeholder="Mật khẩu"
                 id="pass-input"
-                className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none"
+                className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none text-sm"
                 {...register("password")}
               />
               <span className="block text-sm text-red-500 mt-1">
@@ -106,7 +103,7 @@ const Register = () => {
                 type="password"
                 placeholder="Nhập lại mật khẩu"
                 id="confirmPass-input"
-                className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none"
+                className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none text-sm"
                 {...register("confirmPass")}
               />
               <span className="block text-sm text-red-500 mt-1">
