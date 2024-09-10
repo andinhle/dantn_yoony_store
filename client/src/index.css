@@ -115,13 +115,22 @@ a:hover .number-cart{
 [type='text']:focus, [type='email']:focus, [type='url']:focus, [type='password']:focus, [type='number']:focus, [type='date']:focus, [type='datetime-local']:focus, [type='month']:focus, [type='search']:focus, [type='tel']:focus, [type='time']:focus, [type='week']:focus, [multiple]:focus, textarea:focus, select:focus{
   --tw-ring-shadow:none !important;
 }
-.product-feature::before{
+
+.product-clothes::before,.product-feature::before,.product-uniform::before{
   content:"";
   width: 5px;
   height: 30px;
-  background-color: #ff9900;
+  background-color: rgb(255, 153, 0);
   display: inline-block;
   line-height: 30px;
+}
 
-  
+.css-6rg9iv-MuiStack-root{
+  display: block !important;
+}
+.css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root{
+  border-radius: 10px !important;
+}
+.rc-anchor-light.rc-anchor-normal,.rc-anchor-light.rc-anchor-compact {
+  border: 1px solid #f6f6f6 !important;
 }

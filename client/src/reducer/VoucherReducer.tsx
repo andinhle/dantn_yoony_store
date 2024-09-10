@@ -1,6 +1,4 @@
 import { IVoucher } from "../intrefaces/IVouchers"
-
-
 const voucherReducer = (state:any,action:any) => {
   switch (action.type) {
     case "LIST":
@@ -23,5 +21,4 @@ const voucherReducer = (state:any,action:any) => {
         break;
   }
 }
-
 export default voucherReducer

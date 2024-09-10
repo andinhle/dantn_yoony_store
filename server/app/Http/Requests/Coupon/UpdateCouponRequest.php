@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Api;
+namespace App\Http\Requests\Coupon;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -8,7 +8,7 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
 
-class StoreVoucherRequest extends FormRequest
+class UpdateCouponRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -49,7 +49,7 @@ class StoreVoucherRequest extends FormRequest
             'discount_type.required' => 'Yêu cầu nhập',
             'usage_limit.required' => 'Yêu cầu nhập',
             'min_order_value.required' => 'Yêu cầu nhập',
-            'min_order_value.min' => 'Giá trị phải lớn hơn 0',
+            'min_order_value.min' => 'Giá trị phải là số ',
             'min_order_value.numeric' => 'Vui lòng nhập số',
             'max_order_value.required' => 'Yêu cầu nhập',
             'max_order_value.numeric' => 'Vui lòng nhập số',
