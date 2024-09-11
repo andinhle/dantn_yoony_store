@@ -32,6 +32,7 @@ const ResetPassword = () => {
         toast.success("Gửi URL đổi mật khẩu thành công");
         throw new Error();
       } catch (error) {
+        setActive(false);
         if (axios.isAxiosError(error)) {
           toast.error(error.response?.data?.message);
         } else if (error instanceof Error) {
