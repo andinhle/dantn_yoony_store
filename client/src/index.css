@@ -134,3 +134,23 @@ a:hover .number-cart{
 .rc-anchor-light.rc-anchor-normal,.rc-anchor-light.rc-anchor-compact {
   border: 1px solid #f6f6f6 !important;
 }
+.ant-tooltip-content{
+  display: none !important;
+}
+
+:where(.css-dev-only-do-not-override-14i19y2).ant-btn-primary,:where(.css-dev-only-do-not-override-14i19y2).ant-btn-primary:not(:disabled):not(.ant-btn-disabled):hover{
+  background-color: #ff9900;
+}
+:where(.css-dev-only-do-not-override-14i19y2).ant-input-outlined:hover,:where(.css-dev-only-do-not-override-14i19y2).ant-input-outlined:focus, :where(.css-dev-only-do-not-override-14i19y2).ant-input-outlined:focus-within{
+  border-color:#ff9900;
+  box-shadow:none
+}
+:where(.css-dev-only-do-not-override-14i19y2).ant-input-affix-wrapper >input.ant-input, :where(.css-dev-only-do-not-override-14i19y2).ant-input-affix-wrapper >textarea.ant-input{
+  font-size: 14px;
+}
+
+.YourHighlightClass {
+  background-color: transparent;
+  font-weight: bold;
+  color:#ff9900
+}
