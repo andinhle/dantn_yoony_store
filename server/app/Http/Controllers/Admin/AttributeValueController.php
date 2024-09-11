@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\AttributeValue;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Log;
+use Illuminate\Support\Facades\Log;
+
 
 class AttributeValueController extends Controller
 {
