@@ -8,6 +8,7 @@ use App\Http\Requests\Attribute\UpdateAttributeRequest;
 use App\Models\Attribute;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class AttributeController extends Controller
 {
@@ -52,7 +53,7 @@ class AttributeController extends Controller
     {
         try {
             $data = $request->all();
-            $data['slug'] = Str::slug($request->name) . '-' . rand(0,99);
+            $data['slug'] = Str::slug($request->name);
             $exists = Attribute::where('slug', $data['slug'])->exists();
             if($exists) {
                 if ($exists) {
