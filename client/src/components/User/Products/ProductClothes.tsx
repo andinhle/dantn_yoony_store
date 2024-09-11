@@ -8,20 +8,10 @@ import {
 import ButtonSeeMore from "../Button/ButtonSeeMore";
 const ProductClothes = () => {
   return (
-    <section className="my-5">
-      <h2 className="text-base md:text-xl lg:text-2xl font-semibold uppercase product-feature flex items-center gap-2">
+    <section className="py-5">
+      <h2 className="text-base md:text-xl lg:text-2xl font-medium uppercase product-clothes flex items-center gap-2">
         Quần Áo
       </h2>
-      {/* <div className="flex flex-wrap gap-[25px] my-[25px]">
-        <CardProductAll />
-        <CardProductAll />
-        <CardProductAll />
-        <CardProductAll />
-        <CardProductAll />
-        <CardProductAll />
-        <CardProductAll />
-        <CardProductAll />
-      </div> */}
       <Swiper
         slidesPerView={5}
         spaceBetween={20}

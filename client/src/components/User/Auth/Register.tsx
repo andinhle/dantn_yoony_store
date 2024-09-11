@@ -2,17 +2,21 @@ import { Label } from "flowbite-react";
 import { IUser } from "../../../intrefaces/IUser";
 import { useForm } from "react-hook-form";
 import registerValidScheme from "../../../validations/registerValidScheme";
-import { zodResolver } from '../../../../node_modules/@hookform/resolvers/zod/src/zod';
+import { zodResolver } from "../../../../node_modules/@hookform/resolvers/zod/src/zod";
 import instance from "../../../instance/instance";
 import { toast } from "react-toastify";
 import axios from "axios";
-
 const Register = () => {
-  const {register,formState:{errors},handleSubmit,reset}=useForm<IUser>({
-    resolver:zodResolver(registerValidScheme)
-  })
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+    reset,
+  } = useForm<IUser>({
+    resolver: zodResolver(registerValidScheme),
+  });
   //Xử lý Đăng ký
-  const onSubmit= async(dataForm:IUser)=>{
+  const onSubmit = async (dataForm: IUser) => {
     try {
       const {name,email,password}=dataForm
       const data=await instance.post('register',{
@@ -28,13 +32,16 @@ const Register = () => {
       } else if (error instanceof Error) {
         console.log(error.message);
       } else {
-        console.log('An unexpected error occurred');
+        console.log('Đã xảy ra lỗi không mong muốn');
       }
     }
-  }
+  };
   return (
     <section className="flex items-center justify-evenly mt-14">
-      <form className="max-w-[400px] space-y-5" onSubmit={handleSubmit(onSubmit)}>
+      <form
+        className="max-w-[350px] space-y-5"
+        onSubmit={handleSubmit(onSubmit)}
+      >
         <h2 className="font-[500] text-[32px] text-primary text-center">
           ĐĂNG KÝ
         </h2>
@@ -47,10 +54,12 @@ const Register = () => {
               type="text"
               placeholder="Username"
               id="username-input"
-              className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none"
-              {...register('name')}
+              className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none text-sm"
+              {...register("name")}
             />
-            <span className="block text-sm text-red-500 mt-1">{errors.name?.message}</span>
+            <span className="block text-sm text-red-500 mt-1">
+              {errors.name?.message}
+            </span>
           </div>
           <div>
             <div className="mb-2 block">
@@ -60,10 +69,12 @@ const Register = () => {
               type="text"
               placeholder="Email"
               id="email-input"
-              className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none"
-              {...register('email')}
+              className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none text-sm"
+              {...register("email")}
             />
-            <span className="block text-sm text-red-500 mt-1">{errors.email?.message}</span>
+            <span className="block text-sm text-red-500 mt-1">
+              {errors.email?.message}
+            </span>
           </div>
           <div className="flex justify-between gap-2">
             <div>
@@ -74,10 +85,12 @@ const Register = () => {
                 type="password"
                 placeholder="Mật khẩu"
                 id="pass-input"
-                className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none"
-                {...register('password')}
+                className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none text-sm"
+                {...register("password")}
               />
-              <span className="block text-sm text-red-500 mt-1">{errors.password?.message}</span>
+              <span className="block text-sm text-red-500 mt-1">
+                {errors.password?.message}
+              </span>
             </div>
             <div>
               <div className="mb-2 block">
@@ -87,17 +100,24 @@ const Register = () => {
                 type="password"
                 placeholder="Nhập lại mật khẩu"
                 id="confirmPass-input"
-                className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none"
-                {...register('confirmPass')}
+                className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none text-sm"
+                {...register("confirmPass")}
               />
-              <span className="block text-sm text-red-500 mt-1">{errors.confirmPass?.message}</span>
+              <span className="block text-sm text-red-500 mt-1">
+                {errors.confirmPass?.message}
+              </span>
             </div>
           </div>
         </div>
-        <button className="w-fit bg-primary py-2 px-6 rounded-md text-util mx-auto block font-[400]">ĐĂNG KÝ</button>
+        <button className="w-fit bg-primary py-2 px-6 rounded-md text-util mx-auto block font-[400]">
+          ĐĂNG KÝ
+        </button>
       </form>
       <div>
-        <img src="../../../../src/assets/images/sign-up-form.svg" alt="sign-up-form" />
+        <img
+          src="../../../../src/assets/images/sign-up-form.svg"
+          alt="sign-up-form"
+        />
       </div>
     </section>
   );

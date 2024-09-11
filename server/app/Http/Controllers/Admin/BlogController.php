@@ -12,7 +12,7 @@ class BlogController extends Controller
 {
     public function index()
     {
-        $blogs = Blog::latest('id')->paginate(5);
+        $blogs = Blog::latest('id')->paginate(3);
 
         return BlogResource::collection($blogs);
     }
@@ -65,6 +65,6 @@ class BlogController extends Controller
 
         return response()->json([
             'message' => 'Blog đã được xóa thành công!',
-        ], 204);
+        ], 200);
     }
 }

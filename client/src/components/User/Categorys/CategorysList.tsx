@@ -105,7 +105,7 @@ const CategorysList = () => {
     },
   ];
   return (
-    <section className="py-5">
+    <section className="py-7">
       <h2 className="text-base md:text-xl lg:text-2xl font-semibold text-center">
         DANH MỤC NỔI BẬT
       </h2>

@@ -9,14 +9,14 @@ const ButtonSeeMore = ({ link }: Props) => {
     <div>
       <Link
         to={link}
-        className="text-util font-semibold uppercase px-[15px] py-2 bg-primary rounded-lg w-fit flex gap-1 mx-auto"
+        className="text-util font-medium uppercase px-[15px] py-2 bg-primary rounded-lg w-fit flex gap-1 mx-auto"
       >
         Xem thêm sản phẩm{" "}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
-          strokeWidth={1.5}
+          strokeWidth={2}
           stroke="currentColor"
           className="size-5"
         >

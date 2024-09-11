@@ -1,6 +1,6 @@
 const CardProductAll = () => {
   return (
-    <div className="min-h-[354px] max-w-[220px] w-full bg-util rounded-lg overflow-hidden shadow-[0px_1px_4px_0px_rgba(255,_138,_0,_0.25)]">
+    <div className="min-h-[354px] group max-w-[220px] w-full bg-util rounded-lg overflow-hidden shadow-[0px_1px_4px_0px_rgba(255,_138,_0,_0.25)] cursor-pointer">
       <div className="relative z-40">
         <img
           src="../../../../src/assets/images/product-image.png"
@@ -23,7 +23,7 @@ const CardProductAll = () => {
             />
           </svg>
         </div>
-        {/* <div className="bg-primary/20 absolute top-0 z-40 w-full h-full">
+        <div className="bg-primary/25 absolute top-0 z-40 w-full h-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 group-hover:cursor-pointer ">
           <div className="absolute top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%] bg-util p-2 rounded-full hover:cursor-pointer text-primary transition-all">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -74,7 +74,7 @@ const CardProductAll = () => {
               />
             </svg>
           </div>
-        </div> */}
+        </div>
       </div>
       <div className="flex justify-center gap-2 -mt-3.5 z-50 relative">
         <span className="p-3 rounded-full bg-util border border-primary"></span>

@@ -9,11 +9,11 @@ const Login = () => {
           alt="sign-up-form"
         />
       </div>
-      <form className="max-w-[400px] space-y-5 w-full">
+      <form className="max-w-[350px] space-y-5 w-full">
         <h2 className="font-[500] text-[32px] text-primary text-center">
           ĐĂNG NHẬP
         </h2>
-        <div className="space-y-2">
+        <div className="space-y-4">
           <div>
             <div className="mb-2 block">
               <Label htmlFor="email" value="Email" />
