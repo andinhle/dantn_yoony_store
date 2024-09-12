@@ -30,6 +30,7 @@ import ScrollToTop from "./utils/ScrollToTop.tsx";
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import ResetPassword from "./components/User/Auth/ResetPassword.tsx";
+import BannerList from "./pages/admin/BannerAdmin.tsx";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
@@ -59,6 +60,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path='products/varriant/addValue' element={<VarriantValue />}/>
             <Route path='orders/orderDetails' element={<OrderDetails/>}/>
             <Route path='rates' element={<Rates/>}/>
+            <Route path='banner' element={<BannerList/>}/>
           </Route>
         </Route>
       </Routes>
