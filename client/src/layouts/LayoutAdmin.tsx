@@ -3,7 +3,7 @@ import SideBarAdmin from "../components/Admin/SideBarAdmin";
 import MainContentAdmin from "./Admin/MainContentAdmin";
 
 const LayoutAdmin = () => {
-  document.body.style.backgroundColor = "#FFFCF7";
+  document.body.style.backgroundColor = "#F5F5F5";
   return (
     <div id="layout-admin">
       <SideBarAdmin />

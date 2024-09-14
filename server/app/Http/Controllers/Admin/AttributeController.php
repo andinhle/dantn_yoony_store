@@ -53,7 +53,7 @@ class AttributeController extends Controller
     {
         try {
             $data = $request->all();
-            $data['slug'] = Str::slug($request->name) . '-' . rand(0,99);
+            $data['slug'] = Str::slug($request->name);
             $exists = Attribute::where('slug', $data['slug'])->exists();
             if($exists) {
                 if ($exists) {
