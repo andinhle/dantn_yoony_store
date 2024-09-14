@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\AttributeValue;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Log;
+use Illuminate\Support\Facades\Log;
+
 
 class AttributeValueController extends Controller
 {
@@ -17,7 +18,7 @@ class AttributeValueController extends Controller
             return response()->json([
                 'message' => 'Danh sách' . request('page', 1),
                 'status' => 'success',
-                'data' => $data 
+                'data' => $data
             ]);
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
@@ -28,7 +29,7 @@ class AttributeValueController extends Controller
             return response()->json([
                 'message' => 'Lỗi tải trang',
                 'status' => 'error',
-                
+
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -40,7 +41,7 @@ class AttributeValueController extends Controller
                 'value' => 'required',
                 'attribute_id' => 'required'
             ]);
-            
+
             // $data = $request->all();
 
             AttributeValue::query()->create($data);
@@ -120,5 +121,5 @@ class AttributeValueController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
 }

@@ -12,13 +12,16 @@ class ResetPasswordNotification extends Notification
     use Queueable;
 
     protected $token;
+    protected $email; // Thêm thuộc tính để lưu email
 
     /**
      * Create a new notification instance.
      */
-    public function __construct($token)
+    public function __construct($token,$email)
     {
         $this->token = $token;
+        $this->email = $email; // Lưu email vào thuộc tính
+
     }
 
     /**
@@ -36,10 +39,12 @@ class ResetPasswordNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $url = 'http://localhost:5173/reset-password/' . $this->token ;
+        $encodedEmail = base64_encode($this->email);
+        $url = 'http://localhost:5173/reset-password/' . $this->token . '/' . $encodedEmail;
 
         return (new MailMessage)
-            ->line('Bạn đã yêu cầu đặt lại mật khẩu.')
+            ->subject('Đặt lại mật khẩu')
+            ->line('Bạn nhận được email này vì chúng tôi đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn: ' . $this->email)
             ->action('Đặt lại mật khẩu', $url)
             ->line('Nếu bạn không yêu cầu đặt lại mật khẩu, không cần thực hiện thêm hành động nào.')
             ->line('Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!');
