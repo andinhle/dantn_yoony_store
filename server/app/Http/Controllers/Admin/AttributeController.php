@@ -22,7 +22,7 @@ class AttributeController extends Controller
             return response()->json([
                 'message' => 'Danh sách attribute trang ' . request('page', 1),
                 'status' => 'success',
-                'data' => $data 
+                'data' => $data
             ]);
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
@@ -33,7 +33,7 @@ class AttributeController extends Controller
             return response()->json([
                 'message' => 'Lỗi tải trang',
                 'status' => 'error',
-                
+
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
