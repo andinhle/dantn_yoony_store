@@ -42,3 +42,8 @@ Route::apiResource('banners', BannerController::class);
 
 use App\Http\Controllers\Admin\BlogController;
 Route::apiResource('blogs', BlogController::class);
+
+
+
+use App\Http\Controllers\Admin\ProductController;
+Route::apiResource('products', ProductController::class);
