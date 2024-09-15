@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Http\Requests\Category\InsertCategoryRequest;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
+    use SoftDeletes;
 
     public function index()
     {
@@ -86,6 +88,3 @@ class CategoryController extends Controller
         ], 200);
     }
 }
-
-//test 123 123 
-//test commit

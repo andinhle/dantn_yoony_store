@@ -347,7 +347,7 @@ const SideBarListCategorysHome = () => {
       <h2 className="uppercase bg-primary text-util py-2 px-5 text-center text-[20px] font-[500] tracking-[1px]">
         Danh mục
       </h2>
-      <section className="flex flex-col gap-3 p-3 overflow-auto max-h-[292px]">
+      <section className="flex flex-col gap-5 xl:gap-3 p-3 overflow-auto xl:max-h-[292px] max-h-auto">
         {categorys.length > 0 &&
           categorys.map((category, index) => {
             return (
@@ -356,12 +356,12 @@ const SideBarListCategorysHome = () => {
                 className="flex items-center py-1.5 px-5 border border-[#FFEBEB] rounded-sm gap-3 uppercase font-medium hover:text-primary hover:cursor-pointer transition-all"
               >
                 {category.image}
-                <h3>{category.name}</h3>
+                <h3 className="line-clamp-1">{category.name}</h3>
               </div>
             );
           })}
       </section>
-      <div className="px-3">
+      <div className="px-3 hidden xl:block">
         <Link
           to={"admin"}
           className="py-3 px-5 bg-primary rounded-lg flex gap-3 items-center font-medium text-lg text-util hover:cursor-pointer mt-2"

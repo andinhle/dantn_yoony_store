@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import { Avatar } from "@mui/material";
 import ButtonSubmit from "../../components/Admin/ButtonSubmit";
 import { useForm } from "react-hook-form";
-import { UserContext } from "../../context/UserContext";
+import { UserContext } from "../../contexts/UserContext";
 import { IUser } from "../../intrefaces/IUser";
 
 const UsersAdmin = () => {

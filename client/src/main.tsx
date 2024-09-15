@@ -11,9 +11,10 @@ import UsersAdmin from "./pages/admin/UserAdmin.tsx";
 import BlogsAdmin from "./pages/admin/BlogsAdmin.tsx";
 import CategorysAdmin from "./pages/admin/CategorysAdmin.tsx";
 import Register from "./components/User/Auth/Register.tsx";
-import 'swiper/css';
-import 'swiper/css/pagination';
-import 'swiper/css/navigation';
+import "swiper/css";
+import "swiper/css/pagination";
+import "swiper/css/navigation";
+import 'swiper/css/free-mode';
 import MainContentUser from "./pages/user/MainContentUser.tsx";
 import Login from "./components/User/Auth/Login.tsx";
 import ProductList from "./pages/admin/ProductsList.tsx";
@@ -25,9 +26,14 @@ import EditProduct from "./pages/admin/products/EditProduct.tsx";
 import Varriant from "./pages/admin/varriant/AddVarriant.tsx";
 import ListVarriant from "./pages/admin/varriant/Listvarriant.tsx";
 import VarriantValue from "./pages/admin/varriant/VarriantValue.tsx";
+import ScrollToTop from "./utils/ScrollToTop.tsx";
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
+import ResetPassword from "./components/User/Auth/ResetPassword.tsx";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route element={<App />}>
           {/* User */}
@@ -35,8 +41,8 @@ createRoot(document.getElementById("root")!).render(
             <Route index  element={<MainContentUser />}/>
             <Route path='register' element={<Register />}/>
             <Route path='login' element={<Login />}/>
+            <Route path='reset-password' element={<ResetPassword />}/>
           </Route>
-
           {/* Admin */}
           <Route path="admin" element={<LayoutAdmin />}>
             <Route index element={<DashboardAdmin />}/>
@@ -56,6 +62,7 @@ createRoot(document.getElementById("root")!).render(
           </Route>
         </Route>
       </Routes>
+      <ToastContainer autoClose={3000} newestOnTop={true} />
     </BrowserRouter>
   </StrictMode>
 );
