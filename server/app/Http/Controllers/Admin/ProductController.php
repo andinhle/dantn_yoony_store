@@ -81,7 +81,7 @@ class ProductController extends Controller
                 'name' => $request->name,
                 'slug' => $request->slug,
                 'description' => $request->description,
-                'image' => $request->images,
+                'image' => $request->image,
                 'category_id' => $request->category_id,
                 'is_featured' => $request->is_featured ?? false,
                 'is_good_deal' => $request->is_good_deal ?? false,
