@@ -55,13 +55,11 @@ class AttributeController extends Controller
             $data = $request->all();
             $data['slug'] = Str::slug($request->name);
             $exists = Attribute::where('slug', $data['slug'])->exists();
-            if($exists) {
-                if ($exists) {
+            if($exists) { 
                     return response()->json([
                         'message' => 'Slug đã tồn tại, vui lòng thử lại',
                         'status' => 'error',
-                    ], Response::HTTP_INTERNAL_SERVER_ERROR);
-                }
+                    ], Response::HTTP_INTERNAL_SERVER_ERROR);          
             }
 
             Attribute::query()->create($data);
