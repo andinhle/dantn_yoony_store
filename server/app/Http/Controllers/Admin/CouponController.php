@@ -8,8 +8,8 @@ use App\Http\Requests\Coupon\UpdateCouponRequest;
 use App\Models\Coupon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Validation\Rule;
-use Log;
+use Illuminate\Support\Facades\Log;
+
 
 class CouponController extends Controller
 {
@@ -33,7 +33,7 @@ class CouponController extends Controller
             return response()->json([
                 'message' => 'Lỗi tải trang',
                 'status' => 'error',
-                
+
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
