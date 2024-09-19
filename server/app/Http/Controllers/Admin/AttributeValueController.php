@@ -66,7 +66,7 @@ class AttributeValueController extends Controller
         }
     }
 
-    public function update(Request  $request, AttributeValue $attributeValue)
+    public function update(Request $request, AttributeValue $attributeValue)
     {
         try {
             $idExits = AttributeValue::query()->where('id', $attributeValue->id)->exists();
@@ -103,12 +103,22 @@ class AttributeValueController extends Controller
     public function destroy(AttributeValue $attributeValue)
     {
         try {
-            $model = AttributeValue::findOrFail($attributeValue->id);
+
+
+            $idExits = AttributeValue::where('id', $attributeValue->id)->exists();
+            if(!$idExits){
+                return response()->json([
+                    'status' => 'error',
+                    'messages' =>  'Vui lòng thử lại'
+                ], Response::HTTP_NOT_FOUND);
+            }
+            $model = AttributeValue::query()->findOrFail($attributeValue->id);
+
             $model->delete();
 
             return response()->json([
                 'messages' => 'Xóa attribute thành công',
-                'status' => 'success'
+                'status' => $model
             ], Response::HTTP_OK);
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
