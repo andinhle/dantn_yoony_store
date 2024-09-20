@@ -20,6 +20,8 @@ class Coupon extends Model
         'end_date',
         'status',
         'is_featured',
+        'min_order_value',
+        'max_order_value'
     ];
 
     protected $casts = [

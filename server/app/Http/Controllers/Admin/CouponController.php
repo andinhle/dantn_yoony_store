@@ -8,7 +8,8 @@ use App\Http\Requests\Coupon\UpdateCouponRequest;
 use App\Models\Coupon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Log;
+use Illuminate\Support\Facades\Log;
+
 
 class CouponController extends Controller
 {
@@ -18,7 +19,7 @@ class CouponController extends Controller
             $data = Coupon::query()->latest('id')->paginate(5);
 
             return response()->json([
-                'message' => 'Danh sách người dùng trang ' . request('page', 1),
+                'message' => 'Danh sách coupon trang ' . request('page', 1),
                 'status' => 'success',
                 'data' => $data
             ]);
@@ -32,7 +33,7 @@ class CouponController extends Controller
             return response()->json([
                 'message' => 'Lỗi tải trang',
                 'status' => 'error',
-                
+
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -72,7 +73,27 @@ class CouponController extends Controller
      */
     public function show(string $id)
     {
-        //
+        try {
+            $model = Coupon::findOrFail($id);
+            
+
+            return response()->json([
+                'data' => $model,
+                'messages' => 'Chi tiết coupon',
+                'status' => 'success'
+            ], Response::HTTP_OK);
+        } catch (\Throwable $th) {
+            Log::error(__CLASS__ . '@' . __FUNCTION__, [
+                'line' => $th->getLine(),
+                'message' => $th->getMessage()
+            ]);
+            return response()->json([
+                'messages' => 'Vui lòng thử lại',
+                'status' => 'error'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+
     }
 
     /**
@@ -81,9 +102,9 @@ class CouponController extends Controller
     public function update(UpdateCouponRequest $request, string $id)
     {
         try {
-            $model = Coupon::query()->findOrFail($id);
-
+            \Log::info($request->all()); 
             $data = $request->all();
+            $model = Coupon::query()->findOrFail($id);
 
             $model->update($data);
 

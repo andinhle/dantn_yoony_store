@@ -26,12 +26,12 @@ class UpdateCouponRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => 'required|max:255|unique:vouchers', 
+            'code' => 'required|max:255|unique:coupons', 
             'discount' => 'required',
             'discount_type' => 'required',
             'usage_limit' => 'required',
-            'start_date' => 'date|date_format:Y-m-d',
-            'end_date' => 'date|date_format:Y-m-d|after_or_equal:start_date',
+            'start_date' => 'required|date|date_format:Y-m-d',
+            'end_date' => 'required|date|date_format:Y-m-d|after_or_equal:start_date',
             'status' => [Rule::in([0, 1])],
             'is_featured' => [Rule::in([0, 1])],
             'min_order_value' => 'required|min:0|numeric',
@@ -53,9 +53,9 @@ class UpdateCouponRequest extends FormRequest
             'min_order_value.numeric' => 'Vui lòng nhập số',
             'max_order_value.required' => 'Yêu cầu nhập',
             'max_order_value.numeric' => 'Vui lòng nhập số',
-            'max_order_value.gt:min_order_value' => 'Giá trị phải lớn hơn giá trị đơn hàng thấp nhất'
-            // 'status'.[Rule::in([0, 1])],
-            // 'is_featured'.[Rule::in([0, 1])],
+            'max_order_value.gt:min_order_value' => 'Giá trị phải lớn hơn giá trị đơn hàng thấp nhất',
+            'status.in' => 'Trạng thái đã chọn không hợp lệ',
+            'is_featured.in' => 'Trạng thái đã chọn không hợp lệ',
         ];
     }
 
