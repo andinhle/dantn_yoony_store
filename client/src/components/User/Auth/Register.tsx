@@ -6,7 +6,6 @@ import { zodResolver } from "../../../../node_modules/@hookform/resolvers/zod/sr
 import instance from "../../../instance/instance";
 import { toast } from "react-toastify";
 import axios from "axios";
-import { generateSecret } from "../../../utils/generateSecret";
 const Register = () => {
   const {
     register,
@@ -20,10 +19,8 @@ const Register = () => {
   const onSubmit = async (dataForm: IUser) => {
     try {
       const {name,email,password}=dataForm
-      const { secret } = generateSecret(dataForm)
       const data=await instance.post('register',{
-        name,email,password,
-        secret_code:secret
+        name,email,password
       })
       if (data) {
         reset()

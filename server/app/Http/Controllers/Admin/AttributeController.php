@@ -8,6 +8,7 @@ use App\Http\Requests\Attribute\UpdateAttributeRequest;
 use App\Models\Attribute;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class AttributeController extends Controller
 {
@@ -21,7 +22,7 @@ class AttributeController extends Controller
             return response()->json([
                 'message' => 'Danh sách attribute trang ' . request('page', 1),
                 'status' => 'success',
-                'data' => $data 
+                'data' => $data
             ]);
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
@@ -32,7 +33,7 @@ class AttributeController extends Controller
             return response()->json([
                 'message' => 'Lỗi tải trang',
                 'status' => 'error',
-                
+
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -52,15 +53,13 @@ class AttributeController extends Controller
     {
         try {
             $data = $request->all();
-            $data['slug'] = Str::slug($request->name) . '-' . rand(0,99);
+            $data['slug'] = Str::slug($request->name);
             $exists = Attribute::where('slug', $data['slug'])->exists();
-            if($exists) {
-                if ($exists) {
+            if($exists) { 
                     return response()->json([
                         'message' => 'Slug đã tồn tại, vui lòng thử lại',
                         'status' => 'error',
-                    ], Response::HTTP_INTERNAL_SERVER_ERROR);
-                }
+                    ], Response::HTTP_INTERNAL_SERVER_ERROR);          
             }
 
             Attribute::query()->create($data);

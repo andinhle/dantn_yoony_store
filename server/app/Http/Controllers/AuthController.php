@@ -90,11 +90,12 @@ class AuthController extends Controller
 
             $token = app('auth.password.broker')->createToken($user);
 
-            $user->notify(new ResetPasswordNotification($token));
+            $user->notify(new ResetPasswordNotification($token,$request->email));
 
             return response()->json([
                 'message' => 'Link đổi mật khẩu đã được gửi đến email của bạn.',
-                'token' => $token
+                'token' => $token,
+                'email' => $request->email
             ], 200);
 
         } catch (\Exception $e) {
