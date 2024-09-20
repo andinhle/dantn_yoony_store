@@ -31,9 +31,11 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import ResetPassword from "./components/User/Auth/ResetPassword.tsx";
 import BannerList from "./pages/admin/BannerAdmin.tsx";
+import VoucherProvider from "./contexts/VouchersContext.tsx";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
+    <VoucherProvider>
       <ScrollToTop />
       <Routes>
         <Route element={<App />}>
@@ -65,6 +67,7 @@ createRoot(document.getElementById("root")!).render(
         </Route>
       </Routes>
       <ToastContainer autoClose={3000} newestOnTop={true} />
+      </VoucherProvider>
     </BrowserRouter>
   </StrictMode>
 );
