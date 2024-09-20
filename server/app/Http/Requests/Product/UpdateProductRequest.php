@@ -23,9 +23,10 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'slug' => 'sometimes|string|unique:products,slug,' . $this->id,
+            'slug' => 'sometimes|string|unique:products,slug,' . $this->route('product'),
+
             'description' => 'nullable|string',
-            'image' => 'required|string',
+            'images' => 'required|json',
             'category_id' => 'required|exists:categories,id',
             'is_featured' => 'boolean',
             'is_good_deal' => 'boolean',
@@ -42,7 +43,8 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             'name.required' => 'Tên sản phẩm là bắt buộc.',
-            'image.required' => 'Trường hình ảnh là bắt buộc.',
+            'images.required' => 'Trường hình ảnh là bắt buộc.',
+            'images.json' => 'Hình ảnh phải là một chuỗi JSON hợp lệ.',
             'category_id.required' => 'ID danh mục là bắt buộc.',
             'category_id.exists' => 'Danh mục không tồn tại.',
             'variants.required' => 'Các biến thể là bắt buộc.',
