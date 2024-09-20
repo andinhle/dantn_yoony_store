@@ -23,7 +23,8 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'slug' => 'sometimes|string|unique:products,slug,' . $this->id,
+            'slug' => 'sometimes|string|unique:products,slug,' . $this->route('product'),
+
             'description' => 'nullable|string',
             'images' => 'required|json',
             'category_id' => 'required|exists:categories,id',

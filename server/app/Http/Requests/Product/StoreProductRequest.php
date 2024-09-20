@@ -35,7 +35,7 @@ class StoreProductRequest extends FormRequest
             'variants.*.sale_price' => 'nullable|numeric|min:0',
             'variants.*.quantity' => 'required|integer|min:0',
             'variants.*.attribute_values' => 'required|array',
-            'variants.*.attribute_values.*' => 'integer|exists:attribute_values,id', 
+            'variants.*.attribute_values.*' => 'integer|exists:attribute_values,id',
         ];
     }
     public function messages(): array

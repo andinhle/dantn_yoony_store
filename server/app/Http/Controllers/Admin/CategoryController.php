@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -16,7 +15,7 @@ class CategoryController extends Controller
 
     public function index()
     {
-        $category = Category::orderByDesc('id')->get();
+        $category = Category::orderByDesc('id')->paginate(6); //6 sp trên
 
         return CategoryResource::collection($category)->additional(['message' => 'Toàn Bộ Danh Mục']);
     }
@@ -52,7 +51,7 @@ class CategoryController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $category = Category::findOrFail($id);   
+        $category = Category::findOrFail($id);
 
         $data = [
             'name' => $request->name,
@@ -69,7 +68,7 @@ class CategoryController extends Controller
     public function destroy(string $id)
     {
         $category = Category::findOrFail($id);
-        
+
         $category->delete();
         return response()->json(['message' => 'Xóa danh mục thành công!'], 200);
     }
