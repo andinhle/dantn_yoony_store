@@ -25,9 +25,8 @@ class UpdateCouponRequest extends FormRequest
      */
     public function rules(): array
     {
-        $code = $this->route('code');
         return [
-            'code' => 'required|max:255|unique:coupons,code,'.$code, 
+            'code' => 'required|max:255|unique:coupons,code,' . $this->route('coupon'), 
             'discount' => 'required',
             'discount_type' => 'required',
             'usage_limit' => 'required',

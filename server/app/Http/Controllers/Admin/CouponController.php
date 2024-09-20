@@ -150,4 +150,44 @@ class CouponController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    public function updateStatus(Request $request, string $id)
+    {
+        try {
+            $coupon = Coupon::findOrFail($id);
+
+            $coupon->update([
+                'status' => $request->status,
+            ]);
+            return response()->json([
+                'message' => 'Cập nhật trạng thái hoạt động thành công!',
+                'data' => $coupon
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'messages' => 'Cập nhật coupon thất bại',
+                'status' => 'error'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    public function updateIsFeatured(Request $request, string $id)
+    {
+        try {
+            $coupon = Coupon::findOrFail($id);
+
+            $coupon->update([
+                'is_featured' => $request->is_featured,
+            ]);
+            return response()->json([
+                'message' => 'Cập nhật trạng thái hoạt động thành công!',
+                'data' => $coupon
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'messages' => 'Cập nhật coupon thất bại',
+                'status' => 'error'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
 }
