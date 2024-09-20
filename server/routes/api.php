@@ -55,8 +55,10 @@ Route::patch('banners/{id}/is-active', [BannerController::class, 'updateIsActive
 Route::apiResource('blogs', BlogController::class);
 Route::patch('blogs/{id}/is-active', [BlogController::class, 'updateIsActive'])->name('blogs.updateIsActive');
 
+
 Route::apiResource('roles', RoleController::class);
 
 Route::get('/product/{slug}', [ProductController::class, 'findBySlug']);
 
 Route::apiResource('products', ProductController::class);
+

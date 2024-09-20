@@ -1,3 +1,4 @@
+
 <?php
 
 namespace App\Models;
@@ -25,3 +26,4 @@ public function variants()
 }
 
 }
+
