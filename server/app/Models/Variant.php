@@ -10,7 +10,7 @@ class Variant extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['price', 'sale_price', 'quantity', 'product_id'];
+    protected $fillable = ['price', 'sale_price', 'quantity','image', 'product_id'];
 
     public function attributeValues()
     {
