@@ -104,6 +104,7 @@ class CouponController extends Controller
         try {
             \Log::info($request->all()); 
             $data = $request->all();
+
             $model = Coupon::query()->findOrFail($id);
 
             $model->update($data);
