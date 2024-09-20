@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RoleController;
 
 use Illuminate\Http\Request;
@@ -55,3 +56,7 @@ Route::apiResource('blogs', BlogController::class);
 Route::patch('blogs/{id}/is-active', [BlogController::class, 'updateIsActive'])->name('blogs.updateIsActive');
 
 Route::apiResource('roles', RoleController::class);
+
+Route::get('/product/{slug}', [ProductController::class, 'findBySlug']);
+
+Route::apiResource('products', ProductController::class);
