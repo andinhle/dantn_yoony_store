@@ -25,7 +25,7 @@ class StoreProductRequest extends FormRequest
             'name' => 'required|string|max:255',
             'slug' => 'required|string|unique:products,slug',
             'description' => 'nullable|string',
-            'images' => 'required|json',
+            'image' => 'required|string',
             'category_id' => 'required|exists:categories,id',
             'is_featured' => 'boolean',
             'is_good_deal' => 'boolean',
@@ -35,7 +35,7 @@ class StoreProductRequest extends FormRequest
             'variants.*.sale_price' => 'nullable|numeric|min:0',
             'variants.*.quantity' => 'required|integer|min:0',
             'variants.*.attribute_values' => 'required|array',
-            'variants.*.attribute_values.*' => 'integer|exists:attribute_values,id', 
+            'variants.*.attribute_values.*' => 'integer|exists:attribute_values,id',
         ];
     }
     public function messages(): array
@@ -44,8 +44,7 @@ class StoreProductRequest extends FormRequest
             'name.required' => 'Tên sản phẩm là bắt buộc.',
             'slug.required' => 'Slug là bắt buộc.',
             'slug.unique' => 'Slug đã tồn tại, vui lòng chọn slug khác.',
-            'images.required' => 'Trường hình ảnh là bắt buộc.',
-            'images.json' => 'Hình ảnh phải là một chuỗi JSON hợp lệ.',
+            'image.required' => 'Trường hình ảnh là bắt buộc.',
             'category_id.required' => 'ID danh mục là bắt buộc.',
             'category_id.exists' => 'Danh mục không tồn tại.',
             'variants.required' => 'Biến thể là bắt buộc.',

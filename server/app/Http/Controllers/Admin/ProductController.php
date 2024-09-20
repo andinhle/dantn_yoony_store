@@ -33,7 +33,7 @@ class ProductController extends Controller
                 'name' => $request->name,
                 'slug' => $request->slug,
                 'description' => $request->description,
-                'images' => json_encode($request->images),
+                'image' => $request->image,
                 'category_id' => $request->category_id,
                 'is_featured' => $request->is_featured ?? false,
                 'is_good_deal' => $request->is_good_deal ?? false,
@@ -45,6 +45,7 @@ class ProductController extends Controller
                     'price' => $variantData['price'],
                     'sale_price' => $variantData['sale_price'],
                     'quantity' => $variantData['quantity'],
+                    'image' => $variantData['image'],
                     'product_id' => $product->id,
                 ]);
 
@@ -80,7 +81,7 @@ class ProductController extends Controller
                 'name' => $request->name,
                 'slug' => $request->slug,
                 'description' => $request->description,
-                'images' => json_encode($request->images),
+                'image' => $request->image,
                 'category_id' => $request->category_id,
                 'is_featured' => $request->is_featured ?? false,
                 'is_good_deal' => $request->is_good_deal ?? false,
@@ -96,6 +97,7 @@ class ProductController extends Controller
                         'price' => $variantData['price'],
                         'sale_price' => $variantData['sale_price'],
                         'quantity' => $variantData['quantity'],
+                        'image' => $variantData['image'],
                     ]
                 );
 
@@ -147,4 +149,5 @@ class ProductController extends Controller
         }
     }
 }
+
 
