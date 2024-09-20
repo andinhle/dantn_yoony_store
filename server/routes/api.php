@@ -45,9 +45,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 Route::post('/auth/password/request-reset', [AuthController::class, 'requestPasswordReset'])->name('password.request');
 Route::post('/auth/password/reset', [AuthController::class, 'resetPassword'])->name('password.reset');
 
+
+//category
 Route::apiResource('category', CategoryController::class);
 Route::patch('category/{id}/is-active', [CategoryController::class, 'updateIsActive'])->name('category.updateIsActive');
-
 
 Route::apiResource('banners', BannerController::class);
 Route::patch('banners/{id}/is-active', [BannerController::class, 'updateIsActive'])->name('blogs.updateIsActive');
