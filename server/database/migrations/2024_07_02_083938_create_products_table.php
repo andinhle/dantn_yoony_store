@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
-            $table->string('image');
+            $table->json('images');
             $table->longText('description')->nullable();
             $table->foreignId('category_id')->constrained('categories')->cascadeOnDelete();
             $table->boolean('is_featured')->default(false);
