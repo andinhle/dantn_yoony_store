@@ -52,6 +52,8 @@ Route::post('/auth/password/reset', [AuthController::class, 'resetPassword'])->n
 //category
 Route::apiResource('category', CategoryController::class);
 Route::patch('category/{id}/is-active', [CategoryController::class, 'updateIsActive'])->name('category.updateIsActive');
+Route::post('category/delete-much', [CategoryController::class, 'deleteMuch'])->name('category.deleteMuch');
+
 
 Route::apiResource('banners', BannerController::class);
 Route::patch('banners/{id}/is-active', [BannerController::class, 'updateIsActive'])->name('blogs.updateIsActive');
