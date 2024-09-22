@@ -53,9 +53,9 @@ class StoreCouponRequest extends FormRequest
             'min_order_value.numeric' => 'Vui lòng nhập số',
             'max_order_value.required' => 'Yêu cầu nhập',
             'max_order_value.numeric' => 'Vui lòng nhập số',
-            'max_order_value.gt:min_order_value' => 'Giá trị phải lớn hơn giá trị đơn hàng thấp nhất'
-            // 'status'.[Rule::in([0, 1])],
-            // 'is_featured'.[Rule::in([0, 1])],
+            'max_order_value.gt:min_order_value' => 'Giá trị phải lớn hơn giá trị đơn hàng thấp nhất',
+            'status.in' => 'Trạng thái đã chọn không hợp lệ',
+            'is_featured.in' => 'Trạng thái đã chọn không hợp lệ',
         ];
     }
 
