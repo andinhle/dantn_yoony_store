@@ -37,7 +37,7 @@ class BlogController extends Controller
 
     public function update(UpdateBlogRequest $request, $id)
     {
-        $blog = Blog::findOrFail($id); // Lấy blog theo id
+        $blog = Blog::findOrFail($id); 
 
         $data = [
             'content' => $request->content,
@@ -46,7 +46,7 @@ class BlogController extends Controller
             'is_active' => $request->has('is_active') ? $request->is_active : $blog->is_active,
         ];
 
-        $blog->update($data); // Cập nhật thông tin blog
+        $blog->update($data);
 
         return response()->json([
             'message' => 'Blog đã được sửa thành công!',
