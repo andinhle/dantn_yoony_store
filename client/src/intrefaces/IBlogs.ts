@@ -1,8 +1,9 @@
 export interface IBlog {
-    _id?: string;
+    id?: number;
     content: string;
     slug: string;
     status: boolean;
-    userId: string;
+    user_id: number;
+    is_active:number;
   }
   
