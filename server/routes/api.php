@@ -29,6 +29,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::apiResource('coupon', CouponController::class);
+Route::patch('coupon/{id}/status', [CouponController::class, 'updateStatus'])->name('coupon.updateStatus');
+Route::patch('coupon/{id}/is_featured', [CouponController::class, 'updateIsFeatured'])->name('coupon.updateIsFeatured');
+
 Route::apiResource('attribute', AttributeController::class);
 Route::apiResource('attribute-value', AttributeValueController::class);
 Route::post('/register', [AuthController::class, 'register']);
@@ -49,6 +52,8 @@ Route::post('/auth/password/reset', [AuthController::class, 'resetPassword'])->n
 //category
 Route::apiResource('category', CategoryController::class);
 Route::patch('category/{id}/is-active', [CategoryController::class, 'updateIsActive'])->name('category.updateIsActive');
+Route::post('category/delete-much', [CategoryController::class, 'deleteMuch'])->name('category.deleteMuch');
+
 
 Route::apiResource('banners', BannerController::class);
 Route::patch('banners/{id}/is-active', [BannerController::class, 'updateIsActive'])->name('blogs.updateIsActive');
@@ -62,4 +67,7 @@ Route::apiResource('roles', RoleController::class);
 Route::get('/product/{slug}', [ProductController::class, 'findBySlug']);
 
 Route::apiResource('products', ProductController::class);
+
+
+
 

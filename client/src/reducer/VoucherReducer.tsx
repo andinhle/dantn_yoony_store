@@ -1,4 +1,4 @@
-import { IVoucher } from "../intrefaces/IVouchers"
+import { IVoucher } from "../interfaces/IVouchers"
 const voucherReducer = (state:any,action:any) => {
   switch (action.type) {
     case "LIST":

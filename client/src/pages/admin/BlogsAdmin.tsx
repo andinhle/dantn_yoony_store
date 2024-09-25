@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import axios from "axios";
 import LoadingOverlay from "react-loading-overlay-ts";
-import { IBlog } from "../../intrefaces/IBlogs";
+import { IBlog } from "../../interfaces/IBlogs";
 import { BlogContext } from "../../contexts/BlogsContext";
 import instance from "../../instance/instance";
 import slugify from "react-slugify";

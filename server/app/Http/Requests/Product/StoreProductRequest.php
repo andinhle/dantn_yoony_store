@@ -25,7 +25,7 @@ class StoreProductRequest extends FormRequest
             'name' => 'required|string|max:255',
             'slug' => 'required|string|unique:products,slug',
             'description' => 'nullable|string',
-            'images' => 'required|json',
+            'images' => 'required|array',
             'category_id' => 'required|exists:categories,id',
             'is_featured' => 'boolean',
             'is_good_deal' => 'boolean',
