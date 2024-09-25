@@ -7,6 +7,8 @@ use App\Http\Requests\Blog\StoreBlogRequest;
 use App\Http\Requests\Blog\UpdateBlogRequest;
 use App\Http\Resources\BlogResource;
 use App\Models\Blog;
+use Illuminate\Http\Request;
+
 
 class BlogController extends Controller
 {
@@ -35,9 +37,16 @@ class BlogController extends Controller
 
     public function update(UpdateBlogRequest $request, $id)
     {
-        $blog = Blog::findOrFail($id);
+        $blog = Blog::findOrFail($id); 
 
-        $blog->update($request->validated());
+        $data = [
+            'content' => $request->content,
+            'slug' => $request->slug,
+            'user_id' => $request->user_id,
+            'is_active' => $request->has('is_active') ? $request->is_active : $blog->is_active,
+        ];
+
+        $blog->update($data);
 
         return response()->json([
             'message' => 'Blog đã được sửa thành công!',

@@ -23,11 +23,12 @@ class UpdateBlogRequest extends FormRequest
     {
         return [
             'content' => 'nullable|string',
-            'slug' => 'nullable|string|max:255|unique:blogs,slug,' . $this->route('id'),
+            'slug' => 'nullable|string|max:255|unique:blogs,slug,' . $this->route('blog'), 
             'user_id' => 'nullable|exists:users,id',
             'is_active' => 'boolean',
         ];
     }
+
 
     public function messages()
     {
