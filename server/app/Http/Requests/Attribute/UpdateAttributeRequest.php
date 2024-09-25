@@ -26,7 +26,7 @@ class UpdateAttributeRequest extends FormRequest
     {
         return [
             'name' => 'required|max:255',
-            'slug' => 'unique:attributes',
+            'slug' => 'nullable|string|max:255|unique:attributes,slug,' . $this->route('attribute'), 
             'type' => 'required',
         ];
     }
