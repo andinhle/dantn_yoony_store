@@ -19,7 +19,7 @@ const ListBlogsAdmin = () => {
     })();
   }, []);
 
-  const handleRemoveBlo = async (id: string) => {
+  const handleRemoveBlo = async (id: number) => {
     try {
       await instance.delete(`blogs/${id}`);
       dispatch({
@@ -30,7 +30,7 @@ const ListBlogsAdmin = () => {
       toast.error(error.response.data.message);
     }
   };
-  const handleUpdateStatusBlog = async (id: string, statusBlog: boolean) => {
+  const handleUpdateStatusBlog = async (id: number, statusBlog: boolean) => {
     try {
       const { data } = await instance.patch(`blogs/${id}`, {
         status: statusBlog,
@@ -64,14 +64,14 @@ const ListBlogsAdmin = () => {
             return (
               <Table.Row
                 className="bg-white dark:border-gray-700 dark:bg-gray-800 text-center"
-                key={blog._id}
+                key={blog.id}
               >
                 <Table.Cell>{index + 1}</Table.Cell>
                 <Table.Cell>{blog.content}</Table.Cell>
                 <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                   {blog.slug}
                 </Table.Cell>
-                <Table.Cell>{blog.create_at}</Table.Cell>
+                <Table.Cell>{blog.is_active}</Table.Cell>
                 <Table.Cell>
                   <ToggleSwitch
                     checked={blog.status}
@@ -79,7 +79,7 @@ const ListBlogsAdmin = () => {
                     className="w-fit mx-auto"
                     onChange={() => {
                       setStatus(!blog.status);
-                      handleUpdateStatusBlog(blog._id!, !blog.status);
+                      handleUpdateStatusBlog(blog.id!, !blog.status);
                     }}
                   />
                 </Table.Cell>
@@ -96,7 +96,7 @@ const ListBlogsAdmin = () => {
                           dangerMode: true,
                         }).then((willDelete) => {
                           if (willDelete) {
-                            handleRemoveBlo(blog._id!);
+                            handleRemoveBlo(blog.id!);
                             swal("Xóa bài viết thành công !", {
                               icon: "success",
                             });
@@ -120,7 +120,7 @@ const ListBlogsAdmin = () => {
                       </svg>
                     </button>
                     <Link
-                      to={`${blog._id}`}
+                      to={`${blog.id}`}
                       className="bg-util shadow py-1.5 px-3 rounded-md"
                     >
                       <svg

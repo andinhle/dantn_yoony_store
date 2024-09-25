@@ -105,7 +105,8 @@ const BlogsAdmin = () => {
       content: contentNew,
       slug: slugify(titleSlugBlog),
       status: statusBlog,
-      userId: "66a3a22d5517de3876cd3231",
+      user_id: 2 ,
+      is_active: 1
     });
     if(data){
       setActive(false);
