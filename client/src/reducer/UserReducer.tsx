@@ -1,4 +1,4 @@
-import { IUser } from "../intrefaces/IUser"
+import { IUser } from "../interfaces/IUser"
 
 
 const userReducer = (state:any,action:any) => {

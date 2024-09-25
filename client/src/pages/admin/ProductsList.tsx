@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 
 const ProductList: React.FC = () => {
     // State để quản lý việc hiển thị pop-up
-    
-
     return (
         <div className="container mx-auto">
             <Link to={"/admin/products/add"}>

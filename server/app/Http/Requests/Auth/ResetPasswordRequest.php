@@ -23,7 +23,7 @@ class ResetPasswordRequest extends FormRequest
     {
         return [
             'email' => 'required|email|exists:users,email',
-            'password' => 'required|confirmed|min:8',
+            'password' => 'required|min:8',
             'token' => 'required'
         ];
     }
@@ -32,7 +32,6 @@ class ResetPasswordRequest extends FormRequest
     {
         return [
             'email.exists' => 'Email không tồn tại trong hệ thống.',
-            'password.confirmed' => 'Mật khẩu xác nhận không khớp.',
             'password.min' => 'Mật khẩu phải có ít nhất 8 ký tự.',
             'email.required' => 'Email là bắt buộc.',
             'password.required' => 'Mật khẩu là bắt buộc.',

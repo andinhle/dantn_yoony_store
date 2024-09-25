@@ -29,11 +29,15 @@ import VarriantValue from "./pages/admin/varriant/VarriantValue.tsx";
 import ScrollToTop from "./utils/ScrollToTop.tsx";
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
-import ResetPassword from "./components/User/Auth/ResetPassword.tsx";
-import BannerList from "./pages/admin/BannerAdmin.tsx";
+import LayoutResetPassword from "./layouts/User/LayoutResetPassword.tsx";
+import ResetPassRequest from "./components/User/Auth/ResetPassRequest.tsx";
+import FormResetPass from "./components/User/Auth/FormResetPass.tsx";
+import VoucherProvider from "./contexts/VouchersContext.tsx";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
+    <VoucherProvider>
       <ScrollToTop />
       <Routes>
         <Route element={<App />}>
@@ -42,7 +46,10 @@ createRoot(document.getElementById("root")!).render(
             <Route index  element={<MainContentUser />}/>
             <Route path='register' element={<Register />}/>
             <Route path='login' element={<Login />}/>
-            <Route path='reset-password' element={<ResetPassword />}/>
+            <Route path='reset-password' element={<LayoutResetPassword />}>
+              <Route path='' index element={<ResetPassRequest />}/>
+              <Route path=':token/:email' element={<FormResetPass />}/>
+            </Route>
           </Route>
           {/* Admin */}
           <Route path="admin" element={<LayoutAdmin />}>
@@ -60,11 +67,11 @@ createRoot(document.getElementById("root")!).render(
             <Route path='products/varriant/addValue' element={<VarriantValue />}/>
             <Route path='orders/orderDetails' element={<OrderDetails/>}/>
             <Route path='rates' element={<Rates/>}/>
-            <Route path='banner' element={<BannerList/>}/>
           </Route>
         </Route>
       </Routes>
       <ToastContainer autoClose={3000} newestOnTop={true} />
+      </VoucherProvider>
     </BrowserRouter>
   </StrictMode>
 );

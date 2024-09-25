@@ -24,7 +24,7 @@ const SideBarAdmin = () => {
               <NavLink
                 to={"/admin"}
                 className={
-                  "shadow-lg rounded-md flex items-center gap-2 py-[10px] px-2 hover:bg-[#f2f2f7] hover:text-hover transition-all"
+                  " rounded-md flex items-center gap-2 py-[10px] px-2 hover:bg-[#f2f2f7] hover:text-hover transition-all"
                 }
                 end
               >
@@ -83,7 +83,7 @@ const SideBarAdmin = () => {
               <NavLink
                 to={"categorys"}
                 className={
-                  "shadow-lg rounded-md flex items-center gap-2 py-[10px] px-2 hover:bg-[#f2f2f7] hover:text-hover transition-all"
+                  " rounded-md flex items-center gap-2 py-[10px] px-2 hover:bg-[#f2f2f7] hover:text-hover transition-all"
                 }
                 end
               >
@@ -123,7 +123,7 @@ const SideBarAdmin = () => {
                     d="M6 6.878V6a2.25 2.25 0 0 1 2.25-2.25h7.5A2.25 2.25 0 0 1 18 6v.878m-12 0c.235-.083.487-.128.75-.128h10.5c.263 0 .515.045.75.128m-12 0A2.25 2.25 0 0 0 4.5 9v.878m13.5-3A2.25 2.25 0 0 1 19.5 9v.878m0 0a2.246 2.246 0 0 0-.75-.128H5.25c-.263 0-.515.045-.75.128m15 0A2.25 2.25 0 0 1 21 12v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6c0-.98.626-1.813 1.5-2.122"
                   />
                 </svg>
-                <ul className="absolute left-0 mt-2 w-full bg-white shadow-lg rounded-md overflow-hidden">
+                <ul className="absolute left-0 mt-2 w-full bg-white  rounded-md overflow-hidden">
                   <li>
                     <NavLink
                       to="/admin/products"
@@ -152,7 +152,7 @@ const SideBarAdmin = () => {
               </button>
 
               {isProductsOpen && (
-                <ul className="absolute left-0 mt-2 w-full bg-white shadow-lg rounded-md overflow-hidden">
+                <ul className="absolute left-0 mt-2 w-full bg-white  rounded-md overflow-hidden">
                   <li className="">
                     <NavLink
                       to="/admin/products/add"
@@ -175,50 +175,11 @@ const SideBarAdmin = () => {
                 </ul>
               )}
             </li>
-            {/* <li>
-              <details className="group [&_summary::-webkit-details-marker]:hidden">
-                <summary className="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
-                  <span className="text-sm font-medium"> Teams </span>
-                  <span className="shrink-0 transition duration-300 group-open:-rotate-180">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="size-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </span>
-                </summary>
-                <ul className="mt-2 space-y-1 px-4">
-                  <li>
-                    <a
-                      href="#"
-                      className="block rounded-lg px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-                    >
-                      Banned Users
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="block rounded-lg px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-                    >
-                      Calendar
-                    </a>
-                  </li>
-                </ul>
-              </details>
-            </li> */}
             <li>
               <NavLink
                 to={"orders"}
                 className={
-                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover shadow-lg rounded-md transition-all"
+                  "flex items-center gap-2 py-[10px] px-2 hover:bg-[#f2f2f7] hover:text-hover  rounded-md transition-all"
                 }
               >
                 <svg
@@ -242,7 +203,7 @@ const SideBarAdmin = () => {
               <NavLink
                 to={"rates"}
                 className={
-                  "shadow-lg rounded-md flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
+                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
                 }
               >
                 <svg
@@ -266,7 +227,7 @@ const SideBarAdmin = () => {
               <NavLink
                 to={"banner"}
                 className={
-                  "shadow-lg flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
+                  "shadow-lg rounded-md flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
                 }
               >
                 <svg

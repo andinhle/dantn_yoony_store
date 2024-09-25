@@ -1,6 +1,6 @@
 export interface IBanner {
-    id?: number;
+    _id?: string;
     image: string;
-    is_active: boolean;
+    is_active: string;
   }
   
