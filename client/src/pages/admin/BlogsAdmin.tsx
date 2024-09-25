@@ -10,6 +10,9 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import LoadingOverlay from "react-loading-overlay-ts";
 import { IBlog } from "../../interfaces/IBlogs";
+import { BlogContext } from "../../contexts/BlogsContext";
+import instance from "../../instance/instance";
+import slugify from "react-slugify";
 
 
 interface TabPanelProps {
@@ -44,7 +47,6 @@ function a11yProps(index: number) {
 const BlogsAdmin = () => {
   const [value, setValue] = useState(0);
   const [statusBlog, setStatusBlog] = useState<boolean>(true);
-  const [switch1, setSwitch1] = useState(false);
   const [titleSlugBlog, setTitleSlugBlog] = useState("");
   const [errorBlog, setErrorBlog] = useState<string>("");
   const editorRef = useRef(null);
@@ -65,6 +67,7 @@ const BlogsAdmin = () => {
   );
   const parser = new DOMParser();
   const doc = parser.parseFromString(content, "text/html");
+  const {dispatch} = useContext(BlogContext)
   const { handleSubmit } = useForm<IBlog>();
   const onSubmit = async () => {
     try {
@@ -98,7 +101,23 @@ const BlogsAdmin = () => {
       dataImagesCloud.forEach((img) => {
         contentNew = contentNew.replace(img.originalSrc, img.newSrc);
       });
-      
+    const {data} = await instance.post("blogs",{
+      content: contentNew,
+      slug: slugify(titleSlugBlog),
+      status: statusBlog,
+      user_id: 2 ,
+      is_active: 1
+    });
+    if(data){
+      setActive(false);
+    }
+    toast.success(data.message);
+    setValue(0);
+    setContent("");
+    dispatch({
+      type: "ADD",
+      payload: data.data
+    });
     } catch (error) {
       toast.error(error.response.data.message);
     }
@@ -150,10 +169,9 @@ const BlogsAdmin = () => {
             <div>
               <ToggleSwitch
                 label="Trạng thái"
-                checked={switch1}
-                 onChange={setSwitch1}
-                className="my-7"
-              
+                checked={statusBlog}
+                 onChange={setStatusBlog}
+                className="my-7"           
                 sizing={'sm'}
               />
             </div>

@@ -1,9 +1,12 @@
 export interface IVoucher{
-    _id?:string,
+    id?:number,
     code:string,
     discount:number,
-    Usage_limits: number,
-    start_date: number,
-    end_date: number,
-    status:boolean
+    discount_type:number,
+    usage_limit: string,
+    min_order_value: number,
+    max_order_value: number,
+    start_date: string,
+    end_date: string,
+    status:boolean,
 }

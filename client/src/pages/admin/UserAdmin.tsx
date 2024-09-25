@@ -5,7 +5,7 @@ import { Avatar } from "@mui/material";
 import ButtonSubmit from "../../components/Admin/ButtonSubmit";
 import { useForm } from "react-hook-form";
 import { UserContext } from "../../contexts/UserContext";
-import { IUser } from "../../interfaces/IUser";
+import { IUser } from "../../intrefaces/IUser";
 
 const UsersAdmin = () => {
   const { users, dispatch } = useContext(UserContext);
@@ -13,7 +13,66 @@ const UsersAdmin = () => {
   const [openModal, setOpenModal] = useState(false);
   const [idUser, setIdUser] = useState<string>();
 
+  useEffect(() =>{
+    (async ()=>{
+      const {data} = await instance.get("users");
+      dispatch({
+        type: "LIST",
+        payload: data.data
+      });
+    })();
+  },[])
+
   const { register, handleSubmit, reset } = useForm<IUser>();
+
+  const handleUpdateRoleUser = async ({role}:IUser)=>{
+    try{
+      const {data} = await instance.patch(`users/role/${idUser}`,{
+        role
+      })
+      if (data){
+        dispatch({
+          type: "UPDATE",
+          payload: data.data
+        })
+        toast.success("Cập nhật quyền thành công !")
+        setOpenModal(false)
+      }
+    }catch(error){
+      toast.error(error.res.data.message)
+    }
+  }
+
+  const handleUpdateStatusUser= async(id:string,statusUser:boolean)=>{
+    try {
+      const {data}=await instance.patch(`users/${id}`,{
+        status:statusUser
+      })
+      dispatch({
+        type:"UPDATE",
+        payload:data.data
+      })
+      if (statusUser) {
+        toast.success('Public')
+      }else{
+        toast.warning('Private')
+      }
+    } catch (error) {
+      
+    }
+  }
+  const getDataUser= async (id:string)=>{
+    try {
+      const {data}= await instance.get(`users/${id}`)
+      console.log(data);
+      reset({
+        role:data.data.role
+      })
+      setIdUser(data.data._id)
+    } catch (error) {
+     
+    }
+  }
 
   // Ensure users is always an array (default to empty array if undefined)
   const usersList = users || [];
@@ -31,8 +90,9 @@ const UsersAdmin = () => {
           <Table.HeadCell>Phân quyền</Table.HeadCell>
         </Table.Head>
         <Table.Body className="divide-y">
-          {usersList.map((user, index) => (
-            <Table.Row
+          {usersList.map((user, index) => {
+            return(
+              <Table.Row
               className="bg-white dark:border-gray-700 dark:bg-gray-800 text-center"
               key={user._id}
             >
@@ -40,19 +100,21 @@ const UsersAdmin = () => {
               <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white flex items-center gap-2 justify-center">
                 <Avatar
                   sx={{ bgcolor: "#1b95f2" }}
-                  alt={user.username.toUpperCase()}
-                  src={user.avatar ? user.avatar : user.username}
+                  alt={user.name.toUpperCase()}
+                  src={user.avatar ? user.avatar : user.name}
                 />
-                {user.username}
+                {user.name}
               </Table.Cell>
               <Table.Cell>{user.email}</Table.Cell>
               <Table.Cell>{user.tel || 'N/A'}</Table.Cell>
+              <Table.Cell>{user.password}</Table.Cell>
+              <Table.Cell>{user.confirmPass}</Table.Cell>
               <Table.Cell>
                 {user.address ? (
                   user.address
                 ) : (
                   <span className="text-sm text-red-500">
-                    Chưa cập nhật !
+                    
                   </span>
                 )}
               </Table.Cell>
@@ -63,6 +125,7 @@ const UsersAdmin = () => {
                   className="w-fit mx-auto"
                   onChange={() => {
                     setStautsUser(!user.status);
+                    handleUpdateStatusUser(user._id!,!user.status)
                   }}
                 />
               </Table.Cell>
@@ -71,7 +134,7 @@ const UsersAdmin = () => {
                   className="text-primary flex flex-col items-center mx-auto"
                   onClick={() => {
                     setOpenModal(true);
-                    setIdUser(user._id); // If you want to use user ID somewhere
+                    getDataUser(user._id!); 
                   }}
                 >
                   <svg
@@ -92,7 +155,8 @@ const UsersAdmin = () => {
                 </button>
               </Table.Cell>
             </Table.Row>
-          ))}
+            );
+})}
         </Table.Body>
       </Table>
       <Modal
@@ -103,7 +167,7 @@ const UsersAdmin = () => {
       >
         <Modal.Header>Phân quyền</Modal.Header>
         <Modal.Body>
-          <form action="" className="space-y-7">
+          <form action="" className="space-y-7" onSubmit={handleSubmit(handleUpdateRoleUser)}>
             <fieldset className="flex max-w-md flex-col gap-4">
               <legend className="mb-4">Cài đặt quyền cho người dùng</legend>
               <div className="flex items-center gap-2.5 *:cursor-pointer">
