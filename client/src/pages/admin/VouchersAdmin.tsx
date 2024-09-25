@@ -1,23 +1,16 @@
-import { Modal, ToggleSwitch } from "flowbite-react";
-import { useContext, useEffect, useState } from "react";
+import { Modal, ToggleSwitch,  } from "flowbite-react";
+import { useState } from "react";
+import ListVouchersAdmin from "./ListVouchersAdmin";
 import ButtonSubmit from "../../components/Admin/ButtonSubmit";
 import { useForm } from "react-hook-form";
-import { IVoucher } from "../../interfaces/IVouchers";
-import { zodResolver } from "@hookform/resolvers/zod/src/zod.js";
-import { VoucherContext } from "../../contexts/VouchersContext";
-import VoucherSchemaValid from "../../validations/voucherValidSchema";
-import instance from "../../instance/instance";
-import { toast } from "react-toastify";
-import ListVouchersAdmin from "./ListVouchersAdmin";
+import { IVoucher } from "../../intrefaces/IVouchers";
 
 const VouchersAdmin = () => {
+  const [addOrupdate, SetAddOrUpdate] = useState("ADD");
   const [openModal, setOpenModal] = useState(false);
-  const [status, setStatus] = useState(false);
-  const [vouchers, setVoucher] = useState<IVoucher[]>([]);
+  const [switch1, setSwitch1] = useState(false);
   const [codeVoucher, setCodeVoucher] = useState("");
-  const { dispatch } = useContext(VoucherContext);
-  const [AddOrUpdate, setAddOrUpdate] = useState<string>("ADD");
-  const [idVoucher, setIdVoucher] = useState<string>("");
+  const [AddOrUpdate] = useState<string>("ADD");
 
   const {
     register,
@@ -25,46 +18,7 @@ const VouchersAdmin = () => {
     handleSubmit,
     setValue,
     reset,
-  } = useForm<IVoucher>({
-    resolver: zodResolver(VoucherSchemaValid),
-  });
-
-  const onSubmit = async (dataForm: IVoucher) => {
-    console.log("dataForm:", dataForm);
-    try {
-      if (AddOrUpdate === "ADD") {
-        const { data } = await instance.post("coupon", dataForm);
-        dispatch({
-          type: "ADD",
-          payload: data.data,
-        });
-        toast.success("Thêm coupon thành công !");
-      } else {
-        const { data } = await instance.put(`coupon/${idVoucher}`, dataForm);
-        dispatch({
-          type: "UPDATE",
-          payload: data.data,
-        });
-        toast.success("Sửa coupon thành công !");
-      }
-      setOpenModal(false);
-      reset();
-      setCodeVoucher("");
-      setStatus(true);
-    } catch (error) {
-      console.error("Error response:", error.response?.data || error.message);
-      toast.error("Có lỗi xảy ra khi lưu coupon.");
-    }
-  };
-
-  useEffect(() => {
-    if (!openModal) {
-      reset({});
-      setCodeVoucher("");
-      setStatus(true);
-      setAddOrUpdate("ADD");
-    }
-  }, [openModal]);
+  } = useForm<IVoucher>();
 
   return (
     <div>
@@ -97,7 +51,7 @@ const VouchersAdmin = () => {
           </Modal.Header>
           <Modal.Body>
             <div className="flex justify-center px-3 pb-2">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 w-full max-w-md">
+              <form className="space-y-3 w-full max-w-md"> 
                 <div className="space-y-3">
                   <div className="space-y-1.5">
                     <label htmlFor="code" className="font-medium text-sm">
@@ -120,14 +74,14 @@ const VouchersAdmin = () => {
                   </div>
                   <div className="space-y-1.5">
                     <label htmlFor="discount" className="font-medium text-sm">
-                      Discount
+                      % giảm giá
                     </label>
                     <input
                       type="number"
                       className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
-                      placeholder="% "
+                      placeholder="%"
                       {...register("discount", {
-                        valueAsNumber: true,
+                        required: true,
                       })}
                     />
                     <span className="text-sm text-red-400">
@@ -135,46 +89,14 @@ const VouchersAdmin = () => {
                     </span>
                   </div>
                   <div className="space-y-1.5">
-                    <label htmlFor="discount_type" className="font-medium text-sm">
-                      Discount Type
+                    <label htmlFor="discount" className="font-medium text-sm">
+                    Usage limits
                     </label>
                     <input
                       type="number"
                       className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
-                      placeholder="Discount Type"
-                      {...register("discount_type", {
-                        valueAsNumber: true,
-                      })}
-                    />
-                    <span className="text-sm text-red-400">
-                      {errors.discount_type?.message}
-                    </span>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label htmlFor="usage_limits" className="font-medium text-sm">
-                      Usage Limits
-                    </label>
-                    <input
-                      type="number"
-                      className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
-                      placeholder="Usage Limits"
-                      {...register("usage_limit", {
-                        valueAsNumber: true,
-                      })}
-                    />
-                    <span className="text-sm text-red-400">
-                      {errors.usage_limit?.message}
-                    </span>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label htmlFor="min_order_value" className="font-medium text-sm">
-                      Min Order Value
-                    </label>
-                    <input
-                      type="number"
-                      className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
-                      placeholder="Min Order Value"
-                      {...register("min_order_value", {
+                      placeholder="limit"
+                      {...register("Usage_limits", {
                         valueAsNumber: true,
                       })}
                     />
@@ -183,14 +105,14 @@ const VouchersAdmin = () => {
                     </span>
                   </div>
                   <div className="space-y-1.5">
-                    <label htmlFor="max_order_value" className="font-medium text-sm">
-                      Max Order Value
+                    <label htmlFor="start_date" className="font-medium text-sm">
+                      Star-date
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
-                      placeholder="Max Order Value"
-                      {...register("max_order_value", {
+                      placeholder="Date"
+                      {...register("start_date", {
                         valueAsNumber: true,
                       })}
                     />
@@ -213,26 +135,36 @@ const VouchersAdmin = () => {
                   </div>
                   <div className="space-y-1.5">
                     <label htmlFor="end_date" className="font-medium text-sm">
-                      End Date
+                      End-date
                     </label>
                     <input
                       type="date"
                       className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
-                      {...register("end_date")}
+                      placeholder="Date"
+                      {...register("end_date", {
+                        valueAsNumber: true,
+                      })}
                     />
                     <span className="text-sm text-red-400">
                       {errors.end_date?.message}
                     </span>
                   </div>
-                  <div className="space-y-1.5">
-                  <ToggleSwitch
-                      label="Trạng thái"
-                      {...register("status")}
-                      checked={status}
-                      onChange={() => {
-                        setStatus(!status);
-                        setValue("status", !status);
-                      }}
+                  <div>
+                    <ToggleSwitch
+                    label="trạng thái"
+                    {...register("status")}
+                    checked={switch1} 
+                     onChange={setSwitch1}
+                      sizing={"sm"}
+                      className="my-8"
+                    />
+                  </div>
+                  <div>
+                    <ToggleSwitch
+                      label="trạng thái"
+                      {...register("is_featured")}
+                      checked={switch2}
+                      onChange={setSwitch2}
                       sizing={"sm"}
                       className="my-8"
                     />
