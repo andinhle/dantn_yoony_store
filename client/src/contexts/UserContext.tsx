@@ -1,5 +1,5 @@
 import { ReactNode, createContext, useReducer } from "react";
-import { IUser } from "../intrefaces/IUser";
+import { IUser } from "../interfaces/IUser";
 import userReducer from "../reducer/UserReducer";
 
 interface Prop {

@@ -19,7 +19,7 @@ const OrderDetails = () => {
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td colSpan="5" className="p-0">
+                                    <td colSpan={5} className="p-0">
                                         <hr className="border-secondary-300" />
                                     </td>
                                 </tr>
