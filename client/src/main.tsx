@@ -32,6 +32,7 @@ import { ToastContainer } from 'react-toastify';
 import LayoutResetPassword from "./layouts/User/LayoutResetPassword.tsx";
 import ResetPassRequest from "./components/User/Auth/ResetPassRequest.tsx";
 import FormResetPass from "./components/User/Auth/FormResetPass.tsx";
+import VoucherProvider from "./contexts/VouchersContext.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
