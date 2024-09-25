@@ -55,6 +55,7 @@ const CategoryList: React.FC = () => {
     try {
       const { data } = await instance.get("category");
       setCategories(data.data);
+      console.log("data",data.data)
     } catch (error) {
       console.error("Error fetching categories:", error);
       toast.error("Không thể tải danh mục.");

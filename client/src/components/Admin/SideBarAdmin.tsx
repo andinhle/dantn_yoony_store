@@ -266,7 +266,7 @@ const SideBarAdmin = () => {
               <NavLink
                 to={"banner"}
                 className={
-                  "shadow-lg rounded-md flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
+                  "shadow-lg flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
                 }
               >
                 <svg
