@@ -1,9 +1,9 @@
 import { Table, ToggleSwitch } from "flowbite-react";
-import { IVoucher } from "../../intrefaces/IVouchers";
 import { useContext } from "react";
 import { VoucherContext } from "../../contexts/VouchersContext";
 import instance from "../../instance/instance";
 import { toast } from "react-toastify";
+import { IVoucher } from "../../interfaces/IVouchers";
 
 type Props = {
   vouchers: IVoucher[];
@@ -58,7 +58,7 @@ const ListVouchersAdmin = ({ setOpenModal, reset, setStatus, setCodeVoucher, set
       reset(data.data)
       setStatus(data.data.status)
       setCodeVoucher(data.data.code)
-      setIdVoucher(data.data._id)
+      setIdVoucher(data.data.id)
     } catch (error) {
       toast.error(error.response.data.message);
     }
