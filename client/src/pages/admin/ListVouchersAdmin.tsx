@@ -1,9 +1,24 @@
-import { Table } from "flowbite-react";
-
-
+import { Table, ToggleSwitch } from "flowbite-react";
+import { useContext } from "react";
+import { VoucherContext } from "../../contexts/VouchersContext";
+import instance from "../../instance/instance";
+import { toast } from "react-toastify";
+import { IVoucher } from "../../interfaces/IVouchers";
 
 const ListVouchersAdmin = () => {
 
+  const fillDataVoucher = async (id: number) => {
+    try {
+      const { data } = await instance.get(`coupon/${id}`)
+      setAddOrUpdate("UPDATE")
+      reset(data.data)
+      setStatus(data.data.status)
+      setCodeVoucher(data.data.code)
+      setIdVoucher(data.data.id)
+    } catch (error) {
+      toast.error(error.response.data.message);
+    }
+  }
   return (
     <div className="overflow-x-auto w-full mt-8">
       <Table hoverable className="table w-full">
