@@ -1,5 +1,6 @@
-import { Modal, ToggleSwitch } from "flowbite-react";
-import { useContext, useEffect, useState } from "react";
+import { Modal, ToggleSwitch,  } from "flowbite-react";
+import { useState } from "react";
+import ListVouchersAdmin from "./ListVouchersAdmin";
 import ButtonSubmit from "../../components/Admin/ButtonSubmit";
 import { useForm } from "react-hook-form";
 import { IVoucher } from "../../interfaces/IVouchers";
@@ -13,9 +14,9 @@ import { Label, Select } from "flowbite-react";
 import ramdom from "random-string-generator";
 
 const VouchersAdmin = () => {
+  const [addOrupdate, SetAddOrUpdate] = useState("ADD");
   const [openModal, setOpenModal] = useState(false);
-  const [status, setStatus] = useState(false);
-  const [vouchers, setVoucher] = useState<IVoucher[]>([]);
+  const [switch1, setSwitch1] = useState(false);
   const [codeVoucher, setCodeVoucher] = useState("");
   const { dispatch } = useContext(VoucherContext);
   const [AddOrUpdate, setAddOrUpdate] = useState<string>("ADD");
@@ -25,7 +26,6 @@ const VouchersAdmin = () => {
     setCodeVoucher(randomCode);
     setValue("code", randomCode);
   };
-
   const {
     register,
     formState: { errors },
@@ -71,8 +71,6 @@ const VouchersAdmin = () => {
       setAddOrUpdate("ADD");
     }
   }, [openModal]);
-
-
   return (
     <div>
       <div>
@@ -150,14 +148,14 @@ const VouchersAdmin = () => {
                   </div>
                   <div className="space-y-1.5">
                     <label htmlFor="discount" className="font-medium text-sm">
-                      Discount
+                      % giảm giá
                     </label>
                     <input
                       type="number"
                       className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
-                      placeholder="% "
+                      placeholder="%"
                       {...register("discount", {
-                        valueAsNumber: true,
+                        required: true,
                       })}
                     />
                     <span className="text-sm text-red-400">
@@ -199,8 +197,8 @@ const VouchersAdmin = () => {
                     <input
                       type="number"
                       className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
-                      placeholder="Min Order Value"
-                      {...register("min_order_value", {
+                      placeholder="limit"
+                      {...register("Usage_limits", {
                         valueAsNumber: true,
                       })}
                     />
@@ -209,14 +207,14 @@ const VouchersAdmin = () => {
                     </span>
                   </div>
                   <div className="space-y-1.5">
-                    <label htmlFor="max_order_value" className="font-medium text-sm">
-                      Max Order Value
+                    <label htmlFor="start_date" className="font-medium text-sm">
+                      Star-date
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
-                      placeholder="Max Order Value"
-                      {...register("max_order_value", {
+                      placeholder="Date"
+                      {...register("start_date", {
                         valueAsNumber: true,
                       })}
                     />
@@ -239,12 +237,15 @@ const VouchersAdmin = () => {
                   </div>
                   <div className="space-y-1.5">
                     <label htmlFor="end_date" className="font-medium text-sm">
-                      End Date
+                      End-date
                     </label>
                     <input
                       type="date"
                       className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
-                      {...register("end_date")}
+                      placeholder="Date"
+                      {...register("end_date", {
+                        valueAsNumber: true,
+                      })}
                     />
                     <span className="text-sm text-red-400">
                       {errors.end_date?.message}
@@ -259,6 +260,22 @@ const VouchersAdmin = () => {
                         setStatus(!status);
                         setValue("status", !status);
                       }}
+                  <div>
+                    <ToggleSwitch
+                    label="trạng thái"
+                    {...register("status")}
+                    checked={switch1} 
+                     onChange={setSwitch1}
+                      sizing={"sm"}
+                      className="my-8"
+                    />
+                  </div>
+                  <div>
+                    <ToggleSwitch
+                      label="trạng thái"
+                      {...register("is_featured")}
+                      checked={switch2}
+                      onChange={setSwitch2}
                       sizing={"sm"}
                       className="my-8"
                     />

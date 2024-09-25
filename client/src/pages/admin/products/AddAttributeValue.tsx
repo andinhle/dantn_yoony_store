@@ -26,7 +26,7 @@ const AddAttributeValue = () => {
       const data = await instance.post("attribute-value", dataForm);
       if (data) {
         reset();
-        toast.success("Thêm giá trị thuộc tính thành công !");
+        toast.success("Thêm giá trị attribute thành công!");
       }
     } catch (error) {
       reset();
