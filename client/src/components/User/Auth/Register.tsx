@@ -1,5 +1,5 @@
 import { Label } from "flowbite-react";
-import { IUser } from "../../../intrefaces/IUser";
+import { IUser } from "../../../interfaces/IUser";
 import { useForm } from "react-hook-form";
 import registerValidScheme from "../../../validations/registerValidScheme";
 import { zodResolver } from "../../../../node_modules/@hookform/resolvers/zod/src/zod";

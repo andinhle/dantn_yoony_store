@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { ICategory } from "../../intrefaces/ICategory";
+import { ICategory } from "../../interfaces/ICategory";
 import instance from "../../instance/instance";
 import { toast } from "react-toastify";
 import swal from "sweetalert";
@@ -72,7 +72,7 @@ const CategoryList: React.FC = () => {
     });
   }, [openModal === false]);
   //xử lý xóa danh mục
-  const handleDelete = async (_id: string) => {
+  const handleDelete = async (_id: number) => {
     try {
       const willDelete = await swal({
         title: "Bạn có chắc chắn muốn xóa?",
@@ -339,7 +339,7 @@ const CategoryList: React.FC = () => {
                         <button
                           className="bg-util shadow py-1.5 px-3 rounded-md"
                           onClick={() => {
-                            handleDelete(category.id);
+                            handleDelete(category.id!);
                           }}
                         >
                           <svg
@@ -451,6 +451,7 @@ const CategoryList: React.FC = () => {
                   id="slug"
                   value={slugify(watch("name"))}
                   disabled
+                  placeholder="Slug"
                   {...register("slug")}
                   className="mt-1 block w-full bg-slate-100 text-[#aeaeae] px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />

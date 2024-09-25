@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import instance from "../../../instance/instance";
 import { LoadingOverlay } from "@achmadk/react-loading-overlay";
-const ResetPassword = () => {
+const ResetPassRequest = () => {
   const [capVal, SetCapVal] = useState<string | null>(null);
   const {
     register,
@@ -45,13 +45,6 @@ const ResetPassword = () => {
     [capVal, reset]
   );
   return (
-    <section className="flex items-center justify-evenly mt-14">
-      <div>
-        <img
-          src="../../../../src/assets/images/reset-password.svg"
-          alt="reset-password"
-        />
-      </div>
       <form
         className="max-w-[350px] space-y-5 w-full"
         onSubmit={handleSubmit(onSubmit)}
@@ -121,8 +114,7 @@ const ResetPassword = () => {
           </button>
         </LoadingOverlay>
       </form>
-    </section>
   );
 };
 
-export default ResetPassword;
+export default ResetPassRequest;

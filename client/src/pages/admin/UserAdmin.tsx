@@ -5,7 +5,7 @@ import { Avatar } from "@mui/material";
 import ButtonSubmit from "../../components/Admin/ButtonSubmit";
 import { useForm } from "react-hook-form";
 import { UserContext } from "../../contexts/UserContext";
-import { IUser } from "../../intrefaces/IUser";
+import { IUser } from "../../interfaces/IUser";
 
 const UsersAdmin = () => {
   const { users, dispatch } = useContext(UserContext);

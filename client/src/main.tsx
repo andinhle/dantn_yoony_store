@@ -29,7 +29,10 @@ import VarriantValue from "./pages/admin/varriant/VarriantValue.tsx";
 import ScrollToTop from "./utils/ScrollToTop.tsx";
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
-import ResetPassword from "./components/User/Auth/ResetPassword.tsx";
+import LayoutResetPassword from "./layouts/User/LayoutResetPassword.tsx";
+import ResetPassRequest from "./components/User/Auth/ResetPassRequest.tsx";
+import FormResetPass from "./components/User/Auth/FormResetPass.tsx";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
@@ -41,7 +44,10 @@ createRoot(document.getElementById("root")!).render(
             <Route index  element={<MainContentUser />}/>
             <Route path='register' element={<Register />}/>
             <Route path='login' element={<Login />}/>
-            <Route path='reset-password' element={<ResetPassword />}/>
+            <Route path='reset-password' element={<LayoutResetPassword />}>
+              <Route path='' index element={<ResetPassRequest />}/>
+              <Route path=':token/:email' element={<FormResetPass />}/>
+            </Route>
           </Route>
           {/* Admin */}
           <Route path="admin" element={<LayoutAdmin />}>

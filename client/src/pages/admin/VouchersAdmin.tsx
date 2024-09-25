@@ -3,7 +3,7 @@ import { useState } from "react";
 import ListVouchersAdmin from "./ListVouchersAdmin";
 import ButtonSubmit from "../../components/Admin/ButtonSubmit";
 import { useForm } from "react-hook-form";
-import { IVoucher } from "../../intrefaces/IVouchers";
+import { IVoucher } from "../../interfaces/IVouchers";
 
 const VouchersAdmin = () => {
   const [openModal, setOpenModal] = useState(false);
