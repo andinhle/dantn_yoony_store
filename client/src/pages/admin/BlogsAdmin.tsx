@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import axios from "axios";
 import LoadingOverlay from "react-loading-overlay-ts";
-import { IBlog } from "../../intrefaces/IBlogs";
+import { IBlog } from "../../interfaces/IBlogs";
 import { BlogContext } from "../../contexts/BlogsContext";
 import instance from "../../instance/instance";
 import slugify from "react-slugify";
@@ -105,7 +105,8 @@ const BlogsAdmin = () => {
       content: contentNew,
       slug: slugify(titleSlugBlog),
       status: statusBlog,
-      userId: "66a3a22d5517de3876cd3231",
+      user_id: 2 ,
+      is_active: 1
     });
     if(data){
       setActive(false);

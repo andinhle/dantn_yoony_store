@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useEffect, useReducer } from "react";
-import { IVoucher } from "../intrefaces/IVouchers";
+import { IVoucher } from "../interfaces/IVouchers";
 import voucherReducer from "../reducer/VoucherReducer";
 import instance from "../instance/instance";
 

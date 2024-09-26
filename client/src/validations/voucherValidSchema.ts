@@ -10,10 +10,7 @@ const VoucherSchemaValid = z.object({
     required_error: "Bắt buộc !",
     invalid_type_error: "Phải là số !",
   }),
-  discount_type: z.number({
-    required_error: "Nhập giá loại mã giảm",
-    invalid_type_error: "Phải là số !",
-  }),
+  discount_type: z.string().nonempty("Discount type is required"), // Ensure it's defined correctly
   usage_limit: z.number({
     required_error: "Giới hạn sử dụng",
     invalid_type_error: "Tối đa 3",
