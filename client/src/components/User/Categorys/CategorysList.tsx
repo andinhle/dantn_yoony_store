@@ -138,7 +138,7 @@ const CategorysList = () => {
               return (
                 <SwiperSlide
                   key={index + 1}
-                  className="bg-primary/20 rounded-full !h-[75px] !leading-[75px] flex justify-center items-center hover:cu"
+                  className="bg-primary/20 rounded-full !h-[75px] !leading-[75px] flex justify-center items-center hover:cursor-pointer"
                 >
                   <div className="flex justify-center items-center h-full w-full">
                     {category.image}

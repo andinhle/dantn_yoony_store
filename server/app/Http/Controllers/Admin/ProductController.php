@@ -19,7 +19,7 @@ class ProductController extends Controller
     public function index()
     {
         // Lấy danh sách sản phẩm
-        $products = Product::with('variants')->paginate(5);
+        $products = Product::with('category','variants')->paginate(5);
         return ProductResource::collection($products);
     }
 
@@ -33,7 +33,7 @@ class ProductController extends Controller
                 'name' => $request->name,
                 'slug' => $request->slug,
                 'description' => $request->description,
-                'image' => $request->image,
+                'images' => json_encode($request->images),
                 'category_id' => $request->category_id,
                 'is_featured' => $request->is_featured ?? false,
                 'is_good_deal' => $request->is_good_deal ?? false,
@@ -67,7 +67,7 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        $product = Product::with('variants.attributeValues')->findOrFail($id);
+        $product = Product::with('category','variants.attributeValues')->findOrFail($id);
         return new ProductResource($product);
     }
 
@@ -81,7 +81,7 @@ class ProductController extends Controller
                 'name' => $request->name,
                 'slug' => $request->slug,
                 'description' => $request->description,
-                'image' => $request->image,
+                'images' => json_encode($request->images), // Chuyển đổi mảng thành chuỗi JSON
                 'category_id' => $request->category_id,
                 'is_featured' => $request->is_featured ?? false,
                 'is_good_deal' => $request->is_good_deal ?? false,
@@ -149,5 +149,3 @@ class ProductController extends Controller
         }
     }
 }
-
-

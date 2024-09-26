@@ -26,6 +26,7 @@ class StoreAttributeRequest extends FormRequest
     {
         return [
             'name' => 'required|max:255',
+            'slug' => 'required|string|max:255|unique:attributes',
             'type' => 'required',
         ];
     }

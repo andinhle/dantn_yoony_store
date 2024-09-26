@@ -1,5 +1,5 @@
 import { ReactNode, createContext, useReducer } from "react";
-import { IBanner } from "../intrefaces/IBanners";
+import { IBanner } from "../interfaces/IBanners";
 import BannerReducer from "../reducer/Banner";
 
 interface Props{

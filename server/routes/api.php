@@ -29,6 +29,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::apiResource('coupon', CouponController::class);
+Route::patch('coupon/{id}/status', [CouponController::class, 'updateStatus'])->name('coupon.updateStatus');
+Route::patch('coupon/{id}/is_featured', [CouponController::class, 'updateIsFeatured'])->name('coupon.updateIsFeatured');
+
 Route::apiResource('attribute', AttributeController::class);
 Route::apiResource('attribute-value', AttributeValueController::class);
 Route::post('/register', [AuthController::class, 'register']);
@@ -66,4 +69,7 @@ Route::apiResource('roles', RoleController::class);
 Route::get('/product/{slug}', [ProductController::class, 'findBySlug']);
 
 Route::apiResource('products', ProductController::class);
+
+
+
 
