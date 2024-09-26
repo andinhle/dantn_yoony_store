@@ -15,7 +15,7 @@ class CategoryController extends Controller
 
     public function index()
     {
-        $category = Category::orderByDesc('id')->paginate(6); //6 sp trên
+        $category = Category::orderByDesc('id')->paginate(10); //10 cate trên
 
         return CategoryResource::collection($category)->additional(['message' => 'Toàn Bộ Danh Mục']);
     }
@@ -73,7 +73,7 @@ class CategoryController extends Controller
         return response()->json(['message' => 'Xóa danh mục thành công!'], 200);
     }
 
-    //updade is_active
+    //sửa trạng thái
     public function updateIsActive(Request $request, string $id)
     {
         $category = Category::findOrFail($id);
@@ -87,6 +87,7 @@ class CategoryController extends Controller
         ], 200);
     }
 
+    //xóa nhiều
     public function deleteMuch(Request $request)
     {
         try {
@@ -105,6 +106,25 @@ class CategoryController extends Controller
         }
     }
 
-    
+    //khôi phục cate (chuyển deleted_at về null)
+    public function restore(string $id)
+    {
+        $category = Category::withTrashed()->findOrFail($id);
+
+        $category->restore();
+
+        return response()->json(['message' => 'Khôi phục danh mục thành công!'], 200);
+    }
+
+    //xóa cứng
+    public function hardDelete(string $id)
+    {
+        $category = Category::withTrashed()->findOrFail($id);
+
+        $category->forceDelete();
+
+        return response()->json(['message' => 'Xóa vĩnh viễn danh mục thành công!'], 200);
+    }
+
 
 }

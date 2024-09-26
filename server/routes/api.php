@@ -50,6 +50,8 @@ Route::post('/auth/password/reset', [AuthController::class, 'resetPassword'])->n
 Route::apiResource('category', CategoryController::class);
 Route::patch('category/{id}/is-active', [CategoryController::class, 'updateIsActive'])->name('category.updateIsActive');
 Route::post('category/delete-much', [CategoryController::class, 'deleteMuch'])->name('category.deleteMuch');
+Route::patch('category/restore/{id}', [CategoryController::class, 'restore'])->name('category.restore');
+Route::delete('category/hard-delete/{id}', [CategoryController::class, 'hardDelete'])->name('category.hardDelete');
 
 
 Route::apiResource('banners', BannerController::class);
