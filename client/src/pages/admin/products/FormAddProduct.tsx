@@ -145,6 +145,7 @@ const FormAddProduct = () => {
   };
   const handleRemoveImagesProductUrl = () => {};
   console.log([...imagesProduct]);
+
   return (
     <FormProvider {...method}>
       <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
