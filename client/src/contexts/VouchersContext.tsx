@@ -14,6 +14,7 @@ export const VoucherContext = createContext({} as {
 
 const VoucherProvider = (props: Prop) => {
     const [vouchers, dispatch] = useReducer(voucherReducer, [] as IVoucher[]);
+    
     useEffect(() => {
         (async () => {
             try {

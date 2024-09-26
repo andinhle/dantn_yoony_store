@@ -13,4 +13,5 @@ export interface IVoucher{
     start_date: string,
     end_date: string,
     status:boolean,
+    is_featured:boolean
 }

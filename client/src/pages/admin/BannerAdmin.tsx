@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { ICategory } from "../../intrefaces/ICategory";
+import { ICategory } from "../../interfaces/ICategory";
 import instance from "../../instance/instance";
 import { toast } from "react-toastify";
 import swal from "sweetalert";
@@ -10,7 +10,7 @@ import type { UploadFile, UploadProps } from "antd";
 import ImgCrop from "antd-img-crop";
 import axios from "axios";
 import { LoadingOverlay } from "@achmadk/react-loading-overlay";
-import { IBanner } from "../../intrefaces/IBanners";
+import { IBanner } from "../../interfaces/IBanners";
 import { ToggleSwitch } from "flowbite-react";
 
 const BannerList: React.FC = () => {
@@ -73,7 +73,7 @@ const BannerList: React.FC = () => {
         });
     }, [openModal === false]);
     const [status, setStatus] = useState(false);
-    const handleDelete = async (_id: string) => {
+    const handleDelete = async (id: number) => {
         try {
             const willDelete = await swal({
                 title: "Bạn có chắc chắn muốn xóa?",
@@ -83,7 +83,7 @@ const BannerList: React.FC = () => {
                 dangerMode: true,
             });
             if (willDelete) {
-                await instance.delete(`banners/${_id}`);
+                await instance.delete(`banners/${id}`);
                 fetchBanners();
                 toast.success("Deleted");
             }
@@ -144,7 +144,7 @@ const BannerList: React.FC = () => {
                 }
                 imageupload.append("file", fileList[0].originFileObj as Blob);
                 imageupload.append("upload_preset", preset_key);
-                const uploadResponse = await instance.post(
+                const uploadResponse = await axios.post(
                     `https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`,
                     imageupload
                 );
@@ -319,7 +319,7 @@ const BannerList: React.FC = () => {
                                                 <button
                                                     className="bg-util shadow py-1.5 px-3 rounded-md"
                                                     onClick={() => {
-                                                        handleDelete(banner.id);
+                                                        handleDelete(banner.id!);
                                                     }}
                                                 >
                                                     <svg
