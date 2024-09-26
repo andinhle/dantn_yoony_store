@@ -1,4 +1,4 @@
-import { IBlog } from "../intrefaces/IBlogs"
+import { IBlog } from "../interfaces/IBlogs"
 
 const BlogReducer = (state:any,action:any) => {
   switch (action.type) {

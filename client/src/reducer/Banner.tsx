@@ -1,4 +1,4 @@
-import { IBanner } from "../intrefaces/IBanners"
+import { IBanner } from "../interfaces/IBanners"
 
 const BannerReducer = (state:any,action:any) => {
   switch (action.type) {

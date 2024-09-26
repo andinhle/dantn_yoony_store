@@ -14,7 +14,9 @@ class AttributeValueController extends Controller
     public function index()
     {
         try {
-            $data = AttributeValue::query()->latest('id')->paginate(5);
+            $data = AttributeValue::with('attribute')
+            ->latest('id')
+            ->paginate(5);
             return response()->json([
                 'message' => 'Danh sách' . request('page', 1),
                 'status' => 'success',

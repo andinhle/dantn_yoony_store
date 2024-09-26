@@ -1,6 +1,6 @@
 import { ReactNode, createContext, useReducer } from "react";
 import BlogReducer from "../reducer/BlogReducer";
-import { IBlog } from "../intrefaces/IBlogs";
+import { IBlog } from "../interfaces/IBlogs";
 
 interface Props{
     children:ReactNode

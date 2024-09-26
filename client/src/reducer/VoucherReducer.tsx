@@ -1,4 +1,4 @@
-import { IVoucher } from "../intrefaces/IVouchers"
+import { IVoucher } from "../interfaces/IVouchers"
 const voucherReducer = (state:any,action:any) => {
   switch (action.type) {
     case "LIST":
@@ -14,7 +14,6 @@ const voucherReducer = (state:any,action:any) => {
         })
     case "DELETE":
         return state.filter((item: IVoucher) => item.id !== action.payload);
-  
     default:
         break;
   }

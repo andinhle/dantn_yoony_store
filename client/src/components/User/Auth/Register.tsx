@@ -1,5 +1,5 @@
 import { Label } from "flowbite-react";
-import { IUser } from "../../../intrefaces/IUser";
+import { IUser } from "../../../interfaces/IUser";
 import { useForm } from "react-hook-form";
 import registerValidScheme from "../../../validations/registerValidScheme";
 import { zodResolver } from "../../../../node_modules/@hookform/resolvers/zod/src/zod";
@@ -22,6 +22,7 @@ const Register = () => {
       const data=await instance.post('register',{
         name,email,password
       })
+      console.log(data)
       if (data) {
         reset()
         toast.success('Đăng ký tài khoản thành công!')
