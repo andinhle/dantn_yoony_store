@@ -87,7 +87,7 @@ const FormAddProduct = () => {
           price: undefined,
           sale_price: undefined,
           quantity: undefined,
-          image:undefined,
+          image: undefined,
           attribute_values: [{}],
         },
       ],
@@ -129,7 +129,7 @@ const FormAddProduct = () => {
     value: category.id,
     label: category.name,
   }));
-  
+
   const slugValueCategory = useMemo(() => {
     setValue("slug", slugify(watch("name")));
   }, [watch("name")]);
@@ -156,7 +156,18 @@ const FormAddProduct = () => {
   console.log([...imagesProduct]);
 
   const onSubmit = async (dataForm: IProduct) => {
-    console.log(dataForm);
+    dataForm.variants.forEach((variant) => {
+      const newAttributeValues = [];
+      variant.attribute_values.forEach((attr) => {
+        if (Array.isArray(attr.attribute_value_id)) {
+          newAttributeValues.push(...attr.attribute_value_id);
+        } else {
+          newAttributeValues.push(attr.attribute_value_id);
+        }
+      });
+
+      return variant.attribute_values = newAttributeValues;
+    });
     try {
       const uploadCloud = [...imagesProduct].map(async (file) => {
         const formData = new FormData();
