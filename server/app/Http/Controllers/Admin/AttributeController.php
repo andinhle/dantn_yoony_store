@@ -54,20 +54,21 @@ class AttributeController extends Controller
         try {
             $data = $request->all();
             $data['slug'] = Str::slug($request->name);
+
             $exists = Attribute::where('slug', $data['slug'])->exists();
-            if($exists) { 
-                    return response()->json([
-                        'message' => 'Slug đã tồn tại, vui lòng thử lại',
-                        'status' => 'error',
-                    ], Response::HTTP_INTERNAL_SERVER_ERROR);          
+            if ($exists) {
+                return response()->json([
+                    'message' => 'Slug đã tồn tại, vui lòng thử lại',
+                    'status' => 'error',
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);          
             }
 
-            Attribute::query()->create($data);
+            $attribute = Attribute::query()->create($data);
 
             return response()->json([
                 'message' => 'Thêm mới attribute thành công',
                 'status' => 'success',
-                'data' => $data
+                'data' => $attribute
             ], Response::HTTP_CREATED);
         } catch (\Throwable $th) {
 
@@ -89,7 +90,25 @@ class AttributeController extends Controller
      */
     public function show(Attribute $attribute)
     {
-        //
+        try {
+            $data=Attribute::findOrFail($attribute->id);
+            return response()->json([
+                'message' => 'Lấy chi tiết attribute thành công',
+                'status' => 'success',
+                'data' => $data 
+            ], Response::HTTP_OK);
+        } catch (\Throwable $th) {
+            Log::error(__CLASS__ . '@' . __FUNCTION__, [
+                'line' => $th->getLine(),
+                'message' => $th->getMessage()
+            ]);
+    
+            return response()->json([
+                'message' => 'Không tìm thấy attribute',
+                'status' => 'error'
+            ], Response::HTTP_NOT_FOUND);
+        }
+
     }
 
     /**
@@ -103,12 +122,12 @@ class AttributeController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateAttributeRequest $request, Attribute $attribute)
+    public function update(UpdateAttributeRequest $request, $attribute)
     {
         try {
-            $model = Attribute::query()->findOrFail($attribute->id);
+            $model = Attribute::findOrFail($attribute);
 
-            $data = $request->all();
+            $data =$request->all();
 
             $model->update($data);
 
