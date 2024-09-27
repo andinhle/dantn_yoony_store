@@ -68,6 +68,7 @@ Route::get('/product/{slug}', [ProductController::class, 'findBySlug']);
 
 Route::apiResource('products', ProductController::class);
 
+Route::get('/attribute-values/{id}', [AttributeValueController::class, 'getByAttributeId']);
 
 
 
