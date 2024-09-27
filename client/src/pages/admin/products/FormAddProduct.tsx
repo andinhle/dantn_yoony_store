@@ -1,7 +1,7 @@
 import { Select } from "antd";
 import { Label, ToggleSwitch } from "flowbite-react";
 import JoditEditor from "jodit-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { FreeMode } from "swiper/modules";
@@ -11,6 +11,9 @@ import Attribute_Value_Variant from "./Attribute_Value_Variant";
 import slugify from "react-slugify";
 import instance from "../../../instance/instance";
 import { ICategory } from "../../../interfaces/ICategory";
+import { toast } from "react-toastify";
+import _ from "lodash";
+import axios from "axios";
 
 const FormAddProduct = () => {
   const editor = useRef(null);
@@ -48,7 +51,7 @@ const FormAddProduct = () => {
         "|",
         "eraser",
         "fullsize",
-        "source"
+        "source",
       ],
       uploader: {
         insertImageAsBase64URI: false,
@@ -59,7 +62,7 @@ const FormAddProduct = () => {
       toolbarAdaptive: true,
       toolbarSticky: true,
       allowResizeY: false,
-      speechRecognize:false,
+      speechRecognize: false,
       spellcheck: true,
       editorCssClass: "product-description-editor",
       iframe: false,
@@ -84,6 +87,7 @@ const FormAddProduct = () => {
           price: undefined,
           sale_price: undefined,
           quantity: undefined,
+          image: undefined,
           attribute_values: [{}],
         },
       ],
@@ -107,6 +111,7 @@ const FormAddProduct = () => {
     control,
     name: "variants",
   });
+
   useEffect(() => {
     (async () => {
       try {
@@ -120,20 +125,22 @@ const FormAddProduct = () => {
     })();
   }, []);
 
-  const onSubmit = (dataForm: IProduct) => {
-    console.log(dataForm);
-  };
   const optionsCategory = categorys.map((category) => ({
     value: category.id,
     label: category.name,
   }));
+
   const slugValueCategory = useMemo(() => {
     setValue("slug", slugify(watch("name")));
   }, [watch("name")]);
 
   const handleUploadImageProduct = (e: any) => {
     const imgForms = e.target.files;
-    setImagesProduct([...imgForms, ...imagesProduct]);
+    if ([...imagesProduct].length > 0) {
+      setImagesProduct(_.uniqBy([...imagesProduct, ...imgForms], "name"));
+    } else {
+      setImagesProduct([...imgForms, ...imagesProduct]);
+    }
   };
 
   const handleRemoveImagesProductBlob = (image_name: string) => {
@@ -143,8 +150,48 @@ const FormAddProduct = () => {
       })
     );
   };
-  const handleRemoveImagesProductUrl = () => {};
+  // const handleRemoveImagesProductUrl = () => {
+
+  // };
   console.log([...imagesProduct]);
+
+  const onSubmit = async (dataForm: IProduct) => {
+    dataForm.variants.forEach((variant) => {
+      const newAttributeValues = [];
+      variant.attribute_values.forEach((attr) => {
+        if (Array.isArray(attr.attribute_value_id)) {
+          newAttributeValues.push(...attr.attribute_value_id);
+        } else {
+          newAttributeValues.push(attr.attribute_value_id);
+        }
+      });
+
+      return variant.attribute_values = newAttributeValues;
+    });
+    try {
+      const uploadCloud = [...imagesProduct].map(async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append(
+          "upload_preset",
+          import.meta.env.VITE_PRESET_KEY_CLOADINARY
+        );
+        const response = await axios.post(
+          `https://api.cloudinary.com/v1_1/${
+            import.meta.env.VITE_CLOUD_NAME_CLOADINARY
+          }/image/upload`,
+          formData
+        );
+        return response.data.secure_url;
+      });
+      const urls = await Promise.all(uploadCloud);
+      dataForm.images=urls
+      const {data}=await instance.post('products',dataForm)
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <FormProvider {...method}>
       <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>

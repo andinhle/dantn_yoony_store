@@ -1,93 +1,139 @@
-import { useFieldArray, useFormContext } from "react-hook-form";
+import { useContext, useState, useEffect } from "react";
+import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { IProduct } from "../../../interfaces/IProduct";
 import { Label } from "flowbite-react";
 import { Select } from "antd";
+import { AttributeContext } from "../../../contexts/AttributeContext";
+import instance from "../../../instance/instance";
 
 type Prop = {
   index: number;
 };
 
 const Attribute_Value_Variant = ({ index }: Prop) => {
-  const { register, control,watch,setValue } = useFormContext<IProduct>();
+  const { attributes } = useContext(AttributeContext);
+  const { control, setValue } = useFormContext<IProduct>();
   const { fields, append, remove } = useFieldArray({
     control,
     name: `variants.${index}.attribute_values` as any,
   });
+
+  const [attributeValuesMap, setAttributeValuesMap] = useState<{
+    [key: number]: { id: number; value: string }[];
+  }>({});
+
+  const watchedFields = useWatch({
+    control,
+    name: `variants.${index}.attribute_values`,
+  });
+
+  const optionsAttribute = attributes.map((attribute) => ({
+    value: attribute.id,
+    label: attribute.name,
+    type: attribute.type,
+  }));
+
+  const getAttributeValue = async (attribute_id: number) => {
+    try {
+      const data = await instance.get(`attribute-values/${attribute_id}`);
+      return data.data.attribute_values;
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  };
+
+  const handleAttributeChange = async (
+    attributeId: number,
+    attrIndex: number
+  ) => {
+    const selectedAttribute = optionsAttribute.find(attr => attr.value === attributeId);
+    const values = await getAttributeValue(attributeId);
+    
+    setAttributeValuesMap((prev) => ({
+      ...prev,
+      [attrIndex]: values,
+    }));
+
+    // Reset the selected values when changing attribute type
+    setValue(`variants.${index}.attribute_values.${attrIndex}`, {
+      attribute_id: attributeId,
+      attribute_value_id: null,
+      type: selectedAttribute?.type,
+    });
+  };
+
+  useEffect(() => {
+    if (fields.length === 0) {
+      append({});
+    }
+  }, [fields, append]);
+
   return fields.map((field, attrIndex) => {
+    const watchedField = watchedFields?.[attrIndex] || {};
+    const optionsAttributeValue = attributeValuesMap[attrIndex]?.map((value) => ({
+      value: value.id,
+      label: value.value,
+    })) || [];
+
     return (
       <div className="grid grid-cols-3 gap-[15px]" key={field.id}>
         <div>
           <div className="mb-2 block">
-            <Label htmlFor="attribute" value={`Tên thuộc tính ${attrIndex+1}`} />
+            <Label
+              htmlFor={`attribute-${attrIndex}`}
+              value={`Tên thuộc tính ${attrIndex + 1}`}
+            />
           </div>
           <Select
-            // onChange={(e) => setValue("attribute_id", e)}
+            value={watchedField.attribute_id}
+            onChange={(e) => handleAttributeChange(e, attrIndex)}
             showSearch
-            // value={watch("attribute_id")}
-            id="attribute"
+            id={`attribute-${attrIndex}`}
             style={{ width: "100%" }}
-            placeholder={`Tên thuộc tính ${attrIndex+1}`}
+            placeholder={`Tên thuộc tính ${attrIndex + 1}`}
             optionFilterProp="label"
             filterSort={(optionA, optionB) =>
               (optionA?.label ?? "")
                 .toLowerCase()
                 .localeCompare((optionB?.label ?? "").toLowerCase())
             }
-            options={[
-              {
-                value: "select",
-                label: "Select",
-              },
-              {
-                value: "color",
-                label: "Color",
-              },
-              {
-                value: "button",
-                label: "Button",
-              },
-              {
-                value: "radio",
-                label: "Radio",
-              },
-            ]}
+            options={optionsAttribute}
           />
         </div>
         <div>
           <div className="mb-2 block">
-            <Label htmlFor="attribute-value" value={`Giá trị thuộc tính ${attrIndex+1}`} />
+            <Label
+              htmlFor={`attribute-value-${attrIndex}`}
+              value={`Giá trị thuộc tính ${attrIndex + 1}`}
+            />
           </div>
           <Select
-            {...register(`variants.${index}.attribute_values.${attrIndex}`)}
-            onChange={(e) => {
-              setValue(`variants.${index}.attribute_values.${attrIndex}`, e);
-            }}
-            showSearch
-            id="attribute-value"
+            value={watchedField.attribute_value_id}
+            mode={watchedField.type === 'color' ? undefined : 'multiple'}
+            allowClear
+            id={`attribute-value-${attrIndex}`}
             style={{ width: "100%" }}
-            placeholder={`Giá trị thuộc tính ${attrIndex+1}`}
+            placeholder={`Giá trị thuộc tính ${attrIndex + 1}`}
             optionFilterProp="label"
             filterSort={(optionA, optionB) =>
               (optionA?.label ?? "")
                 .toLowerCase()
                 .localeCompare((optionB?.label ?? "").toLowerCase())
             }
-            options={[
-              {
-                value: 1,
-                label: "Select",
-              },
-              {
-                value: 2,
-                label: "Color",
-              },
-            ]}
+            onChange={(e) => {
+              setValue(`variants.${index}.attribute_values.${attrIndex}.attribute_value_id`, e);
+            }}
+            options={optionsAttributeValue}
           />
         </div>
         <div className="flex items-center gap-3 mt-7">
-          <button type="button" onClick={()=>{
-            append({})
-          }}>
+          <button
+            type="button"
+            onClick={() => {
+              append({});
+            }}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -119,11 +165,7 @@ const Attribute_Value_Variant = ({ index }: Prop) => {
             </svg>
           </button>
           {attrIndex > 0 && (
-            <button
-              onClick={() => {
-                remove(attrIndex);
-              }}
-            >
+            <button onClick={() => remove(attrIndex)}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"

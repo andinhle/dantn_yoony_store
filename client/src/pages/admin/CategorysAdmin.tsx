@@ -55,10 +55,8 @@ const CategoryList: React.FC = () => {
     try {
       const { data } = await instance.get("category");
       setCategories(data.data);
-      console.log("data",data.data)
     } catch (error) {
-      console.error("Error fetching categories:", error);
-      toast.error("Không thể tải danh mục.");
+      toast.error("Không thể tải danh mục.",error!);
     }
   };
   useEffect(() => {
@@ -88,8 +86,7 @@ const CategoryList: React.FC = () => {
         toast.success("Deleted");
       }
     } catch (error) {
-      toast.error("Có lỗi xảy ra");
-      console.log(error);
+      toast.error("Có lỗi xảy ra",error!);
     }
   };
   //fill data để xử lý sửa danh mục
@@ -114,8 +111,7 @@ const CategoryList: React.FC = () => {
       setIdUpdate(id);
       SetAddOrUpdate("UPDATE");
     } catch (error) {
-      toast.error("Có lỗi xảy ra");
-      console.log(error);
+      toast.error("Có lỗi xảy ra",error!);
     }
   };
   // xử lý thêm or sửa danh mục
@@ -136,7 +132,6 @@ const CategoryList: React.FC = () => {
           toast.error("Chỉ hỗ trợ định dạng .jpg, .jpeg, .png và .webp");
           return;
         }
-        console.log(fileList[0]);
         // Kiểm tra kích thước file (giới hạn 5MB)
         const maxSize = 5 * 1024 * 1024; // 5MB
         if ((fileList[0]?.size as number) > maxSize) {
@@ -145,7 +140,7 @@ const CategoryList: React.FC = () => {
         }
         imageupload.append("file", fileList[0].originFileObj as Blob);
         imageupload.append("upload_preset", preset_key);
-        const uploadResponse = await instance.post(
+        const uploadResponse = await axios.post(
           `https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`,
           imageupload
         );
@@ -185,9 +180,9 @@ const CategoryList: React.FC = () => {
       if (axios.isAxiosError(error)) {
         toast.error(error.response?.data?.message);
       } else if (error instanceof Error) {
-        console.log(error.message);
+        toast.error(error.message);
       } else {
-        console.log("Đã xảy ra lỗi không mong muốn");
+        toast.error("Đã xảy ra lỗi không mong muốn");
       }
     }
   };
@@ -200,8 +195,7 @@ const CategoryList: React.FC = () => {
       fetchCategories();
       toast.success("Cập nhật trạng thái thành công");
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi cập nhật trạng thái");
-      console.log(error);
+      toast.error(`Có lỗi xảy ra khi cập nhật trạng thái ${error}`);
     }
   };
   return (
@@ -469,6 +463,7 @@ const CategoryList: React.FC = () => {
                     fileList={fileList}
                     onChange={onChange}
                     onPreview={onPreview}
+                    beforeUpload={() => false}
                   >
                     {fileList.length < 1 && (
                       <svg

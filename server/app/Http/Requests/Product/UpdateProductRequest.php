@@ -26,7 +26,7 @@ class UpdateProductRequest extends FormRequest
             'slug' => 'sometimes|string|unique:products,slug,' . $this->route('product'),
 
             'description' => 'nullable|string',
-            'images' => 'required|json',
+            'images' => 'required|array',
             'category_id' => 'required|exists:categories,id',
             'is_featured' => 'boolean',
             'is_good_deal' => 'boolean',
@@ -35,6 +35,7 @@ class UpdateProductRequest extends FormRequest
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.sale_price' => 'nullable|numeric|min:0',
             'variants.*.quantity' => 'required|integer|min:0',
+            'variants.*.image' => 'nullable|string',
             'variants.*.attribute_value_ids' => 'nullable|array',
         ];
     }
@@ -44,7 +45,7 @@ class UpdateProductRequest extends FormRequest
         return [
             'name.required' => 'Tên sản phẩm là bắt buộc.',
             'images.required' => 'Trường hình ảnh là bắt buộc.',
-            'images.json' => 'Hình ảnh phải là một chuỗi JSON hợp lệ.',
+            'images.array' => 'Hình ảnh phải là một mảng hợp lệ.',
             'category_id.required' => 'ID danh mục là bắt buộc.',
             'category_id.exists' => 'Danh mục không tồn tại.',
             'variants.required' => 'Các biến thể là bắt buộc.',

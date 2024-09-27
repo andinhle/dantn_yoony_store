@@ -32,8 +32,8 @@ class UpdateCouponRequest extends FormRequest
             'usage_limit' => 'required',
             'start_date' => 'required|date|date_format:Y-m-d',
             'end_date' => 'required|date|date_format:Y-m-d|after_or_equal:start_date',
-            'status' => [Rule::in([0, 1])],
-            'is_featured' => [Rule::in([0, 1])],
+            'status' => 'boolean',
+            'is_featured' => 'boolean',
             'min_order_value' => 'required|min:0|numeric',
             'max_order_value'   => 'required|numeric|gt:min_order_value'
         ];
@@ -56,6 +56,11 @@ class UpdateCouponRequest extends FormRequest
             'max_order_value.gt:min_order_value' => 'Giá trị phải lớn hơn giá trị đơn hàng thấp nhất',
             'status.in' => 'Trạng thái đã chọn không hợp lệ',
             'is_featured.in' => 'Trạng thái đã chọn không hợp lệ',
+            'end_date.date' => 'Ngày kết thúc phải là một ngày hợp lệ.',
+            'end_date.date_format' => 'Ngày kết thúc phải có định dạng YYYY-MM-DD.',
+            'end_date.after_or_equal' => 'Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.',
+            'start_date.date' => 'Ngày bắt đầu phải là một ngày hợp lệ.',
+            'start_date.date_format' => 'Ngày bắt đầu phải có định dạng YYYY-MM-DD.',
         ];
     }
 
