@@ -16,12 +16,14 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        // Lấy danh sách sản phẩm
-        $products = Product::with('category','variants')->paginate(5);
-        return ProductResource::collection($products);
-    }
+   // ProductController.php
+public function index()
+{
+    $products = Product::with(['category', 'variants.attributeValues.attribute'])->paginate(5);
+
+    return ProductResource::collection($products);
+}
+
 
     /**
      * Store a newly created resource in storage.
@@ -45,7 +47,7 @@ class ProductController extends Controller
                     'price' => $variantData['price'],
                     'sale_price' => $variantData['sale_price'],
                     'quantity' => $variantData['quantity'],
-                    'image' => $variantData['image'],
+                    'image' => $variantData['image'] ?? null,
                     'product_id' => $product->id,
                 ]);
 
@@ -67,7 +69,7 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        $product = Product::with('category','variants.attributeValues')->findOrFail($id);
+        $product = Product::with('category','variants.attributeValues.attribute')->findOrFail($id);
         return new ProductResource($product);
     }
 
@@ -81,7 +83,7 @@ class ProductController extends Controller
                 'name' => $request->name,
                 'slug' => $request->slug,
                 'description' => $request->description,
-                'images' => json_encode($request->images), // Chuyển đổi mảng thành chuỗi JSON
+                'images' => json_encode($request->images),
                 'category_id' => $request->category_id,
                 'is_featured' => $request->is_featured ?? false,
                 'is_good_deal' => $request->is_good_deal ?? false,
@@ -97,7 +99,7 @@ class ProductController extends Controller
                         'price' => $variantData['price'],
                         'sale_price' => $variantData['sale_price'],
                         'quantity' => $variantData['quantity'],
-                        'image' => $variantData['image'],
+                        'image' => $variantData['image'] ?? null,
                     ]
                 );
 

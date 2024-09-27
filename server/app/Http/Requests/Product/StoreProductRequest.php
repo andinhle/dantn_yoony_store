@@ -35,6 +35,7 @@ class StoreProductRequest extends FormRequest
             'variants.*.sale_price' => 'nullable|numeric|min:0',
             'variants.*.quantity' => 'required|integer|min:0',
             'variants.*.attribute_values' => 'required|array',
+            'variants.*.image' => 'nullable|string',
             'variants.*.attribute_values.*' => 'integer|exists:attribute_values,id',
         ];
     }
@@ -45,11 +46,12 @@ class StoreProductRequest extends FormRequest
             'slug.required' => 'Slug là bắt buộc.',
             'slug.unique' => 'Slug đã tồn tại, vui lòng chọn slug khác.',
             'images.required' => 'Trường hình ảnh là bắt buộc.',
-            'images.json' => 'Hình ảnh phải là một chuỗi JSON hợp lệ.',
+            'images.array' => 'Hình ảnh phải là một mảng hợp lệ.',
             'category_id.required' => 'ID danh mục là bắt buộc.',
             'category_id.exists' => 'Danh mục không tồn tại.',
             'variants.required' => 'Biến thể là bắt buộc.',
             'variants.array' => 'Biến thể phải là một mảng.',
+
             'variants.*.price.required' => 'Giá là bắt buộc cho từng biến thể.',
             'variants.*.price.numeric' => 'Giá phải là một số.',
             'variants.*.price.min' => 'Giá phải lớn hơn hoặc bằng 0.',

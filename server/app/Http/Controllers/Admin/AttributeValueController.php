@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AttributeValue;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
@@ -35,7 +36,28 @@ class AttributeValueController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    public function getByAttributeId(string $id): JsonResponse
+    {
+        try {
+            $attributeValues = AttributeValue::where('attribute_id', $id)->get();
 
+            if ($attributeValues->isEmpty()) {
+                return response()->json([
+                    'message' => 'Không tìm thấy thuộc tính với attribute_id này.',
+                ], 404);
+            }
+
+            return response()->json([
+                'attribute_id' => $id,
+                'attribute_values' => $attributeValues,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Có lỗi xảy ra khi truy xuất thuộc tính.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
     public function store(Request $request)
     {
         try {
