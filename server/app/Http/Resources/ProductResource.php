@@ -19,7 +19,7 @@ class ProductResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
-            'images' =>$this->images,
+            'images' => json_decode($this->images, true), 
             'category' => new CategoryResource($this->whenLoaded('category')),
 
             'is_featured' => $this->is_featured,

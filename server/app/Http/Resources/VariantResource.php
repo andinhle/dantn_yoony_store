@@ -19,7 +19,7 @@ class VariantResource extends JsonResource
             'price' => $this->price,
             'sale_price' => $this->sale_price,
             'quantity' => $this->quantity,
-            'image' =>$this->image,
+            'image' => json_decode($this->image, true),
             'attribute_values' => $this->whenLoaded('attributeValues'), // Tải các giá trị thuộc tính liên quan
         ];
     }
