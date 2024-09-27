@@ -48,6 +48,7 @@ const VouchersAdmin = () => {
           payload: data.data,
         });
         toast.success("Thêm coupon thành công !");
+
       } else {
         const { data } = await instance.put(`coupon/${idVoucher}`, dataForm);
         dispatch({
@@ -62,6 +63,7 @@ const VouchersAdmin = () => {
       setStatus(true);
       setFeatured(false);
     } catch (error) {
+      console.log(error)
       if (axios.isAxiosError(error)) {
         toast.error(error.response?.data?.errors.code[0]);
       } else if (error instanceof Error) {
@@ -71,6 +73,7 @@ const VouchersAdmin = () => {
       }
     }
   };
+  console.log(is_featured)
   useEffect(() => {
     reset({});
     setCodeVoucher("");
@@ -279,7 +282,7 @@ const VouchersAdmin = () => {
                       Start Date
                     </label>
                     <input
-                      type="datetime-local"
+                      type="date"
                       className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
                       {...register("start_date")}
                     />
@@ -292,7 +295,7 @@ const VouchersAdmin = () => {
                       End Date
                     </label>
                     <input
-                      type="datetime-local"
+                      type="date"
                       className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
                       {...register("end_date")}
                     />

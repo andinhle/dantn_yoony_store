@@ -94,7 +94,6 @@ const ListVouchersAdmin = ({
       toast.error(error.response.data.message);
     }
   };
-  console.log(valueSearch);
   return (
     <div className="overflow-x-auto w-full mt-8">
       <Table hoverable className="table w-full">
