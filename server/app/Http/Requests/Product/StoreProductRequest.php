@@ -51,6 +51,7 @@ class StoreProductRequest extends FormRequest
             'category_id.exists' => 'Danh mục không tồn tại.',
             'variants.required' => 'Biến thể là bắt buộc.',
             'variants.array' => 'Biến thể phải là một mảng.',
+
             'variants.*.price.required' => 'Giá là bắt buộc cho từng biến thể.',
             'variants.*.price.numeric' => 'Giá phải là một số.',
             'variants.*.price.min' => 'Giá phải lớn hơn hoặc bằng 0.',
