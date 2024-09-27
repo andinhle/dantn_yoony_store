@@ -46,7 +46,8 @@ class CouponController extends Controller
         try {
             $data = $request->all();
 
-            Coupon::query()->create($data);
+            $coupon=Coupon::query()->create($data);
+            $data['id'] = $coupon->id;
 
             return response()->json([
                 'message' => 'Thêm mới coupon thành công',
@@ -75,7 +76,6 @@ class CouponController extends Controller
     {
         try {
             $model = Coupon::findOrFail($id);
-            
 
             return response()->json([
                 'data' => $model,

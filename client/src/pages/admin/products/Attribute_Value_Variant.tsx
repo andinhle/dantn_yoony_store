@@ -2,17 +2,25 @@ import { useFieldArray, useFormContext } from "react-hook-form";
 import { IProduct } from "../../../interfaces/IProduct";
 import { Label } from "flowbite-react";
 import { Select } from "antd";
+import { useContext } from "react";
+import { AttributeContext } from "../../../contexts/AttributeContext";
 
 type Prop = {
   index: number;
 };
 
 const Attribute_Value_Variant = ({ index }: Prop) => {
+  const {attributes} =useContext(AttributeContext)
   const { register, control,watch,setValue } = useFormContext<IProduct>();
   const { fields, append, remove } = useFieldArray({
     control,
     name: `variants.${index}.attribute_values` as any,
   });
+
+  const optionsAttribute = attributes.map((attribute) => ({
+    value: attribute.id,
+    label: attribute.name,
+  }));
   return fields.map((field, attrIndex) => {
     return (
       <div className="grid grid-cols-3 gap-[15px]" key={field.id}>
@@ -33,24 +41,7 @@ const Attribute_Value_Variant = ({ index }: Prop) => {
                 .toLowerCase()
                 .localeCompare((optionB?.label ?? "").toLowerCase())
             }
-            options={[
-              {
-                value: "select",
-                label: "Select",
-              },
-              {
-                value: "color",
-                label: "Color",
-              },
-              {
-                value: "button",
-                label: "Button",
-              },
-              {
-                value: "radio",
-                label: "Radio",
-              },
-            ]}
+            options={optionsAttribute}
           />
         </div>
         <div>

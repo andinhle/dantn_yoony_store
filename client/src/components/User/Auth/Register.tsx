@@ -22,6 +22,7 @@ const Register = () => {
       const data=await instance.post('register',{
         name,email,password
       })
+      console.log(data)
       if (data) {
         reset()
         toast.success('Đăng ký tài khoản thành công!')
