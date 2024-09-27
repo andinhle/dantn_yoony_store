@@ -8,6 +8,7 @@ type Prop = {
 };
 
 const Attribute_Value_Variant = ({ index }: Prop) => {
+  
   const { register, control,watch,setValue } = useFormContext<IProduct>();
   const { fields, append, remove } = useFieldArray({
     control,

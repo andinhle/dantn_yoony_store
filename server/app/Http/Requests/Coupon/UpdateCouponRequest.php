@@ -32,8 +32,8 @@ class UpdateCouponRequest extends FormRequest
             'usage_limit' => 'required',
             'start_date' => 'required|date|date_format:Y-m-d',
             'end_date' => 'required|date|date_format:Y-m-d|after_or_equal:start_date',
-            'status' => [Rule::in([0, 1])],
-            'is_featured' => [Rule::in([0, 1])],
+            'status' => 'boolean',
+            'is_featured' => 'boolean',
             'min_order_value' => 'required|min:0|numeric',
             'max_order_value'   => 'required|numeric|gt:min_order_value'
         ];
