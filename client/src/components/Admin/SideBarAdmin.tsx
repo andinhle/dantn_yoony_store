@@ -297,7 +297,7 @@ const SideBarAdmin = () => {
             </li>
             <li>
               <NavLink
-                to={"Blogs"}
+                to={"blogs"}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
                 }
