@@ -75,5 +75,8 @@ Route::get('/attribute-values/{id}', [AttributeValueController::class, 'getByAtt
 
 
 
-//Client 
+//Client
 Route::get('home/product/{slug}', [HomeController::class, 'getOneProductBySlug']);
+
+Route::get('home/products/featured', [HomeController::class, 'getFeaturedProducts']);
+Route::get('home/products/good-deal', [HomeController::class, 'getGoodDealProducts']);
