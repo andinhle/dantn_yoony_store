@@ -7,7 +7,6 @@ import LayoutUser from "./layouts/LayoutUser.tsx";
 import LayoutAdmin from "./layouts/LayoutAdmin.tsx";
 import DashboardAdmin from "./pages/admin/DashboardAdmin.tsx";
 import UsersAdmin from "./pages/admin/UserAdmin.tsx";
-import BlogsAdmin from "./pages/admin/BlogsAdmin.tsx";
 import CategorysAdmin from "./pages/admin/CategorysAdmin.tsx";
 import Register from "./components/User/Auth/Register.tsx";
 import "swiper/css";
@@ -31,11 +30,15 @@ import ResetPassRequest from "./components/User/Auth/ResetPassRequest.tsx";
 import FormResetPass from "./components/User/Auth/FormResetPass.tsx";
 import LayoutVoucherAdmin from "./layouts/Admin/LayoutVoucherAdmin.tsx";
 import BannerList from "./pages/admin/BannerAdmin.tsx";
+import LayoutBlogsAdmin from "./layouts/Admin/LayoutBlogsAdmin.tsx";
+import BlogProvider from "./contexts/BlogsContext.tsx";
+import UpdateBlogsAdmin from "./pages/admin/blogs/UpdateBlogAdmin.tsx";
 import LayoutProductAdmin from "./layouts/Admin/LayoutProductAdmin.tsx";
 import AddOrUpdateProduct from "./pages/admin/products/AddOrUpdateProduct.tsx";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
+    <BlogProvider>
       <ScrollToTop />
       <Routes>
         <Route element={<App />}>
@@ -53,7 +56,8 @@ createRoot(document.getElementById("root")!).render(
           <Route path="admin" element={<LayoutAdmin />}>
             <Route index element={<DashboardAdmin />} />
             <Route path="users" element={<UsersAdmin />} />
-            <Route path="blogs" element={<BlogsAdmin />} />
+            <Route path="blogs" element={<LayoutBlogsAdmin />} />
+            <Route path="blogs/:id" element={<UpdateBlogsAdmin />}/>
             <Route path="categorys" element={<CategorysAdmin />} />
             <Route path="products" element={<LayoutProductAdmin />}>
               <Route index element={<ProductList />} />
@@ -72,6 +76,7 @@ createRoot(document.getElementById("root")!).render(
         </Route>
       </Routes>
       <ToastContainer autoClose={3000} newestOnTop={true} />
+      </BlogProvider>
     </BrowserRouter>
   </StrictMode>
 );
