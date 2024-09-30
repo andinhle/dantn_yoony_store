@@ -9,7 +9,7 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RoleController;
-
+use App\Http\Controllers\Client\HomeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +53,8 @@ Route::post('/auth/password/reset', [AuthController::class, 'resetPassword'])->n
 Route::apiResource('category', CategoryController::class);
 Route::patch('category/{id}/is-active', [CategoryController::class, 'updateIsActive'])->name('category.updateIsActive');
 Route::post('category/delete-much', [CategoryController::class, 'deleteMuch'])->name('category.deleteMuch');
+Route::patch('category/restore/{id}', [CategoryController::class, 'restore'])->name('category.restore');
+Route::delete('category/hard-delete/{id}', [CategoryController::class, 'hardDelete'])->name('category.hardDelete');
 
 
 Route::apiResource('banners', BannerController::class);
@@ -72,3 +74,6 @@ Route::get('/attribute-values/{id}', [AttributeValueController::class, 'getByAtt
 
 
 
+
+//Client 
+Route::get('home/product/{slug}', [HomeController::class, 'getOneProductBySlug']);
