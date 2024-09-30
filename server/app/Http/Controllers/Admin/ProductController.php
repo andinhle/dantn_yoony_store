@@ -183,5 +183,23 @@ public function index()
         ], 200);
     }
 
-    //
+    //khôi phục product (chuyển deleted_at về null)
+    public function restore(string $id)
+    {
+        $product = Product::withTrashed()->findOrFail($id);
+
+        $product->restore();
+
+        return response()->json(['message' => 'Khôi phục Sản Phẩm thành công!'], 200);
+    }
+
+     //xóa cứng
+     public function hardDelete(string $id)
+     {
+         $category = Product::withTrashed()->findOrFail($id);
+ 
+         $category->forceDelete();
+ 
+         return response()->json(['message' => 'Xóa vĩnh viễn Sản Phẩm thành công!'], 200);
+     }
 }
