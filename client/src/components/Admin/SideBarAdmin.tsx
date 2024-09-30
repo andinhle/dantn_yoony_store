@@ -435,7 +435,7 @@ const SideBarAdmin = () => {
             </li>
             <li>
               <NavLink
-                to={"Blogs"}
+                to={"blogs"}
                 end
                 onClick={()=>{setOpenProduct(false)}}
                 className={
