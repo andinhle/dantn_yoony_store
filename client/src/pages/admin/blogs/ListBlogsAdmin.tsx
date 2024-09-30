@@ -8,7 +8,7 @@ import { BlogContext } from "../../../contexts/BlogsContext";
 
 const ListBlogsAdmin = () => {
   const { blogs, dispatch } = useContext(BlogContext);
-  const [statusBlog, setStatus] = useState(true);
+  const [statusBlog, setActive] = useState(true);
   useEffect(() => {
     (async () => {
       const { data } = await instance.get("blogs");
@@ -79,7 +79,7 @@ const ListBlogsAdmin = () => {
                     sizing={'sm'}
                     className="w-fit mx-auto"
                     onChange={() => {
-                      setStatus(!blog.is_active);
+                      setActive(!blog.is_active);
                       handleUpdateActiveBlog(blog.id!, !blog.is_active);
                     }}
                   />
