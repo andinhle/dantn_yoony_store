@@ -9,7 +9,7 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RoleController;
-
+use App\Http\Controllers\Client\HomeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -74,3 +74,6 @@ Route::get('/attribute-values/{id}', [AttributeValueController::class, 'getByAtt
 
 
 
+
+//Client 
+Route::get('home/product/{slug}', [HomeController::class, 'getOneProductBySlug']);
