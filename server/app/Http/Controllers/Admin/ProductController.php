@@ -149,4 +149,39 @@ public function index()
             return response()->json(['message' => 'Xóa product thất bại', 'error' => $e->getMessage()], 500);
         }
     }
+
+    //updateIsFeatured 
+    public function updateIsFeatured(Request $request, string $id){
+        $product = Product::findOrFail($id);
+        $product->update(['is_featured'=>$request->is_featured]);
+
+        return response()->json([
+            'message' => 'Cập nhật is_featured thành công!',
+            'data' => new ProductResource($product),
+        ], 200);
+    }
+
+    //updateIsGoodDeal
+    public function updateIsGoodDeal(Request $request, string $id){
+        $product = Product::findOrFail($id);
+        $product->update(['is_good_deal'=>$request->is_good_deal]);
+
+        return response()->json([
+            'message' => 'Cập nhật is_good_deal thành công!',
+            'data' => new ProductResource($product),
+        ], 200);
+    }
+
+    //updateIsActive
+    public function updateIsActive(Request $request, string $id){
+        $product = Product::findOrFail($id);
+        $product->update(['is_active'=>$request->is_active]);
+
+        return response()->json([
+            'message' => 'Cập nhật is_active thành công!',
+            'data' => new ProductResource($product),
+        ], 200);
+    }
+
+    //
 }
