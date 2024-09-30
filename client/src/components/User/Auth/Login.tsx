@@ -1,6 +1,37 @@
+
 import { Label } from "flowbite-react";
+import Ilogin from "../../../interfaces/ILogin";
+import { useForm } from "react-hook-form";
+import axios from "axios";
+import { toast } from "react-toastify";
+import instance from "../../../instance/instance";
+import Cookies from 'js-cookie';
 
 const Login = () => {
+  const {register,formState:{errors},handleSubmit}=useForm<Ilogin>()
+  const onSubmit= async(formData:Ilogin)=>{
+    try {
+      const {data} = await instance.post('login',formData)
+      console.log(data)
+      if (data && data.token) {
+        // Lưu token vào cookie với thời hạn 7 ngày và HttpOnly
+        Cookies.set('authToken', data.token.substring(3,data.token.length), { 
+          expires: 1/12, 
+          secure: true,
+          sameSite: 'strict'
+        });
+        toast.success('Đăng nhập thành công!');
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message);
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Đã xảy ra lỗi không mong muốn");
+      }
+    }
+  }
   return (
     <section className="flex items-center justify-evenly mt-14 gap-5">
       <div>
@@ -9,7 +40,7 @@ const Login = () => {
           alt="sign-up-form"
         />
       </div>
-      <form className="max-w-[350px] space-y-5 w-full">
+      <form className="max-w-[350px] space-y-5 w-full" onSubmit={handleSubmit(onSubmit)}>
         <h2 className="font-[500] text-[32px] text-primary text-center">
           ĐĂNG NHẬP
         </h2>
@@ -22,6 +53,7 @@ const Login = () => {
               type="text"
               placeholder="Email"
               id="email"
+              {...register('email')}
               className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none"
             />
           </div>
@@ -32,12 +64,13 @@ const Login = () => {
             <input
               type="password"
               placeholder="Mật khẩu"
+              {...register('password')}
               id="password-input"
               className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none"
             />
           </div>
         </div>
-        <button className="w-fit bg-primary py-2 px-6 rounded-md text-util mx-auto block font-[400]">
+        <button type="submit" className="w-fit bg-primary py-2 px-6 rounded-md text-util mx-auto block font-[400]">
           ĐĂNG NHẬP
         </button>
       </form>

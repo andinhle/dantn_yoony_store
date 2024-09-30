@@ -168,7 +168,7 @@ a:hover .number-cart{
 }
 
 
-.scrollbar-hide::-webkit-scrollbar {
+.menu-list-product-admin::-webkit-scrollbar,.scrollbar-hide::-webkit-scrollbar {
   width: 2px;
   height: 2px;
 }
@@ -189,3 +189,11 @@ a:hover .number-cart{
     -webkit-appearance: none;
     margin: 0;
 }
+.custom-upload .anticon-eye{
+  display: none;
+}
+.custom-upload,.custom-upload .ant-upload.ant-upload-select,.custom-upload .ant-upload-list-item {
+  width: 67px !important;;
+  height: 67px !important;;
+}
+
