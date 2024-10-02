@@ -135,6 +135,7 @@ class HomeController extends Controller
         try {
             $featuredProducts = Product::with('category', 'variants.attributeValues.attribute')
                 ->where('is_featured', true)
+                ->where('is_active', true) // Điều kiện kiểm tra sản phẩm phải active
                 ->limit(10)
                 ->get();
             if ($featuredProducts->isEmpty()) {
@@ -142,7 +143,7 @@ class HomeController extends Controller
                     'message' => 'Không có sản phẩm nổi bật nào.',
                 ], 404);
             }
-
+    
             return response()->json(ProductResource::collection($featuredProducts), 200);
         } catch (\Exception $e) {
             return response()->json([
