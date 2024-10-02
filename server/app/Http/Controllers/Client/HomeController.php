@@ -22,6 +22,7 @@ class HomeController extends Controller
             $product = Product::with('category', 'variants.attributeValues')->where('slug', $slug)->firstOrFail();
             $relatedProducts = Product::with('category', 'variants.attributeValues')
                 ->where('category_id', $product->category_id)
+                ->where('is_active', true) // Điều kiện kiểm tra sản phẩm phải active
                 ->where('id', '!=', $product->id)
                 ->limit(5)
                 ->get();
@@ -115,6 +116,7 @@ class HomeController extends Controller
 
             $products = Product::with('category', 'variants.attributeValues')
                 ->where('category_id', $categoryId)
+                ->where('is_active', true) // Điều kiện kiểm tra sản phẩm phải active
                 ->paginate(10);
 
             return response()->json([
@@ -135,6 +137,7 @@ class HomeController extends Controller
         try {
             $featuredProducts = Product::with('category', 'variants.attributeValues.attribute')
                 ->where('is_featured', true)
+                ->where('is_active', true) // Điều kiện kiểm tra sản phẩm phải active
                 ->limit(10)
                 ->get();
             if ($featuredProducts->isEmpty()) {
@@ -142,7 +145,7 @@ class HomeController extends Controller
                     'message' => 'Không có sản phẩm nổi bật nào.',
                 ], 404);
             }
-
+    
             return response()->json(ProductResource::collection($featuredProducts), 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -158,6 +161,7 @@ class HomeController extends Controller
         try {
             $goodDealProducts = Product::with('category', 'variants.attributeValues.attribute')
                 ->where('is_good_deal', true)
+                ->where('is_active', true) // Điều kiện kiểm tra sản phẩm phải active
                 ->limit(10)
                 ->get();
 
