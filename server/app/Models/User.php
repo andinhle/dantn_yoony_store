@@ -42,4 +42,10 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+    // Nếu bảng wishlists có tên khác hoặc cột user_id khác
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class, 'user_id', 'id');
+    }
+
 }

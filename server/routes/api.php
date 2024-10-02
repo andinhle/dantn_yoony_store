@@ -72,6 +72,11 @@ Route::apiResource('products', ProductController::class);
 
 Route::get('/attribute-values/{id}', [AttributeValueController::class, 'getByAttributeId']);
 
+Route::patch('product/{id}/is_featured', [ProductController::class, 'updateIsFeatured'])->name('category.updateIsFeatured');
+Route::patch('product/{id}/is_good_deal', [ProductController::class, 'updateIsGoodDeal'])->name('category.updateIsGoodDeal');
+Route::patch('product/{id}/is_active', [ProductController::class, 'updateIsActive'])->name('category.updateIsActive');
+Route::patch('product/restore/{id}', [ProductController::class, 'restore'])->name('product.restore');
+Route::delete('product/hard-delete/{id}', [ProductController::class, 'hardDelete'])->name('product.hardDelete');
 
 
 
@@ -83,3 +88,8 @@ Route::get('home/products/featured', [HomeController::class, 'getFeaturedProduct
 Route::get('home/products/good-deal', [HomeController::class, 'getGoodDealProducts']);
 
 Route::get('home/product/category/{id}', [HomeController::class, 'getProductsByCategory']);
+
+//wishlist 
+Route::middleware('auth:sanctum')->get('/list-wishlists', [HomeController::class, 'getWishlists']);
+Route::post('/insert-wishlists', [HomeController::class, 'insertWishlists'])->middleware('auth:sanctum');
+Route::delete('/delete-wishlists/{product_id}', [HomeController::class, 'deleteWishlist'])->middleware('auth:sanctum');
