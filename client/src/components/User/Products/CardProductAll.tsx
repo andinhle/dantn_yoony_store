@@ -1,10 +1,31 @@
-const CardProductAll = () => {
+import { Swiper, SwiperSlide } from "swiper/react";
+import { IVariants } from "../../../interfaces/IVariants";
+import { FreeMode } from "swiper/modules";
+
+type Props = {
+  imageProduct: string;
+  nameProduct: string;
+  colorVariants: (string | undefined)[];
+  variants: IVariants[];
+  is_featured:boolean
+  is_good_deal:boolean
+
+};
+const CardProductAll = ({
+  imageProduct,
+  nameProduct,
+  colorVariants = [],
+  variants = [],
+  is_featured,
+  is_good_deal
+}: Props) => {
   return (
     <div className="min-h-[354px] group max-w-[220px] w-full bg-util rounded-lg overflow-hidden shadow-[0px_1px_4px_0px_rgba(255,_138,_0,_0.25)] cursor-pointer">
       <div className="relative z-40">
         <img
-          src="../../../../src/assets/images/product-image.png"
+          src={imageProduct}
           alt="product-image"
+          className="max-h-[260px] object-cover w-full"
         />
         <div className="absolute top-2 right-2 z-30 text-primary/70 cursor-pointer">
           <svg
@@ -22,6 +43,16 @@ const CardProductAll = () => {
               strokeLinecap="round"
             />
           </svg>
+        </div>
+        <div className="absolute top-2 left-2 z-30 text-primary cursor-pointer bg-primary/10 p-1 rounded-full">
+          {is_featured && (
+            <span className="text-xs">HOT</span>
+          )}
+        </div>
+        <div className="absolute top-2 left-2 z-30 text-primary cursor-pointer bg-primary/10 p-1.5 rounded-full">
+          {is_good_deal && (
+            <span className="text-xs">{100-((variants[0].sale_price/variants[0]?.price)*100)}%</span>
+          )}
         </div>
         <div className="bg-primary/25 absolute top-0 z-40 w-full h-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 group-hover:cursor-pointer ">
           <div className="absolute top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%] bg-util p-2 rounded-full hover:cursor-pointer text-primary transition-all">
@@ -76,19 +107,34 @@ const CardProductAll = () => {
           </div>
         </div>
       </div>
-      <div className="flex justify-center gap-2 -mt-3.5 z-50 relative">
-        <span className="p-3 rounded-full bg-util border border-primary"></span>
-        <span className="p-3 rounded-full bg-primary border border-primary"></span>
-        <span className="p-3 rounded-full bg-secondary border border-primary"></span>
-      </div>
-      <div className="px-5 space-y-2">
-        <p className="line-clamp-1 mt-4 font-medium text-sm  md:text-base">
-          Áo Polo Bo Dệt Sọc Đẹp Như Cô Gái Mới Lớn
-        </p>
-        <div className="flex gap-2 text-sm justify-center">
-          <span className="line-through">450.000 Đ</span>
-          <span className="text-primary font-medium">300.000 Đ</span>
+      <div className="px-3.5 space-y-2 py-3">
+        <p className="line-clamp-1 text-sm  md:text-base">{nameProduct}</p>
+        <div className="flex gap-2 text-sm">
+          <span className="line-through">
+          {variants[0]?.price.toLocaleString('vi-VN', {useGrouping: true, maximumFractionDigits: 0}).replace(/,/g, '.')}đ
+          </span>
+          <span className="text-primary font-medium">
+          {variants[0]?.sale_price.toLocaleString('vi-VN', {useGrouping: true, maximumFractionDigits: 0}).replace(/,/g, '.')}đ
+          </span>
         </div>
+        <Swiper
+          slidesPerView={6}
+          spaceBetween={8}
+          freeMode={true}
+          modules={[FreeMode]}
+          className="mySwiper px-5 z-50"
+        >
+          {colorVariants.map((colorVariant, index: number) => {
+            return (
+              <SwiperSlide
+                key={index + 1}
+                className="!w-6 !h-6 rounded-full border border-input"
+                style={{ backgroundColor: colorVariant }}
+                title={colorVariant}
+              ></SwiperSlide>
+            );
+          })}
+        </Swiper>
       </div>
     </div>
   );
