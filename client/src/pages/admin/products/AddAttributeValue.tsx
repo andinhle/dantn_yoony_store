@@ -58,7 +58,7 @@ const AddAttributeValue = () => {
             onChange={(e) => setValue("attribute_id", e)}
             showSearch
             value={watch("attribute_id")}
-            style={{ width: "100%" }}
+            style={{ width: "100%",height:"35px" }}
             placeholder="Tên thuộc tính"
             optionFilterProp="label"
             filterSort={(optionA, optionB) =>

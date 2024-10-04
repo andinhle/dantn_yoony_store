@@ -25,7 +25,6 @@ class ProductResource extends JsonResource
             'is_featured' => $this->is_featured,
             'is_good_deal' => $this->is_good_deal,
             'is_active' => $this->is_active,
-            'variants' => VariantResource::collection($this->whenLoaded('variants')),
-        ];
+            'variants' => VariantResource::collection($this->whenLoaded('variants'))        ];
     }
 }

@@ -58,7 +58,7 @@ public function index()
                 }
             }
 
-            return new ProductResource($product->load('variants.attributeValues'));
+            return new ProductResource($product->load('category','variants.attributeValues'));
         } catch (\Exception $e) {
             return response()->json(['message' => 'Thêm Product thất bại', 'error' => $e->getMessage()], 500);
         }
@@ -112,8 +112,7 @@ public function index()
             }
 
             $product->variants()->whereNotIn('id', $variantIds)->delete();
-
-            return response()->json(new ProductResource($product->load('variants.attributeValues')), 200);
+            return response()->json(new ProductResource($product->load('category','variants.attributeValues')), 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
         }

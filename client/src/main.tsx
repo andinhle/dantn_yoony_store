@@ -15,12 +15,10 @@ import "swiper/css/navigation";
 import "swiper/css/free-mode";
 import MainContentUser from "./pages/user/MainContentUser.tsx";
 import Login from "./components/User/Auth/Login.tsx";
-import ProductList from "./pages/admin/ProductsList.tsx";
+import ProductList from "./pages/admin/products/ProductsList.tsx";
 import Orders from "./pages/admin/Order.tsx";
 import Rates from "./pages/admin/Evaluate.tsx";
 import OrderDetails from "./pages/admin/OrderDetails.tsx";
-import AddProduct from "./pages/admin/products/AddProduct.tsx";
-import EditProduct from "./pages/admin/products/EditProduct.tsx";
 import Varriant from "./pages/admin/varriant/AddVarriant.tsx";
 import ListVarriant from "./pages/admin/varriant/Listvarriant.tsx";
 import VarriantValue from "./pages/admin/varriant/VarriantValue.tsx";
@@ -36,6 +34,8 @@ import LayoutBlogsAdmin from "./layouts/Admin/LayoutBlogsAdmin.tsx";
 import BlogProvider from "./contexts/BlogsContext.tsx";
 import UpdateBlogsAdmin from "./pages/admin/blogs/UpdateBlogAdmin.tsx";
 import BlogPage from "./components/User/Blogs/BlogsPage.tsx";
+import LayoutProductAdmin from "./layouts/Admin/LayoutProductAdmin.tsx";
+import AddOrUpdateProduct from "./pages/admin/products/AddOrUpdateProduct.tsx";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
@@ -61,18 +61,17 @@ createRoot(document.getElementById("root")!).render(
             <Route path="blogs" element={<LayoutBlogsAdmin />} />
             <Route path="blogs/:id" element={<UpdateBlogsAdmin />}/>
             <Route path="categorys" element={<CategorysAdmin />} />
-            <Route path="products" element={<ProductList />} />
-            <Route path="products/add" element={<AddProduct />} />
-            <Route path="products/edit/:id" element={<EditProduct />} />
+            <Route path="products" element={<LayoutProductAdmin />}>
+              <Route index element={<ProductList />} />
+              <Route path="add" element={<AddOrUpdateProduct />} />
+              <Route path="update/:id" element={<AddOrUpdateProduct />} />
+            </Route>
             <Route path="orders" element={<Orders />} />
             <Route path="vouchers" element={<LayoutVoucherAdmin />} />
             <Route path="banner" element={<BannerList />} />
-            <Route path="products/varriant" element={<ListVarriant />} />
+            {/* <Route path="products/varriant" element={<ListVarriant />} />
             <Route path="products/varriant/add" element={<Varriant />} />
-            <Route
-              path="products/varriant/addValue"
-              element={<VarriantValue />}
-            />
+            <Route path="products/varriant/addValue"element={<VarriantValue />}/> */}
             <Route path="orders/orderDetails" element={<OrderDetails />} />
             <Route path="rates" element={<Rates />} />
           </Route>
