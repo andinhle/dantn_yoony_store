@@ -58,7 +58,7 @@ public function index()
                 }
             }
 
-            return new ProductResource($product->load('variants.attributeValues'));
+            return new ProductResource($product->load('category','variants.attributeValues'));
         } catch (\Exception $e) {
             return response()->json(['message' => 'Thêm Product thất bại', 'error' => $e->getMessage()], 500);
         }
@@ -112,8 +112,7 @@ public function index()
             }
 
             $product->variants()->whereNotIn('id', $variantIds)->delete();
-
-            return response()->json(new ProductResource($product->load('variants.attributeValues')), 200);
+            return response()->json(new ProductResource($product->load('category','variants.attributeValues')), 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
         }
@@ -150,4 +149,57 @@ public function index()
             return response()->json(['message' => 'Xóa product thất bại', 'error' => $e->getMessage()], 500);
         }
     }
+
+    //updateIsFeatured 
+    public function updateIsFeatured(Request $request, string $id){
+        $product = Product::findOrFail($id);
+        $product->update(['is_featured'=>$request->is_featured]);
+
+        return response()->json([
+            'message' => 'Cập nhật is_featured thành công!',
+            'data' => new ProductResource($product),
+        ], 200);
+    }
+
+    //updateIsGoodDeal
+    public function updateIsGoodDeal(Request $request, string $id){
+        $product = Product::findOrFail($id);
+        $product->update(['is_good_deal'=>$request->is_good_deal]);
+
+        return response()->json([
+            'message' => 'Cập nhật is_good_deal thành công!',
+            'data' => new ProductResource($product),
+        ], 200);
+    }
+
+    //updateIsActive
+    public function updateIsActive(Request $request, string $id){
+        $product = Product::findOrFail($id);
+        $product->update(['is_active'=>$request->is_active]);
+
+        return response()->json([
+            'message' => 'Cập nhật is_active thành công!',
+            'data' => new ProductResource($product),
+        ], 200);
+    }
+
+    //khôi phục product (chuyển deleted_at về null)
+    public function restore(string $id)
+    {
+        $product = Product::withTrashed()->findOrFail($id);
+
+        $product->restore();
+
+        return response()->json(['message' => 'Khôi phục Sản Phẩm thành công!'], 200);
+    }
+
+     //xóa cứng
+     public function hardDelete(string $id)
+     {
+         $category = Product::withTrashed()->findOrFail($id);
+ 
+         $category->forceDelete();
+ 
+         return response()->json(['message' => 'Xóa vĩnh viễn Sản Phẩm thành công!'], 200);
+     }
 }
