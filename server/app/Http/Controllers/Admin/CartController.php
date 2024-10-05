@@ -23,9 +23,7 @@ class CartController extends Controller
         try {
             $data = Cart::query()
             ->with(['variant.product','variant.attributeValues.attribute'])
-            ->where('user_id', 1
-            // Auth::id()
-            )
+            ->where('user_id', Auth::id())
             ->get();
 
             foreach ($data as $item) {
@@ -62,13 +60,12 @@ class CartController extends Controller
     public function store(Request $request)
     {
         try {
-            $userId = Auth::id();
 
             $data = $request->all();
-            // $data['user_id'] = $userId;
+            $data['user_id'] = Auth::id();
             $idExist = Cart::query()
             ->where('variant_id', $request->variant_id)
-            // ->where('user_id', Auth::id())
+            ->where('user_id', Auth::id())
             ->first();
 
             if ($idExist) {
@@ -117,8 +114,7 @@ class CartController extends Controller
     
             $data = Cart::query()
             ->with(['variant.product','variant.attributeValues.attribute'])
-            ->where('user_id', 1
-            // Auth::id()
+            ->where('user_id', Auth::id()
             )
             ->get();
 
@@ -154,7 +150,7 @@ class CartController extends Controller
         try {
 
             $userId = Auth::id(); // Lấy ID của người dùng đang đăng nhập
-            $cartItem = Cart::where('id', $id)->where('user_id', 1)->first();
+            $cartItem = Cart::where('id', $id)->where('user_id', $userId)->first();
             
             if (!$cartItem) {
                 return response()->json(['message' => 'Mặt hàng trong giỏ hàng không được tìm thấy'], 404);
