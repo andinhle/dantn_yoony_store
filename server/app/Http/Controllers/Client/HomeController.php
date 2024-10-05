@@ -19,7 +19,7 @@ class HomeController extends Controller
     public function getOneProductBySlug(string $slug)
     {
         try {
-            $product = Product::with('category', 'variants.attributeValues')->where('slug', $slug)->firstOrFail();
+            $product = Product::with('category', 'variants.attributeValues.attribute')->where('slug', $slug)->firstOrFail();
             $relatedProducts = Product::with('category', 'variants.attributeValues')
                 ->where('category_id', $product->category_id)
                 ->where('is_active', true) // Điều kiện kiểm tra sản phẩm phải active

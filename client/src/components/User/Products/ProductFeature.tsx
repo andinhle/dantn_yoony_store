@@ -44,7 +44,7 @@ const ProductFeature = () => {
           const colorVariants = productFeature.variants
             .flatMap((variant) =>
               variant.attribute_values
-                .filter((attr) => attr.attribute.type === "color")
+                .filter((attr) => attr?.attribute?.type === "color")
                 .map((attr) => attr.value)
             )
             .filter((value, index, self) => self.indexOf(value) === index);
@@ -66,6 +66,8 @@ const ProductFeature = () => {
                 variants={productFeature.variants}
                 is_featured={productFeature.is_featured === 1 ? true : false}
                 is_good_deal={productFeature.is_good_deal === 1 ? true : false}
+                id_Product={productFeature.id!}
+                category={productFeature?.category?.slug}
               />
             </SwiperSlide>
           );
