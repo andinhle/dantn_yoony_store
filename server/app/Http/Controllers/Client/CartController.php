@@ -1,16 +1,13 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
-use App\Models\Product;
-use App\Models\Variant;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-
 
 class CartController extends Controller
 {
@@ -62,15 +59,22 @@ class CartController extends Controller
         try {
 
             $data = $request->all();
-            $data['user_id'] = Auth::id();
+            // $data['user_id'] = Auth::id();
             $idExist = Cart::query()
             ->where('variant_id', $request->variant_id)
-            ->where('user_id', Auth::id())
+            ->where('user_id', 1)
             ->first();
 
             if ($idExist) {
-                $idExist->quantity++;
-                $idExist->save();
+                if($request->quantity>1){
+                    $idExist->quantity += $request->quantity;
+                    $idExist->save();
+                }else{
+                    $idExist->quantity++;
+                    $idExist->save();
+                }
+
+                
             } else {
                Cart::query()->create($data);
             }
@@ -99,7 +103,7 @@ class CartController extends Controller
     }
 
     
-    public function update($id)
+    public function update(Request $request, $id, $operation = null)
     {
         try {
         
@@ -108,14 +112,37 @@ class CartController extends Controller
 
 
             if ($idExist) {
-                $idExist->quantity++;
-                $idExist->save();
+
+                if($request->quantity>1){
+                    $idExist->quantity += $request->quantity;
+                    $idExist->save();
+                }else{
+                    if($operation){
+
+                        if ($operation === 'increase') {
+
+                            $idExist->quantity += 1; // Tăng số lượng
+
+                        } elseif ($operation === 'decrease') {
+
+                            if ($idExist->quantity >= 1) {
+                                $idExist->quantity -= 1; // Giảm số lượng nếu lớn hơn 1
+                            }
+                            if ($idExist->quantity === 0) {
+                                Cart::where('id', $id)->delete();
+                            }
+                        }
+                        $idExist->save(); 
+                    }
+                }
+
+                
+
             } 
     
             $data = Cart::query()
             ->with(['variant.product','variant.attributeValues.attribute'])
-            ->where('user_id', Auth::id()
-            )
+            ->where('user_id', 1)
             ->get();
 
             foreach ($data as $item) {
@@ -125,7 +152,7 @@ class CartController extends Controller
             
 
             return response()->json([
-                'data' => $idExist,
+                'data' => $data,
                 'status' => 'success',
                 'tutalPrice' => $this->totalAmount
 
