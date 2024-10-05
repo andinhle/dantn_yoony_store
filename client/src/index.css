@@ -196,4 +196,30 @@ a:hover .number-cart{
   width: 67px !important;;
   height: 67px !important;;
 }
-
+:where(.css-dev-only-do-not-override-ccdg5a).ant-input-outlined:focus, :where(.css-dev-only-do-not-override-ccdg5a).ant-input-outlined:focus-within{
+  border-color: #ff9900 !important;
+  box-shadow: none !important;
+}
+:where(.css-dev-only-do-not-override-ccdg5a).ant-input-outlined:hover{
+  border-color: #ff9900 !important;
+}
+:where(.css-dev-only-do-not-override-ccdg5a).ant-btn-variant-solid{
+  background-color: #ff9900 !important;
+}
+.img-zoom div{
+  background-size: cover !important;
+}
+.anticon-star svg{
+  height: 16px !important;
+  width: 16px !important;
+}
+:where(.css-dev-only-do-not-override-ccdg5a).ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled){
+  color: #ff9900 !important;
+  border-color: #ff9900;
+}
+:where(.css-dev-only-do-not-override-ccdg5a).ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):hover{
+  color: #ff9900;
+}
+:where(.css-dev-only-do-not-override-ccdg5a).ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):first-child{
+  border-color: #ff9900;
+}
