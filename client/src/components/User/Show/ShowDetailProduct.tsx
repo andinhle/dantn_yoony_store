@@ -6,6 +6,7 @@ import { HomeOutlined } from "@ant-design/icons";
 import { Breadcrumb, Rate } from "antd";
 import Zoom from "react-zoom-image-hover";
 import { Label } from "flowbite-react";
+import ShowProductRelated from "./ShowProductRelated";
 type Iitem = {
   id?: number;
   price: number;
@@ -28,6 +29,7 @@ type IVariant = {
 const ShowDetailProduct = () => {
   const { category, slugproduct } = useParams();
   const [product, setProduct] = useState<IProduct>();
+  const [related_products, setRelated_Products] = useState<IProduct[]>([]);
   const [imageProducts, setImageProducts] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [selectedSize, setSelectedSize] = useState<string>("");
@@ -45,6 +47,7 @@ const ShowDetailProduct = () => {
       try {
         const { data } = await instance.get(`home/product/${slugproduct}`);
         setProduct(data.product);
+        setRelated_Products(data.related_products);
       } catch (error) {
         console.log(error);
       }
@@ -122,7 +125,7 @@ const ShowDetailProduct = () => {
   const allItems = variantMerge.flatMap((variant) => variant.items);
   const uniqueSizes = [...new Set(allItems.map((item) => item.size))];
 
-  // console.log(product);
+  console.log(product);
   // console.log(variantMerge);
   // console.log(selectedColorImage);
   useEffect(() => {
@@ -136,9 +139,9 @@ const ShowDetailProduct = () => {
     setVariant(filterItems(variantMerge, selectedColorImage, selectedSize));
   }, [selectedColorImage, selectedSize]);
 
-  console.log(getVariant);
+  // console.log(getVariant);
   return (
-    <>
+    <section className="space-y-8">
       <Breadcrumb
         className="my-5"
         items={[
@@ -585,7 +588,8 @@ const ShowDetailProduct = () => {
           </form>
         </div>
       </div>
-    </>
+      <ShowProductRelated related_products={related_products} />
+    </section>
   );
 };
 
