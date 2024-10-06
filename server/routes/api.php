@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\AttributeValueController;
+use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -42,7 +43,11 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         return $request->user();
     });
     Route::post('/logout', [AuthController::class, 'logout']);
+    // Cart
+    Route::apiResource('cart', CartController::class);
+    Route::patch('/cart/{id}/{operation?}', [CartController::class, 'update']);
 });
+
 
 
 Route::post('/auth/password/request-reset', [AuthController::class, 'requestPasswordReset'])->name('password.request');
@@ -69,6 +74,8 @@ Route::apiResource('roles', RoleController::class);
 Route::get('/product/{slug}', [ProductController::class, 'findBySlug']);
 
 Route::apiResource('products', ProductController::class);
+
+
 
 Route::get('/attribute-values/{id}', [AttributeValueController::class, 'getByAttributeId']);
 
@@ -97,3 +104,4 @@ Route::delete('/delete-wishlists/{product_id}', [HomeController::class, 'deleteW
 Route::get('/list-blogs', [HomeController::class, 'listBlogs'])->name('blogs.listBlogs');
 Route::get('/detailBlog/{slug}', [HomeController::class, 'detailBlog'])->name('blog.detailBlog');
 //end blog
+Route::delete('/delete-wishlists/{product_id}', [HomeController::class, 'deleteWishlist'])->middleware('auth:sanctum');
