@@ -42,6 +42,11 @@ class StoreCouponRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'end_date.date' => 'Ngày kết thúc phải là một ngày hợp lệ.',
+            'end_date.date_format' => 'Ngày kết thúc phải có định dạng YYYY-MM-DD.',
+            'end_date.after_or_equal' => 'Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.',
+            'start_date.date' => 'Ngày bắt đầu phải là một ngày hợp lệ.',
+            'start_date.date_format' => 'Ngày bắt đầu phải có định dạng YYYY-MM-DD.',
             'code.required' => 'Yêu cầu nhập', 
             'code.max' => 'Không nhập quá 255 ký tự', 
             'code.unique' => 'Mã này đã tồn tại', 
