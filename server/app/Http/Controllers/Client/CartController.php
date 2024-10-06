@@ -30,7 +30,6 @@ class CartController extends Controller
             
 
             return response()->json([
-                // 'message' => '',
                 'status' => 'success',
                 'data' => $data,
                 'tutalPrice' => $this->totalAmount
@@ -59,10 +58,11 @@ class CartController extends Controller
         try {
 
             $data = $request->all();
-            // $data['user_id'] = Auth::id();
+            $data['user_id'] = Auth::id();
             $idExist = Cart::query()
+            ->with(['variant.attributeValues.attribute', "user"])
             ->where('variant_id', $request->variant_id)
-            ->where('user_id', 1)
+            ->where('user_id', Auth::id())
             ->first();
 
             if ($idExist) {
@@ -84,6 +84,8 @@ class CartController extends Controller
             return response()->json([
                 'message' => 'Đã thêm sản phẩm vào giỏ hàng ',
                 'status' => 'success',
+                'data' => $idExist,
+
             ], Response::HTTP_CREATED);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 
             
@@ -108,6 +110,7 @@ class CartController extends Controller
         try {
         
             $idExist = Cart::query()
+            ->with(['variant.attributeValues.attribute', "user"])
             ->find($id);
 
 
@@ -142,7 +145,7 @@ class CartController extends Controller
     
             $data = Cart::query()
             ->with(['variant.product','variant.attributeValues.attribute'])
-            ->where('user_id', 1)
+            ->where('user_id',Auth::id() )
             ->get();
 
             foreach ($data as $item) {
@@ -152,9 +155,10 @@ class CartController extends Controller
             
 
             return response()->json([
-                'data' => $data,
+                // 'dataCart' => $data,
                 'status' => 'success',
-                'tutalPrice' => $this->totalAmount
+                'tutalPrice' => $this->totalAmount,
+                'idExist' => $idExist
 
             ], Response::HTTP_CREATED);
         } catch (\Throwable $th) {
