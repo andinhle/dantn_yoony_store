@@ -36,6 +36,7 @@ import UpdateBlogsAdmin from "./pages/admin/blogs/UpdateBlogAdmin.tsx";
 import BlogPage from "./components/User/Blogs/BlogsPage.tsx";
 import LayoutProductAdmin from "./layouts/Admin/LayoutProductAdmin.tsx";
 import AddOrUpdateProduct from "./pages/admin/products/AddOrUpdateProduct.tsx";
+import ShowDetailProduct from "./components/User/Show/ShowDetailProduct.tsx";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
@@ -52,6 +53,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="" index element={<ResetPassRequest />} />
               <Route path=":token/:email" element={<FormResetPass />} />
             </Route>
+            <Route path=":category/:slugproduct" element={<ShowDetailProduct />} />
             <Route path="blogs" element={<BlogPage/>}/>
           </Route>
           {/* Admin */}

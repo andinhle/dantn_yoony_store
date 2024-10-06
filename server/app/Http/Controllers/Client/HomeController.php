@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\BlogResource;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProductResource;
+use App\Models\Blog;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -15,7 +17,7 @@ use Illuminate\Support\Facades\Log;
 class HomeController extends Controller
 {
 
-    //get one getOneProductBySlug 
+    //get one getOneProductBySlug
     public function getOneProductBySlug(string $slug)
     {
         try {
@@ -55,58 +57,58 @@ class HomeController extends Controller
     }
     //insert wishlists by user
     public function insertWishlists(Request $request)
-{
-    if (auth()->check()) {
-        $user = auth()->user();
+    {
+        if (auth()->check()) {
+            $user = auth()->user();
 
-        // Kiểm tra xem product_id đã được gửi lên chưa
-        $validatedData = $request->validate([
-            'product_id' => 'required|exists:products,id', 
-        ]);
+            // Kiểm tra xem product_id đã được gửi lên chưa
+            $validatedData = $request->validate([
+                'product_id' => 'required|exists:products,id',
+            ]);
 
-        // Kiểm tra xem sản phẩm đã tồn tại trong wishlist CHƯA
-        $exists = $user->wishlists()->where('product_id', $request->product_id)->exists();
+            // Kiểm tra xem sản phẩm đã tồn tại trong wishlist CHƯA
+            $exists = $user->wishlists()->where('product_id', $request->product_id)->exists();
 
-        if ($exists) {
-            return response()->json(['error' => 'Sản phẩm đã tồn tại trong danh sách yêu thích.'], 400);
+            if ($exists) {
+                return response()->json(['error' => 'Sản phẩm đã tồn tại trong danh sách yêu thích.'], 400);
+            }
+
+            $wishlist = $user->wishlists()->create([
+                'product_id' => $request->product_id,
+            ]);
+
+            return response()->json([
+                'message' => 'Sản phẩm đã được thêm vào danh sách yêu thích.',
+                'wishlist' => $wishlist
+            ], 201);
+        } else {
+            return response()->json(['error' => 'Tài khoản chưa đăng nhập.'], 401);
         }
-
-        $wishlist = $user->wishlists()->create([
-            'product_id' => $request->product_id,
-        ]);
-
-        return response()->json([
-            'message' => 'Sản phẩm đã được thêm vào danh sách yêu thích.',
-            'wishlist' => $wishlist
-        ], 201);
-    } else {
-        return response()->json(['error' => 'Tài khoản chưa đăng nhập.'], 401);
     }
-}
 
-    
+
 
     //delete wishlists by user
     public function deleteWishlist($product_id)
     {
         if (auth()->check()) {
             $user = auth()->user();
-    
+
             // Kiểm tra xem sản phẩm có trong danh sách yêu thích của người dùng không
             $wishlist = $user->wishlists()->where('product_id', $product_id)->first();
-    
+
             if (!$wishlist) {
                 return response()->json(['error' => 'Sản phẩm không tồn tại trong danh sách yêu thích.'], 404);
             }
-    
+
             $wishlist->delete();
-    
+
             return response()->json(['message' => 'Sản phẩm đã được xóa khỏi danh sách yêu thích.'], 200);
         } else {
             return response()->json(['error' => 'Tài khoản chưa đăng nhập.'], 401);
         }
     }
-    
+
 
     // getProductsByCategory
     public function getProductsByCategory(int $categoryId)
@@ -145,7 +147,7 @@ class HomeController extends Controller
                     'message' => 'Không có sản phẩm nổi bật nào.',
                 ], 404);
             }
-    
+
             return response()->json(ProductResource::collection($featuredProducts), 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -180,4 +182,31 @@ class HomeController extends Controller
         }
     }
 
+
+
+
+
+    // blog home
+    public function listBlogs()
+    {
+        $blogs = Blog::latest('id')->paginate(10);
+
+        return BlogResource::collection($blogs);
+    }
+    // end blog home
+    // detailBlog
+    public function detailBlog($slug)
+    {
+        $blog = Blog::where('slug', $slug)->firstOrFail();
+
+        $related_blogs = Blog::where('id', '!=', $blog->id)
+            ->take(5)
+            ->get();
+
+        return response()->json([
+            'blog' => new BlogResource($blog),
+            'related_blogs' => BlogResource::collection($related_blogs),
+        ]);
+    }
+    // end detailBlog
 }

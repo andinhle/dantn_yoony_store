@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import instance from "../../../instance/instance";
+import GroupVariantsByColor from "../Show/GroupVariantsByColor";
 const ProductFeature = () => {
   const [productFeatures, setProductFeatures] = useState<IProduct[]>([]);
   useEffect(() => {
@@ -25,7 +26,6 @@ const ProductFeature = () => {
       }
     })();
   }, []);
-  console.log(productFeatures)
   return (
     <section className="py-5">
       <h2 className="text-base md:text-xl lg:text-2xl font-medium uppercase product-feature flex items-center gap-2">
@@ -41,31 +41,25 @@ const ProductFeature = () => {
         className="mySwiper my-5 flex flex-wrap gap-[25px]"
       >
         {productFeatures.map((productFeature) => {
-          const colorVariants = productFeature.variants
-            .flatMap((variant) =>
-              variant.attribute_values
-                .filter((attr) => attr.attribute.type === "color")
-                .map((attr) => attr.value)
-            )
-            .filter((value, index, self) => self.indexOf(value) === index);
-          // const colorVariants = productFeature.variants.reduce((colors, variant) => {
-          //   const colorAttribute = variant.attribute_values.find(
-          //     attr => attr.attribute.type === "color"
-          //   );
-          //   if (colorAttribute && !colors.includes(colorAttribute.value)) {
-          //     colors.push(colorAttribute.value);
-          //   }
-          //   return colors;
-          // }, [] as string[]);
+          // const colorVariants = productFeature.variants
+          //   .flatMap((variant) =>
+          //     variant.attribute_values
+          //       .filter((attr) => attr?.attribute?.type === "color")
+          //       .map((attr) => attr.value)
+          //   )
+          //   .filter((value, index, self) => self.indexOf(value) === index);
+          const colorVariantsImages= GroupVariantsByColor(productFeature.variants)
           return (
             <SwiperSlide className="pb-1 px-0.5" key={productFeature.id}>
               <CardProductAll
                 imageProduct={productFeature.images[0]}
                 nameProduct={productFeature.name}
-                colorVariants={colorVariants}
+                colorVariantsImages={colorVariantsImages as []}
                 variants={productFeature.variants}
                 is_featured={productFeature.is_featured === 1 ? true : false}
                 is_good_deal={productFeature.is_good_deal === 1 ? true : false}
+                id_Product={productFeature.id!}
+                category={productFeature?.category?.slug}
               />
             </SwiperSlide>
           );
