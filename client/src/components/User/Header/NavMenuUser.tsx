@@ -1,6 +1,7 @@
 import { ListItemText, Menu, MenuItem, MenuList } from "@mui/material";
-import { MouseEvent, useState } from "react";
+import { MouseEvent, useContext, useState } from "react";
 import { Link } from "react-router-dom";
+import CartContext from "../../../contexts/CartContext";
 const NavMenuUser = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -10,6 +11,7 @@ const NavMenuUser = () => {
   const handleClose = () => {
     setAnchorEl(null);
   };
+  const { carts } = useContext(CartContext);
   return (
     <nav className="hidden lg:block">
       <ul className="flex items-center gap-3">
@@ -52,7 +54,7 @@ const NavMenuUser = () => {
               </svg>
 
               <span className="px-[4px] absolute -top-1 -right-1 bg-primary text-xs text-util rounded-full number-cart">
-                0
+                {carts && carts.length >= 1 ? carts.length : 0}
               </span>
             </div>
             Giỏ hàng
@@ -142,6 +144,7 @@ const NavMenuUser = () => {
                   </ListItemText>
                 </MenuItem>
               </Link>
+              <Link to={"/blogs"}/>
             </MenuList>
           </Menu>
         </li>

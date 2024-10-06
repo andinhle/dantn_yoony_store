@@ -29,6 +29,7 @@
     "cloudinary-react": "^1.8.1",
     "flowbite-react": "^0.10.1",
     "framer-motion": "^11.5.4",
+    "html-react-parser": "^5.1.16",
     "jodit-react": "^4.1.2",
     "js-cookie": "^3.0.5",
     "primereact": "^10.8.2",
@@ -43,6 +44,7 @@
     "react-slugify": "^4.0.1",
     "react-toastify": "^10.0.5",
     "react-transition-group": "^4.4.5",
+    "react-zoom-image-hover": "^1.0.0",
     "sweetalert": "^2.1.2",
     "swiper": "^11.1.10",
     "zod": "^3.23.8"

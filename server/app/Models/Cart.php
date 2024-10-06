@@ -5,21 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Blog extends Model
+class Cart extends Model
 {
     use HasFactory;
-
-    protected $table = 'blogs';
-
     protected $fillable = [
-        'content',
-        'slug',
+        'quantity',
+        'variant_id',
         'user_id',
-        'is_active',
     ];
 
+    public function variant()
+    {
+        return $this->belongsTo(Variant::class);
+    }
+
     public function user()
-{
-    return $this->belongsTo(User::class);
-}
+    {
+        return $this->belongsTo(User::class);
+    }
 }
