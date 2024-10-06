@@ -26,7 +26,6 @@ const ProductFeature = () => {
       }
     })();
   }, []);
-  console.log(productFeatures)
   return (
     <section className="py-5">
       <h2 className="text-base md:text-xl lg:text-2xl font-medium uppercase product-feature flex items-center gap-2">

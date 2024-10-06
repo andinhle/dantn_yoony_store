@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import instance from "../../../instance/instance";
 import { IProduct } from "../../../interfaces/IProduct";
@@ -7,6 +7,10 @@ import { Breadcrumb, Rate } from "antd";
 import Zoom from "react-zoom-image-hover";
 import { Label } from "flowbite-react";
 import ShowProductRelated from "./ShowProductRelated";
+import { useForm } from "react-hook-form";
+import { ICart } from "../../../interfaces/ICart";
+import { toast } from "react-toastify";
+import CartContext from "../../../contexts/CartContext";
 type Iitem = {
   id?: number;
   price: number;
@@ -37,6 +41,7 @@ const ShowDetailProduct = () => {
   const [variantMerge, setVariantMerge] = useState<IVariantMerge[]>([]);
   const [getVariant, setVariant] = useState<IVariant[]>([]);
   const [quantity, setQuantity] = useState(1);
+  const {dispatch}=useContext(CartContext)
   const handleChangeQuality = (e: any) => {
     const value = Math.max(1, Number(e?.target.value));
     setQuantity(value);
@@ -63,7 +68,7 @@ const ShowDetailProduct = () => {
       setImageProducts(
         productMainImage ? [productMainImage, ...variantImages] : variantImages
       );
-      setSelectedImage(productMainImage || variantImages[0]);
+      setSelectedImage(productMainImage);
     }
   }, [product]);
 
@@ -112,20 +117,25 @@ const ShowDetailProduct = () => {
     return Object.values(colorGroups);
   };
 
+
   useEffect(() => {
     if (product) {
       const groupedData = groupVariantsByColor(product.variants);
       setVariantMerge(groupedData as IVariantMerge[]);
-      setSelectedColorImage(variantMerge[0]?.representativeImage);
-      setSelectedImage(variantMerge[0]?.representativeImage);
-      setSelectedSize(variantMerge[0]?.items[0].size);
+      if (groupedData.length > 0) {
+        setSelectedColorImage(groupedData[0]?.representativeImage || "");
+        setSelectedImage(groupedData[0]?.representativeImage || "");
+        setSelectedSize(groupedData[0]?.items[0]?.size || "");
+      }
     }
   }, [product]);
+
+  // console.log(selectedImage);
 
   const allItems = variantMerge.flatMap((variant) => variant.items);
   const uniqueSizes = [...new Set(allItems.map((item) => item.size))];
 
-  console.log(product);
+  // console.log(product);
   // console.log(variantMerge);
   // console.log(selectedColorImage);
   useEffect(() => {
@@ -139,7 +149,25 @@ const ShowDetailProduct = () => {
     setVariant(filterItems(variantMerge, selectedColorImage, selectedSize));
   }, [selectedColorImage, selectedSize]);
 
-  // console.log(getVariant);
+  const addCart=async()=>{
+    try {
+      const {data}=await instance.post('cart',{
+        quantity,
+        variant_id:getVariant[0].id,
+        user_id:1
+      })
+      if (data) {
+        console.log(data);
+        dispatch({
+          type:"ADD",
+          payload:data
+        })
+        toast.success("Đã thêm sản phẩm vào giỏ hàng")
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
   return (
     <section className="space-y-8">
       <Breadcrumb
@@ -495,7 +523,7 @@ const ShowDetailProduct = () => {
               </div>
             </div>
             <div className="flex gap-5">
-              <button className="py-2 px-4 border border-primary rounded-md text-primary flex gap-1.5 items-center">
+              <button onClick={addCart} type="button" className="py-2 px-4 border border-primary rounded-md text-primary flex gap-1.5 items-center hover:bg-primary hover:text-util transition-all">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
