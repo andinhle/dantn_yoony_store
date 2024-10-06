@@ -33,6 +33,7 @@ import BannerList from "./pages/admin/BannerAdmin.tsx";
 import LayoutBlogsAdmin from "./layouts/Admin/LayoutBlogsAdmin.tsx";
 import BlogProvider from "./contexts/BlogsContext.tsx";
 import UpdateBlogsAdmin from "./pages/admin/blogs/UpdateBlogAdmin.tsx";
+import BlogPage from "./components/User/Blogs/BlogsPage.tsx";
 import LayoutProductAdmin from "./layouts/Admin/LayoutProductAdmin.tsx";
 import AddOrUpdateProduct from "./pages/admin/products/AddOrUpdateProduct.tsx";
 import ShowDetailProduct from "./components/User/Show/ShowDetailProduct.tsx";
@@ -53,6 +54,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path=":token/:email" element={<FormResetPass />} />
             </Route>
             <Route path=":category/:slugproduct" element={<ShowDetailProduct />} />
+            <Route path="blogs" element={<BlogPage/>}/>
           </Route>
           {/* Admin */}
           <Route path="admin" element={<LayoutAdmin />}>

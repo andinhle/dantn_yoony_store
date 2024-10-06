@@ -105,9 +105,8 @@ const BlogsAdmin = () => {
     const {data} = await instance.post("blogs",{
       content: contentNew,
       slug: slugify(titleSlugBlog),
-      status: statusBlog,
       user_id: 1 ,
-      is_active: 1
+      isActive: setActive
     });
     console.log(data);
     if(data){
@@ -172,8 +171,8 @@ const BlogsAdmin = () => {
             <div>
               <ToggleSwitch
                 label="Trạng thái"
-                checked={statusBlog}
-                 onChange={setStatusBlog}
+                checked={isActive}
+                 onChange={setActive}
                 className="my-7"           
                 sizing={'sm'}
               />
