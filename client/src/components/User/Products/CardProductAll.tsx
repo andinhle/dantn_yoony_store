@@ -31,7 +31,7 @@ Props) => {
   const [openModal, setOpenModal] = useState<boolean>(false);
   return (
     <Link to={`/${category}/${slugify(nameProduct)}`}>
-      <div className="min-h-[354px] group max-w-[220px] w-full bg-util rounded-lg overflow-hidden shadow-[0px_1px_4px_0px_rgba(255,_138,_0,_0.25)] cursor-pointer">
+      <div className="min-h-[355px] group max-w-[220px] w-full bg-util rounded-lg overflow-hidden shadow-[0px_1px_4px_0px_rgba(255,_138,_0,_0.25)] cursor-pointer">
         <div className="relative z-40 overflow-hidden">
           <img
             src={imageProduct}
@@ -136,7 +136,7 @@ Props) => {
             </Modal>
           </div>
         </div>
-        <div className="px-3.5 space-y-2 py-3">
+        <div className="px-3.5 space-y-3 py-3">
           <p className="line-clamp-1 text-sm  md:text-base">{nameProduct}</p>
           <div className="flex gap-2 text-sm">
             <span className="line-through">

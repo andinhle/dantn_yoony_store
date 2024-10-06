@@ -7,7 +7,6 @@ type Prop = {
   related_products: IProduct[];
 };
 const ShowProductRelated = ({ related_products }: Prop) => {
-  console.log(related_products);
   return (
     <section>
       <h2 className="text-base md:text-lg lg:text-xl font-medium uppercase flex items-center gap-2">
