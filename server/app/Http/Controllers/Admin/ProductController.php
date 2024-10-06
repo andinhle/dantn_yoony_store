@@ -125,7 +125,7 @@ public function index()
     public function findBySlug(string $slug): JsonResponse
     {
         try {
-            $product = Product::with('variants.attributeValues')
+            $product = Product::with('variants.attributeValues.attribute')
                 ->where('slug', $slug)
                 ->firstOrFail();
 
@@ -150,7 +150,7 @@ public function index()
         }
     }
 
-    //updateIsFeatured 
+    //updateIsFeatured
     public function updateIsFeatured(Request $request, string $id){
         $product = Product::findOrFail($id);
         $product->update(['is_featured'=>$request->is_featured]);
@@ -197,9 +197,9 @@ public function index()
      public function hardDelete(string $id)
      {
          $category = Product::withTrashed()->findOrFail($id);
- 
+
          $category->forceDelete();
- 
+
          return response()->json(['message' => 'Xóa vĩnh viễn Sản Phẩm thành công!'], 200);
      }
 }
