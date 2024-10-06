@@ -9,32 +9,34 @@ import slugify from "react-slugify";
 type Props = {
   imageProduct: string;
   nameProduct: string;
-  colorVariants: (string | undefined)[];
+  colorVariantsImages: {
+    representativeImage:string
+  }[];
   variants: IVariants[];
   is_featured: boolean;
   is_good_deal: boolean;
   id_Product: number;
-  category:string
+  category: string;
 };
 const CardProductAll = ({
   imageProduct,
   nameProduct,
-  colorVariants = [],
+  colorVariantsImages = [],
   variants = [],
   is_featured,
   is_good_deal,
-  category
+  category,
 }: // id_Product,
 Props) => {
   const [openModal, setOpenModal] = useState<boolean>(false);
   return (
-    <Link to={`${category}/${slugify(nameProduct)}`}>
+    <Link to={`/${category}/${slugify(nameProduct)}`}>
       <div className="min-h-[354px] group max-w-[220px] w-full bg-util rounded-lg overflow-hidden shadow-[0px_1px_4px_0px_rgba(255,_138,_0,_0.25)] cursor-pointer">
-        <div className="relative z-40">
+        <div className="relative z-40 overflow-hidden">
           <img
             src={imageProduct}
             alt="product-image"
-            className="max-h-[260px] object-cover w-full"
+            className="max-h-[260px] object-cover w-full group-hover:scale-110 group-hover:shadow-lg transition-transform duration-500 ease-in-out"
           />
           <div className="absolute top-2 right-2 z-30 text-primary/70 cursor-pointer">
             <svg
@@ -163,14 +165,14 @@ Props) => {
             modules={[FreeMode]}
             className="mySwiper px-5 z-50"
           >
-            {colorVariants.map((colorVariant, index: number) => {
+            {colorVariantsImages.map((colorVariantImage, index: number) => {
               return (
                 <SwiperSlide
                   key={index + 1}
-                  className="!w-6 !h-6 rounded-full border border-input"
-                  style={{ backgroundColor: colorVariant }}
-                  title={colorVariant}
-                ></SwiperSlide>
+                  className="!w-7 !h-7 rounded-full border border-input overflow-hidden"
+                >
+                  <img src={colorVariantImage?.representativeImage} alt={`Image ${colorVariantImage}`} />
+                </SwiperSlide>
               );
             })}
           </Swiper>
