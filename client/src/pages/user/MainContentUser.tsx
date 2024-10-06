@@ -1,5 +1,7 @@
 import BannerFixedChild from "../../components/User/Banner/BannerFixedChild";
 import BannerHome from "../../components/User/Banner/BannerHome";
+import BlogHome from "../../components/User/Blogs/BlogsHome";
+import BlogPage from "../../components/User/Blogs/BlogsPage";
 import CategorysList from "../../components/User/Categorys/CategorysList";
 import ProductClothes from "../../components/User/Products/ProductClothes";
 import ProductFeature from "../../components/User/Products/ProductFeature";
@@ -21,6 +23,7 @@ const MainContentUser = () => {
       <ProductClothes />
       <ProductUniForm />
       <ProductGlasses />
+      <BlogHome/>
     </>
   );
 };
