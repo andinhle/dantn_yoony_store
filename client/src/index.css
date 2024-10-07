@@ -223,3 +223,8 @@ a:hover .number-cart{
 :where(.css-dev-only-do-not-override-ccdg5a).ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):first-child{
   border-color: #ff9900;
 }
+
+.shadow-small{
+  box-shadow: none !important;
+  border: 1px solid #F2F2F7;
+}

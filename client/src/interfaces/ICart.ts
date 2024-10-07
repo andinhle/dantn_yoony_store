@@ -5,5 +5,6 @@ export interface ICart{
     id:number,
     quantity:number,
     variant_id:IVariants,
-    user_id:IUser
+    user_id:IUser,
+    variant:any
 }

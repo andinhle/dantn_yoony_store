@@ -11,6 +11,7 @@ import { useForm } from "react-hook-form";
 import { ICart } from "../../../interfaces/ICart";
 import { toast } from "react-toastify";
 import CartContext from "../../../contexts/CartContext";
+import axios from "axios";
 type Iitem = {
   id?: number;
   price: number;
@@ -41,7 +42,7 @@ const ShowDetailProduct = () => {
   const [variantMerge, setVariantMerge] = useState<IVariantMerge[]>([]);
   const [getVariant, setVariant] = useState<IVariant[]>([]);
   const [quantity, setQuantity] = useState(1);
-  const {dispatch}=useContext(CartContext)
+  const { dispatch } = useContext(CartContext);
   const handleChangeQuality = (e: any) => {
     const value = Math.max(1, Number(e?.target.value));
     setQuantity(value);
@@ -117,7 +118,6 @@ const ShowDetailProduct = () => {
     return Object.values(colorGroups);
   };
 
-
   useEffect(() => {
     if (product) {
       const groupedData = groupVariantsByColor(product.variants);
@@ -149,25 +149,35 @@ const ShowDetailProduct = () => {
     setVariant(filterItems(variantMerge, selectedColorImage, selectedSize));
   }, [selectedColorImage, selectedSize]);
 
-  const addCart=async()=>{
+  const addCart = async () => {
     try {
-      const {data}=await instance.post('cart',{
+      const {
+        data:{data:response}
+      } = await instance.post("cart", {
         quantity,
-        variant_id:getVariant[0].id,
-        user_id:1
-      })
-      if (data) {
-        console.log(data);
+        variant_id: getVariant[0].id,
+        user_id: 1,
+      });
+      if (response) {
+        toast.success("Đã thêm sản phẩm vào giỏ hàng");
+        console.log(response);
         dispatch({
-          type:"ADD",
-          payload:data
-        })
-        toast.success("Đã thêm sản phẩm vào giỏ hàng")
+          type: "ADD",
+          payload: response,
+        });
       }
     } catch (error) {
-      console.log(error);
+      if (axios.isAxiosError(error)) {
+        if (error.response?.data?.message==="Unauthenticated.") {
+          toast.error("Vui lòng đăng nhập !");
+        }
+      } else if (error instanceof Error) {
+        console.log(error.message);
+      } else {
+        console.log('Đã xảy ra lỗi không mong muốn');
+      }
     }
-  }
+  };
   return (
     <section className="space-y-8">
       <Breadcrumb
@@ -523,7 +533,11 @@ const ShowDetailProduct = () => {
               </div>
             </div>
             <div className="flex gap-5">
-              <button onClick={addCart} type="button" className="py-2 px-4 border border-primary rounded-md text-primary flex gap-1.5 items-center hover:bg-primary hover:text-util transition-all">
+              <button
+                onClick={addCart}
+                type="button"
+                className="py-2 px-4 border border-primary rounded-md text-primary flex gap-1.5 items-center hover:bg-primary hover:text-util transition-all"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
