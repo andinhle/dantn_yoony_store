@@ -144,6 +144,7 @@ const NavMenuUser = () => {
                   </ListItemText>
                 </MenuItem>
               </Link>
+              <Link to={"/blogs"}/>
             </MenuList>
           </Menu>
         </li>

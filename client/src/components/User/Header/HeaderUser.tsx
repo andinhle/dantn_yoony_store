@@ -12,6 +12,7 @@ const HeaderUser = () => {
         </div>
         <SearchBar />
         <NavMenuUser />
+        
         <div className="lg:hidden flex gap-5 items-center ">
           <svg
             xmlns="http://www.w3.org/2000/svg"

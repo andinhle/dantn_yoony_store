@@ -96,7 +96,12 @@ Route::get('home/products/good-deal', [HomeController::class, 'getGoodDealProduc
 
 Route::get('home/product/category/{id}', [HomeController::class, 'getProductsByCategory']);
 
-//wishlist 
+//wishlist
 Route::middleware('auth:sanctum')->get('/list-wishlists', [HomeController::class, 'getWishlists']);
 Route::post('/insert-wishlists', [HomeController::class, 'insertWishlists'])->middleware('auth:sanctum');
+Route::delete('/delete-wishlists/{product_id}', [HomeController::class, 'deleteWishlist'])->middleware('auth:sanctum');
+//blog
+Route::get('/list-blogs', [HomeController::class, 'listBlogs'])->name('blogs.listBlogs');
+Route::get('/detailBlog/{slug}', [HomeController::class, 'detailBlog'])->name('blog.detailBlog');
+//end blog
 Route::delete('/delete-wishlists/{product_id}', [HomeController::class, 'deleteWishlist'])->middleware('auth:sanctum');
