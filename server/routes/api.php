@@ -105,3 +105,6 @@ Route::get('/list-blogs', [HomeController::class, 'listBlogs'])->name('blogs.lis
 Route::get('/detailBlog/{slug}', [HomeController::class, 'detailBlog'])->name('blog.detailBlog');
 //end blog
 Route::delete('/delete-wishlists/{product_id}', [HomeController::class, 'deleteWishlist'])->middleware('auth:sanctum');
+
+//cart
+Route::post('cart/delete-much', [CartController::class, 'deleteMuch'])->name('cart.deleteMuch');
