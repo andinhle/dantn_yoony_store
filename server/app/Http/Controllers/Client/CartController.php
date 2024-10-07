@@ -32,7 +32,7 @@ class CartController extends Controller
             return response()->json([
                 'status' => 'success',
                 'data' => $data,
-                'tutalPrice' => $this->totalAmount
+                'totalPrice' => $this->totalAmount
             ], Response::HTTP_OK);
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
@@ -56,53 +56,46 @@ class CartController extends Controller
     public function store(Request $request)
     {
         try {
-
             $data = $request->all();
             $data['user_id'] = Auth::id();
             $idExist = Cart::query()
-            ->with(['variant.attributeValues.attribute', "user"])
-            ->where('variant_id', $request->variant_id)
-            ->where('user_id', Auth::id())
-            ->first();
-
+                ->with(['variant.attributeValues.attribute', "user"])
+                ->where('variant_id', $request->variant_id)
+                ->where('user_id', Auth::id())
+                ->first();
+    
             if ($idExist) {
-                if($request->quantity>1){
+                if ($request->quantity > 1) {
                     $idExist->quantity += $request->quantity;
-                    $idExist->save();
-                }else{
+                } else {
                     $idExist->quantity++;
-                    $idExist->save();
                 }
-
-                
+                $idExist->save();
             } else {
-               Cart::query()->create($data);
+                $idExist = Cart::query()->create($data);
             }
-
-            // $cart = Cart::query()->create($data);
-
+    
+            // Eager load liên quan sau khi đã lưu
+            $idExist->load(['variant.attributeValues.attribute', "user"]);
+    
             return response()->json([
-                'message' => 'Đã thêm sản phẩm vào giỏ hàng ',
+                'message' => 'Đã thêm sản phẩm vào giỏ hàng',
                 'status' => 'success',
                 'data' => $idExist,
-
-            ], Response::HTTP_CREATED);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
-
-            
+            ], Response::HTTP_CREATED);
         } catch (\Throwable $th) {
-
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
                 'message' => $th->getMessage()
             ]);
-
+    
             return response()->json([
                 'message' => 'Đã xảy ra lỗi vui lòng thử lại',
                 'status' => 'error',
-
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    
 
     
     public function update(Request $request, $id, $operation = null)
@@ -157,7 +150,7 @@ class CartController extends Controller
             return response()->json([
                 // 'dataCart' => $data,
                 'status' => 'success',
-                'tutalPrice' => $this->totalAmount,
+                'totalPrice' => $this->totalAmount,
                 'idExist' => $idExist
 
             ], Response::HTTP_CREATED);

@@ -36,49 +36,57 @@ import UpdateBlogsAdmin from "./pages/admin/blogs/UpdateBlogAdmin.tsx";
 import LayoutProductAdmin from "./layouts/Admin/LayoutProductAdmin.tsx";
 import AddOrUpdateProduct from "./pages/admin/products/AddOrUpdateProduct.tsx";
 import ShowDetailProduct from "./components/User/Show/ShowDetailProduct.tsx";
+import CartListClient from "./components/User/Cart/CartListClient.tsx";
+import { NextUIProvider } from "@nextui-org/react";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
-    <BlogProvider>
-      <ScrollToTop />
-      <Routes>
-        <Route element={<App />}>
-          {/* User */}
-          <Route path="/" element={<LayoutUser />}>
-            <Route index element={<MainContentUser />} />
-            <Route path="register" element={<Register />} />
-            <Route path="login" element={<Login />} />
-            <Route path="reset-password" element={<LayoutResetPassword />}>
-              <Route path="" index element={<ResetPassRequest />} />
-              <Route path=":token/:email" element={<FormResetPass />} />
-            </Route>
-            <Route path=":category/:slugproduct" element={<ShowDetailProduct />} />
-          </Route>
-          {/* Admin */}
-          <Route path="admin" element={<LayoutAdmin />}>
-            <Route index element={<DashboardAdmin />} />
-            <Route path="users" element={<UsersAdmin />} />
-            <Route path="blogs" element={<LayoutBlogsAdmin />} />
-            <Route path="blogs/:id" element={<UpdateBlogsAdmin />}/>
-            <Route path="categorys" element={<CategorysAdmin />} />
-            <Route path="products" element={<LayoutProductAdmin />}>
-              <Route index element={<ProductList />} />
-              <Route path="add" element={<AddOrUpdateProduct />} />
-              <Route path="update/:id" element={<AddOrUpdateProduct />} />
-            </Route>
-            <Route path="orders" element={<Orders />} />
-            <Route path="vouchers" element={<LayoutVoucherAdmin />} />
-            <Route path="banner" element={<BannerList />} />
-            {/* <Route path="products/varriant" element={<ListVarriant />} />
+    <NextUIProvider>
+      <BrowserRouter>
+        <BlogProvider>
+          <ScrollToTop />
+          <Routes>
+            <Route element={<App />}>
+              {/* User */}
+              <Route path="/" element={<LayoutUser />}>
+                <Route index element={<MainContentUser />} />
+                <Route path="register" element={<Register />} />
+                <Route path="login" element={<Login />} />
+                <Route path="reset-password" element={<LayoutResetPassword />}>
+                  <Route path="" index element={<ResetPassRequest />} />
+                  <Route path=":token/:email" element={<FormResetPass />} />
+                </Route>
+                <Route
+                  path=":category/:slugproduct"
+                  element={<ShowDetailProduct />}
+                />
+                <Route path="gio-hang" element={<CartListClient />} />
+              </Route>
+              {/* Admin */}
+              <Route path="admin" element={<LayoutAdmin />}>
+                <Route index element={<DashboardAdmin />} />
+                <Route path="users" element={<UsersAdmin />} />
+                <Route path="blogs" element={<LayoutBlogsAdmin />} />
+                <Route path="blogs/:id" element={<UpdateBlogsAdmin />} />
+                <Route path="categorys" element={<CategorysAdmin />} />
+                <Route path="products" element={<LayoutProductAdmin />}>
+                  <Route index element={<ProductList />} />
+                  <Route path="add" element={<AddOrUpdateProduct />} />
+                  <Route path="update/:id" element={<AddOrUpdateProduct />} />
+                </Route>
+                <Route path="orders" element={<Orders />} />
+                <Route path="vouchers" element={<LayoutVoucherAdmin />} />
+                <Route path="banner" element={<BannerList />} />
+                {/* <Route path="products/varriant" element={<ListVarriant />} />
             <Route path="products/varriant/add" element={<Varriant />} />
             <Route path="products/varriant/addValue"element={<VarriantValue />}/> */}
-            <Route path="orders/orderDetails" element={<OrderDetails />} />
-            <Route path="rates" element={<Rates />} />
-          </Route>
-        </Route>
-      </Routes>
-      <ToastContainer autoClose={3000} newestOnTop={true} />
-      </BlogProvider>
-    </BrowserRouter>
+                <Route path="orders/orderDetails" element={<OrderDetails />} />
+                <Route path="rates" element={<Rates />} />
+              </Route>
+            </Route>
+          </Routes>
+          <ToastContainer autoClose={3000} newestOnTop={true} />
+        </BlogProvider>
+      </BrowserRouter>
+    </NextUIProvider>
   </StrictMode>
 );

@@ -11,7 +11,7 @@ const NavMenuUser = () => {
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const { carts } = useContext(CartContext);
+  const {carts}=useContext(CartContext)
   return (
     <nav className="hidden lg:block">
       <ul className="flex items-center gap-3">
@@ -36,7 +36,7 @@ const NavMenuUser = () => {
           </Link>
         </li>
         <li>
-          <Link className="flex gap-2 items-center py-2 px-3.5 rounded-md  hover:bg-primary hover:text-util transtition-all">
+          <Link to={`/gio-hang`} className="flex gap-2 items-center py-2 px-3.5 rounded-md  hover:bg-primary hover:text-util transtition-all">
             <div className="relative">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -54,7 +54,7 @@ const NavMenuUser = () => {
               </svg>
 
               <span className="px-[4px] absolute -top-1 -right-1 bg-primary text-xs text-util rounded-full number-cart">
-                {carts && carts.length >= 1 ? carts.length : 0}
+                {carts&& carts.length>=1? carts.length : 0 }
               </span>
             </div>
             Giỏ hàng
