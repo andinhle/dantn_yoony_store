@@ -29,7 +29,7 @@
     "cloudinary-react": "^1.8.1",
     "flowbite-react": "^0.10.1",
     "framer-motion": "^11.11.1",
-    "html-react-parser": "^5.1.16",
+    "html-react-parser": "^5.1.18",
     "jodit-react": "^4.1.2",
     "js-cookie": "^3.0.5",
     "primereact": "^10.8.2",
