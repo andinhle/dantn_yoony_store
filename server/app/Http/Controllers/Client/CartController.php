@@ -15,38 +15,44 @@ class CartController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        try {
-            $data = Cart::query()
-            ->with(['variant.product','variant.attributeValues.attribute'])
+   public function index()
+{
+    try {
+        $data = Cart::query()
+            ->with(['variant.product', 'variant.attributeValues.attribute'])
             ->where('user_id', Auth::id())
             ->get();
 
-            foreach ($data as $item) {
-                $this->totalAmount += $item['variant']['price'] * $item['quantity'];
-                
+        foreach ($data as $item) {
+            $this->totalAmount += $item['variant']['price'] * $item['quantity'];
+
+            // Xử lý hình ảnh: kiểm tra chuỗi JSON trước khi giải mã
+            $images = $item['variant']['product']['images'];
+            if (is_string($images)) {
+                $item['variant']['product']['images'] = json_decode($images, true);
             }
-            
-
-            return response()->json([
-                'status' => 'success',
-                'data' => $data,
-                'totalPrice' => $this->totalAmount
-            ], Response::HTTP_OK);
-        } catch (\Throwable $th) {
-            Log::error(__CLASS__ . '@' . __FUNCTION__, [
-                'line' => $th->getLine(),
-                'message' => $th->getMessage()
-            ]);
-
-            return response()->json([
-                'message' => 'Lỗi tải trang',
-                'status' => 'error',
-
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $data,
+            'totalPrice' => $this->totalAmount
+        ], Response::HTTP_OK);
+    } catch (\Throwable $th) {
+        // Ghi lại thông tin lỗi chi tiết vào log
+        Log::error(__CLASS__ . '@' . __FUNCTION__, [
+            'line' => $th->getLine(),
+            'message' => $th->getMessage(),
+            'trace' => $th->getTraceAsString(), // Thêm stack trace để dễ dàng tìm lỗi
+        ]);
+
+        return response()->json([
+            'message' => 'Lỗi tải trang',
+            'status' => 'error',
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
+}
+
 
     
 
