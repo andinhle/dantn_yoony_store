@@ -37,6 +37,7 @@ import BlogPage from "./components/User/Blogs/BlogsPage.tsx";
 import LayoutProductAdmin from "./layouts/Admin/LayoutProductAdmin.tsx";
 import AddOrUpdateProduct from "./pages/admin/products/AddOrUpdateProduct.tsx";
 import ShowDetailProduct from "./components/User/Show/ShowDetailProduct.tsx";
+import BlogDetail from "./components/User/Blogs/BlogDetail.tsx";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
@@ -55,6 +56,7 @@ createRoot(document.getElementById("root")!).render(
             </Route>
             <Route path=":category/:slugproduct" element={<ShowDetailProduct />} />
             <Route path="blogs" element={<BlogPage/>}/>
+            <Route path="detailBlog/:slug" element={<BlogDetail/>}/>
           </Route>
           {/* Admin */}
           <Route path="admin" element={<LayoutAdmin />}>
