@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\ModelController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\RoleHasModelController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\HomeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,13 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+//users admin
+// Lấy tất cả thông tin user
+Route::get('/users', [UserController::class, 'index']);
+// Cập nhật role của user
+Route::patch('/users/{id}/role', [UserController::class, 'updateRole']);
+
+//end users admin
 
 Route::apiResource('coupon', CouponController::class);
 Route::patch('coupon/{id}/status', [CouponController::class, 'updateStatus'])->name('coupon.updateStatus');
