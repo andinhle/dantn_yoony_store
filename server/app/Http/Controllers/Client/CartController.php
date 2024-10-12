@@ -19,15 +19,20 @@ class CartController extends Controller
     {
         try {
             $data = Cart::query()
-            ->with(['variant.product','variant.attributeValues.attribute'])
-            ->where('user_id', Auth::id())
-            ->get();
-
+                ->with(['variant.product.category', 'variant.attributeValues.attribute'])
+                ->where('user_id', Auth::id())
+                ->orderBy('created_at', 'desc')
+                ->get();
+    
             foreach ($data as $item) {
-                $this->totalAmount += $item['variant']['price'] * $item['quantity'];
-                
+
+                $this->totalAmount += $item['variant']['sale_price'] * $item['quantity'];
+
+                $images = $item['variant']['product']['images'];
+                if (is_string($images)) {
+                    $item['variant']['product']['images'] = json_decode($images, true);
+                }
             }
-            
 
             return response()->json([
                 'status' => 'success',
@@ -37,9 +42,10 @@ class CartController extends Controller
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
-                'message' => $th->getMessage()
+                'message' => $th->getMessage(),
+                'trace' => $th->getTraceAsString(),
             ]);
-
+    
             return response()->json([
                 'message' => 'Lỗi tải trang',
                 'status' => 'error',
@@ -59,7 +65,7 @@ class CartController extends Controller
             $data = $request->all();
             $data['user_id'] = Auth::id();
             $idExist = Cart::query()
-                ->with(['variant.attributeValues.attribute', "user"])
+                ->with(['variant.product.category','variant.attributeValues.attribute', "user"])
                 ->where('variant_id', $request->variant_id)
                 ->where('user_id', Auth::id())
                 ->first();
@@ -76,8 +82,13 @@ class CartController extends Controller
             }
     
             // Eager load liên quan sau khi đã lưu
-            $idExist->load(['variant.attributeValues.attribute', "user"]);
-    
+            $idExist->load(['variant.product.category','variant.attributeValues.attribute', "user"]);
+
+            $images = $idExist->variant->product->images;
+            if (is_string($images)) {
+                $idExist->variant->product->images = json_decode($images, true);
+            }
+
             return response()->json([
                 'message' => 'Đã thêm sản phẩm vào giỏ hàng',
                 'status' => 'success',
@@ -137,7 +148,7 @@ class CartController extends Controller
             } 
     
             $data = Cart::query()
-            ->with(['variant.product','variant.attributeValues.attribute'])
+            ->with(['variant.product.category','variant.attributeValues.attribute'])
             ->where('user_id',Auth::id() )
             ->get();
 
