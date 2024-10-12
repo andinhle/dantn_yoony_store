@@ -1,31 +1,329 @@
-import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Pagination,
-  getKeyValue,
-} from "@nextui-org/react";
-import { users } from "./data";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import CartContext from "../../../contexts/CartContext";
+import { Table, Pagination, Popconfirm, message } from "antd";
+import type {
+  PopconfirmProps,
+  TableColumnsType,
+  TablePaginationConfig,
+} from "antd";
+import { IAttributeValue } from "../../../interfaces/IAttributeValue";
+import axios from "axios";
+import { toast } from "react-toastify";
+import instance from "../../../instance/instance";
+import { Link } from "react-router-dom";
+interface CartItem {
+  id: string;
+  variant: {
+    price: number;
+    sale_price?: number;
+    image: string;
+    product: {
+      name: string;
+      images: string[];
+    };
+    attribute_values: IAttributeValue[];
+  };
+  quantity: number;
+}
+
 const CartListClient = () => {
-  const {carts}=useContext(CartContext)
-  const [page, setPage] = useState(1);
-  const rowsPerPage = 10;
+  const { carts, dispatch } = useContext(CartContext);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
+  const calculateTotal = (item: any) => {
+    return item.quantity * (item.variant.sale_price || item.variant.price);
+  };
 
-  const pages = Math.ceil(users.length / rowsPerPage);
+  useEffect(() => {
+    window.scrollTo({
+      top:0,
+      behavior:"smooth"
+    });
+  }, [currentPage, selectedRowKeys]);
 
-  const items = useMemo(() => {
-    const start = (page - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
+  const handleQuantityChange = async(item: any, newQuantity: number,operation:string) => {
+    console.log(item);
+    const updatedItem = { ...item, quantity: Math.max(1, newQuantity) };
+    dispatch({ type: "UPDATE", payload: updatedItem });
+    try {
+      if (operation==="increase") {
+        await instance.patch(`cart/${item.id}/increase`)
+      }else if (operation==="decrease") {
+        await instance.patch(`cart/${item.id}/decrease`)
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message);
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Đã xảy ra lỗi không mong muốn");
+      }
+    }
+  };
 
-    return users.slice(start, end);
-  }, [page, users]);
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
+  };
+  const handleTableChange = (pagination: TablePaginationConfig) => {
+    setCurrentPage(pagination.current || 1);
+  }
+  
+  const confirmDeleteOneProduct: PopconfirmProps["onConfirm"] = async (
+    id: number
+  ) => {
+    try {
+      const data = await instance.delete(`cart/${id}`);
 
-  console.log(carts);
+      if (data) {
+        message.success("Xoá sản phẩm khỏi giỏ hàng thành công!");
+        dispatch({ type: "DELETE", payload: id });
+        const newTotalItems = carts.length - 1;
+        const newTotalPages = Math.ceil(newTotalItems / pageSize);
+        if (currentPage > newTotalPages) {
+          setCurrentPage(Math.max(1, newTotalPages));
+        }
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message);
+      } else if (error instanceof Error) {
+        console.log(error.message);
+      } else {
+        console.log("Đã xảy ra lỗi không mong muốn");
+      }
+    }
+  };
+  useEffect(() => {
+    const totalPages = Math.ceil(carts.length / pageSize);
+    if (currentPage > totalPages) {
+      setCurrentPage(Math.max(1, totalPages));
+    }
+  }, [carts, currentPage, pageSize]);
+
+  const confirmDeleteSelectProduct: PopconfirmProps["onConfirm"] = async (
+    pagination: TablePaginationConfig
+  ) => {
+    try {
+      const data = await instance.post("cart/delete-much", {
+        ids: selectedRowKeys,
+      });
+
+      if (data) {
+        message.success("Xoá sản phẩm khỏi giỏ hàng thành công!");
+        dispatch({ type: "REMOVE_SELECTED", payload: selectedRowKeys });
+        setCurrentPage(pagination.current || 1);
+        setSelectedRowKeys([]);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message);
+      } else if (error instanceof Error) {
+        console.log(error.message);
+      } else {
+        console.log("Đã xảy ra lỗi không mong muốn");
+      }
+    }
+  };
+
+  const cancelDeleteOneProduct: PopconfirmProps["onCancel"] = (e) => {
+    console.log(e);
+    message.error("Huỷ xoá");
+  };
+  const cancelDeleteSelectProduct: PopconfirmProps["onCancel"] = (e) => {
+    console.log(e);
+    message.error("Huỷ xoá");
+  };
+
+  const columns: TableColumnsType<CartItem> = [
+    {
+      title: "Sản phẩm",
+      dataIndex: "variant",
+      render: (variant, record) => (
+        <div className="flex gap-3 items-center w-fit">
+          <img
+            src={variant.image || variant.product.images[0]}
+            className="w-14 h-14 object-cover rounded-lg"
+          />
+          <div>
+            <Link to={`/${variant.product.category.slug}/${variant.product.slug}`} className="line-clamp-1">{variant.product?.name}</Link>
+            <div className="flex gap-2 text-secondary/50">
+              <span>
+                Size:{" "}
+                {variant.attribute_values.find(
+                  (item: IAttributeValue) => item.attribute.slug === "size"
+                )?.value || "N/A"}
+              </span>
+              <span>
+                Màu:{" "}
+                {variant.attribute_values.find(
+                  (item: IAttributeValue) => item.attribute.slug === "color"
+                )?.value || "N/A"}
+              </span>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Giá",
+      dataIndex: "variant",
+      align: "center",
+      render: (variant, record) => (
+        <span>
+          {variant.sale_price
+            .toLocaleString("vi-VN", {
+              useGrouping: true,
+              maximumFractionDigits: 0,
+            })
+            .replace(/,/g, ".")}{" "}
+          VNĐ
+        </span>
+      ),
+    },
+    {
+      title: "Số lượng",
+      dataIndex: "quantity",
+      align: "center",
+      render: (quantity, record) => (
+        <div className="flex items-center w-fit mx-auto">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              handleQuantityChange(record, quantity > 1 ? quantity - 1 : 1,'decrease');
+            }}
+            className="p-3 border-input rounded-es-sm rounded-ss-sm text-[#929292] border-s border-b border-t"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="size-3"
+              color={"currentColor"}
+              fill={"none"}
+            >
+              <path
+                d="M20 12L4 12"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          <input
+            min={1}
+            value={quantity}
+            onChange={(e) =>
+              handleQuantityChange(record, Number(e.target.value))
+            }
+            className="w-10 p-[7px] border border-input outline-none text-center"
+          />
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              handleQuantityChange(record, quantity + 1,'increase');
+            }}
+            className="p-3 border-input rounded-ee-sm rounded-se-sm text-[#929292] border-e border-t border-b"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="size-3"
+              color={"currentColor"}
+              fill={"none"}
+            >
+              <path
+                d="M12 4V20"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M4 12H20"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+      ),
+    },
+    {
+      title: "Tổng",
+      dataIndex: "id",
+      align: "center",
+      render: (id, record) => (
+        <span>{calculateTotal(record).toLocaleString()} VNĐ</span>
+      ),
+    },
+    {
+      title: "",
+      dataIndex: "id",
+      align: "center",
+      render: (id, record) => (
+        <Popconfirm
+          title="Xoá sản phẩm"
+          description="Bạn có chắc chắn xoá không?"
+          onConfirm={() => {
+            confirmDeleteOneProduct(id);
+          }}
+          onCancel={cancelDeleteOneProduct}
+          okText="Xoá"
+          cancelText="Huỷ"
+        >
+          <button type="button" className="p-1.5 bg-uitl shadow rounded-md">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="size-5"
+              color={"#ff9900"}
+              fill={"none"}
+            >
+              <path
+                d="M19.5 5.5L18.8803 15.5251C18.7219 18.0864 18.6428 19.3671 18.0008 20.2879C17.6833 20.7431 17.2747 21.1273 16.8007 21.416C15.8421 22 14.559 22 11.9927 22C9.42312 22 8.1383 22 7.17905 21.4149C6.7048 21.1257 6.296 20.7408 5.97868 20.2848C5.33688 19.3626 5.25945 18.0801 5.10461 15.5152L4.5 5.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C14.215 2.3321 14.1231 2.27454 14.027 2.2247C13.5939 2 13.0741 2 12.0345 2C10.9688 2 10.436 2 9.99568 2.23412C9.8981 2.28601 9.80498 2.3459 9.71729 2.41317C9.32164 2.7167 9.10063 3.20155 8.65861 4.17126L8.05292 5.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M9.5 16.5L9.5 10.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M14.5 16.5L14.5 10.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        </Popconfirm>
+      ),
+    },
+  ];
+  const paginatedData = carts.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  console.log(selectedRowKeys);
+  localStorage.setItem('id_cart',JSON.stringify(selectedRowKeys))
+
   return (
     <section className="my-7 space-y-7">
       <h2 className="flex gap-1.5 text-2xl text-primary font-medium">
@@ -47,47 +345,78 @@ const CartListClient = () => {
         </span>
         GIỎ HÀNG
       </h2>
-      <div className="grid grid-cols-12 gap-10">
-        {/* <div className="col-span-8 border p-2 rounded-md">
-
-        </div> */}
-        <Table
-          className="col-span-8"
-          selectionMode="multiple"
-          aria-label="Pagination Cart"
-          bottomContent={
-            <div className="flex w-full justify-center">
-              <Pagination
-                isCompact
-                showControls
-                showShadow
-                page={page}
-                total={pages}
-                onChange={(page) => setPage(page)}
-              />
-            </div>
-          }
-          classNames={{
-            wrapper: "min-h-[222px]",
-          }}
-        >
-          <TableHeader>
-            <TableColumn key="product">SẢN PHẨM</TableColumn>
-            <TableColumn key="price">GIÁ</TableColumn>
-            <TableColumn key="quality">SỐ LƯỢNG</TableColumn>
-            <TableColumn key="total">TỔNG</TableColumn>
-          </TableHeader>
-          <TableBody items={items}>
-            {(item) => (
-              <TableRow key={item.name}>
-                {(columnKey) => (
-                  <TableCell>{getKeyValue(item, columnKey)}</TableCell>
-                )}
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        <div className="col-span-4 border p-2 rounded-md">thanh toan</div>
+      <div className="grid grid-cols-12 gap-8">
+        <div className="col-span-9">
+          <Table
+            dataSource={paginatedData}
+            rowSelection={rowSelection}
+            columns={columns}
+            rowKey="id"
+            className="z-40 table-cart"
+            pagination={false}
+            onChange={handleTableChange}
+          />
+          <div className="flex justify-between items-center mt-5">
+            <Popconfirm
+              title="Xoá các sản phẩm đã chọn"
+              description="Bạn có chắc chắn xoá không?"
+              onConfirm={confirmDeleteSelectProduct}
+              onCancel={cancelDeleteSelectProduct}
+              okText="Xoá"
+              cancelText="Huỷ"
+            >
+              <button
+                disabled={selectedRowKeys.length === 0 ? true : false}
+                className={`${
+                  selectedRowKeys.length === 0
+                    ? "bg-primary/50 hover:cursor-not-allowed"
+                    : "bg-primary hover:cursor-pointer"
+                } text-util py-1.5 px-3 rounded-sm flex items-center gap-1.5`}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  className="size-5"
+                  color={"currentColor"}
+                  fill={"none"}
+                >
+                  <path
+                    d="M16 12L8 12"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  />
+                </svg>
+                Xoá mục đã chọn
+              </button>
+            </Popconfirm>
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={carts.length}
+              showSizeChanger={false}
+              onChange={(page) => setCurrentPage(page)}
+            />
+          </div>
+        </div>
+        <div className="col-span-3 border p-4 rounded-md">
+          <h3 className="text-lg font-semibold mb-4">Thanh toán</h3>
+          <div className="space-y-2">
+            <p>
+              Tổng tiền:{" "}
+              {carts
+                .reduce((acc, item) => acc + calculateTotal(item), 0)
+                .toLocaleString()}{" "}
+              VNĐ
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );

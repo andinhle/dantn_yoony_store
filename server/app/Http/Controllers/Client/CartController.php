@@ -15,43 +15,45 @@ class CartController extends Controller
     /**
      * Display a listing of the resource.
      */
+  
    public function index()
-{
-    try {
-        $data = Cart::query()
-            ->with(['variant.product', 'variant.attributeValues.attribute'])
-            ->where('user_id', Auth::id())
-            ->get();
+    {
+        try {
+            $data = Cart::query()
+                ->with(['variant.product.category', 'variant.attributeValues.attribute'])
+                ->where('user_id', Auth::id())
+                ->orderBy('created_at', 'desc')
+                ->get();
+    
+            foreach ($data as $item) {
 
-        foreach ($data as $item) {
-            $this->totalAmount += $item['variant']['price'] * $item['quantity'];
+                $this->totalAmount += $item['variant']['sale_price'] * $item['quantity'];
 
-            // Xử lý hình ảnh: kiểm tra chuỗi JSON trước khi giải mã
-            $images = $item['variant']['product']['images'];
-            if (is_string($images)) {
-                $item['variant']['product']['images'] = json_decode($images, true);
+                $images = $item['variant']['product']['images'];
+                if (is_string($images)) {
+                    $item['variant']['product']['images'] = json_decode($images, true);
+                }
             }
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $data,
+                'totalPrice' => $this->totalAmount
+            ], Response::HTTP_OK);
+        } catch (\Throwable $th) {
+            Log::error(__CLASS__ . '@' . __FUNCTION__, [
+                'line' => $th->getLine(),
+                'message' => $th->getMessage(),
+                'trace' => $th->getTraceAsString(),
+            ]);
+    
+            return response()->json([
+                'message' => 'Lỗi tải trang',
+                'status' => 'error',
+
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $data,
-            'totalPrice' => $this->totalAmount
-        ], Response::HTTP_OK);
-    } catch (\Throwable $th) {
-        // Ghi lại thông tin lỗi chi tiết vào log
-        Log::error(__CLASS__ . '@' . __FUNCTION__, [
-            'line' => $th->getLine(),
-            'message' => $th->getMessage(),
-            'trace' => $th->getTraceAsString(), // Thêm stack trace để dễ dàng tìm lỗi
-        ]);
-
-        return response()->json([
-            'message' => 'Lỗi tải trang',
-            'status' => 'error',
-        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-}
 
 
     
@@ -65,7 +67,7 @@ class CartController extends Controller
             $data = $request->all();
             $data['user_id'] = Auth::id();
             $idExist = Cart::query()
-                ->with(['variant.attributeValues.attribute', "user"])
+                ->with(['variant.product.category','variant.attributeValues.attribute', "user"])
                 ->where('variant_id', $request->variant_id)
                 ->where('user_id', Auth::id())
                 ->first();
@@ -82,8 +84,13 @@ class CartController extends Controller
             }
     
             // Eager load liên quan sau khi đã lưu
-            $idExist->load(['variant.attributeValues.attribute', "user"]);
-    
+            $idExist->load(['variant.product.category','variant.attributeValues.attribute', "user"]);
+
+            $images = $idExist->variant->product->images;
+            if (is_string($images)) {
+                $idExist->variant->product->images = json_decode($images, true);
+            }
+
             return response()->json([
                 'message' => 'Đã thêm sản phẩm vào giỏ hàng',
                 'status' => 'success',
@@ -143,7 +150,7 @@ class CartController extends Controller
             } 
     
             $data = Cart::query()
-            ->with(['variant.product','variant.attributeValues.attribute'])
+            ->with(['variant.product.category','variant.attributeValues.attribute'])
             ->where('user_id',Auth::id() )
             ->get();
 
