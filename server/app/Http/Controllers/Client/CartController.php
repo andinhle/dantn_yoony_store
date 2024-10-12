@@ -15,7 +15,8 @@ class CartController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+  
+   public function index()
     {
         try {
             $data = Cart::query()
@@ -53,6 +54,7 @@ class CartController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
 
     
 
