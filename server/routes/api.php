@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\Client\OrderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -44,9 +45,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     });
     Route::post('/logout', [AuthController::class, 'logout']);
     // Cart
-    Route::apiResource('cart', CartController::class);
-    Route::patch('/cart/{id}/{operation?}', [CartController::class, 'update']);
 });
+Route::apiResource('cart', CartController::class);
+Route::patch('/cart/{id}/{operation?}', [CartController::class, 'update']);
+Route::post('/checkout', [CartController::class, 'checkout'])->name('order.checkout');
+
+// Order 
+Route::get('/order', [OrderController::class, 'getProduct'])->name('order.getProduct');
+Route::post('/order', [OrderController::class, 'store'])->name('order.store');
 
 
 
