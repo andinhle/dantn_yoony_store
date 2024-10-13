@@ -45,14 +45,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     });
     Route::post('/logout', [AuthController::class, 'logout']);
     // Cart
+    Route::apiResource('cart', CartController::class);
+    Route::patch('/cart/{id}/{operation?}', [CartController::class, 'update']);
+    Route::post('/checkout', [CartController::class, 'checkout'])->name('order.checkout');
+    // Order 
+    // Route::get('/order', [OrderController::class, 'getProduct'])->name('order.getProduct');
+    Route::post('/order', [OrderController::class, 'store'])->name('order.store');
 });
-Route::apiResource('cart', CartController::class);
-Route::patch('/cart/{id}/{operation?}', [CartController::class, 'update']);
-Route::post('/checkout', [CartController::class, 'checkout'])->name('order.checkout');
 
-// Order 
-Route::get('/order', [OrderController::class, 'getProduct'])->name('order.getProduct');
-Route::post('/order', [OrderController::class, 'store'])->name('order.store');
 
 
 
