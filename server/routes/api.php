@@ -8,8 +8,11 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\Admin\ModelController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\RoleHasModelController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\OrderController;
 use Illuminate\Http\Request;
@@ -29,6 +32,13 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+//users admin
+// Lấy tất cả thông tin user
+Route::get('/users', [UserController::class, 'index']);
+// Cập nhật role của user
+Route::patch('/users/{id}/role', [UserController::class, 'updateRole']);
+
+//end users admin
 
 Route::apiResource('coupon', CouponController::class);
 Route::patch('coupon/{id}/status', [CouponController::class, 'updateStatus'])->name('coupon.updateStatus');
@@ -91,6 +101,18 @@ Route::patch('product/{id}/is_active', [ProductController::class, 'updateIsActiv
 Route::patch('product/restore/{id}', [ProductController::class, 'restore'])->name('product.restore');
 Route::delete('product/hard-delete/{id}', [ProductController::class, 'hardDelete'])->name('product.hardDelete');
 
+// Route cho model
+Route::get('models', [ModelController::class, 'index']);       // Lấy danh sách tất cả các model
+Route::post('models', [ModelController::class, 'store']);      // Tạo mới một model
+Route::get('models/{id}', [ModelController::class, 'show']);   // Lấy thông tin chi tiết một model theo ID
+Route::put('models/{id}', [ModelController::class, 'update']); // Cập nhật thông tin model theo ID
+Route::delete('models/{id}', [ModelController::class, 'destroy']); // Xóa một model theo ID
+Route::get('models1', [ModelController::class, 'getModels']); // lấy path của model
+
+// Route cho gán model vào vai trò
+Route::get('role-assign-models', [RoleHasModelController::class, 'index']);        // Lấy danh sách các role và model đã gán
+Route::post('role-assign-model', [RoleHasModelController::class, 'store']);  // Gán một model vào vai trò
+Route::delete('role-assign-model/{roleId}/{modelId}', [RoleHasModelController::class, 'destroy']); // Gỡ model khỏi vai trò
 
 
 //Client
