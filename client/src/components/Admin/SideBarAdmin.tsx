@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-
 const SideBarAdmin = () => {
   const [isProductsOpen, setIsProductsOpen] = useState(false);
-
   return (
     <>
       <nav className="fixed bg-util backdrop-blur top-0 max-w-[225px] left-0 bottom-0 w-full z-50 hidden lg:block transition-all shadow-sm">
@@ -201,7 +199,7 @@ const SideBarAdmin = () => {
             </li>
             <li>
               <NavLink
-                to={"rates"}
+                to={"/admin/rates"}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
                 }
@@ -227,7 +225,7 @@ const SideBarAdmin = () => {
               <NavLink
                 to={"banner"}
                 className={
-                  "shadow-lg rounded-md flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
+                  "shadow-lg flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] hover:text-hover transition-all"
                 }
               >
                 <svg

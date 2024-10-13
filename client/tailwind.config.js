@@ -15,7 +15,8 @@ export default {
         "primary":"#FF9900",
         "secondary":"#000",
         "util":"#fff",
-        "hover":"#6F757E"
+        "hover":"#6F757E",
+        'custom-light': '#FCF7EB',
       },
       borderColor:{
         "input":"#e6e6eb"

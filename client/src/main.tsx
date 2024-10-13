@@ -33,46 +33,56 @@ import ResetPassRequest from "./components/User/Auth/ResetPassRequest.tsx";
 import FormResetPass from "./components/User/Auth/FormResetPass.tsx";
 import LayoutVoucherAdmin from "./layouts/Admin/LayoutVoucherAdmin.tsx";
 import BannerList from "./pages/admin/BannerAdmin.tsx";
-import VoucherProvider from "./contexts/VouchersContext.tsx";
+import UserDetails from "./components/componentUserDetails/UserDetails.tsx";
+import WishList from "./components/componentUserDetails/WishList.tsx";
+import OrdersUser from "./components/componentUserDetails/OrdersUser.tsx";
+import LayoutUserDetails from "./layouts/User/LayoutUserDetails.tsx";
+import { CheckOrder } from "./components/User/Header/CheckOrder.tsx";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <ScrollToTop />
-        <Routes>
-          <Route element={<App />}>
-            {/* User */}
-            <Route path="/" element={<LayoutUser />}>
-              <Route index element={<MainContentUser />} />
-              <Route path="register" element={<Register />} />
-              <Route path="login" element={<Login />} />
-              <Route path="reset-password" element={<LayoutResetPassword />}>
-                <Route path="" index element={<ResetPassRequest />} />
-                <Route path=":token/:email" element={<FormResetPass />} />
-              </Route>
+      <Routes>
+        <Route element={<App />}>
+          {/* User */}
+          <Route path="/" element={<LayoutUser />}>
+            <Route index element={<MainContentUser />} />
+            <Route path="register" element={<Register />} />
+            <Route path="login" element={<Login />} />
+            <Route path="reset-password" element={<LayoutResetPassword />}>
+              <Route path="" index element={<ResetPassRequest />} />
+              <Route path=":token/:email" element={<FormResetPass />} />
             </Route>
-            {/* Admin */}
-            <Route path="admin" element={<LayoutAdmin />}>
-              <Route index element={<DashboardAdmin />} />
-              <Route path="users" element={<UsersAdmin />} />
-              <Route path="blogs" element={<BlogsAdmin />} />
-              <Route path="categorys" element={<CategorysAdmin />} />
-              <Route path="products" element={<ProductList />} />
-              <Route path="products/add" element={<AddProduct />} />
-              <Route path="products/edit/:id" element={<EditProduct />} />
-              <Route path="orders" element={<Orders />} />
-              <Route path="vouchers" element={<LayoutVoucherAdmin />} />
-              <Route path="banner" element={<BannerList />} />
-              <Route path="products/varriant" element={<ListVarriant />} />
-              <Route path="products/varriant/add" element={<Varriant />} />
-              <Route
-                path="products/varriant/addValue"
-                element={<VarriantValue />}
-              />
-              <Route path="orders/orderDetails" element={<OrderDetails />} />
-              <Route path="rates" element={<Rates />} />
+            <Route path="layout-userDetails" element={<LayoutUserDetails />}>
+              <Route path="userDetails" element={<UserDetails />} />
+              <Route path="wishlist" element={<WishList />} />
+              <Route path="orderuser" element={<OrdersUser />} />
             </Route>
+            <Route path="checkorder" element={<CheckOrder />} />
           </Route>
-        </Routes>
+          {/* Admin */}
+          <Route path="admin" element={<LayoutAdmin />}>
+            <Route index element={<DashboardAdmin />} />
+            <Route path="users" element={<UsersAdmin />} />
+            <Route path="blogs" element={<BlogsAdmin />} />
+            <Route path="categorys" element={<CategorysAdmin />} />
+            <Route path="products" element={<ProductList />} />
+            <Route path="products/add" element={<AddProduct />} />
+            <Route path="products/edit/:id" element={<EditProduct />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="vouchers" element={<LayoutVoucherAdmin />} />
+            <Route path="banner" element={<BannerList />} />
+            <Route path="products/varriant" element={<ListVarriant />} />
+            <Route path="products/varriant/add" element={<Varriant />} />
+            <Route
+              path="products/varriant/addValue"
+              element={<VarriantValue />}
+            />
+            <Route path="orders/orderDetails" element={<OrderDetails />} />
+            <Route path="rates" element={<Rates />} />
+          </Route>
+        </Route>
+      </Routes>
       <ToastContainer autoClose={3000} newestOnTop={true} />
     </BrowserRouter>
   </StrictMode>

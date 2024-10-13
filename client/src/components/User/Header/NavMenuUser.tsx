@@ -14,7 +14,7 @@ const NavMenuUser = () => {
     <nav className="hidden lg:block">
       <ul className="flex items-center gap-3">
         <li>
-          <Link className="flex gap-2 items-center py-2 px-3.5 rounded-md  hover:bg-primary hover:text-util transition-all">
+          <Link to="/checkorder" className="flex gap-2 items-center py-2 px-3.5 rounded-md  hover:bg-primary hover:text-util transition-all">
             <svg
               width="24"
               height="24"

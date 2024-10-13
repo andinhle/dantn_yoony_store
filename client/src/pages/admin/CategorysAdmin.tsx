@@ -56,7 +56,7 @@ const CategoryList: React.FC = () => {
       const { data } = await instance.get("category");
       setCategories(data.data);
     } catch (error) {
-      toast.error("Không thể tải danh mục.",error!);
+      toast.error("Không thể tải danh mục.", error!);
     }
   };
   useEffect(() => {
@@ -86,7 +86,7 @@ const CategoryList: React.FC = () => {
         toast.success("Deleted");
       }
     } catch (error) {
-      toast.error("Có lỗi xảy ra",error!);
+      toast.error("Có lỗi xảy ra", error!);
     }
   };
   //fill data để xử lý sửa danh mục
@@ -111,7 +111,7 @@ const CategoryList: React.FC = () => {
       setIdUpdate(id);
       SetAddOrUpdate("UPDATE");
     } catch (error) {
-      toast.error("Có lỗi xảy ra",error!);
+      toast.error("Có lỗi xảy ra", error!);
     }
   };
   // xử lý thêm or sửa danh mục
@@ -285,7 +285,7 @@ const CategoryList: React.FC = () => {
                     <Table.Cell>
                       <img
                         src={category.image}
-                        className="h-10 mx-auto w-fit rounded-full object-cover"
+                        className="h-10 mx-auto w-10 rounded-full object-cover"
                       />
                     </Table.Cell>
                     <Table.Cell>
@@ -379,10 +379,10 @@ const CategoryList: React.FC = () => {
         </Table>
       </div>
       <Modal
-        dismissible
+        popup
         show={openModal}
         onClose={() => setOpenModal(false)}
-        className="z-40 mt-10"
+        className="z-50 mt-10"
         size={"md"}
       >
         <Modal.Header>
@@ -479,7 +479,7 @@ const CategoryList: React.FC = () => {
                   </Upload>
                 </ImgCrop>
               </div>
-              <span className="block text-primary text-sm mb-5">{fileList.length <= 0 ? "Ảnh là bắt buộc *":""}</span>
+              <span className="block text-primary text-sm mb-5">{fileList.length <= 0 ? "Ảnh là bắt buộc *" : ""}</span>
               <div className="mb-6">
                 <label className="inline-flex items-center cursor-pointer">
                   <input
