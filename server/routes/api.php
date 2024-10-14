@@ -109,10 +109,12 @@ Route::put('models/{id}', [ModelController::class, 'update']); // Cập nhật t
 Route::delete('models/{id}', [ModelController::class, 'destroy']); // Xóa một model theo ID
 Route::get('models1', [ModelController::class, 'getModels']); // lấy path của model
 
+
 // Route cho gán model vào vai trò
 Route::get('role-assign-models', [RoleHasModelController::class, 'index']);        // Lấy danh sách các role và model đã gán
 Route::post('role-assign-model', [RoleHasModelController::class, 'store']);  // Gán một model vào vai trò
 Route::delete('role-assign-model/{roleId}/{modelId}', [RoleHasModelController::class, 'destroy']); // Gỡ model khỏi vai trò
+Route::get('all-models-by-role', [RoleHasModelController::class, 'getAllByRole'])->name('roles.get');
 
 
 //Client
