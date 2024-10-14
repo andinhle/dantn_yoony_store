@@ -1,6 +1,5 @@
 // tailwind.config.js
 import flowbite from 'flowbite-react/tailwind'
-import {nextui} from '@nextui-org/react'
 
 export default {
   content: [
@@ -34,5 +33,5 @@ export default {
       }
     },
   },
-  plugins: [flowbite.plugin(),nextui()],
+  plugins: [flowbite.plugin()],
 }

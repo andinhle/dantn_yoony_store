@@ -2,6 +2,8 @@ import { ListItemText, Menu, MenuItem, MenuList } from "@mui/material";
 import { MouseEvent, useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import CartContext from "../../../contexts/CartContext";
+import { Popover } from "antd";
+import ShowMiniCart from "../Show/ShowMiniCart";
 const NavMenuUser = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -11,7 +13,7 @@ const NavMenuUser = () => {
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const {carts}=useContext(CartContext)
+  const { carts } = useContext(CartContext);
   return (
     <nav className="hidden lg:block">
       <ul className="flex items-center gap-3">
@@ -36,29 +38,34 @@ const NavMenuUser = () => {
           </Link>
         </li>
         <li>
-          <Link to={`/gio-hang`} className="flex gap-2 items-center py-2 px-3.5 rounded-md  hover:bg-primary hover:text-util transtition-all">
-            <div className="relative">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="#ff9900"
-                className="size-6 fill-icon"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-                />
-              </svg>
+          <Popover placement="bottomRight" title={'Sản phẩm mới thêm'} content={<ShowMiniCart />}>
+            <Link
+              to={`/gio-hang`}
+              className="flex gap-2 items-center py-2 px-3.5 rounded-md  hover:bg-primary hover:text-util transtition-all"
+            >
+              <div className="relative">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="#ff9900"
+                  className="size-6 fill-icon"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+                  />
+                </svg>
 
-              <span className="px-[4px] absolute -top-1 -right-1 bg-primary text-xs text-util rounded-full number-cart">
-                {carts&& carts.length>=1? carts.length : 0 }
-              </span>
-            </div>
-            Giỏ hàng
-          </Link>
+                <span className="px-[4px] absolute -top-1 -right-1 bg-primary text-xs text-util rounded-full number-cart">
+                  {carts && carts.length >= 1 ? carts.length : 0}
+                </span>
+              </div>
+              Giỏ hàng
+            </Link>
+          </Popover>
         </li>
         <li>
           <button
@@ -144,7 +151,7 @@ const NavMenuUser = () => {
                   </ListItemText>
                 </MenuItem>
               </Link>
-              <Link to={"/blogs"}/>
+              <Link to={"/blogs"} />
             </MenuList>
           </Menu>
         </li>

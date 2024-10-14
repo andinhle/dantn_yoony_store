@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
+use App\Models\OrderItem;
+use App\Models\Variant;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 
 class CartController extends Controller
 {
@@ -15,43 +18,46 @@ class CartController extends Controller
     /**
      * Display a listing of the resource.
      */
+  
    public function index()
-{
-    try {
-        $data = Cart::query()
-            ->with(['variant.product', 'variant.attributeValues.attribute'])
-            ->where('user_id', Auth::id())
-            ->get();
+    {
+        try {
+            $data = Cart::query()
+                ->with(['variant.product.category', 'variant.attributeValues.attribute'])
+                ->where('user_id', Auth::id())
+                ->orderBy('created_at', 'desc')
+                ->get();
+    
 
-        foreach ($data as $item) {
-            $this->totalAmount += $item['variant']['price'] * $item['quantity'];
+            foreach ($data as $item) {
 
-            // Xử lý hình ảnh: kiểm tra chuỗi JSON trước khi giải mã
-            $images = $item['variant']['product']['images'];
-            if (is_string($images)) {
-                $item['variant']['product']['images'] = json_decode($images, true);
+                $this->totalAmount += $item['variant']['sale_price'] * $item['quantity'];
+
+                $images = $item['variant']['product']['images'];
+                if (is_string($images)) {
+                    $item['variant']['product']['images'] = json_decode($images, true);
+                }
             }
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $data,
+                'totalPrice' => $this->totalAmount
+            ], Response::HTTP_OK);
+        } catch (\Throwable $th) {
+            Log::error(__CLASS__ . '@' . __FUNCTION__, [
+                'line' => $th->getLine(),
+                'message' => $th->getMessage(),
+                'trace' => $th->getTraceAsString(),
+            ]);
+    
+            return response()->json([
+                'message' => 'Lỗi tải trang',
+                'status' => 'error',
+
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $data,
-            'totalPrice' => $this->totalAmount
-        ], Response::HTTP_OK);
-    } catch (\Throwable $th) {
-        // Ghi lại thông tin lỗi chi tiết vào log
-        Log::error(__CLASS__ . '@' . __FUNCTION__, [
-            'line' => $th->getLine(),
-            'message' => $th->getMessage(),
-            'trace' => $th->getTraceAsString(), // Thêm stack trace để dễ dàng tìm lỗi
-        ]);
-
-        return response()->json([
-            'message' => 'Lỗi tải trang',
-            'status' => 'error',
-        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-}
 
 
     
@@ -62,46 +68,65 @@ class CartController extends Controller
     public function store(Request $request)
     {
         try {
+
             $data = $request->all();
             $data['user_id'] = Auth::id();
             $idExist = Cart::query()
-                ->with(['variant.attributeValues.attribute', "user"])
+                ->with(['variant.product.category','variant.attributeValues.attribute', "user"])
                 ->where('variant_id', $request->variant_id)
                 ->where('user_id', Auth::id())
                 ->first();
     
+
             if ($idExist) {
-                if ($request->quantity > 1) {
+                if($request->quantity>1){
                     $idExist->quantity += $request->quantity;
-                } else {
+                    $idExist->save();
+                }else{
                     $idExist->quantity++;
+                    $idExist->save();
                 }
-                $idExist->save();
+
+                
             } else {
-                $idExist = Cart::query()->create($data);
+               Cart::query()->create($data);
             }
+
+
+            // $cart = Cart::query()->create($data);
+
     
             // Eager load liên quan sau khi đã lưu
-            $idExist->load(['variant.attributeValues.attribute', "user"]);
-    
+            $idExist->load(['variant.product.category','variant.attributeValues.attribute', "user"]);
+
+            $images = $idExist->variant->product->images;
+            if (is_string($images)) {
+                $idExist->variant->product->images = json_decode($images, true);
+            }
+
+
             return response()->json([
-                'message' => 'Đã thêm sản phẩm vào giỏ hàng',
+                'message' => 'Đã thêm sản phẩm vào giỏ hàng ',
                 'status' => 'success',
                 'data' => $idExist,
-            ], Response::HTTP_CREATED);
+
+            ], Response::HTTP_CREATED);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+
+            
         } catch (\Throwable $th) {
+
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
                 'message' => $th->getMessage()
             ]);
-    
+
             return response()->json([
                 'message' => 'Đã xảy ra lỗi vui lòng thử lại',
                 'status' => 'error',
+
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
 
     
     public function update(Request $request, $id, $operation = null)
@@ -143,7 +168,7 @@ class CartController extends Controller
             } 
     
             $data = Cart::query()
-            ->with(['variant.product','variant.attributeValues.attribute'])
+            ->with(['variant.product.category','variant.attributeValues.attribute'])
             ->where('user_id',Auth::id() )
             ->get();
 
@@ -156,7 +181,7 @@ class CartController extends Controller
             return response()->json([
                 // 'dataCart' => $data,
                 'status' => 'success',
-                'totalPrice' => $this->totalAmount,
+                'tutalPrice' => $this->totalAmount,
                 'idExist' => $idExist
 
             ], Response::HTTP_CREATED);
@@ -204,22 +229,48 @@ class CartController extends Controller
         }
     }
 
-     //xóa nhiều cart
-     public function deleteMuch(Request $request)
-     {
-         try {
-             $ids = $request->ids;
- 
-             if (!is_array($ids) || empty($ids)) {
-                 return response()->json(['message' => 'Danh sách ID không hợp lệ!'], 400);
-             }
- 
-             // Xóa nhiều theo id
-             Cart::whereIn('id', $ids)->delete();
- 
-             return response()->json(['message' => 'Xóa nhiều giỏ hàng thành công!'], 200);
-         } catch (\Exception $e) {
-             return response()->json(['message' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
-         }
-     }
+    public function checkout(Request $request) 
+    {
+        try {
+            
+            $selectedItems = $request->input('selected_items', []);
+
+            $selectedItems =[1,2];
+
+            // Nếu không có sản phẩm nào được chọn
+            if (empty($selectedItems)) {
+                return response()->json([
+                    'error' => 'Bạn chưa chọn sản phẩm nào để thanh toán.'
+                ]);
+            }
+        
+            // Lấy thông tin các sản phẩm đã chọn
+            $cartItems = Cart::query()
+            ->with(['variant.attributeValues.attribute'])
+            ->where('user_id', 1)
+            ->whereIn('id', $selectedItems)
+            ->get();
+
+           
+            Session::put('variantIds', $cartItems);
+
+        
+            $acc = Session::get('variantIds');
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $acc ,
+            ], Response::HTTP_OK);
+        } catch (\Throwable $th) {
+            Log::error(__CLASS__ . '@' . __FUNCTION__, [
+                'line' => $th->getLine(),
+                'message' => $th->getMessage()
+            ]);
+            return response()->json([
+                'messages' => 'Lỗi',
+                'status' => 'error'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
 }

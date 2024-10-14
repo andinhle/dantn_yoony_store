@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import instance from "../../../instance/instance";
 import { IProduct } from "../../../interfaces/IProduct";
 import { HomeOutlined } from "@ant-design/icons";
-import { Breadcrumb, Rate } from "antd";
+import { Breadcrumb, message, Rate } from "antd";
 import Zoom from "react-zoom-image-hover";
 import { Label } from "flowbite-react";
 import ShowProductRelated from "./ShowProductRelated";
@@ -12,6 +12,7 @@ import { ICart } from "../../../interfaces/ICart";
 import { toast } from "react-toastify";
 import CartContext from "../../../contexts/CartContext";
 import axios from "axios";
+
 type Iitem = {
   id?: number;
   price: number;
@@ -42,8 +43,14 @@ const ShowDetailProduct = () => {
   const [variantMerge, setVariantMerge] = useState<IVariantMerge[]>([]);
   const [getVariant, setVariant] = useState<IVariant[]>([]);
   const [quantity, setQuantity] = useState(1);
-  const { dispatch } = useContext(CartContext);
-  const handleChangeQuality = (e: any) => {
+  const {carts, dispatch } = useContext(CartContext);
+  const [isZoomEnabled, setIsZoomEnabled] = useState(false);
+  // const [isOpen, setIsOpen] = useState<boolean>(false);
+
+  const handleImageClick = () => {
+    setIsZoomEnabled(!isZoomEnabled);
+  };
+  const handleChangeQuanlity = (e: any) => {
     const value = Math.max(1, Number(e?.target.value));
     setQuantity(value);
   };
@@ -159,8 +166,7 @@ const ShowDetailProduct = () => {
         user_id: 1,
       });
       if (response) {
-        toast.success("Đã thêm sản phẩm vào giỏ hàng");
-        console.log(response);
+        message.success("Đã thêm sản phẩm vào giỏ hàng");
         dispatch({
           type: "ADD",
           payload: response,
@@ -221,13 +227,23 @@ const ShowDetailProduct = () => {
             })}
           </div>
           <div className="col-span-8">
-            <Zoom
-              height={460}
-              width={"100%"}
-              className="max-h-[460px] w-full rounded-lg img-zoom hover:cursor-zoom-in"
-              zoomScale={2}
-              src={selectedImage}
-            />
+            {isZoomEnabled ? (
+              <Zoom
+                height={460}
+                width={"100%"}
+                className="max-h-[460px] w-full rounded-lg img-zoom hover:cursor-zoom-in"
+                zoomScale={2}
+                onClick={handleImageClick}
+                src={selectedImage}
+              />
+            ) : (
+              <img
+                src={selectedImage}
+                alt="Product"
+                className="max-h-[460px] w-full rounded-lg object-cover hover:cursor-zoom-in"
+                onClick={handleImageClick}
+              />
+            )}
           </div>
         </div>
         <div>
@@ -289,26 +305,6 @@ const ShowDetailProduct = () => {
               </div>
             )}
           </div>
-          {/* <div className="flex gap-3 text-2xl my-5 bg-[#FAFAFA] rounded-md p-3 items-center">
-            <span className="line-through text-xl text-[#929292]">
-              {product?.variants[0]?.price
-                .toLocaleString("vi-VN", {
-                  useGrouping: true,
-                  maximumFractionDigits: 0,
-                })
-                .replace(/,/g, ".")}
-              đ
-            </span>
-            <span className="text-primary font-medium">
-              {product?.variants[0]?.sale_price
-                .toLocaleString("vi-VN", {
-                  useGrouping: true,
-                  maximumFractionDigits: 0,
-                })
-                .replace(/,/g, ".")}
-              đ
-            </span>
-          </div> */}
           {getVariant && getVariant.length >= 1 ? (
             <div className="flex gap-3 text-2xl my-5 bg-[#FAFAFA] rounded-md p-3 items-center">
               <span className="line-through text-xl text-[#929292]">
@@ -497,7 +493,7 @@ const ShowDetailProduct = () => {
                 <input
                   min={1}
                   value={quantity}
-                  onChange={handleChangeQuality}
+                  onChange={handleChangeQuanlity}
                   className="w-10 p-1.5 border border-input outline-none text-center"
                 />
                 <button
@@ -631,6 +627,7 @@ const ShowDetailProduct = () => {
         </div>
       </div>
       <ShowProductRelated related_products={related_products} />
+      {/* <ShowMiniCart isOpen={isOpen} setIsOpen={setIsOpen} /> */}
     </section>
   );
 };
