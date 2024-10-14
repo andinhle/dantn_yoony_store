@@ -38,10 +38,8 @@ import LayoutProductAdmin from "./layouts/Admin/LayoutProductAdmin.tsx";
 import AddOrUpdateProduct from "./pages/admin/products/AddOrUpdateProduct.tsx";
 import ShowDetailProduct from "./components/User/Show/ShowDetailProduct.tsx";
 import CartListClient from "./components/User/Cart/CartListClient.tsx";
-import { NextUIProvider } from "@nextui-org/react";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <NextUIProvider>
       <BrowserRouter>
         <BlogProvider>
           <ScrollToTop />
@@ -86,6 +84,5 @@ createRoot(document.getElementById("root")!).render(
           <ToastContainer autoClose={3000} newestOnTop={true} />
         </BlogProvider>
       </BrowserRouter>
-    </NextUIProvider>
   </StrictMode>
 );

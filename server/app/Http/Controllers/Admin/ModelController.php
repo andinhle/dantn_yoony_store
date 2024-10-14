@@ -17,29 +17,29 @@ class ModelController extends Controller
     public function getModels()
     {
         $models = ModelFinder::all();
-    
+
         return response()->json([
             'status' => 'success',
             'data' => $models,
         ]);
     }
-    
+
 
     // Lấy danh sách tất cả các model
     public function index()
     {
         try {
             $models = ModelName::all();
-    
+
             // Giải mã trường 'type' cho mỗi model
             $models->transform(function ($model) {
-                $model->type = json_decode($model->type, true); 
+                $model->type = json_decode($model->type, true);
                 return $model;
             });
-    
+
             return response()->json([
                 'status' => 'success',
-                'data' => $models 
+                'data' => $models
             ]);
         } catch (\Throwable $th) {
             Log::error($th->getMessage());
@@ -49,7 +49,7 @@ class ModelController extends Controller
             ], 500);
         }
     }
-    
+
 
     public function store(Request $request)
     {
@@ -58,7 +58,7 @@ class ModelController extends Controller
             'type' => 'required|string',
             'type.*' => 'string|max:255',
         ]);
-    
+
         try {
             // Tạo một model mới
             $model = ModelName::create([
@@ -79,7 +79,7 @@ class ModelController extends Controller
             ], 500);
         }
     }
-    
+
 
       // Xóa một model
     public function destroy($id)
