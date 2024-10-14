@@ -31,12 +31,6 @@ class ModelController extends Controller
         try {
             $models = ModelName::all();
 
-            // Giải mã trường 'type' cho mỗi model
-            $models->transform(function ($model) {
-                $model->type = json_decode($model->type, true);
-                return $model;
-            });
-
             return response()->json([
                 'status' => 'success',
                 'data' => $models
