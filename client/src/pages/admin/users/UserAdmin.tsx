@@ -2,11 +2,11 @@ import { Modal, Table, ToggleSwitch, Label, Radio } from "flowbite-react";
 import { useContext, useEffect, useState } from "react";
 
 import { Avatar } from "@mui/material";
-import ButtonSubmit from "../../components/Admin/ButtonSubmit";
+import ButtonSubmit from "../../../components/Admin/ButtonSubmit";
 import { useForm } from "react-hook-form";
-import { UserContext } from "../../contexts/UserContext";
-import { IUser } from "../../interfaces/IUser";
-import instance from "../../instance/instance";
+import { UserContext } from "../../../contexts/UserContext";
+import { IUser } from "../../../interfaces/IUser";
+import instance from "../../../instance/instance";
 import { toast } from "react-toastify";
 
 const UsersAdmin = () => {
