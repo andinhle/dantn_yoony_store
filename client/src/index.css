@@ -233,7 +233,7 @@ a:hover .number-cart{
   border-color: white;
 }
 :where(.css-dev-only-do-not-override-ccdg5a).ant-checkbox-indeterminate .ant-checkbox-inner:after{
-  background-color: #ff9900 !important;
+  background-color: rgb(255, 153, 0) !important;
 }
 
 :where(.css-dev-only-do-not-override-ccdg5a).ant-table-wrapper .ant-table-tbody .ant-table-row.ant-table-row-selected >.ant-table-cell{
@@ -269,4 +269,9 @@ a:hover .number-cart{
 .mini-cart [data-testid="close-drawer"]:hover{
   color: #ff9900;
   background: #ffebcc;
+}
+
+.input-role{
+  height: 30px;
+  border-radius: 5px;
 }

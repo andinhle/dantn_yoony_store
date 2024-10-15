@@ -134,10 +134,10 @@ const CartListClient = () => {
     console.log(e);
     message.error("Huỷ xoá");
   };
-  const cancelDeleteSelectProduct: PopconfirmProps["onCancel"] = (e) => {
-    console.log(e);
-    message.error("Huỷ xoá");
-  };
+  // const cancelDeleteSelectProduct: PopconfirmProps["onCancel"] = (e) => {
+  //   console.log(e);
+  //   message.error("Huỷ xoá");
+  // };
 
   const columns: TableColumnsType<CartItem> = [
     {
@@ -361,7 +361,7 @@ const CartListClient = () => {
               title="Xoá các sản phẩm đã chọn"
               description="Bạn có chắc chắn xoá không?"
               onConfirm={confirmDeleteSelectProduct}
-              onCancel={cancelDeleteSelectProduct}
+              // onCancel={cancelDeleteSelectProduct}
               okText="Xoá"
               cancelText="Huỷ"
             >
