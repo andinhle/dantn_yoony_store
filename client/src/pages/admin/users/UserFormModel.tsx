@@ -68,6 +68,7 @@ const UserFormModel = () => {
     value: model,
     label: model,
   }));
+  
   const handleRemoveModel: PopconfirmProps["onConfirm"] = async(id:number) => {
    try {
     const {data}=await instance.delete(`models/${id}`)
@@ -92,24 +93,33 @@ const UserFormModel = () => {
       <div className="flex flex-col lg:flex-row gap-5">
         <div className="lg:w-1/3 space-y-3">
           <form onSubmit={handleSubmit(handleSubmitModel)}>
-            <div>
-              <div className="mb-2 block">
+            <div className="space-y-2">
+              <div className="block">
                 <Label htmlFor="name-model" value="Tên model" />
               </div>
               <input
                 type="text"
                 placeholder="Tên model"
                 id="name-model"
-                {...register("name")}
+                {...register("name",{
+                    required:"Tên model là bắt buộc !",
+                    minLength:{
+                        value:3,
+                        message:"Tối thiểu 3 kí tự !"
+                    }
+                })}
                 className="block focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-input rounded-[5px] w-full focus:!shadow-none"
               />
+              <span className="text-primary text-sm block">{errors.name?.message}</span>
             </div>
-            <div className="mt-3">
-              <div className="mb-2 block">
+            <div className="mt-3 space-y-2">
+              <div className="block">
                 <Label htmlFor="type-model" value="Type" />
               </div>
               <Select
-                {...register("type")}
+                {...register("type",{
+                    required:"Vui lòng chọn type !"
+                })}
                 onChange={(e) => setValue("type", e)}
                 showSearch
                 value={watch("type")}
@@ -121,6 +131,7 @@ const UserFormModel = () => {
                 }
                 options={options}
               />
+              <span className="text-primary text-sm block">{errors.type?.message}</span>
             </div>
             <div className="mt-3">
               <ButtonSubmit content="Thêm" />
@@ -131,21 +142,21 @@ const UserFormModel = () => {
           <div className="overflow-x-auto">
             <Table hoverable>
               <Table.Head>
-                <Table.HeadCell className="text-xs bg-primary text-util">STT</Table.HeadCell>
-                <Table.HeadCell className="text-xs bg-primary text-util">Tên Model</Table.HeadCell>
-                <Table.HeadCell className="text-xs bg-primary text-util">Type</Table.HeadCell>
-                <Table.HeadCell className="text-xs bg-primary text-util">Hành động</Table.HeadCell>
+                <Table.HeadCell className="text-xs bg-primary text-util text-center">STT</Table.HeadCell>
+                <Table.HeadCell className="text-xs bg-primary text-util text-center">Tên Model</Table.HeadCell>
+                <Table.HeadCell className="text-xs bg-primary text-util text-center">Type</Table.HeadCell>
+                <Table.HeadCell className="text-xs bg-primary text-util text-center">Hành động</Table.HeadCell>
               </Table.Head>
               <Table.Body className="divide-y">
                 {models && models.map((model, index) => (
                   <Table.Row key={model.id} className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                    <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white border-r border-input">
+                    <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white border-r border-input text-center">
                       {index + 1}
                     </Table.Cell>
-                    <Table.Cell>{model.name}</Table.Cell>
-                    <Table.Cell>{model.type}</Table.Cell>
+                    <Table.Cell className="text-center">{model.name}</Table.Cell>
+                    <Table.Cell className="text-center">{model.type}</Table.Cell>
                     <Table.Cell>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 justify-center">
                         <button className="bg-util shadow py-1.5 px-2 rounded-md">
                           <svg className="size-4" fill="none" viewBox="0 0 20 20">
                             <path

@@ -7,6 +7,7 @@ import instance from "../../../instance/instance";
 import { useForm } from "react-hook-form";
 import { IRole } from "../../../interfaces/IRole";
 import UserFormModel from "./UserFormModel";
+import UserRoleHasModelForm from "./UserRoleHasModelForm";
 const UserRoleManager = () => {
   const { roles, dispatch } = useContext(RoleContext);
   const [inputVisible, setInputVisible] = useState(false);
@@ -128,6 +129,8 @@ const UserRoleManager = () => {
           <hr className="border-[#f5f5f5]" />
         </form>
         <UserFormModel />
+        <hr className="border-[#f5f5f5]" />
+        <UserRoleHasModelForm />
       </div>
       <div className="col-span-3">danh sach</div>
     </div>

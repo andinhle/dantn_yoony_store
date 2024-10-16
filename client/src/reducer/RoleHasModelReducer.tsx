@@ -1,19 +1,19 @@
-import { IModel } from "../interfaces/IModel"
+import { IRoleHasModel } from "../interfaces/IRoleHasModel"
 
-const ModelReducer = (state:any,action:any) => {
+const RoleHasModelReducer = (state:any,action:any) => {
   switch (action.type) {
     case "LIST":
         return action.payload
     case "ADD":
         return [action.payload,...state]
     case "UPDATE":
-         return state.map((item:IModel)=>{
+         return state.map((item:IRoleHasModel)=>{
             if (item.id !== action.payload.id) {
                 return item
             } return action.payload
          })
     case "DELETE":
-        return state.filter((item:IModel)=>{
+        return state.filter((item:IRoleHasModel)=>{
             return item.id !== action.payload
         })
   
@@ -22,4 +22,4 @@ const ModelReducer = (state:any,action:any) => {
   }
 }
 
-export default ModelReducer
+export default RoleHasModelReducer
