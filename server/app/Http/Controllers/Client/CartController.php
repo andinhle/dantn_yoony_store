@@ -91,6 +91,8 @@ class CartController extends Controller
                 
             } else {
                $cartNew = Cart::query()->create($data);
+               $cartNew->load(['variant.product.category', 'variant.attributeValues.attribute', 'user']);
+
                return response()->json([
                 'message' => 'Đã thêm sản phẩm vào giỏ hàng ',
                 'status' => 'success',
