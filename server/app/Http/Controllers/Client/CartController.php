@@ -85,24 +85,20 @@ class CartController extends Controller
                 }else{
                     $idExist->quantity++;
                     $idExist->save();
+                    
                 }
 
                 
             } else {
-               Cart::query()->create($data);
+               $cartNew = Cart::query()->create($data);
+               return response()->json([
+                'message' => 'Đã thêm sản phẩm vào giỏ hàng ',
+                'status' => 'success',
+                'data' => $cartNew,
+
+                ], Response::HTTP_CREATED);    
             }
 
-
-            // $cart = Cart::query()->create($data);
-
-    
-            // Eager load liên quan sau khi đã lưu
-            $idExist->load(['variant.product.category','variant.attributeValues.attribute', "user"]);
-
-            $images = $idExist->variant->product->images;
-            if (is_string($images)) {
-                $idExist->variant->product->images = json_decode($images, true);
-            }
 
 
             return response()->json([
@@ -228,7 +224,7 @@ class CartController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
+    
     //xóa nhiều cart
     public function deleteMuch(Request $request)
     {
