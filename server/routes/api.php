@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\RoleHasModelController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\Client\OderCheckController;
 use App\Http\Controllers\Client\OrderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -113,7 +114,7 @@ Route::get('models1', [ModelController::class, 'getModels']); // lấy path củ
 // Route cho gán model vào vai trò
 Route::get('role-assign-models', [RoleHasModelController::class, 'index']);        // Lấy danh sách các role và model đã gán
 Route::post('role-assign-model', [RoleHasModelController::class, 'store']);  // Gán một model vào vai trò
-Route::delete('role-assign-model/{roleId}/{modelId}', [RoleHasModelController::class, 'destroy']); // Gỡ model khỏi vai trò
+Route::delete('role-assign-model/{roleId}', [RoleHasModelController::class, 'destroy']); // Gỡ tất cả models khỏi vai trò
 Route::get('all-models-by-role', [RoleHasModelController::class, 'getAllByRole'])->name('roles.get');
 
 
@@ -138,3 +139,6 @@ Route::delete('/delete-wishlists/{product_id}', [HomeController::class, 'deleteW
 
 //cart
 Route::post('cart/delete-much', [CartController::class, 'deleteMuch'])->name('cart.deleteMuch');
+
+//checkoder
+Route::get('check-order', [OderCheckController::class, 'checkOrder'])->name('order.check');
