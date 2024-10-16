@@ -69,16 +69,16 @@ const UserRoleHasModelForm = () => {
   }));
 
   const handleRemoveRoleHasModel: PopconfirmProps["onConfirm"] = async (
-    id: number
+    role_id: number
   ) => {
     try {
-      const { data } = await instance.delete(`models/${id}`);
+      const { data } = await instance.delete(`role-assign-model/${role_id}`);
       console.log(data);
       if (data) {
         message.success(data.message);
         dispatch({
           type: "DELETE",
-          payload: id,
+          payload: role_id,
         });
       }
     } catch (error) {
@@ -253,9 +253,9 @@ const UserRoleHasModelForm = () => {
                             </svg>
                           </button>
                           <Popconfirm
-                            title="Xoá Model"
-                            description="Bạn có muốn xoá model?"
-                            onConfirm={() => handleRemoveModel(model.id!)}
+                            title="Xoá Quyền"
+                            description="Bạn có muốn xoá quyền?"
+                            onConfirm={() => handleRemoveRoleHasModel(role_has_model.id!)}
                             okText="Xoá"
                             cancelText="Huỷ"
                           >
