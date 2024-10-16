@@ -30,10 +30,19 @@ const CartListClient = () => {
   const { carts, dispatch } = useContext(CartContext);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedTotal, setSelectedTotal] = useState(0);
   const pageSize = 5;
+
   const calculateTotal = (item: any) => {
     return item.quantity * (item.variant.sale_price || item.variant.price);
   };
+
+  useEffect(() => {
+    const newTotal = carts
+      .filter(item => selectedRowKeys.includes(item.id))
+      .reduce((acc, item) => acc + calculateTotal(item), 0);
+    setSelectedTotal(newTotal);
+  }, [selectedRowKeys, carts]);
 
   useEffect(() => {
     window.scrollTo({
@@ -345,7 +354,7 @@ const CartListClient = () => {
         </span>
         GIỎ HÀNG
       </h2>
-      <div className="grid grid-cols-12 gap-8">
+      <div className="grid grid-cols-12 gap-5">
         <div className="col-span-9">
           <Table
             dataSource={paginatedData}
@@ -409,11 +418,12 @@ const CartListClient = () => {
           <h3 className="text-lg font-semibold mb-4">Thanh toán</h3>
           <div className="space-y-2">
             <p>
-              Tổng tiền:{" "}
+              {/* Tổng tiền:{" "}
               {carts
                 .reduce((acc, item) => acc + calculateTotal(item), 0)
                 .toLocaleString()}{" "}
-              VNĐ
+              VNĐ */}
+              {selectedTotal.toLocaleString()} VNĐ
             </p>
           </div>
         </div>

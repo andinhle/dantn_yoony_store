@@ -130,6 +130,7 @@ const SideBarAdmin = () => {
                 } flex items-center justify-between px-2 py-[10px] rounded-md hover:cursor-pointer border border-[#f5f5f5] hover:bg-[#f2f2f7]`}
                 onClick={() => {
                   setOpenProduct(!is_openProduct);
+                  setOpenUser(false);
                 }}
               >
                 <div className="flex gap-2">
@@ -376,6 +377,7 @@ const SideBarAdmin = () => {
                 } flex items-center justify-between px-2 py-[10px] rounded-md hover:cursor-pointer border border-[#f5f5f5] hover:bg-[#f2f2f7]`}
                 onClick={() => {
                   setOpenUser(!is_openUser);
+                  setOpenProduct(false)
                 }}
               >
                 <div className="flex gap-2">
