@@ -142,7 +142,7 @@ const ShowDetailProduct = () => {
   const allItems = variantMerge.flatMap((variant) => variant.items);
   const uniqueSizes = [...new Set(allItems.map((item) => item.size))];
 
-  console.log(product);
+  // console.log(product);
   // console.log(variantMerge);
   // console.log(selectedColorImage);
   useEffect(() => {
