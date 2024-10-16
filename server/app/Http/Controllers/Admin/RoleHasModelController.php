@@ -130,7 +130,18 @@ class RoleHasModelController extends Controller
     {
         $rolesWithModels = Role::with(['roleHasModels.modelName'])->get();
     
-        $response = $rolesWithModels->map(function ($role) {
+        // Nếu không có role nào, trả về mảng trống
+        if ($rolesWithModels->isEmpty()) {
+            return response()->json([
+                'status' => 'success',
+                'data' => [],
+            ], 200);
+        }
+    
+        // Lọc các role chỉ có models
+        $response = $rolesWithModels->filter(function ($role) {
+            return $role->roleHasModels->isNotEmpty();
+        })->map(function ($role) {
             return [
                 'id' => $role->id,
                 'role' => [
@@ -151,11 +162,13 @@ class RoleHasModelController extends Controller
             ];
         });
     
+        // Trả về kết quả
         return response()->json([
             'status' => 'success',
             'data' => $response,
         ], 200);
     }
+    
     
 
 }
