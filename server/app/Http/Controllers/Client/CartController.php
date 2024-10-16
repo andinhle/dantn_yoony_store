@@ -75,14 +75,21 @@ class CartController extends Controller
                 }else{
                     $idExist->quantity++;
                     $idExist->save();
+                    
                 }
 
                 
             } else {
-               Cart::query()->create($data);
+               $cartNew = Cart::query()->create($data);
+               return response()->json([
+                'message' => 'Đã thêm sản phẩm vào giỏ hàng ',
+                'status' => 'success',
+                'data' => $cartNew,
+
+                ], Response::HTTP_CREATED);    
             }
 
-            // $cart = Cart::query()->create($data);
+
 
             return response()->json([
                 'message' => 'Đã thêm sản phẩm vào giỏ hàng ',
@@ -208,48 +215,5 @@ class CartController extends Controller
         }
     }
 
-    public function checkout(Request $request) 
-    {
-        try {
-            
-            $selectedItems = $request->input('selected_items', []);
-
-            $selectedItems =[1,2];
-
-            // Nếu không có sản phẩm nào được chọn
-            if (empty($selectedItems)) {
-                return response()->json([
-                    'error' => 'Bạn chưa chọn sản phẩm nào để thanh toán.'
-                ]);
-            }
-        
-            // Lấy thông tin các sản phẩm đã chọn
-            $cartItems = Cart::query()
-            ->with(['variant.attributeValues.attribute'])
-            ->where('user_id', 1)
-            ->whereIn('id', $selectedItems)
-            ->get();
-
-           
-            Session::put('variantIds', $cartItems);
-
-        
-            $acc = Session::get('variantIds');
-
-            return response()->json([
-                'status' => 'success',
-                'data' => $acc ,
-            ], Response::HTTP_OK);
-        } catch (\Throwable $th) {
-            Log::error(__CLASS__ . '@' . __FUNCTION__, [
-                'line' => $th->getLine(),
-                'message' => $th->getMessage()
-            ]);
-            return response()->json([
-                'messages' => 'Lỗi',
-                'status' => 'error'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
     
 }
