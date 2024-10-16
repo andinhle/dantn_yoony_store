@@ -18,19 +18,26 @@ class CartController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+  
+   public function index()
     {
         try {
             $data = Cart::query()
-            ->with(['variant.product','variant.attributeValues.attribute'])
-            ->where('user_id', 1)
-            ->get();
+                ->with(['variant.product.category', 'variant.attributeValues.attribute'])
+                ->where('user_id', Auth::id())
+                ->orderBy('created_at', 'desc')
+                ->get();
+    
 
             foreach ($data as $item) {
-                $this->totalAmount += $item['variant']['price'] * $item['quantity'];
-                
+
+                $this->totalAmount += $item['variant']['sale_price'] * $item['quantity'];
+
+                $images = $item['variant']['product']['images'];
+                if (is_string($images)) {
+                    $item['variant']['product']['images'] = json_decode($images, true);
+                }
             }
-            
 
             return response()->json([
                 'status' => 'success',
@@ -40,9 +47,10 @@ class CartController extends Controller
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
-                'message' => $th->getMessage()
+                'message' => $th->getMessage(),
+                'trace' => $th->getTraceAsString(),
             ]);
-
+    
             return response()->json([
                 'message' => 'Lỗi tải trang',
                 'status' => 'error',
@@ -50,6 +58,7 @@ class CartController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
 
     
 
@@ -63,10 +72,11 @@ class CartController extends Controller
             $data = $request->all();
             $data['user_id'] = Auth::id();
             $idExist = Cart::query()
-            ->with(['variant.attributeValues.attribute', "user"])
-            ->where('variant_id', $request->variant_id)
-            ->where('user_id', Auth::id())
-            ->first();
+                ->with(['variant.product.category','variant.attributeValues.attribute', "user"])
+                ->where('variant_id', $request->variant_id)
+                ->where('user_id', Auth::id())
+                ->first();
+    
 
             if ($idExist) {
                 if($request->quantity>1){
@@ -154,7 +164,7 @@ class CartController extends Controller
             } 
     
             $data = Cart::query()
-            ->with(['variant.product','variant.attributeValues.attribute'])
+            ->with(['variant.product.category','variant.attributeValues.attribute'])
             ->where('user_id',Auth::id() )
             ->get();
 

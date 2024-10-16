@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role_id'
     ];
 
     /**
@@ -48,4 +49,9 @@ class User extends Authenticatable
         return $this->hasMany(Wishlist::class, 'user_id', 'id');
     }
 
+    // Mỗi người dùng thuộc về một vai trò
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
 }
