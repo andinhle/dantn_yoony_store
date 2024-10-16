@@ -97,19 +97,23 @@ class RoleHasModelController extends Controller
 
 
     // Xóa phân quyền model khỏi vai trò
-    public function destroy($roleId, $modelId)
+    public function destroy($roleId)
     {
         try {
-            $roleHasModel = RoleHasModel::where('role_id', $roleId)
-                ->where('model_id', $modelId)
-                ->firstOrFail();
-
-            $roleHasModel->delete();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Phân quyền model đã được xóa khỏi vai trò'
-            ]);
+            $roleHasModels = RoleHasModel::where('role_id', $roleId);
+    
+            if ($roleHasModels->count() > 0) {
+                $roleHasModels->delete();
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Tất cả phân quyền model đã được xóa khỏi vai trò'
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Không tìm thấy phân quyền model cho vai trò này'
+                ], 404);
+            }
         } catch (\Throwable $th) {
             Log::error($th->getMessage());
             return response()->json([
@@ -118,6 +122,7 @@ class RoleHasModelController extends Controller
             ], 500);
         }
     }
+    
 
 
     //get all model theo role
