@@ -85,24 +85,22 @@ class CartController extends Controller
                 }else{
                     $idExist->quantity++;
                     $idExist->save();
+                    
                 }
 
                 
             } else {
-               Cart::query()->create($data);
+               $cartNew = Cart::query()->create($data);
+               $cartNew->load(['variant.product.category', 'variant.attributeValues.attribute', 'user']);
+
+               return response()->json([
+                'message' => 'Đã thêm sản phẩm vào giỏ hàng ',
+                'status' => 'success',
+                'data' => $cartNew,
+
+                ], Response::HTTP_CREATED);    
             }
 
-
-            // $cart = Cart::query()->create($data);
-
-    
-            // Eager load liên quan sau khi đã lưu
-            $idExist->load(['variant.product.category','variant.attributeValues.attribute', "user"]);
-
-            $images = $idExist->variant->product->images;
-            if (is_string($images)) {
-                $idExist->variant->product->images = json_decode($images, true);
-            }
 
 
             return response()->json([
@@ -228,6 +226,26 @@ class CartController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    
+    //xóa nhiều cart
+    public function deleteMuch(Request $request)
+    {
+        try {
+            $ids = $request->ids;
+
+            if (!is_array($ids) || empty($ids)) {
+                return response()->json(['message' => 'Danh sách ID không hợp lệ!'], 400);
+            }
+
+            // Xóa nhiều theo id
+            Cart::whereIn('id', $ids)->delete();
+
+            return response()->json(['message' => 'Xóa nhiều giỏ hàng thành công!'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
+        }
+    }
+
 
     public function checkout(Request $request) 
     {
