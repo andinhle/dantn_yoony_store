@@ -10,12 +10,14 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\ModelController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\RoleHasModelController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\OderCheckController;
 use App\Http\Controllers\Client\OrderController;
+use App\Http\Controllers\client\ChatbotController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -29,7 +31,7 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
+// admin
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -59,7 +61,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::apiResource('cart', CartController::class);
     Route::patch('/cart/{id}/{operation?}', [CartController::class, 'update']);
     Route::post('/checkout', [CartController::class, 'checkout'])->name('order.checkout');
-    // Order 
+    // Order
     // Route::get('/order', [OrderController::class, 'getProduct'])->name('order.getProduct');
     Route::post('/order', [OrderController::class, 'store'])->name('order.store');
 });
@@ -70,6 +72,15 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 Route::post('/auth/password/request-reset', [AuthController::class, 'requestPasswordReset'])->name('password.request');
 Route::post('/auth/password/reset', [AuthController::class, 'resetPassword'])->name('password.reset');
 
+// admin CURD questions
+Route::apiResource('admin/questions', QuestionController::class);
+Route::patch('/questions/{id}/active', [QuestionController::class, 'updateIsActive']);
+
+// admin answers
+Route::get('questions/{questionId}/answers', [QuestionController::class, 'getAnswers']); //cái này dùng để lấy thông tin câu hỏi nhé
+Route::post('questions/{questionId}/answers', [QuestionController::class, 'storeAnswer']); //cái này dùng để thêm câu trả lời
+Route::put('answers/{id}', [QuestionController::class, 'updateAnswer']); // cái này update
+Route::delete('answers/{id}', [QuestionController::class, 'destroyAnswer']); // xóa nek
 
 //category
 Route::apiResource('category', CategoryController::class);
@@ -117,6 +128,7 @@ Route::post('role-assign-model', [RoleHasModelController::class, 'store']);  // 
 Route::delete('role-assign-model/{roleId}', [RoleHasModelController::class, 'destroy']); // Gỡ tất cả models khỏi vai trò
 Route::get('all-models-by-role', [RoleHasModelController::class, 'getAllByRole'])->name('roles.get');
 
+// end admin
 
 //Client
 Route::get('home/product/{slug}', [HomeController::class, 'getOneProductBySlug']);
@@ -142,3 +154,8 @@ Route::post('cart/delete-much', [CartController::class, 'deleteMuch'])->name('ca
 
 //checkoder
 Route::get('check-order', [OderCheckController::class, 'checkOrder'])->name('order.check');
+
+//chatbot Question
+Route::get('/questions', [ChatbotController::class, 'index']);
+Route::get('/questions/{id}/answers', [ChatbotController::class, 'getAnswers']);
+Route::post('/questions/check', [ChatbotController::class, 'checkForMatches']);
