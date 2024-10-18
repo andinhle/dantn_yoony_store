@@ -90,25 +90,21 @@ class CartController extends Controller
 
                 
             } else {
-               $cartNew = Cart::query()->create($data);
-               $cartNew->load(['variant.product.category', 'variant.attributeValues.attribute', 'user']);
-
-               return response()->json([
-                'message' => 'Đã thêm sản phẩm vào giỏ hàng ',
-                'status' => 'success',
-                'data' => $cartNew,
-                ], Response::HTTP_CREATED);    
+                $idExist = Cart::query()->create($data);    
             }
 
+            $idExist->load(['variant.product.category','variant.attributeValues.attribute', "user"]);
 
+            $images = $idExist->variant->product->images;
+            if (is_string($images)) {
+                $idExist->variant->product->images = json_decode($images, true);
+            }
 
             return response()->json([
-                'message' => 'Đã thêm sản phẩm vào giỏ hàng ',
+                'message' => 'Đã thêm sản phẩm vào giỏ hàng',
                 'status' => 'success',
                 'data' => $idExist,
-
-            ], Response::HTTP_CREATED);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
-
+            ], Response::HTTP_CREATED);
             
         } catch (\Throwable $th) {
 
