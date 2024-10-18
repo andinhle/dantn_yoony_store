@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Client;
 
+use App\Events\OrderShipped;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Order\StoreOrderRequest;
 use App\Models\Cart;
@@ -63,7 +64,7 @@ class OrderController extends Controller
 
                 $selectedItems = $request->input('selected_items', []);
 
-                // $selectedItems =[1]; Để test
+                $selectedItems =[11]; // Để test
 
                 // Nếu không có sản phẩm nào được chọn
                 if (empty($selectedItems)) {
@@ -71,26 +72,18 @@ class OrderController extends Controller
                         'error' => 'Bạn chưa chọn sản phẩm nào để thanh toán.'
                     ]);
                 }
-            
+                $cartItems = [];
                 // Lấy thông tin các sản phẩm đã chọn
                 $cartItems = Cart::query()
                 ->with(['variant.attributeValues.attribute'])
-                ->where('user_id', Auth::id())
+                ->where('user_id', Auth::id()) 
                 ->whereIn('id', $selectedItems)
                 ->get();
 
-            
-
-
-        
-                $final_total = 0;
-
                 $data =  $request->all();
                 $data['user_id'] = Auth::id();
-                // $data['user_id'] = 1;
                 $data['code'] = $this->generateOrderCode();
                 $data['grand_total'] = 0;
-
 
                 foreach ($cartItems as $value) {
                     $data['grand_total'] += $value->quantity * ($value->variant->sale_price ?: $value->variant->price);
@@ -98,22 +91,29 @@ class OrderController extends Controller
 
                 $order = Order::query()->create($data);
 
-                $orderItem = [];
+                
+                if($order){
+                    $orderItems = [];
 
-                foreach ($cartItems as $value) {
-                    $orderItem['order_id'] =   $order->id;
-                    $orderItem['variant_id'] =   $value->variant_id;
-                    $orderItem['quantity'] =   $value->quantity;
-                    $orderItem['unit_price'] =   $value->variant->sale_price ?: $value->variant->price;
-                    $orderItem['total_price'] =   $value->quantity * ($value->variant->sale_price ?: $value->variant->price);
+                    foreach ($cartItems as $value) {
+                        $orderItem['order_id'] =   $order->id;
+                        $orderItem['variant_id'] =   $value->variant_id;
+                        $orderItem['quantity'] =   $value->quantity;
+                        $orderItem['unit_price'] =   $value->variant->sale_price ?: $value->variant->price;
+                        $orderItem['total_price'] =   $value->quantity * ($value->variant->sale_price ?: $value->variant->price);
+ 
+                        $orderItems[] = $orderItem;
 
-                    // Giảm số lượng trong kho (Variants)
-                    $variant = Variant::query()->where('id', $value->variant_id)->first();
-                    $variant->quantity -= $value->quantity; 
-                    $variant->save();
+               
+                        $variant = Variant::query()->where('id', $value->variant_id)->first();
+                        $variant->quantity -= $value->quantity; 
+                        $variant->save();
+                    }
+                    OrderItem::insert($orderItems);
+                    
+                    
                 }
-
-            
+                Log::info('Order Items:', $orderItems); 
                 OrderCoupon::query()->create([
                     'order_id' =>  $order->id,
                     'discount_amount' => $request->discount_amount,
@@ -124,18 +124,17 @@ class OrderController extends Controller
                 $coupon->usage_limit -= 1;
                 $coupon->save();
                 
-                $itemOrder = OrderItem::query()->create($orderItem);
                 
-
-                Cart::query()->where('user_id', 1)
-                ->whereIn('variant_id',  $selectedItems )
+                Cart::query()->where('user_id', Auth::id())
+                ->whereIn('id',  $selectedItems )
                 ->delete();
-
-
+                // OrderShipped::dispatch($order);
+                
+                
                 
                 return response()->json([
                     'dataOrder' => $cartItems, 
-                    'dataOrderItem' =>  $itemOrder , 
+                    // 'dataOrderItem' =>  $itemOrder , 
                     'message' =>  'success'
                 ]);
             });
