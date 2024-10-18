@@ -15,7 +15,6 @@ use App\Http\Controllers\Admin\RoleHasModelController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\ProviderController;
-use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\Client\OderCheckController;
 use App\Http\Controllers\Client\OrderController;
 use Illuminate\Http\Request;
@@ -112,6 +111,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
         // QL quyền
         Route::apiResource('roles', RoleController::class);
+
+        // Route cho model
+        Route::get('models', [ModelController::class, 'index']);       // Lấy danh sách tất cả các model
+        Route::post('models', [ModelController::class, 'store']);      // Tạo mới một model
+        Route::get('models/{id}', [ModelController::class, 'show']);   // Lấy thông tin chi tiết một model theo ID
+        Route::put('models/{id}', [ModelController::class, 'update']); // Cập nhật thông tin model theo ID
+        Route::delete('models/{id}', [ModelController::class, 'destroy']); // Xóa một model theo ID
+        Route::get('models1', [ModelController::class, 'getModels']); // lấy path của model
 
         // Route cho gán model vào vai trò
         Route::get('role-assign-models', [RoleHasModelController::class, 'index']);        // Lấy danh sách các role và model đã gán
