@@ -3,7 +3,7 @@ import { ICart } from "../interfaces/ICart"
 
 const CartContext = createContext({} as {
     dispatch:any,
-    carts:ICart[]
+    carts:ICart[],
 })
 
 export default CartContext

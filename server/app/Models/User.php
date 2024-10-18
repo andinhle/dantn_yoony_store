@@ -34,13 +34,14 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function role()
-    {
-        return $this->belongsTo(Role::class);
-    }
-
     public function wishlists()
     {
         return $this->hasMany(Wishlist::class, 'user_id', 'id');
+    }
+
+    // Mỗi người dùng thuộc về một vai trò
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
     }
 }

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
             $table->foreignId('coupon_id')->constrained('coupons')->cascadeOnDelete();
+            $table->decimal('discount_amount', 10, 2)->nullable();
             $table->timestamps();
         });
     }

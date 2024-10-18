@@ -6,7 +6,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import LayoutUser from "./layouts/LayoutUser.tsx";
 import LayoutAdmin from "./layouts/LayoutAdmin.tsx";
 import DashboardAdmin from "./pages/admin/DashboardAdmin.tsx";
-import UsersAdmin from "./pages/admin/UserAdmin.tsx";
+import UsersAdmin from "./pages/admin/users/UserAdmin.tsx";
 import CategorysAdmin from "./pages/admin/CategorysAdmin.tsx";
 import Register from "./components/User/Auth/Register.tsx";
 import "swiper/css";
@@ -37,49 +37,57 @@ import BlogPage from "./components/User/Blogs/BlogsPage.tsx";
 import LayoutProductAdmin from "./layouts/Admin/LayoutProductAdmin.tsx";
 import AddOrUpdateProduct from "./pages/admin/products/AddOrUpdateProduct.tsx";
 import ShowDetailProduct from "./components/User/Show/ShowDetailProduct.tsx";
+import CartListClient from "./components/User/Cart/CartListClient.tsx";
+import LayoutUsersAdmin from "./layouts/Admin/LayoutUsersAdmin.tsx";
+import UserRoleManager from "./pages/admin/users/UserRoleManager.tsx";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
-    <BlogProvider>
-      <ScrollToTop />
-      <Routes>
-        <Route element={<App />}>
-          {/* User */}
-          <Route path="/" element={<LayoutUser />}>
-            <Route index element={<MainContentUser />} />
-            <Route path="register" element={<Register />} />
-            <Route path="login" element={<Login />} />
-            <Route path="reset-password" element={<LayoutResetPassword />}>
-              <Route path="" index element={<ResetPassRequest />} />
-              <Route path=":token/:email" element={<FormResetPass />} />
+      <BlogProvider>
+        <ScrollToTop />
+        <Routes>
+          <Route element={<App />}>
+            {/* User */}
+            <Route path="/" element={<LayoutUser />}>
+              <Route index element={<MainContentUser />} />
+              <Route path="register" element={<Register />} />
+              <Route path="login" element={<Login />} />
+              <Route path="reset-password" element={<LayoutResetPassword />}>
+                <Route index element={<ResetPassRequest />} />
+                <Route path=":token/:email" element={<FormResetPass />} />
+              </Route>
+              <Route
+                path=":category/:slugproduct"
+                element={<ShowDetailProduct />}
+              />
+              <Route path="gio-hang" element={<CartListClient />} />
+              <Route path="blogs" element={<BlogPage />} />
             </Route>
-            <Route path=":category/:slugproduct" element={<ShowDetailProduct />} />
-            <Route path="blogs" element={<BlogPage/>}/>
-          </Route>
-          {/* Admin */}
-          <Route path="admin" element={<LayoutAdmin />}>
-            <Route index element={<DashboardAdmin />} />
-            <Route path="users" element={<UsersAdmin />} />
-            <Route path="blogs" element={<LayoutBlogsAdmin />} />
-            <Route path="blogs/:id" element={<UpdateBlogsAdmin />}/>
-            <Route path="categorys" element={<CategorysAdmin />} />
-            <Route path="products" element={<LayoutProductAdmin />}>
-              <Route index element={<ProductList />} />
-              <Route path="add" element={<AddOrUpdateProduct />} />
-              <Route path="update/:id" element={<AddOrUpdateProduct />} />
+            {/* Admin */}
+            <Route path="admin" element={<LayoutAdmin />}>
+              <Route index element={<DashboardAdmin />} />
+              <Route path="blogs" element={<LayoutBlogsAdmin />} />
+              <Route path="blogs/:id" element={<UpdateBlogsAdmin />} />
+              <Route path="categorys" element={<CategorysAdmin />} />
+              <Route path="products" element={<LayoutProductAdmin />}>
+                <Route index element={<ProductList />} />
+                <Route path="add" element={<AddOrUpdateProduct />} />
+                <Route path="update/:id" element={<AddOrUpdateProduct />} />
+              </Route>
+              <Route path="orders" element={<Orders />} />
+              <Route path="users" element={<LayoutUsersAdmin />}>
+                <Route index element={<UsersAdmin />} />
+                <Route path="role-manager" element={<UserRoleManager />} />
+              </Route>
+              <Route path="vouchers" element={<LayoutVoucherAdmin />} />
+              <Route path="banner" element={<BannerList />} />
+              <Route path="orders/orderDetails" element={<OrderDetails />} />
+              <Route path="rates" element={<Rates />} />
             </Route>
-            <Route path="orders" element={<Orders />} />
-            <Route path="vouchers" element={<LayoutVoucherAdmin />} />
-            <Route path="banner" element={<BannerList />} />
-            {/* <Route path="products/varriant" element={<ListVarriant />} />
-            <Route path="products/varriant/add" element={<Varriant />} />
-            <Route path="products/varriant/addValue"element={<VarriantValue />}/> */}
-            <Route path="orders/orderDetails" element={<OrderDetails />} />
-            <Route path="rates" element={<Rates />} />
           </Route>
-        </Route>
-      </Routes>
-      <ToastContainer autoClose={3000} newestOnTop={true} />
+        </Routes>
+        <ToastContainer autoClose={3000} newestOnTop={true} />
       </BlogProvider>
     </BrowserRouter>
   </StrictMode>
