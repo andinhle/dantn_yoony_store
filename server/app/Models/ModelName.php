@@ -18,4 +18,8 @@ class ModelName extends Model
     {
         return $this->hasMany(RoleHasModel::class);
     }
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'role_has_models', 'model_id', 'role_id');
+    }
 }
