@@ -40,6 +40,7 @@ import ShowDetailProduct from "./components/User/Show/ShowDetailProduct.tsx";
 import CartListClient from "./components/User/Cart/CartListClient.tsx";
 import LayoutUsersAdmin from "./layouts/Admin/LayoutUsersAdmin.tsx";
 import UserRoleManager from "./pages/admin/users/UserRoleManager.tsx";
+import CheckOutOrder from "./components/User/Order/CheckOutOrder.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -62,6 +63,7 @@ createRoot(document.getElementById("root")!).render(
                 element={<ShowDetailProduct />}
               />
               <Route path="gio-hang" element={<CartListClient />} />
+              <Route path="check-out" element={<CheckOutOrder />} />
               <Route path="blogs" element={<BlogPage />} />
             </Route>
             {/* Admin */}

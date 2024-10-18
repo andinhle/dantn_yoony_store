@@ -275,3 +275,22 @@ a:hover .number-cart{
   height: 30px;
   border-radius: 5px;
 }
+
+:where(.css-dev-only-do-not-override-ccdg5a).ant-steps.ant-steps-label-vertical .ant-steps-item-content{
+  width: 120px;
+  margin: 0;
+
+}
+:where(.css-dev-only-do-not-override-ccdg5a).ant-steps .ant-steps-item-tail{
+  top: 20px;
+}
+:where(.css-dev-only-do-not-override-ccdg5a).ant-steps .ant-steps-item-title{
+  font-size: 14px;
+}
+:where(.css-dev-only-do-not-override-ccdg5a).ant-steps.ant-steps-label-vertical .ant-steps-item-tail{
+  margin-inline-start: 60px;
+  padding: 0 25px;
+}
+:where(.css-dev-only-do-not-override-ccdg5a).ant-steps .ant-steps-item-finish>.ant-steps-item-container>.ant-steps-item-tail::after{
+  background-color:#ff9900
+}

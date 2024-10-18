@@ -456,21 +456,50 @@ const CartListClient = () => {
                   id="value-voucher"
                   className="block  max-w-[73%] h-[35px] focus:!border-primary/50 focus:!border-r-transparent rounded-[5px] rounded-r-none border-r-transparent border border-input text-sm placeholder-[#00000040] focus:!shadow-none"
                 />
-                <button type="button" className="block bg-primary w-full h-[35px] px-2 text-sm text-util">Áp dụng</button>
+                <button
+                  type="button"
+                  className="block bg-primary w-full h-[35px] px-2 text-sm text-util"
+                >
+                  Áp dụng
+                </button>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-sm block">Khuyến mãi: <span className="text-sm text-primary">0 VNĐ</span></label>
-                <label className="text-sm block">Phí vận chuyển: <span className="text-sm text-primary">Miễn phí</span></label>
+                <label className="text-sm block">
+                  Khuyến mãi:{" "}
+                  <span className="text-sm text-primary">0 VNĐ</span>
+                </label>
+                <label className="text-sm block">
+                  Phí vận chuyển:{" "}
+                  <span className="text-sm text-primary">Miễn phí</span>
+                </label>
               </div>
             </div>
           </form>
           <div className="space-y-2">
-            <p className="font-medium">Tổng thanh toán: <span className="text-primary">{selectedTotal.toLocaleString()} VNĐ</span></p>
+            <p className="font-medium">
+              Tổng thanh toán:{" "}
+              <span className="text-primary">
+                {selectedTotal.toLocaleString()} VNĐ
+              </span>
+            </p>
           </div>
-          <Link to={'/check-out'} className="text-util bg-primary text-center w-full block py-2 rounded-sm">TIẾN HÀNH ĐẶT HÀNG</Link>
+          <button className={`${selectedRowKeys.length <=0 ? 'bg-[#D1D1D6] pointer-events-none':'bg-primary pointer-events-auto'} w-full block rounded-sm`}>
+            <Link
+              to={"/check-out"}
+              className={`text-center flex justify-center py-2 text-util`}
+            >
+              TIẾN HÀNH ĐẶT HÀNG
+            </Link>
+          </button>
           <div className="space-y-2.5">
-            <img src="../../../../src/assets/images/images-payment.svg" className="w-fit mx-auto" alt="image-payment" />
-            <p className="text-sm text-center text-secondary/75">Đảm bảo an toàn và bảo mật</p>
+            <img
+              src="../../../../src/assets/images/images-payment.svg"
+              className="w-fit mx-auto"
+              alt="image-payment"
+            />
+            <p className="text-sm text-center text-secondary/75">
+              Đảm bảo an toàn và bảo mật
+            </p>
           </div>
         </div>
       </div>
