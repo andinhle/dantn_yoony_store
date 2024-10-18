@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\RoleHasModelController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\ProviderController;
+use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\Client\OderCheckController;
 use App\Http\Controllers\Client\OrderController;
 use Illuminate\Http\Request;
@@ -50,6 +51,19 @@ Route::get('/detailBlog/{slug}', [HomeController::class, 'detailBlog'])->name('b
 //Checkoder
 Route::get('check-order', [OderCheckController::class, 'checkOrder'])->name('order.check');
 
+// Sản phẩm
+Route::get('home/product/{slug}', [HomeController::class, 'getOneProductBySlug']);
+Route::get('home/products/featured', [HomeController::class, 'getFeaturedProducts']);
+Route::get('home/products/good-deal', [HomeController::class, 'getGoodDealProducts']);
+Route::get('home/product/category/{id}', [HomeController::class, 'getProductsByCategory']);
+
+//Blog
+Route::get('/list-blogs', [HomeController::class, 'listBlogs'])->name('blogs.listBlogs');
+Route::get('/detailBlog/{slug}', [HomeController::class, 'detailBlog'])->name('blog.detailBlog');
+
+//Checkoder
+Route::get('check-order', [OderCheckController::class, 'checkOrder'])->name('order.check');
+
 // Quyền khi đăng nhập
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/user', function (Request $request) {
@@ -59,6 +73,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     // Admin
     Route::middleware(['dynamic.permission'])->group(function () {
+        //QL user
+        // Lấy tất cả thông tin user
+        Route::get('/users', [UserController::class, 'index']);
+        // Cập nhật role của user
+        Route::patch('/users/{id}/role', [UserController::class, 'updateRole']);
+
         //QL user
         // Lấy tất cả thông tin user
         Route::get('/users', [UserController::class, 'index']);
@@ -99,6 +119,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::delete('role-assign-model/{roleId}', [RoleHasModelController::class, 'destroy']); // Gỡ tất cả models khỏi vai trò
         Route::get('all-models-by-role', [RoleHasModelController::class, 'getAllByRole'])->name('roles.get');
 
+        // Route cho gán model vào vai trò
+        Route::get('role-assign-models', [RoleHasModelController::class, 'index']);        // Lấy danh sách các role và model đã gán
+        Route::post('role-assign-model', [RoleHasModelController::class, 'store']);  // Gán một model vào vai trò
+        Route::delete('role-assign-model/{roleId}', [RoleHasModelController::class, 'destroy']); // Gỡ tất cả models khỏi vai trò
+        Route::get('all-models-by-role', [RoleHasModelController::class, 'getAllByRole'])->name('roles.get');
+
         // QL sản phẩm
         Route::get('/product/{slug}', [ProductController::class, 'findBySlug']);
         Route::apiResource('products', ProductController::class);
@@ -114,6 +140,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Giỏ hàng
     Route::apiResource('cart', CartController::class);
     Route::patch('/cart/{id}/{operation?}', [CartController::class, 'update']);
+
+    //Wishlist
+    Route::get('/list-wishlists', [HomeController::class, 'getWishlists']);
+    Route::post('/insert-wishlists', [HomeController::class, 'insertWishlists']);
+    Route::delete('/delete-wishlists/{product_id}', [HomeController::class, 'deleteWishlist']);
+
+    
 
     //Wishlist
     Route::get('/list-wishlists', [HomeController::class, 'getWishlists']);
