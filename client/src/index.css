@@ -223,3 +223,55 @@ a:hover .number-cart{
 :where(.css-dev-only-do-not-override-ccdg5a).ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):first-child{
   border-color: #ff9900;
 }
+
+.shadow-small{
+  box-shadow: none !important;
+  border: 1px solid #F2F2F7;
+}
+:where(.css-dev-only-do-not-override-ccdg5a).ant-checkbox-checked .ant-checkbox-inner{
+  background-color: #ff9900 !important;
+  border-color: white;
+}
+:where(.css-dev-only-do-not-override-ccdg5a).ant-checkbox-indeterminate .ant-checkbox-inner:after{
+  background-color: rgb(255, 153, 0) !important;
+}
+
+:where(.css-dev-only-do-not-override-ccdg5a).ant-table-wrapper .ant-table-tbody .ant-table-row.ant-table-row-selected >.ant-table-cell{
+  background-color: #fffbf0 !important;
+}
+:where(.css-dev-only-do-not-override-ccdg5a).ant-pagination .ant-pagination-item-active,:where(.css-dev-only-do-not-override-ccdg5a).ant-pagination .ant-pagination-item-active:hover{
+  border-color: #ff9900;
+}
+
+:where(.css-dev-only-do-not-override-ccdg5a).ant-pagination .ant-pagination-item-active a,:where(.css-dev-only-do-not-override-ccdg5a).ant-pagination .ant-pagination-item-active:hover a{
+  color:#ff9900
+}
+
+:where(.css-dev-only-do-not-override-ccdg5a).ant-table-wrapper .ant-table-thead >tr>th{
+  background-color: #ff9900;
+  color: white;
+}
+
+:where(.css-dev-only-do-not-override-ccdg5a).ant-btn-variant-outlined:not(:disabled):not(.ant-btn-disabled):hover, :where(.css-dev-only-do-not-override-ccdg5a).ant-btn-variant-dashed:not(:disabled):not(.ant-btn-disabled):hover{
+  color:#ff9900;
+  border-color: #ff9900;
+}
+:where(.css-dev-only-do-not-override-ccdg5a) a:hover{
+  color:#ff9900;
+}
+
+.mini-cart [data-testid="close-drawer"]{
+  top: 40px !important;
+  color: #ff9900;
+}
+
+
+.mini-cart [data-testid="close-drawer"]:hover{
+  color: #ff9900;
+  background: #ffebcc;
+}
+
+.input-role{
+  height: 30px;
+  border-radius: 5px;
+}

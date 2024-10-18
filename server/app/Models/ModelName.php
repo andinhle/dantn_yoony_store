@@ -5,14 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ModelType extends Model
+class ModelName extends Model
 {
     use HasFactory;
-    
     protected $table = 'models'; 
-    
+
     protected $fillable = ['name', 'type'];
 
+
+    // Một model có thể có nhiều vai trò qua bảng trung gian role_has_models
+    public function roleHasModels()
+    {
+        return $this->hasMany(RoleHasModel::class);
+    }
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'role_has_models', 'model_id', 'role_id');

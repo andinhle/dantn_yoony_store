@@ -18,7 +18,13 @@ class Role extends Model
 
     public function modelTypes()
     {
-        return $this->belongsToMany(ModelType::class, 'role_has_models', 'role_id', 'model_id');
+        return $this->belongsToMany(ModelName::class, 'role_has_models', 'role_id', 'model_id');
+    }
+
+    // Một vai trò có thể có nhiều models qua bảng trung gian role_has_models
+    public function roleHasModels()
+    {
+        return $this->hasMany(RoleHasModel::class);
     }
 
 }

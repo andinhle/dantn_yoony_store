@@ -21,8 +21,8 @@ class HomeController extends Controller
     public function getOneProductBySlug(string $slug)
     {
         try {
-            $product = Product::with('category', 'variants.attributeValues')->where('slug', $slug)->firstOrFail();
-            $relatedProducts = Product::with('category', 'variants.attributeValues')
+            $product = Product::with('category', 'variants.attributeValues.attribute')->where('slug', $slug)->firstOrFail();
+            $relatedProducts = Product::with('category', 'variants.attributeValues.attribute')
                 ->where('category_id', $product->category_id)
                 ->where('is_active', true) // Điều kiện kiểm tra sản phẩm phải active
                 ->where('id', '!=', $product->id)
@@ -114,9 +114,9 @@ class HomeController extends Controller
     public function getProductsByCategory(int $categoryId)
     {
         try {
-            $category = Category::with('product.variants.attributeValues')->findOrFail($categoryId);
+            $category = Category::with('product.variants.attributeValues.attribute')->findOrFail($categoryId);
 
-            $products = Product::with('category', 'variants.attributeValues')
+            $products = Product::with('category', 'variants.attributeValues.attribute')
                 ->where('category_id', $categoryId)
                 ->where('is_active', true) // Điều kiện kiểm tra sản phẩm phải active
                 ->paginate(10);

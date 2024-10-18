@@ -13,7 +13,6 @@ const CartProvider = ({ children }: Props) => {
     (async () => {
       try {
         const {data:{data:response}} = await instance.get('cart')
-        console.log(response);
         dispatch({
           type:"LIST",
           payload:response
