@@ -17,29 +17,34 @@ class QuestionController extends Controller
     {
         try {
             $questions = Question::with('answers')->latest('id')->paginate(10);
+
+            if ($questions->isEmpty()) {
+                return response()->json(['message' => 'Không có câu hỏi nào được tìm thấy.'], 404);
+            }
             return QuestionResource::collection($questions);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
         }
     }
 
+
     public function store(Request $request)
-{
-    $request->validate([
-        'text' => 'required|string',
-        'is_active' => 'boolean',
-    ]);
+    {
+        $request->validate([
+            'text' => 'required|string',
+            'is_active' => 'boolean',
+        ]);
 
-    try {
-        $data = $request->all();
-        $data['is_active'] = $data['is_active'] ?? true;
+        try {
+            $data = $request->all();
+            $data['is_active'] = $data['is_active'] ?? true;
 
-        $question = Question::create($data);
-        return new QuestionResource($question);
-    } catch (\Exception $e) {
-        return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
+            $question = Question::create($data);
+            return new QuestionResource($question);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
+        }
     }
-}
 
 
     public function show($id)
@@ -53,26 +58,29 @@ class QuestionController extends Controller
     }
 
     public function update(Request $request, $id)
-{
-    $request->validate([
-        'text' => 'required|string',
-        'is_active' => 'boolean',
-    ]);
+    {
+        $request->validate([
+            'text' => 'required|string',
+            'is_active' => 'boolean',
+        ]);
 
-    try {
-        $question = Question::findOrFail($id);
+        try {
+            $question = Question::findOrFail($id);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $data['is_active'] = $data['is_active'] ?? $question->is_active;
+            $data['is_active'] = $data['is_active'] ?? $question->is_active;
 
-        $question->update($data);
+            $question->update($data);
 
-        return new QuestionResource($question);
-    } catch (\Exception $e) {
-        return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
+            return new QuestionResource($question);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Không tìm thấy câu hỏi với ID ' . $id], 404);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
+        }
     }
-}
+
 
 
     public function destroy($id)
@@ -107,15 +115,18 @@ class QuestionController extends Controller
     //get
 
     public function getAnswers($questionId)
-{
-    try {
-        $question = Question::with('answers')->findOrFail($questionId);
+    {
+        try {
+            $question = Question::with('answers')->findOrFail($questionId);
 
-        return new QuestionResource($question);
-    } catch (\Exception $e) {
-        return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
+            return new QuestionResource($question);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Không tìm thấy câu hỏi với ID: ' . $questionId], 404);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
+        }
     }
-}
+
 
     //create
 
@@ -126,35 +137,41 @@ class QuestionController extends Controller
         ]);
 
         try {
+            $question = Question::findOrFail($questionId);
+
             $answer = Answer::create([
                 'text' => $request->text,
                 'question_id' => $questionId,
             ]);
+
             return new AnswerResource($answer);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Không tìm thấy câu hỏi với ID ' . $questionId], 404);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
         }
     }
 
-  public function updateAnswer(Request $request, $id)
-{
-    $request->validate([
-        'text' => 'required|string',
-    ]);
 
-    try {
-        $answer = Answer::find($id);
+    public function updateAnswer(Request $request, $id)
+    {
+        $request->validate([
+            'text' => 'required|string',
+        ]);
 
-        if (!$answer) {
-            return response()->json(['message' => 'Không tìm thấy câu trả lời với ID: ' . $id], 404);
+        try {
+            $answer = Answer::findOrFail($id);
+
+            $answer->update($request->all());
+
+            return new AnswerResource($answer);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Không tìm thấy câu trả lời với ID ' . $id], 404);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
         }
-
-        $answer->update($request->all());
-        return new AnswerResource($answer);
-    } catch (\Exception $e) {
-        return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
     }
-}
+
 
 
     public function destroyAnswer($id)

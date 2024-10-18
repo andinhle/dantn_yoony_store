@@ -18,22 +18,21 @@ class ChatbotController extends Controller
     public function getAnswers($id)
     {
         try {
-            $question = Question::find($id);
+            $question = Question::with('answers')->find($id);
 
             if (!$question) {
                 return response()->json(['message' => 'Không tìm thấy câu hỏi này.'], 404);
             }
 
-            $answers = Answer::where('question_id', $id)->get();
-
             return response()->json([
                 'question' => $question,
-                'answers' => $answers,
+                'answers' => $question->answers,
             ]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
         }
     }
+
 
 
     public function checkForMatches(Request $request)
@@ -47,7 +46,8 @@ class ChatbotController extends Controller
                 return response()->json(['message' => 'Không tìm thấy câu hỏi nào trùng khớp.'], 404);
             }
 
-            $answers = Answer::where('question_id', $question->id)->get();
+            $answers = Answer::all();
+            // $answers = Answer::where('question_id', $question->id)->get();
 
             return response()->json([
                 'question' => $question,
