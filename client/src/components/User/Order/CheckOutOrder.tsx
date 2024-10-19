@@ -1,8 +1,9 @@
 import { Button, message, Steps, theme } from "antd";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import ConfirmOrder from "./ConfirmOrder";
 import AddressOrder from "./AddressOrder";
 import SelectMethodPayment from "./SelectMethodPayment";
+import OrderSummary from "./OrderSummary";
 
 const CustomIcon = ({ icon, isCompleted }) => (
   <div
@@ -64,7 +65,7 @@ const steps = [
   },
   {
     title: "Thanh toán",
-    content: <SelectMethodPayment />,
+    content: <OrderSummary />,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -127,11 +128,6 @@ const CheckOutOrder = () => {
     icon: <CustomIcon icon={item.icon} isCompleted={current >= index} />,
   }));
 
-  //   useEffect(() => {
-  //     const data=localStorage.getItem('addressOrderFormData')
-  //     setAddressOrder()
-  //   }, [])
-
   const contentStyle = {
     // lineHeight: "260px",
     // textAlign: "center",
@@ -155,6 +151,7 @@ const CheckOutOrder = () => {
                 {/* {steps[current].content} */}
                 {current === 0 && <AddressOrder ref={addressOrderRef} />}
                 {current === 1 && <SelectMethodPayment />}
+                {current === 2 && <OrderSummary />}
             </div>
             <div style={{ marginTop: 24 }}>
               {current < steps.length - 1 && (
@@ -177,7 +174,7 @@ const CheckOutOrder = () => {
               {current > 0 && <Button onClick={() => prev()}>Quay lại</Button>}
             </div>
           </div>
-          <ConfirmOrder />
+          <ConfirmOrder current={current} />
         </div>
       </section>
     </>
