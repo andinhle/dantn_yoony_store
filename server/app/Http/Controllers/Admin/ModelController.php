@@ -29,8 +29,7 @@ class ModelController extends Controller
     public function index()
     {
         try {
-            $models = ModelName::all();
-
+            $models = ModelName::query()->orderBy('created_at', 'desc')->paginate(5);
             return response()->json([
                 'status' => 'success',
                 'data' => $models
@@ -49,7 +48,7 @@ class ModelController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255|unique:models,name',
-            'type' => 'required|string',
+            'type' => 'required|string|unique:models,type',
             'type.*' => 'string|max:255',
         ]);
 

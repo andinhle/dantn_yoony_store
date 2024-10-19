@@ -30,27 +30,40 @@ const CartListClient = () => {
   const { carts, dispatch } = useContext(CartContext);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedTotal, setSelectedTotal] = useState(0);
   const pageSize = 5;
+
   const calculateTotal = (item: any) => {
     return item.quantity * (item.variant.sale_price || item.variant.price);
   };
 
   useEffect(() => {
+    const newTotal = carts
+      .filter((item) => selectedRowKeys.includes(item.id))
+      .reduce((acc, item) => acc + calculateTotal(item), 0);
+    setSelectedTotal(newTotal);
+  }, [selectedRowKeys, carts]);
+
+  useEffect(() => {
     window.scrollTo({
-      top:0,
-      behavior:"smooth"
+      top: 0,
+      behavior: "smooth",
     });
   }, [currentPage, selectedRowKeys]);
 
-  const handleQuantityChange = async(item: any, newQuantity: number,operation:string) => {
+  const handleQuantityChange = async (
+    item: any,
+    newQuantity: number,
+    operation: string
+  ) => {
     console.log(item);
     const updatedItem = { ...item, quantity: Math.max(1, newQuantity) };
     dispatch({ type: "UPDATE", payload: updatedItem });
     try {
-      if (operation==="increase") {
-        await instance.patch(`cart/${item.id}/increase`)
-      }else if (operation==="decrease") {
-        await instance.patch(`cart/${item.id}/decrease`)
+      if (operation === "increase") {
+        await instance.patch(`cart/${item.id}/increase`);
+      } else if (operation === "decrease") {
+        await instance.patch(`cart/${item.id}/decrease`);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -71,8 +84,8 @@ const CartListClient = () => {
   };
   const handleTableChange = (pagination: TablePaginationConfig) => {
     setCurrentPage(pagination.current || 1);
-  }
-  
+  };
+
   const confirmDeleteOneProduct: PopconfirmProps["onConfirm"] = async (
     id: number
   ) => {
@@ -134,10 +147,10 @@ const CartListClient = () => {
     console.log(e);
     message.error("Huỷ xoá");
   };
-  const cancelDeleteSelectProduct: PopconfirmProps["onCancel"] = (e) => {
-    console.log(e);
-    message.error("Huỷ xoá");
-  };
+  // const cancelDeleteSelectProduct: PopconfirmProps["onCancel"] = (e) => {
+  //   console.log(e);
+  //   message.error("Huỷ xoá");
+  // };
 
   const columns: TableColumnsType<CartItem> = [
     {
@@ -150,7 +163,12 @@ const CartListClient = () => {
             className="w-14 h-14 object-cover rounded-lg"
           />
           <div>
-            <Link to={`/${variant.product.category.slug}/${variant.product.slug}`} className="line-clamp-1">{variant.product?.name}</Link>
+            <Link
+              to={`/${variant.product.category.slug}/${variant.product.slug}`}
+              className="line-clamp-1"
+            >
+              {variant.product?.name}
+            </Link>
             <div className="flex gap-2 text-secondary/50">
               <span>
                 Size:{" "}
@@ -175,7 +193,7 @@ const CartListClient = () => {
       align: "center",
       render: (variant, record) => (
         <span>
-          {variant.sale_price
+          {variant.sale_price || variant.price
             .toLocaleString("vi-VN", {
               useGrouping: true,
               maximumFractionDigits: 0,
@@ -194,7 +212,11 @@ const CartListClient = () => {
           <button
             onClick={(e) => {
               e.preventDefault();
-              handleQuantityChange(record, quantity > 1 ? quantity - 1 : 1,'decrease');
+              handleQuantityChange(
+                record,
+                quantity > 1 ? quantity - 1 : 1,
+                "decrease"
+              );
             }}
             className="p-3 border-input rounded-es-sm rounded-ss-sm text-[#929292] border-s border-b border-t"
           >
@@ -225,7 +247,7 @@ const CartListClient = () => {
           <button
             onClick={(e) => {
               e.preventDefault();
-              handleQuantityChange(record, quantity + 1,'increase');
+              handleQuantityChange(record, quantity + 1, "increase");
             }}
             className="p-3 border-input rounded-ee-sm rounded-se-sm text-[#929292] border-e border-t border-b"
           >
@@ -321,8 +343,8 @@ const CartListClient = () => {
     currentPage * pageSize
   );
 
-  console.log(selectedRowKeys);
-  localStorage.setItem('id_cart',JSON.stringify(selectedRowKeys))
+  localStorage.setItem("id_cart", JSON.stringify(selectedRowKeys));
+  localStorage.setItem("final_total", JSON.stringify(selectedTotal));
 
   return (
     <section className="my-7 space-y-7">
@@ -345,7 +367,7 @@ const CartListClient = () => {
         </span>
         GIỎ HÀNG
       </h2>
-      <div className="grid grid-cols-12 gap-8">
+      <div className="grid grid-cols-12 gap-5">
         <div className="col-span-9">
           <Table
             dataSource={paginatedData}
@@ -361,7 +383,7 @@ const CartListClient = () => {
               title="Xoá các sản phẩm đã chọn"
               description="Bạn có chắc chắn xoá không?"
               onConfirm={confirmDeleteSelectProduct}
-              onCancel={cancelDeleteSelectProduct}
+              // onCancel={cancelDeleteSelectProduct}
               okText="Xoá"
               cancelText="Huỷ"
             >
@@ -405,15 +427,78 @@ const CartListClient = () => {
             />
           </div>
         </div>
-        <div className="col-span-3 border p-4 rounded-md">
-          <h3 className="text-lg font-semibold mb-4">Thanh toán</h3>
+        <div className="col-span-3 border border-input p-3 rounded-md h-fit space-y-6 sticky top-20 bg-util">
+          <form action="">
+            <div className="space-y-2">
+              <div className="block">
+                <label htmlFor="voucher" className="flex gap-1">
+                  Nhập mã voucher{" "}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="#ff9900"
+                    className="size-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z"
+                    />
+                  </svg>
+                </label>
+              </div>
+              <div className="flex w-auto items-center rounded-[5px] overflow-hidden">
+                <input
+                  type="text"
+                  placeholder="Nhập code"
+                  id="value-voucher"
+                  className="block  max-w-[73%] h-[35px] focus:!border-primary/50 focus:!border-r-transparent rounded-[5px] rounded-r-none border-r-transparent border border-input text-sm placeholder-[#00000040] focus:!shadow-none"
+                />
+                <button
+                  type="button"
+                  className="block bg-primary w-full h-[35px] px-2 text-sm text-util"
+                >
+                  Áp dụng
+                </button>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm block">
+                  Khuyến mãi:{" "}
+                  <span className="text-sm text-primary">0 VNĐ</span>
+                </label>
+                <label className="text-sm block">
+                  Phí vận chuyển:{" "}
+                  <span className="text-sm text-primary">Miễn phí</span>
+                </label>
+              </div>
+            </div>
+          </form>
           <div className="space-y-2">
-            <p>
-              Tổng tiền:{" "}
-              {carts
-                .reduce((acc, item) => acc + calculateTotal(item), 0)
-                .toLocaleString()}{" "}
-              VNĐ
+            <p className="font-medium">
+              Tổng thanh toán:{" "}
+              <span className="text-primary">
+                {selectedTotal.toLocaleString()} VNĐ
+              </span>
+            </p>
+          </div>
+          <button className={`${selectedRowKeys.length <=0 ? 'bg-[#D1D1D6] pointer-events-none':'bg-primary pointer-events-auto'} w-full block rounded-sm`}>
+            <Link
+              to={"/check-out"}
+              className={`text-center flex justify-center py-2 text-util`}
+            >
+              TIẾN HÀNH ĐẶT HÀNG
+            </Link>
+          </button>
+          <div className="space-y-2.5">
+            <img
+              src="../../../../src/assets/images/images-payment.svg"
+              className="w-fit mx-auto"
+              alt="image-payment"
+            />
+            <p className="text-sm text-center text-secondary/75">
+              Đảm bảo an toàn và bảo mật
             </p>
           </div>
         </div>

@@ -233,7 +233,7 @@ a:hover .number-cart{
   border-color: white;
 }
 :where(.css-dev-only-do-not-override-ccdg5a).ant-checkbox-indeterminate .ant-checkbox-inner:after{
-  background-color: #ff9900 !important;
+  background-color: rgb(255, 153, 0) !important;
 }
 
 :where(.css-dev-only-do-not-override-ccdg5a).ant-table-wrapper .ant-table-tbody .ant-table-row.ant-table-row-selected >.ant-table-cell{
@@ -269,4 +269,33 @@ a:hover .number-cart{
 .mini-cart [data-testid="close-drawer"]:hover{
   color: #ff9900;
   background: #ffebcc;
+}
+
+.input-role{
+  height: 30px;
+  border-radius: 5px;
+}
+
+:where(.css-dev-only-do-not-override-ccdg5a).ant-steps.ant-steps-label-vertical .ant-steps-item-content{
+  width: 120px;
+  margin: 0;
+
+}
+:where(.css-dev-only-do-not-override-ccdg5a).ant-steps .ant-steps-item-tail{
+  top: 20px;
+}
+:where(.css-dev-only-do-not-override-ccdg5a).ant-steps .ant-steps-item-title{
+  font-size: 14px;
+}
+:where(.css-dev-only-do-not-override-ccdg5a).ant-steps.ant-steps-label-vertical .ant-steps-item-tail{
+  margin-inline-start: 60px;
+  padding: 0 25px;
+}
+:where(.css-dev-only-do-not-override-ccdg5a).ant-steps .ant-steps-item-finish>.ant-steps-item-container>.ant-steps-item-tail::after{
+  background-color:#ff9900
+}
+:where(.css-dev-only-do-not-override-ccdg5a).ant-steps{
+  background-color: #fff5e5;
+  padding: 15px 0px 10px 0px; 
+  border-radius: 10px;
 }

@@ -1,11 +1,11 @@
-import { Outlet } from "react-router-dom"
+import { Outlet } from "react-router-dom";
 
 const MainContentAdmin = () => {
   return (
     <main className="p-5">
-        <Outlet />
+      <Outlet />
     </main>
-  )
-}
+  );
+};
 
-export default MainContentAdmin
+export default MainContentAdmin;

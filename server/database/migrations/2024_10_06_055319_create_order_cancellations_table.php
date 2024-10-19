@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('order_cancellations', function (Blueprint $table) {
             $table->id();
+            $table->string('reason');
             $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();

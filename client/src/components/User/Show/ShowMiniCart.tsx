@@ -84,7 +84,7 @@ const ShowMiniCart = () => {
           <div className="flex justify-between items-center mt-5 mb-2">
             <div>
               <span className="text-sm text-primary/75">
-                {carts.length - 5} Thêm Hàng Vào Giỏ
+                {carts.length>5 ? `${carts.length - 5} Thêm Hàng Vào Giỏ` : '' } 
               </span>
             </div>
             <button>
