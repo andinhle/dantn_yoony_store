@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\RoleHasModelController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Client\CouponUserController;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\Client\OderCheckController;
@@ -164,4 +165,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Order 
     // Route::get('/order', [OrderController::class, 'getProduct'])->name('order.getProduct');
     Route::post('/order', [OrderController::class, 'store'])->name('order.store');
+
+    //Coupon_user
+    Route::apiResource('coupon-user', CouponUserController::class);
+    Route::patch('coupon-user/{id}', [CouponUserController::class, 'update']);
+
 });
