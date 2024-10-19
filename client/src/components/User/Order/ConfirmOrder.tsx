@@ -8,21 +8,23 @@ type Prop = {
 
 const ConfirmOrder = ({ current }: Prop) => {
   const final_total = JSON.parse(localStorage.getItem("final_total")!);
-  const orderData = JSON.parse(localStorage.getItem("orderData")!);
-  const submitOrder=async()=>{
+  const submitOrder = async () => {
+    const orderDataRaw = localStorage.getItem("orderData");
+    const orderData = orderDataRaw ? JSON.parse(orderDataRaw) : null;
     try {
-      const data=await instance.post('order',{
-        name:orderData.fullName,
-        tel:orderData.phone,...orderData
-      })
+      const { data } = await instance.post("order", {
+        name: orderData.fullName,
+        tel: orderData.phone,
+        ...orderData,
+      });
       console.log(data);
       if (data) {
-        toast.success(data.message)
-        localStorage.removeItem('final_total')
-        localStorage.removeItem('id_cart')
-        localStorage.removeItem('addressOrderFormData')
-        localStorage.removeItem('methodPayment')
-        localStorage.removeItem('orderData')
+        toast.success(data.message);
+        localStorage.removeItem("final_total");
+        localStorage.removeItem("id_cart");
+        localStorage.removeItem("addressOrderFormData");
+        localStorage.removeItem("methodPayment");
+        localStorage.removeItem("orderData");
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -33,7 +35,7 @@ const ConfirmOrder = ({ current }: Prop) => {
         toast.error("Đã xảy ra lỗi không mong muốn");
       }
     }
-  }
+  };
   return (
     <div className="col-span-3 border border-input p-3 rounded-md h-fit space-y-6 sticky top-20 bg-util">
       <form action="">
@@ -96,7 +98,7 @@ const ConfirmOrder = ({ current }: Prop) => {
             ? "bg-[#D1D1D6] pointer-events-none"
             : "bg-primary pointer-events-auto"
         } w-full block rounded-sm py-2 text-util`}
-         onClick={submitOrder}
+        onClick={submitOrder}
       >
         TIẾN HÀNH THANH TOÁN
       </button>
