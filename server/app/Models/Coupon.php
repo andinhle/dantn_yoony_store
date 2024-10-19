@@ -28,4 +28,7 @@ class Coupon extends Model
         'status' => 'boolean',
         'is_featured' => 'boolean',
     ];
+    public function users() {
+        return $this->belongsToMany(User::class, 'coupon_user');
+    }
 }
