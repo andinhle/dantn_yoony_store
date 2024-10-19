@@ -62,10 +62,7 @@ class OrderController extends Controller
 
 
 
-                $selectedItems = $request->input('selected_items', []);
-
-                $selectedItems =[11]; // Để test
-
+                $selectedItems = $request->selected_items;
                 // Nếu không có sản phẩm nào được chọn
                 if (empty($selectedItems)) {
                     return response()->json([
@@ -113,16 +110,19 @@ class OrderController extends Controller
                     
                     
                 }
-                Log::info('Order Items:', $orderItems); 
-                OrderCoupon::query()->create([
-                    'order_id' =>  $order->id,
-                    'discount_amount' => $request->discount_amount,
-                    'coupon_id' => $request->coupon_id
-                ]);
+                
 
-                $coupon = Coupon::query()->where('id',  $request->coupon_id)->first();
-                $coupon->usage_limit -= 1;
-                $coupon->save();
+                if($request->coupon_id){
+                    $coupon = Coupon::query()->where('id',  $request->coupon_id)->first();
+                    $coupon->usage_limit -= 1;
+                    $coupon->save();
+
+                    OrderCoupon::query()->create([
+                        'order_id' =>  $order->id,
+                        'discount_amount' => $request->discount_amount,
+                        'coupon_id' => $request->coupon_id
+                    ]);
+                }
                 
                 
                 Cart::query()->where('user_id', Auth::id())
