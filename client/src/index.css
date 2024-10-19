@@ -294,3 +294,8 @@ a:hover .number-cart{
 :where(.css-dev-only-do-not-override-ccdg5a).ant-steps .ant-steps-item-finish>.ant-steps-item-container>.ant-steps-item-tail::after{
   background-color:#ff9900
 }
+:where(.css-dev-only-do-not-override-ccdg5a).ant-steps{
+  background-color: #fff5e5;
+  padding: 15px 0px 10px 0px; 
+  border-radius: 10px;
+}
