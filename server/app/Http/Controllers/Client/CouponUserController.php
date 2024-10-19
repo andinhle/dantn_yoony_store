@@ -75,7 +75,9 @@ class CouponUserController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            $couponUser = CouponUser::findOrFail($id);
+            $couponUser = CouponUser::query()
+            ->where('user_id', Auth::id())
+            ->findOrFail($id);
 
             $couponUser->update([
                 'used_at' => now(),
