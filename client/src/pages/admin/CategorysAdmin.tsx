@@ -50,7 +50,7 @@ const CategoryList: React.FC = () => {
     reset,
     formState: { errors },
   } = useForm<ICategory>();
-  //call api list danh sách danh mục
+  //Hàm xử lí call API danh mục 
   const fetchCategories = async () => {
     try {
       const { data } = await instance.get("category");
@@ -62,15 +62,15 @@ const CategoryList: React.FC = () => {
   useEffect(() => {
     fetchCategories();
   }, []);
-  //reset form
+  // Reset form sau khi thực hiện các chức năng
   useEffect(() => {
     setFileList([]);
     SetAddOrUpdate("ADD");
     reset({
       is_active: true
-    });
+    })
   }, [openModal === false]);
-  //xử lý xóa danh mục
+  //Hàm xử lí xóa danh mục
   const handleDelete = async (_id: number) => {
     try {
       const willDelete = await swal({
