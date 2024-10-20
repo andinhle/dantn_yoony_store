@@ -143,4 +143,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     //Coupon_user
     Route::apiResource('coupon-user', CouponUserController::class);
     Route::patch('coupon-user/{id}', [CouponUserController::class, 'update']);
+
+
+    
+    Route::get('/coupon-home', [HomeController::class, 'getCouponHome']);
+    Route::post('/coupon-cart', [HomeController::class, 'getCouponCart']);
+
 });

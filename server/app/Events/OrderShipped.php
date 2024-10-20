@@ -17,8 +17,11 @@ class OrderShipped
     /**
      * Create a new event instance.
      */
+    
+
     public function __construct(
-        public $order
+        public $order,  
+        public $variant
     )
     {
        
