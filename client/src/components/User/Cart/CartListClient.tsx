@@ -86,7 +86,7 @@ const CartListClient = () => {
     setCurrentPage(pagination.current || 1);
   };
 
-  const confirmDeleteOneProduct: PopconfirmProps["onConfirm"] = async (
+  const confirmDeleteOneProduct = async (
     id: number
   ) => {
     try {
@@ -193,7 +193,7 @@ const CartListClient = () => {
       align: "center",
       render: (variant, record) => (
         <span>
-          {variant.sale_price
+          {variant.sale_price || variant.price
             .toLocaleString("vi-VN", {
               useGrouping: true,
               maximumFractionDigits: 0,
@@ -290,17 +290,7 @@ const CartListClient = () => {
       dataIndex: "id",
       align: "center",
       render: (id, record) => (
-        <Popconfirm
-          title="Xoá sản phẩm"
-          description="Bạn có chắc chắn xoá không?"
-          onConfirm={() => {
-            confirmDeleteOneProduct(id);
-          }}
-          onCancel={cancelDeleteOneProduct}
-          okText="Xoá"
-          cancelText="Huỷ"
-        >
-          <button type="button" className="p-1.5 bg-uitl shadow rounded-md">
+          <button type="button" className="p-1.5 bg-uitl shadow rounded-md" onClick={()=>{confirmDeleteOneProduct(id)}}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -334,7 +324,6 @@ const CartListClient = () => {
               />
             </svg>
           </button>
-        </Popconfirm>
       ),
     },
   ];
@@ -343,8 +332,8 @@ const CartListClient = () => {
     currentPage * pageSize
   );
 
-  console.log(selectedRowKeys);
   localStorage.setItem("id_cart", JSON.stringify(selectedRowKeys));
+  localStorage.setItem("final_total", JSON.stringify(selectedTotal));
 
   return (
     <section className="my-7 space-y-7">
@@ -427,7 +416,7 @@ const CartListClient = () => {
             />
           </div>
         </div>
-        <div className="col-span-3 border border-input p-3 rounded-md h-fit space-y-6 sticky top-20">
+        <div className="col-span-3 border border-input p-3 rounded-md h-fit space-y-6 sticky top-20 bg-util">
           <form action="">
             <div className="space-y-2">
               <div className="block">
@@ -456,21 +445,50 @@ const CartListClient = () => {
                   id="value-voucher"
                   className="block  max-w-[73%] h-[35px] focus:!border-primary/50 focus:!border-r-transparent rounded-[5px] rounded-r-none border-r-transparent border border-input text-sm placeholder-[#00000040] focus:!shadow-none"
                 />
-                <button type="button" className="block bg-primary w-full h-[35px] px-2 text-sm text-util">Áp dụng</button>
+                <button
+                  type="button"
+                  className="block bg-primary w-full h-[35px] px-2 text-sm text-util"
+                >
+                  Áp dụng
+                </button>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-sm block">Khuyến mãi: <span className="text-sm text-primary">0 VNĐ</span></label>
-                <label className="text-sm block">Phí vận chuyển: <span className="text-sm text-primary">Miễn phí</span></label>
+                <label className="text-sm block">
+                  Khuyến mãi:{" "}
+                  <span className="text-sm text-primary">0 VNĐ</span>
+                </label>
+                <label className="text-sm block">
+                  Phí vận chuyển:{" "}
+                  <span className="text-sm text-primary">Miễn phí</span>
+                </label>
               </div>
             </div>
           </form>
           <div className="space-y-2">
-            <p className="font-medium">Tổng thanh toán: <span className="text-primary">{selectedTotal.toLocaleString()} VNĐ</span></p>
+            <p className="font-medium">
+              Tổng thanh toán:{" "}
+              <span className="text-primary">
+                {selectedTotal.toLocaleString()} VNĐ
+              </span>
+            </p>
           </div>
-          <Link to={'/check-out'} className="text-util bg-primary text-center w-full block py-2 rounded-sm">TIẾN HÀNH ĐẶT HÀNG</Link>
+          <button className={`${selectedRowKeys.length <=0 ? 'bg-[#D1D1D6] pointer-events-none':'bg-primary pointer-events-auto'} w-full block rounded-sm`}>
+            <Link
+              to={"/check-out"}
+              className={`text-center flex justify-center py-2 text-util`}
+            >
+              TIẾN HÀNH ĐẶT HÀNG
+            </Link>
+          </button>
           <div className="space-y-2.5">
-            <img src="../../../../src/assets/images/images-payment.svg" className="w-fit mx-auto" alt="image-payment" />
-            <p className="text-sm text-center text-secondary/75">Đảm bảo an toàn và bảo mật</p>
+            <img
+              src="../../../../src/assets/images/images-payment.svg"
+              className="w-fit mx-auto"
+              alt="image-payment"
+            />
+            <p className="text-sm text-center text-secondary/75">
+              Đảm bảo an toàn và bảo mật
+            </p>
           </div>
         </div>
       </div>

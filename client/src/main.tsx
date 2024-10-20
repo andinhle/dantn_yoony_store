@@ -40,6 +40,8 @@ import ShowDetailProduct from "./components/User/Show/ShowDetailProduct.tsx";
 import CartListClient from "./components/User/Cart/CartListClient.tsx";
 import LayoutUsersAdmin from "./layouts/Admin/LayoutUsersAdmin.tsx";
 import UserRoleManager from "./pages/admin/users/UserRoleManager.tsx";
+import CheckOutOrder from "./components/User/Order/CheckOutOrder.tsx";
+import CheckPermission from "./components/Middleware/CheckPermission.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -51,8 +53,10 @@ createRoot(document.getElementById("root")!).render(
             {/* User */}
             <Route path="/" element={<LayoutUser />}>
               <Route index element={<MainContentUser />} />
-              <Route path="register" element={<Register />} />
-              <Route path="login" element={<Login />} />
+              <Route path="auth" element={<CheckPermission />}>
+                <Route path="register" element={<Register />} />
+                <Route path="login" element={<Login />} />
+              </Route>
               <Route path="reset-password" element={<LayoutResetPassword />}>
                 <Route index element={<ResetPassRequest />} />
                 <Route path=":token/:email" element={<FormResetPass />} />
@@ -62,6 +66,7 @@ createRoot(document.getElementById("root")!).render(
                 element={<ShowDetailProduct />}
               />
               <Route path="gio-hang" element={<CartListClient />} />
+              <Route path="check-out" element={<CheckOutOrder />} />
               <Route path="blogs" element={<BlogPage />} />
             </Route>
             {/* Admin */}

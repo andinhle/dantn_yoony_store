@@ -5,8 +5,8 @@ export interface IUser{
     tel:number,
     address:string,
     avatar:string,
-    status: boolean,
-    password: string;
-    confirmPass: string;
+    status?: boolean,
+    password?: string;
+    confirmPass?: string;
     role?: "member" | "admin"
 }

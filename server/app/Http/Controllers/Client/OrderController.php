@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Client;
 
+use App\Events\OrderShipped;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Order\StoreOrderRequest;
 use App\Models\Cart;
@@ -10,9 +11,9 @@ use App\Models\Order;
 use App\Models\OrderCoupon;
 use App\Models\OrderItem;
 use App\Models\Variant;
-use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -57,40 +58,29 @@ class OrderController extends Controller
     {
         try {
 
-            DB::transaction(function() use ($request) {
+            return DB::transaction(function() use ($request) {
 
 
 
-                $selectedItems = $request->input('selected_items', []);
-
-                // $selectedItems =[1]; Để test
-
+                $selectedItems = $request->selected_items;
                 // Nếu không có sản phẩm nào được chọn
                 if (empty($selectedItems)) {
                     return response()->json([
                         'error' => 'Bạn chưa chọn sản phẩm nào để thanh toán.'
                     ]);
                 }
-            
+                $cartItems = [];
                 // Lấy thông tin các sản phẩm đã chọn
                 $cartItems = Cart::query()
                 ->with(['variant.attributeValues.attribute'])
-                ->where('user_id', Auth::id())
+                ->where('user_id', Auth::id()) 
                 ->whereIn('id', $selectedItems)
                 ->get();
 
-            
-
-
-        
-                $final_total = 0;
-
                 $data =  $request->all();
                 $data['user_id'] = Auth::id();
-                // $data['user_id'] = 1;
                 $data['code'] = $this->generateOrderCode();
                 $data['grand_total'] = 0;
-
 
                 foreach ($cartItems as $value) {
                     $data['grand_total'] += $value->quantity * ($value->variant->sale_price ?: $value->variant->price);
@@ -98,47 +88,59 @@ class OrderController extends Controller
 
                 $order = Order::query()->create($data);
 
-                $orderItem = [];
+                
+                if($order){
+                    $orderItems = [];
 
-                foreach ($cartItems as $value) {
-                    $orderItem['order_id'] =   $order->id;
-                    $orderItem['variant_id'] =   $value->variant_id;
-                    $orderItem['quantity'] =   $value->quantity;
-                    $orderItem['unit_price'] =   $value->variant->sale_price ?: $value->variant->price;
-                    $orderItem['total_price'] =   $value->quantity * ($value->variant->sale_price ?: $value->variant->price);
+                    foreach ($cartItems as $value) {
+                        $orderItem['order_id'] =   $order->id;
+                        $orderItem['variant_id'] =   $value->variant_id;
+                        $orderItem['quantity'] =   $value->quantity;
+                        $orderItem['unit_price'] =   $value->variant->sale_price ?: $value->variant->price;
+                        $orderItem['total_price'] =   $value->quantity * ($value->variant->sale_price ?: $value->variant->price);
+ 
+                        $orderItems[] = $orderItem;
 
-                    // Giảm số lượng trong kho (Variants)
-                    $variant = Variant::query()->where('id', $value->variant_id)->first();
-                    $variant->quantity -= $value->quantity; 
-                    $variant->save();
+               
+                        $variant = Variant::query()->where('id', $value->variant_id)->first();
+                        $variant->quantity -= $value->quantity; 
+                        $variant->save();
+                    }
+                    OrderItem::insert($orderItems);
+                    
+                    
                 }
-
-            
-                OrderCoupon::query()->create([
-                    'order_id' =>  $order->id,
-                    'discount_amount' => $request->discount_amount,
-                    'coupon_id' => $request->coupon_id
-                ]);
-
-                $coupon = Coupon::query()->where('id',  $request->coupon_id)->first();
-                $coupon->usage_limit -= 1;
-                $coupon->save();
-                
-                $itemOrder = OrderItem::query()->create($orderItem);
                 
 
-                Cart::query()->where('user_id', 1)
-                ->whereIn('variant_id',  $selectedItems )
+                if($request->coupon_id && $request->discount_amount){
+                    $coupon = Coupon::query()->where('id',  $request->coupon_id)->first();
+                    $coupon->usage_limit -= 1;
+                    $coupon->save();
+
+                    OrderCoupon::query()->create([
+                        'order_id' =>  $order->id,
+                        'discount_amount' => $request->discount_amount,
+                        'coupon_id' => $request->coupon_id
+                    ]);
+                }
+                
+                
+                Cart::query()->where('user_id', Auth::id())
+                ->whereIn('id',  $selectedItems )
                 ->delete();
 
-
                 
+                
+                $order['discount_amount'] = $request->discount_amount;
+                OrderShipped::dispatch($order,$cartItems);
                 return response()->json([
-                    'dataOrder' => $cartItems, 
-                    'dataOrderItem' =>  $itemOrder , 
-                    'message' =>  'success'
+                    // 'dataOrder' => $cartItems, 
+                    // 'dataOrderItem' =>  $itemOrder , 
+                    'message' =>  'ĐẶT HÀNG THÀNH CÔNG',
+                    'description'=>'Xin cảm ơn Quý khách đã tin tưởng và mua sắm tại cửa hàng của chúng tôi.'
                 ]);
             });
+
 
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
