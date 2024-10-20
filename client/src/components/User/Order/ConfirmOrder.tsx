@@ -1,8 +1,52 @@
-import { Link } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
+import instance from "../../../instance/instance";
+import { useContext } from "react";
+import CartContext from "../../../contexts/CartContext";
+import { useNavigate } from "react-router-dom";
 
-const ConfirmOrder = () => {
+type Prop = {
+  current: number;
+};
+
+const ConfirmOrder = ({ current }: Prop) => {
+  const { dispatch } = useContext(CartContext);
+  const final_total = JSON.parse(localStorage.getItem("final_total")!);
+  const navigate=useNavigate()
+  const submitOrder = async () => {
+    const orderDataRaw = localStorage.getItem("orderData");
+    const orderData = orderDataRaw ? JSON.parse(orderDataRaw) : null;
+    try {
+      const { data } = await instance.post("order", {
+        name: orderData.fullName,
+        tel: orderData.phone,
+        ...orderData,
+      });
+      console.log(data);
+      if (data) {
+        const id_carts = JSON.parse(localStorage.getItem("id_cart") || "[]");
+        dispatch({
+          type: "REMOVE_SELECTED",
+          payload: id_carts,
+        });
+        toast.success(data.message);
+        navigate('/')
+        localStorage.removeItem("id_cart");
+        localStorage.removeItem("orderData");
+        localStorage.removeItem("final_total");
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message);
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Đã xảy ra lỗi không mong muốn");
+      }
+    }
+  };
   return (
-    <div className="col-span-3 border border-input p-3 rounded-md h-fit space-y-6 sticky top-20">
+    <div className="col-span-3 border border-input p-3 rounded-md h-fit space-y-6 sticky top-20 bg-util">
       <form action="">
         <div className="space-y-2">
           <div className="block">
@@ -52,24 +96,20 @@ const ConfirmOrder = () => {
       <div className="space-y-2">
         <p className="font-medium">
           Tổng thanh toán:{" "}
-          {/* <span className="text-primary">
-            {selectedTotal.toLocaleString()} VNĐ
-          </span> */}
+          <span className="text-primary">
+            {final_total.toLocaleString()} VNĐ
+          </span>
         </p>
       </div>
       <button
-        // className={`${
-        //   selectedRowKeys.length <= 0
-        //     ? "bg-[#D1D1D6] pointer-events-none"
-        //     : "bg-primary pointer-events-auto"
-        // } w-full block rounded-sm`}
+        className={`${
+          current !== 2
+            ? "bg-[#D1D1D6] pointer-events-none"
+            : "bg-primary pointer-events-auto"
+        } w-full block rounded-sm py-2 text-util`}
+        onClick={submitOrder}
       >
-        <Link
-          to={"/check-out"}
-          className={`text-center flex justify-center py-2 text-util`}
-        >
-          TIẾN HÀNH ĐẶT HÀNG
-        </Link>
+        TIẾN HÀNH THANH TOÁN
       </button>
       <div className="space-y-2.5">
         <img

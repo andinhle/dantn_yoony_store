@@ -86,7 +86,7 @@ const CartListClient = () => {
     setCurrentPage(pagination.current || 1);
   };
 
-  const confirmDeleteOneProduct: PopconfirmProps["onConfirm"] = async (
+  const confirmDeleteOneProduct = async (
     id: number
   ) => {
     try {
@@ -193,7 +193,7 @@ const CartListClient = () => {
       align: "center",
       render: (variant, record) => (
         <span>
-          {variant.sale_price
+          {variant.sale_price || variant.price
             .toLocaleString("vi-VN", {
               useGrouping: true,
               maximumFractionDigits: 0,
@@ -290,17 +290,7 @@ const CartListClient = () => {
       dataIndex: "id",
       align: "center",
       render: (id, record) => (
-        <Popconfirm
-          title="Xoá sản phẩm"
-          description="Bạn có chắc chắn xoá không?"
-          onConfirm={() => {
-            confirmDeleteOneProduct(id);
-          }}
-          onCancel={cancelDeleteOneProduct}
-          okText="Xoá"
-          cancelText="Huỷ"
-        >
-          <button type="button" className="p-1.5 bg-uitl shadow rounded-md">
+          <button type="button" className="p-1.5 bg-uitl shadow rounded-md" onClick={()=>{confirmDeleteOneProduct(id)}}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -334,7 +324,6 @@ const CartListClient = () => {
               />
             </svg>
           </button>
-        </Popconfirm>
       ),
     },
   ];
@@ -343,8 +332,8 @@ const CartListClient = () => {
     currentPage * pageSize
   );
 
-  console.log(selectedRowKeys);
   localStorage.setItem("id_cart", JSON.stringify(selectedRowKeys));
+  localStorage.setItem("final_total", JSON.stringify(selectedTotal));
 
   return (
     <section className="my-7 space-y-7">
@@ -427,7 +416,7 @@ const CartListClient = () => {
             />
           </div>
         </div>
-        <div className="col-span-3 border border-input p-3 rounded-md h-fit space-y-6 sticky top-20">
+        <div className="col-span-3 border border-input p-3 rounded-md h-fit space-y-6 sticky top-20 bg-util">
           <form action="">
             <div className="space-y-2">
               <div className="block">

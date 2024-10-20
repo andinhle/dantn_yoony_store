@@ -58,7 +58,7 @@ class OrderController extends Controller
     {
         try {
 
-            DB::transaction(function() use ($request) {
+            return DB::transaction(function() use ($request) {
 
 
 
@@ -112,7 +112,7 @@ class OrderController extends Controller
                 }
                 
 
-                if($request->coupon_id){
+                if($request->coupon_id && $request->discount_amount){
                     $coupon = Coupon::query()->where('id',  $request->coupon_id)->first();
                     $coupon->usage_limit -= 1;
                     $coupon->save();
@@ -134,9 +134,10 @@ class OrderController extends Controller
                 $order['discount_amount'] = $request->discount_amount;
                 OrderShipped::dispatch($order,$cartItems);
                 return response()->json([
-                    'dataOrder' => $cartItems, 
+                    // 'dataOrder' => $cartItems, 
                     // 'dataOrderItem' =>  $itemOrder , 
-                    'message' =>  'success'
+                    'message' =>  'ĐẶT HÀNG THÀNH CÔNG',
+                    'description'=>'Xin cảm ơn Quý khách đã tin tưởng và mua sắm tại cửa hàng của chúng tôi.'
                 ]);
             });
 
