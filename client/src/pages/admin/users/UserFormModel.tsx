@@ -68,6 +68,11 @@ const UserFormModel = () => {
     value: model,
     label: model,
   }));
+
+  const extendedOptions = [
+    { value: 'admin', label: 'Admin' },
+    ...options
+  ];
   
   const handleRemoveModel: PopconfirmProps["onConfirm"] = async(id:number) => {
    try {
@@ -129,7 +134,7 @@ const UserFormModel = () => {
                 filterSort={(optionA, optionB) =>
                   (optionA?.label ?? "").toLowerCase().localeCompare((optionB?.label ?? "").toLowerCase())
                 }
-                options={options}
+                options={extendedOptions}
               />
               <span className="text-primary text-sm block">{errors.type?.message}</span>
             </div>

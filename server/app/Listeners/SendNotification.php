@@ -25,18 +25,19 @@ class SendNotification
     {
         $user = Auth::user();
         
-        $data = [
-            'name' => $user->name,
-            'orderDetails' => $event, 
-        ];
-        
+
         
    
-        Mail::send('orderShipperdMail', $data, function($message) use ($user) 
+        Mail::send('orderShipperdMail', [
+            'name' => $user->name,
+            'order' => $event->order,
+            'variant' => $event->variant
+        ], function($message) use ($user) 
         {
-            $message->to($user->name, $user->email)
+            $message->to($user->email, $user->name)
+            ->from('yoony_store@gmail.com ', 'Yoony Store')
             ->subject
-                ('Laravel Basic Testing Mail');
+                ('Yoony Store');
         });
      
         
