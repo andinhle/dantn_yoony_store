@@ -3,32 +3,37 @@ import { Label } from "flowbite-react";
 import Ilogin from "../../../interfaces/ILogin";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import { toast } from "react-toastify";
 import instance from "../../../instance/instance";
 import Cookies from 'js-cookie';
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../providers/AuthProvider";
+import { message } from "antd";
 
 const Login = () => {
   const {register,formState:{errors},handleSubmit}=useForm<Ilogin>()
+  const navigate = useNavigate(); 
+  const { login } = useAuth();
   const onSubmit= async(formData:Ilogin)=>{
     try {
       const {data} = await instance.post('login',formData)
-      console.log(data)
       if (data && data.token) {
-        // Lưu token vào cookie với thời hạn 7 ngày và HttpOnly
         Cookies.set('authToken', data.token.substring(3,data.token.length), { 
           expires: 1/12, 
           secure: true,
           sameSite: 'strict'
         });
-        toast.success('Đăng nhập thành công!');
+        localStorage.setItem('userInfor',JSON.stringify(data.user))
+        login(data.user)
+        message.success('Đăng nhập thành công!');
+        navigate('/')
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        toast.error(error.response?.data?.message);
+        message.error(error.response?.data?.message);
       } else if (error instanceof Error) {
-        toast.error(error.message);
+        message.error(error.message);
       } else {
-        toast.error("Đã xảy ra lỗi không mong muốn");
+        message.error("Đã xảy ra lỗi không mong muốn");
       }
     }
   }

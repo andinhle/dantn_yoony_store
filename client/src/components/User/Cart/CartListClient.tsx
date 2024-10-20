@@ -86,7 +86,7 @@ const CartListClient = () => {
     setCurrentPage(pagination.current || 1);
   };
 
-  const confirmDeleteOneProduct: PopconfirmProps["onConfirm"] = async (
+  const confirmDeleteOneProduct = async (
     id: number
   ) => {
     try {
@@ -290,17 +290,7 @@ const CartListClient = () => {
       dataIndex: "id",
       align: "center",
       render: (id, record) => (
-        <Popconfirm
-          title="Xoá sản phẩm"
-          description="Bạn có chắc chắn xoá không?"
-          onConfirm={() => {
-            confirmDeleteOneProduct(id);
-          }}
-          onCancel={cancelDeleteOneProduct}
-          okText="Xoá"
-          cancelText="Huỷ"
-        >
-          <button type="button" className="p-1.5 bg-uitl shadow rounded-md">
+          <button type="button" className="p-1.5 bg-uitl shadow rounded-md" onClick={()=>{confirmDeleteOneProduct(id)}}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -334,7 +324,6 @@ const CartListClient = () => {
               />
             </svg>
           </button>
-        </Popconfirm>
       ),
     },
   ];
