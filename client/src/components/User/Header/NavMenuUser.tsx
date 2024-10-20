@@ -1,19 +1,68 @@
-import { ListItemText, Menu, MenuItem, MenuList } from "@mui/material";
-import { MouseEvent, useContext, useState } from "react";
+import { Avatar, ListItemText, Menu, MenuItem, MenuList } from "@mui/material";
+import { MouseEvent, useContext, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import CartContext from "../../../contexts/CartContext";
 import { Popover } from "antd";
 import ShowMiniCart from "../Show/ShowMiniCart";
+import { useAuth } from "../../../providers/AuthProvider";
 const NavMenuUser = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const { carts } = useContext(CartContext);
+  const {user,logout} =useAuth()
+
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const { carts } = useContext(CartContext);
+
+  const handleLogout = () => {
+    logout();
+    handleClose();
+  };
+
+  const userButton = useMemo(
+    () => (
+      <button
+        className="flex gap-2 items-center py-2 px-3.5 rounded-md hover:bg-primary hover:text-util transition-all"
+        id="btn-account"
+        onClick={handleClick}
+      >
+        {!user ? (
+          <>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="#ff9900"
+              className="size-6 fill-icon"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+              />
+            </svg>
+            <span>Tài khoản</span>
+          </>
+        ) : (
+          <>
+            <Avatar
+              alt={user.name}
+              src={user.avatar || "/default-avatar.png"}
+              sx={{ width: 24, height: 24 }}
+            />
+            <span>{user.name}</span>
+          </>
+        )}
+      </button>
+    ),
+    [user]
+  );
+
   return (
     <nav className="hidden lg:block">
       <ul className="flex items-center gap-3">
@@ -38,7 +87,11 @@ const NavMenuUser = () => {
           </Link>
         </li>
         <li>
-          <Popover placement="bottomRight" title={'Sản phẩm mới thêm'} content={<ShowMiniCart />}>
+          <Popover
+            placement="bottomRight"
+            title={"Sản phẩm mới thêm"}
+            content={<ShowMiniCart />}
+          >
             <Link
               to={`/gio-hang`}
               className="flex gap-2 items-center py-2 px-3.5 rounded-md  hover:bg-primary hover:text-util transtition-all"
@@ -68,27 +121,7 @@ const NavMenuUser = () => {
           </Popover>
         </li>
         <li>
-          <button
-            className="flex gap-2 items-center py-2 px-3.5 rounded-md  hover:bg-primary hover:text-util transtition-all"
-            id="btn-account"
-            onClick={handleClick}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="#ff9900"
-              className="size-6 fill-icon"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-              />
-            </svg>
-            <span>Tài khoản</span>
-          </button>
+          {userButton}
           <Menu
             id="basic-menu"
             anchorEl={anchorEl}
@@ -98,61 +131,87 @@ const NavMenuUser = () => {
               "aria-labelledby": "btn-account",
             }}
           >
-            <MenuList sx={{ width: 135, maxWidth: "100%", padding: 0 }}>
-              <Link to={"/register"}>
-                <MenuItem
-                  onClick={handleClose}
-                  className=" hover:!text-primary transition-all py-2 flex items-center gap-2"
+            {!user ? (
+              <MenuList sx={{ width: 135, maxWidth: "100%", padding: 0 }}>
+                <Link to={"/auth/register"}>
+                  <MenuItem
+                    onClick={handleClose}
+                    className=" hover:!text-primary transition-all py-2 flex items-center gap-2"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="size-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z"
+                      />
+                    </svg>
+                    <ListItemText
+                      primaryTypographyProps={{ fontSize: 14, padding: 0.5 }}
+                    >
+                      Đăng kí
+                    </ListItemText>
+                  </MenuItem>
+                </Link>
+                <Link to={"/auth/login"}>
+                  <MenuItem
+                    onClick={handleClose}
+                    className=" hover:!text-primary transition-all flex items-center gap-2"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="size-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"
+                      />
+                    </svg>
+                    <ListItemText
+                      primaryTypographyProps={{ fontSize: 14, padding: 0.5 }}
+                    >
+                      Đăng nhập
+                    </ListItemText>
+                  </MenuItem>
+                </Link>
+              </MenuList>
+            ) : (
+              <MenuItem
+                onClick={handleLogout}
+                className="hover:!text-primary transition-all flex items-center gap-2"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="size-5"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="size-5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z"
-                    />
-                  </svg>
-                  <ListItemText
-                    primaryTypographyProps={{ fontSize: 14, padding: 0.5 }}
-                  >
-                    Đăng kí
-                  </ListItemText>
-                </MenuItem>
-              </Link>
-              <Link to={"/login"}>
-                <MenuItem
-                  onClick={handleClose}
-                  className=" hover:!text-primary transition-all flex items-center gap-2"
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"
+                  />
+                </svg>
+                <ListItemText
+                  primaryTypographyProps={{ fontSize: 14, padding: 0.5 }}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="size-5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"
-                    />
-                  </svg>
-                  <ListItemText
-                    primaryTypographyProps={{ fontSize: 14, padding: 0.5 }}
-                  >
-                    Đăng nhập
-                  </ListItemText>
-                </MenuItem>
-              </Link>
-              <Link to={"/blogs"} />
-            </MenuList>
+                  Đăng xuất
+                </ListItemText>
+              </MenuItem>
+            )}
           </Menu>
         </li>
       </ul>

@@ -1,13 +1,18 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 import instance from "../../../instance/instance";
+import { useContext } from "react";
+import CartContext from "../../../contexts/CartContext";
+import { useNavigate } from "react-router-dom";
 
 type Prop = {
   current: number;
 };
 
 const ConfirmOrder = ({ current }: Prop) => {
+  const { dispatch } = useContext(CartContext);
   const final_total = JSON.parse(localStorage.getItem("final_total")!);
+  const navigate=useNavigate()
   const submitOrder = async () => {
     const orderDataRaw = localStorage.getItem("orderData");
     const orderData = orderDataRaw ? JSON.parse(orderDataRaw) : null;
@@ -19,12 +24,16 @@ const ConfirmOrder = ({ current }: Prop) => {
       });
       console.log(data);
       if (data) {
+        const id_carts = JSON.parse(localStorage.getItem("id_cart") || "[]");
+        dispatch({
+          type: "REMOVE_SELECTED",
+          payload: id_carts,
+        });
         toast.success(data.message);
-        localStorage.removeItem("final_total");
+        navigate('/')
         localStorage.removeItem("id_cart");
-        localStorage.removeItem("addressOrderFormData");
-        localStorage.removeItem("methodPayment");
         localStorage.removeItem("orderData");
+        localStorage.removeItem("final_total");
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
