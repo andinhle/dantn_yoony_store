@@ -128,16 +128,18 @@ class OrderController extends Controller
                 Cart::query()->where('user_id', Auth::id())
                 ->whereIn('id',  $selectedItems )
                 ->delete();
-                // OrderShipped::dispatch($order);
+
                 
                 
-                
+                $order['discount_amount'] = $request->discount_amount;
+                OrderShipped::dispatch($order,$cartItems);
                 return response()->json([
                     'dataOrder' => $cartItems, 
                     // 'dataOrderItem' =>  $itemOrder , 
                     'message' =>  'success'
                 ]);
             });
+
 
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
