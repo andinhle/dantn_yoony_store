@@ -193,7 +193,7 @@ const CartListClient = () => {
       align: "center",
       render: (variant, record) => (
         <span>
-          {variant.sale_price
+          {variant.sale_price || variant.price
             .toLocaleString("vi-VN", {
               useGrouping: true,
               maximumFractionDigits: 0,
@@ -343,8 +343,8 @@ const CartListClient = () => {
     currentPage * pageSize
   );
 
-  console.log(selectedRowKeys);
   localStorage.setItem("id_cart", JSON.stringify(selectedRowKeys));
+  localStorage.setItem("final_total", JSON.stringify(selectedTotal));
 
   return (
     <section className="my-7 space-y-7">
@@ -427,7 +427,7 @@ const CartListClient = () => {
             />
           </div>
         </div>
-        <div className="col-span-3 border border-input p-3 rounded-md h-fit space-y-6 sticky top-20">
+        <div className="col-span-3 border border-input p-3 rounded-md h-fit space-y-6 sticky top-20 bg-util">
           <form action="">
             <div className="space-y-2">
               <div className="block">
