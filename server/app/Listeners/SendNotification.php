@@ -6,6 +6,7 @@ use App\Events\OrderShipped;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class SendNotification
@@ -25,18 +26,19 @@ class SendNotification
     {
         $user = Auth::user();
         
-        $data = [
-            'name' => $user->name,
-            'orderDetails' => $event, 
-        ];
-        
+        Log::info('Thông tin: ', ['biến' => $event->variant->product]);
         
    
-        Mail::send('orderShipperdMail', $data, function($message) use ($user) 
+        Mail::send('orderShipperdMail', [
+            'name' => $user->name,
+            'order' => $event->order,
+            'variant' => $event->variant
+        ], function($message) use ($user) 
         {
-            $message->to($user->name, $user->email)
+            $message->to($user->email, $user->name)
+            ->from('yoony_store@gmail.com ', 'Yoony Store')
             ->subject
-                ('Laravel Basic Testing Mail');
+                ('Yoony Store');
         });
      
         

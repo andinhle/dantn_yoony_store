@@ -8,10 +8,14 @@ use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProductResource;
 use App\Models\Blog;
 use App\Models\Category;
+use App\Models\Coupon;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
@@ -209,4 +213,63 @@ class HomeController extends Controller
         ]);
     }
     // end detailBlog
+
+
+    //Coupon
+    public function getCouponHome()
+    {
+        try {
+            $data = Coupon::query()
+            ->where('status', true)
+            ->where('usage_limit','>' , 0)
+            ->where('end_date', '>', Carbon::now())
+            ->get();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $data,
+            ]);
+        } catch (\Throwable $th) {
+            Log::error(__CLASS__ . '@' . __FUNCTION__, [
+                'line' => $th->getLine(),
+                'message' => $th->getMessage()
+            ]);
+
+            return response()->json([
+                'message' => 'Đã có lỗi. Vui lòng thử lại',
+                'status' => 'error',
+
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    
+    }
+    public function getCouponCart(Request $request)
+    {
+        try {
+            $data = Coupon::query()
+            ->where('status', true)
+            ->where('usage_limit','>' , 0)
+            ->where('end_date', '>', Carbon::now())
+            ->where('min_order_value', '<=', $request->totalCart)
+            ->where('max_order_value', '>=', $request->totalCart)
+            ->get();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $data,
+            ]);
+        } catch (\Throwable $th) {
+            Log::error(__CLASS__ . '@' . __FUNCTION__, [
+                'line' => $th->getLine(),
+                'message' => $th->getMessage()
+            ]);
+
+            return response()->json([
+                'message' => 'Đã có lỗi. Vui lòng thử lại',
+                'status' => 'error',
+
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    
+    }
 }

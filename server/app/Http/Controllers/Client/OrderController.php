@@ -128,10 +128,11 @@ class OrderController extends Controller
                 Cart::query()->where('user_id', Auth::id())
                 ->whereIn('id',  $selectedItems )
                 ->delete();
-                // OrderShipped::dispatch($order);
+
                 
                 
-                
+                $order['discount_amount'] = $request->discount_amount;
+                OrderShipped::dispatch($order,$cartItems);
                 return response()->json([
                     // 'dataOrder' => $cartItems, 
                     // 'dataOrderItem' =>  $itemOrder , 
@@ -139,6 +140,7 @@ class OrderController extends Controller
                     'description'=>'Xin cảm ơn Quý khách đã tin tưởng và mua sắm tại cửa hàng của chúng tôi.'
                 ]);
             });
+
 
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
