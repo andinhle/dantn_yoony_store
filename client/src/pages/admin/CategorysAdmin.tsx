@@ -122,7 +122,8 @@ const CategoryList: React.FC = () => {
       if (fileList[0]?.url) {
         setActive(true);
         imageUrl = fileList[0]?.url;
-      } else {
+      } 
+      else {
         setActive(true);
         const imageupload = new FormData();
         const check_type_image = image_type.some(
