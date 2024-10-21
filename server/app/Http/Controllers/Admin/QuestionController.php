@@ -27,25 +27,23 @@ class QuestionController extends Controller
         }
     }
 
-
     public function store(Request $request)
     {
         $request->validate([
             'text' => 'required|string',
-            'is_active' => 'boolean',
+            'answer_id' => 'nullable|integer',
         ]);
 
         try {
             $data = $request->all();
-            $data['is_active'] = $data['is_active'] ?? true;
 
+            // Tạo câu hỏi mới với answer_id nếu có
             $question = Question::create($data);
             return new QuestionResource($question);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
         }
     }
-
 
     public function show($id)
     {
@@ -61,15 +59,14 @@ class QuestionController extends Controller
     {
         $request->validate([
             'text' => 'required|string',
-            'is_active' => 'boolean',
+            'answer_id' => 'nullable|integer', // Thêm validation cho answer_id
         ]);
 
         try {
+            // Tìm câu hỏi theo ID
             $question = Question::findOrFail($id);
 
             $data = $request->all();
-
-            $data['is_active'] = $data['is_active'] ?? $question->is_active;
 
             $question->update($data);
 
@@ -81,11 +78,10 @@ class QuestionController extends Controller
         }
     }
 
-
-
     public function destroy($id)
     {
         try {
+            // Tìm và xóa câu hỏi theo ID
             $question = Question::findOrFail($id);
             $question->delete();
             return response()->json(['message' => 'Câu hỏi đã được xóa thành công.']);
@@ -93,22 +89,7 @@ class QuestionController extends Controller
             return response()->json(['message' => 'Không tìm thấy câu hỏi này.'], 404);
         }
     }
-    public function updateIsActive(Request $request, $id)
-    {
-        $request->validate([
-            'is_active' => 'required|boolean',
-        ]);
 
-        try {
-            $question = Question::findOrFail($id);
-
-            $question->update(['is_active' => $request->is_active]);
-
-            return new QuestionResource($question);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
-        }
-    }
 
     // Crud Answers
 
