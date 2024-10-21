@@ -257,29 +257,10 @@ const BannerList: React.FC = () => {
                                         <Table.Cell>
                                             <img
                                                 src={banner.image}
-                                                className="h-10 mx-auto w-fit rounded-full object-cover"
+                                                className="h-10 mx-auto w-10 rounded-full object-cover"
                                             />
                                         </Table.Cell>
-
                                         <Table.Cell>
-                                            {/* <label className="inline-flex items-center cursor-pointer">
-                                                <input
-                                                    checked={status}
-                                                    type="checkbox"
-                                                    defaultValue=""
-                                                    className="sr-only peer"
-                                                    onChange={() => {
-                                                        setStatus(!banner.is_active)
-                                                        handleToggleActive(
-                                                            banner.id!,
-                                                            !banner.is_active
-                                                        )
-                                                    }
-                                                    }
-                                                />
-                                                <div className="relative w-11 h-6 bg-gray-200 rounded-full dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary peer-checked:after:border-white" />
-                                                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300"></span>
-                                            </label> */}
                                             <ToggleSwitch checked={banner.is_active}
                                              className="mx-auto w-fit"
                                                 onChange={() => {
@@ -395,7 +376,7 @@ const BannerList: React.FC = () => {
                     >
                         <form onSubmit={handleSubmit(onSubmit)}>
                             <div className="mb-4 flex items-start">
-                                <ImgCrop rotationSlider>
+                             
                                     <Upload
                                         listType="picture-card"
                                         fileList={fileList}
@@ -414,7 +395,6 @@ const BannerList: React.FC = () => {
                                             </svg>
                                         )}
                                     </Upload>
-                                </ImgCrop>
                             </div>
                             <span className="block text-primary text-sm mb-5">{fileList.length <= 0 ? "Ảnh là bắt buộc *" : ""}</span>
                             <div className="mb-6">
