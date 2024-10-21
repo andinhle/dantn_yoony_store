@@ -13,16 +13,10 @@ class QuestionsTableSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('questions')->delete();
-
-        DB::statement('ALTER TABLE questions AUTO_INCREMENT = 1');
-
         DB::table('questions')->insert([
-            ['text' => 'Cần tìm loại quần áo nam nào?'],
-            ['text' => 'Kích cỡ ưa thích?'],
-            ['text' => 'Màu sắc nào cho quần áo?'],
-            ['text' => 'Thêm phụ kiện đi kèm không?'],
-            ['text' => 'Chất liệu vải?'],
+            ['text' => '1 + 1 = ?', 'answer_id' => null],
+            ['text' => '2 + 2 = ?', 'answer_id' => null],
+            ['text' => 'Vậy còn 3 + 3 = ?', 'answer_id' => 1],
         ]);
     }
 }

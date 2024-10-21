@@ -159,3 +159,6 @@ Route::post('cart/delete-much', [CartController::class, 'deleteMuch'])->name('ca
 
 //checkoder
 Route::get('check-order', [OderCheckController::class, 'checkOrder'])->name('order.check');
+
+
+//chatbot

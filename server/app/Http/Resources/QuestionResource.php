@@ -17,7 +17,7 @@ class QuestionResource extends JsonResource
         return [
             'id' => $this->id,
             'text' => $this->text,
-            'is_active' => $this->is_active,
+            // 'is_active' => $this->is_active,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'answers' => AnswerResource::collection($this->whenLoaded('answers')),
