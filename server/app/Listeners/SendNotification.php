@@ -6,6 +6,7 @@ use App\Events\OrderShipped;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class SendNotification
@@ -25,7 +26,7 @@ class SendNotification
     {
         $user = Auth::user();
         
-
+        Log::info('Thông tin: ', ['biến' => $event->variant->product]);
         
    
         Mail::send('orderShipperdMail', [
