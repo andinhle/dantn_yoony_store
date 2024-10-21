@@ -14,13 +14,19 @@ class QuestionResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+
+            // 'is_active' => $this->is_active,
+
+
+
         return [
             'id' => $this->id,
             'text' => $this->text,
-            // 'is_active' => $this->is_active,
+            'answer_id' => $this->answer_id,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'answers' => AnswerResource::collection($this->whenLoaded('answers')),
         ];
+
      }
 }

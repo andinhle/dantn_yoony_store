@@ -90,7 +90,16 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 Route::post('/auth/password/request-reset', [AuthController::class, 'requestPasswordReset'])->name('password.request');
 Route::post('/auth/password/reset', [AuthController::class, 'resetPassword'])->name('password.reset');
+// questions
+Route::apiResource('admin/questions', QuestionController::class);
 
+Route::apiResource('questions', QuestionController::class);
+
+// Câu trả lời
+Route::get('questions/{questionId}/answers', [QuestionController::class, 'getAnswers']);
+Route::post('questions/{questionId}/answers', [QuestionController::class, 'storeAnswer']);
+Route::put('answers/{id}', [QuestionController::class, 'updateAnswer']);
+Route::delete('answers/{id}', [QuestionController::class, 'destroyAnswer']);
 
 //category
 Route::apiResource('category', CategoryController::class);
