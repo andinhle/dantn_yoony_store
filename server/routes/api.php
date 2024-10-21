@@ -58,6 +58,9 @@ Route::get('/detailBlog/{slug}', [HomeController::class, 'detailBlog'])->name('b
 //Checkoder
 Route::get('check-order', [OderCheckController::class, 'checkOrder'])->name('order.check');
 
+// Coupon
+Route::get('/coupon-home', [HomeController::class, 'getCouponHome']);
+
 // Quyền khi đăng nhập
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/user', function (Request $request) {
@@ -146,7 +149,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 
     
-    Route::get('/coupon-home', [HomeController::class, 'getCouponHome']);
     Route::post('/coupon-cart', [HomeController::class, 'getCouponCart']);
 
 });
