@@ -51,12 +51,8 @@ Route::get('/detailBlog/{slug}', [HomeController::class, 'detailBlog'])->name('b
 //Checkoder
 Route::get('check-order', [OderCheckController::class, 'checkOrder'])->name('order.check');
 
-//Blog
-Route::get('/list-blogs', [HomeController::class, 'listBlogs'])->name('blogs.listBlogs');
-Route::get('/detailBlog/{slug}', [HomeController::class, 'detailBlog'])->name('blog.detailBlog');
-
-//Checkoder
-Route::get('check-order', [OderCheckController::class, 'checkOrder'])->name('order.check');
+// Coupon
+Route::get('/coupon-home', [HomeController::class, 'getCouponHome']);
 
 // Quyền khi đăng nhập
 Route::group(['middleware' => ['auth:sanctum']], function () {
@@ -143,10 +139,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     //Coupon_user
     Route::apiResource('coupon-user', CouponUserController::class);
     Route::patch('coupon-user/{id}', [CouponUserController::class, 'update']);
-
-
     
-    Route::get('/coupon-home', [HomeController::class, 'getCouponHome']);
     Route::post('/coupon-cart', [HomeController::class, 'getCouponCart']);
 
 });

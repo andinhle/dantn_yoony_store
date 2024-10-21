@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { IAttributeValue } from "../../../interfaces/IAttributeValue";
 const ShowMiniCart = () => {
   const { carts } = useContext(CartContext);
-  console.log(carts);
   return (
     <div>
       {carts.length === 0 ? (

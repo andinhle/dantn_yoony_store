@@ -50,27 +50,27 @@ const CategoryList: React.FC = () => {
     reset,
     formState: { errors },
   } = useForm<ICategory>();
-  //call api list danh sách danh mục
+  //Hàm xử lí call API danh mục 
   const fetchCategories = async () => {
     try {
       const { data } = await instance.get("category");
       setCategories(data.data);
     } catch (error) {
-      toast.error("Không thể tải danh mục.",error!);
+      toast.error("Không thể tải danh mục.", error!);
     }
   };
   useEffect(() => {
     fetchCategories();
   }, []);
-  //reset form
+  // Reset form sau khi thực hiện các chức năng
   useEffect(() => {
     setFileList([]);
     SetAddOrUpdate("ADD");
     reset({
       is_active: true
-    });
+    })
   }, [openModal === false]);
-  //xử lý xóa danh mục
+  //Hàm xử lí xóa danh mục
   const handleDelete = async (_id: number) => {
     try {
       const willDelete = await swal({
@@ -86,7 +86,7 @@ const CategoryList: React.FC = () => {
         toast.success("Deleted");
       }
     } catch (error) {
-      toast.error("Có lỗi xảy ra",error!);
+      toast.error("Có lỗi xảy ra", error!);
     }
   };
   //fill data để xử lý sửa danh mục
@@ -111,7 +111,7 @@ const CategoryList: React.FC = () => {
       setIdUpdate(id);
       SetAddOrUpdate("UPDATE");
     } catch (error) {
-      toast.error("Có lỗi xảy ra",error!);
+      toast.error("Có lỗi xảy ra", error!);
     }
   };
   // xử lý thêm or sửa danh mục
@@ -122,7 +122,8 @@ const CategoryList: React.FC = () => {
       if (fileList[0]?.url) {
         setActive(true);
         imageUrl = fileList[0]?.url;
-      } else {
+      } 
+      else {
         setActive(true);
         const imageupload = new FormData();
         const check_type_image = image_type.some(
@@ -285,7 +286,7 @@ const CategoryList: React.FC = () => {
                     <Table.Cell>
                       <img
                         src={category.image}
-                        className="h-10 mx-auto w-fit rounded-full object-cover"
+                        className="h-10 mx-auto w-10 rounded-full object-cover"
                       />
                     </Table.Cell>
                     <Table.Cell>
@@ -379,10 +380,10 @@ const CategoryList: React.FC = () => {
         </Table>
       </div>
       <Modal
-        dismissible
+        popup
         show={openModal}
         onClose={() => setOpenModal(false)}
-        className="z-40 mt-10"
+        className="z-50 mt-10"
         size={"md"}
       >
         <Modal.Header>
@@ -479,7 +480,7 @@ const CategoryList: React.FC = () => {
                   </Upload>
                 </ImgCrop>
               </div>
-              <span className="block text-primary text-sm mb-5">{fileList.length <= 0 ? "Ảnh là bắt buộc *":""}</span>
+              <span className="block text-primary text-sm mb-5">{fileList.length <= 0 ? "Ảnh là bắt buộc *" : ""}</span>
               <div className="mb-6">
                 <label className="inline-flex items-center cursor-pointer">
                   <input
