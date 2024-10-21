@@ -2,12 +2,11 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 const SidebarUserDetails = () => {
-    const [selectedItem, setSelectedItem] = useState("tai-khoan"); // Mục mặc định là "tai-khoan"
+    const [selectedItem, setSelectedItem] = useState(""); // Mục mặc định là "tai-khoan"
 
     const handleItemClick = (item:any) => {
         setSelectedItem(item);
     };
-
     return (
         <>
        
