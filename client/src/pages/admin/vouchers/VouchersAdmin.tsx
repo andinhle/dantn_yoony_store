@@ -73,7 +73,7 @@ const VouchersAdmin = () => {
       }
     }
   };
-  console.log(is_featured)
+  
   useEffect(() => {
     reset({});
     setCodeVoucher("");

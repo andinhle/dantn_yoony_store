@@ -7,7 +7,11 @@ const HeaderUser = () => {
       <div className="flex container-main items-center justify-between">
         <div className="max-w-[65px] md:max-w-[75px] lg:max-w-full">
           <Link to={"/"}>
-            <img src="../../../public/logo-web.svg" alt="logo-website" className="w-full" />
+            <img
+              src="../../../public/logo-web.svg"
+              alt="logo-website"
+              className="w-full"
+            />
           </Link>
         </div>
         <SearchBar />

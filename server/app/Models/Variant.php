@@ -17,4 +17,14 @@ class Variant extends Model
         return $this->belongsToMany(AttributeValue::class, 'variant_attribute_values');
     }
 
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function carts()
+    {
+        return $this->hasMany(related: Cart::class);
+    }
+
 }

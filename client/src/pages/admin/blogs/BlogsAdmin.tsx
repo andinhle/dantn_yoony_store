@@ -4,16 +4,16 @@ import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
 import JoditEditor from "jodit-react";
 import { ToggleSwitch } from "flowbite-react";
-import ButtonSubmit from "../../components/Admin/ButtonSubmit";
+import ButtonSubmit from "../../../components/Admin/ButtonSubmit";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import axios from "axios";
 import LoadingOverlay from "react-loading-overlay-ts";
-import { IBlog } from "../../interfaces/IBlogs";
-import { BlogContext } from "../../contexts/BlogsContext";
-import instance from "../../instance/instance";
+import { IBlog } from "../../../interfaces/IBlogs";
+import { BlogContext } from "../../../contexts/BlogsContext";
+import instance from "../../../instance/instance";
 import slugify from "react-slugify";
-
+import ListBlogsAdmin from "./ListBlogsAdmin";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -62,6 +62,7 @@ const BlogsAdmin = () => {
       uploader: {
         insertImageAsBase64URI: true,
       },
+      height: 500,
     }),
     []
   );
@@ -104,10 +105,10 @@ const BlogsAdmin = () => {
     const {data} = await instance.post("blogs",{
       content: contentNew,
       slug: slugify(titleSlugBlog),
-      status: statusBlog,
-      user_id: 2 ,
-      is_active: 1
+      user_id: 1 ,
+      isActive: setActive
     });
+    console.log(data);
     if(data){
       setActive(false);
     }
@@ -116,8 +117,9 @@ const BlogsAdmin = () => {
     setContent("");
     dispatch({
       type: "ADD",
-      payload: data.data
+      payload: data
     });
+    console.log('API Response:', data); 
     } catch (error) {
       toast.error(error.response.data.message);
     }
@@ -141,12 +143,12 @@ const BlogsAdmin = () => {
           onChange={handleChange}
           aria-label="basic tabs example"
         >
-          <Tab label="Danh sách" {...a11yProps(0)} />
+          <Tab label="Danh sách"  {...a11yProps(0)} />
           <Tab label="Thêm bài viết +" {...a11yProps(1)} />
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0}>
-       
+        <ListBlogsAdmin />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
         <LoadingOverlay active={isActive} spinner>
@@ -169,8 +171,8 @@ const BlogsAdmin = () => {
             <div>
               <ToggleSwitch
                 label="Trạng thái"
-                checked={statusBlog}
-                 onChange={setStatusBlog}
+                checked={isActive}
+                 onChange={setActive}
                 className="my-7"           
                 sizing={'sm'}
               />
@@ -178,9 +180,9 @@ const BlogsAdmin = () => {
             <ButtonSubmit content="Thêm bài viết" />
           </form>
         </LoadingOverlay>
-        {/* <div>{HTMLReactParser(content)}</div> */}
-      </CustomTabPanel>
+        </CustomTabPanel>
     </Box>
+    
   );
 };
 

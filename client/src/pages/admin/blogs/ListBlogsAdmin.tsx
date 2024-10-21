@@ -1,14 +1,14 @@
 import { Table, ToggleSwitch } from "flowbite-react";
 import { useContext, useEffect, useState } from "react";
-import instance from "../../instance/instance";
+import instance from "../../../instance/instance";
 import swal from "sweetalert";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
-import { BlogContext } from "../../contexts/BlogsContext";
+import { BlogContext } from "../../../contexts/BlogsContext";
 
 const ListBlogsAdmin = () => {
   const { blogs, dispatch } = useContext(BlogContext);
-  const [statusBlog, setStatus] = useState(true);
+  const [statusBlog, setActive] = useState(true);
   useEffect(() => {
     (async () => {
       const { data } = await instance.get("blogs");
@@ -30,32 +30,33 @@ const ListBlogsAdmin = () => {
       toast.error(error.response.data.message);
     }
   };
-  const handleUpdateStatusBlog = async (id: number, statusBlog: boolean) => {
+  const handleUpdateActiveBlog = async (id: number, activeBlog: boolean) => {
     try {
-      const { data } = await instance.patch(`blogs/${id}`, {
-        status: statusBlog,
+      const { data } = await instance.patch(`blogs/${id}/is-active`, {  
+        is_active: activeBlog,
       });
       dispatch({
         type: "UPDATE",
-        payload: data.data,
+        payload: data.blog,
       });
-      if (statusBlog) {
+      if (activeBlog) {
         toast.success("Public");
       } else {
         toast.warning("Private");
       }
     } catch (error) {
-      toast.error(error.response.data.message);
-    }
+      toast.error(error.response?.data?.message || "An error occurred");
+  }
+  
   };
   return (
     <div className="overflow-x-auto w-full">
       <Table hoverable className="table w-full">
         <Table.Head className="text-center">
           <Table.HeadCell>STT</Table.HeadCell>
-          <Table.HeadCell>Bài viết</Table.HeadCell>
-          <Table.HeadCell>Tác giả</Table.HeadCell>
-          <Table.HeadCell>Thời gian</Table.HeadCell>
+          <Table.HeadCell>Bài Viết</Table.HeadCell>
+          <Table.HeadCell>Nội Dung</Table.HeadCell>
+          <Table.HeadCell>Tác Giả</Table.HeadCell>
           <Table.HeadCell>Trạng thái</Table.HeadCell>
           <Table.HeadCell>Hành động</Table.HeadCell>
         </Table.Head>
@@ -67,19 +68,19 @@ const ListBlogsAdmin = () => {
                 key={blog.id}
               >
                 <Table.Cell>{index + 1}</Table.Cell>
-                <Table.Cell>{blog.content}</Table.Cell>
+                <Table.Cell>{blog.slug}</Table.Cell> 
                 <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                  {blog.slug}
+                  {blog.content}
                 </Table.Cell>
-                <Table.Cell>{blog.is_active}</Table.Cell>
+                <Table.Cell>{blog.user_id}</Table.Cell>
                 <Table.Cell>
                   <ToggleSwitch
-                    checked={blog.status}
+                    checked={blog.is_active}
                     sizing={'sm'}
                     className="w-fit mx-auto"
                     onChange={() => {
-                      setStatus(!blog.status);
-                      handleUpdateStatusBlog(blog.id!, !blog.status);
+                      setActive(!blog.is_active);
+                      handleUpdateActiveBlog(blog.id!, !blog.is_active);
                     }}
                   />
                 </Table.Cell>

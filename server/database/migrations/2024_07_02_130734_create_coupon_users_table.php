@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('coupon_id')->constrained('coupons')->cascadeOnDelete();
-            $table->timestamp('used_at')->useCurrent();
+            $table->timestamp('used_at')->nullable();
             $table->timestamps();
         });
     }
