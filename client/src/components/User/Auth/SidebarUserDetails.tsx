@@ -7,7 +7,6 @@ const SidebarUserDetails = () => {
     const handleItemClick = (item:any) => {
         setSelectedItem(item);
     };
-
     return (
         <>
        
