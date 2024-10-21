@@ -19,9 +19,6 @@ import ProductList from "./pages/admin/products/ProductsList.tsx";
 import Orders from "./pages/admin/Order.tsx";
 import Rates from "./pages/admin/Evaluate.tsx";
 import OrderDetails from "./pages/admin/OrderDetails.tsx";
-import Varriant from "./pages/admin/varriant/AddVarriant.tsx";
-import ListVarriant from "./pages/admin/varriant/Listvarriant.tsx";
-import VarriantValue from "./pages/admin/varriant/VarriantValue.tsx";
 import ScrollToTop from "./utils/ScrollToTop.tsx";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
@@ -42,6 +39,11 @@ import LayoutUsersAdmin from "./layouts/Admin/LayoutUsersAdmin.tsx";
 import UserRoleManager from "./pages/admin/users/UserRoleManager.tsx";
 import CheckOutOrder from "./components/User/Order/CheckOutOrder.tsx";
 import CheckPermission from "./components/Middleware/CheckPermission.tsx";
+import UserDetails from "./components/componentUserDetails/UserDetails.tsx";
+import WishList from "./components/componentUserDetails/WishList.tsx";
+import OrdersUser from "./components/componentUserDetails/OrdersUser.tsx";
+import LayoutUserDetails from "./layouts/User/LayoutUserDetails.tsx";
+import { CheckOrder } from "./components/User/Header/CheckOrder.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -68,6 +70,12 @@ createRoot(document.getElementById("root")!).render(
               <Route path="gio-hang" element={<CartListClient />} />
               <Route path="check-out" element={<CheckOutOrder />} />
               <Route path="blogs" element={<BlogPage />} />
+              <Route path="layout-userDetails" element={<LayoutUserDetails />}>
+                <Route path="userDetails" element={<UserDetails />} />
+                <Route path="wishlist" element={<WishList />} />
+                <Route path="orderuser" element={<OrdersUser />} />
+              </Route>
+              <Route path="checkorder" element={<CheckOrder />} />
             </Route>
             {/* Admin */}
             <Route path="admin" element={<LayoutAdmin />}>
