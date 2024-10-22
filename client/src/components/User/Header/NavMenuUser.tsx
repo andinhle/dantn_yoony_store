@@ -1,15 +1,24 @@
-import { Avatar, ListItemText, Menu, MenuItem, MenuList } from "@mui/material";
+import {
+  Avatar,
+  Badge,
+  IconButton,
+  ListItemText,
+  Menu,
+  MenuItem,
+  MenuList,
+} from "@mui/material";
 import { MouseEvent, useContext, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import CartContext from "../../../contexts/CartContext";
 import { Popover } from "antd";
 import ShowMiniCart from "../Show/ShowMiniCart";
 import { useAuth } from "../../../providers/AuthProvider";
+import ShowNotificationUser from "../Show/ShowNotificationUser";
 const NavMenuUser = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const { carts } = useContext(CartContext);
-  const { user, logout } = useAuth()
+  const { user, logout } = useAuth();
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -120,6 +129,39 @@ const NavMenuUser = () => {
             </Link>
           </Popover>
         </li>
+        {user && (
+          <li>
+            <Popover
+              placement="bottomRight"
+              title={"Thông báo mói nhận"}
+              content={<ShowNotificationUser />}
+            >
+              <Link
+                to={`/thong-bao`}
+                className="flex gap-2 items-center rounded-md hover:text-util transtition-all"
+              >
+                <IconButton>
+                  <Badge badgeContent={1} color="warning">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="#ff9900"
+                      className="size-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
+                      />
+                    </svg>
+                  </Badge>
+                </IconButton>
+              </Link>
+            </Popover>
+          </li>
+        )}
         <li>
             <Link
               to={``}
