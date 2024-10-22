@@ -31,4 +31,9 @@ class Coupon extends Model
     public function users() {
         return $this->belongsToMany(User::class, 'coupon_user');
     }
+    public function event()
+    {
+        return $this->belongsTo(Event::class, 'event_id', 'id'); // Đảm bảo bạn đã xác định đúng tên khóa ngoại
+    }
+
 }

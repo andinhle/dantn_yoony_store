@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\admin\EventController;
 use App\Http\Controllers\Admin\ModelController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\QuestionController;
@@ -171,3 +172,10 @@ Route::get('check-order', [OderCheckController::class, 'checkOrder'])->name('ord
 
 
 //chatbot
+Route::get('/admin/events/coupons', [EventController::class, 'getEventCoupons']);
+
+Route::post('/admin/events', [EventController::class, 'createEvent']);
+Route::get('/admin/showEvent/{id}', [EventController::class, 'showEvent']);
+
+Route::put('/admin/updateEvent/{id}', [EventController::class, 'updateEvent']);
+Route::delete('/admin/events/{id}', [EventController::class, 'destroy']);
