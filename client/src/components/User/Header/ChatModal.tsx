@@ -14,7 +14,6 @@ const ChatModal: React.FC<{ visible: boolean; onClose: () => void }> = ({ visibl
         "Bạn có câu hỏi nào về sản phẩm của chúng tôi không?",
         "Bạn cần trợ giúp về đơn hàng của mình chứ?",
     ];
-
     useEffect(() => {
         if (visible) {
             // Thêm câu hỏi mẫu vào danh sách tin nhắn khi mở modal
