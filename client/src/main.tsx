@@ -44,6 +44,7 @@ import WishList from "./components/componentUserDetails/WishList.tsx";
 import OrdersUser from "./components/componentUserDetails/OrdersUser.tsx";
 import LayoutUserDetails from "./layouts/User/LayoutUserDetails.tsx";
 import { CheckOrder } from "./components/User/Header/CheckOrder.tsx";
+import EventUser from "./components/User/Event/EventUser.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -76,6 +77,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="orderuser" element={<OrdersUser />} />
               </Route>
               <Route path="checkorder" element={<CheckOrder />} />
+              <Route path="event" element={<EventUser />} />
             </Route>
             {/* Admin */}
             <Route path="admin" element={<LayoutAdmin />}>

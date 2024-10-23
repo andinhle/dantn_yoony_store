@@ -150,7 +150,11 @@ Route::delete('category/hard-delete/{id}', [CategoryController::class, 'hardDele
 
 //Client
 Route::get('home/product/{slug}', [HomeController::class, 'getOneProductBySlug']);
-
+    
+// Giỏ hàng
+Route::apiResource('cart', CartController::class);
+Route::patch('/cart/{id}/{operation?}', [CartController::class, 'update']);
+Route::post('cart/delete-much', [CartController::class, 'deleteMuch'])->name('cart.deleteMuch');
 
 Route::get('home/products/featured', [HomeController::class, 'getFeaturedProducts']);
 Route::get('home/products/good-deal', [HomeController::class, 'getGoodDealProducts']);
