@@ -1,9 +1,9 @@
 import { Input, Button } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
-import logo from  "./checkorder.png";
+import logo from "./checkorder.png";
 
 export const CheckOrder = () => {
-   
+
     return (
         <div className='flex justify-center items-center gap-10 mt-8'>
             <div>
@@ -17,13 +17,15 @@ export const CheckOrder = () => {
                     </label>
                     <Input.Group compact>
                         <Input
-                            style={{ width: 'calc(100% - 100px)', height: '40px',border:'1px solid #d9d9d9' }} // Đặt chiều cao cho input
+                            style={{ width: 'calc(100% - 100px)', height: '40px', border: '1px solid #d9d9d9' }} // Đặt chiều cao cho input
                             placeholder="Nhập nội dung tìm kiếm"
                         />
                         <Button
                             type="primary"
                             icon={<SearchOutlined />}
-                            style={{ height: '40px', lineHeight: '40px' }} // Đặt chiều cao và line-height cho button
+                            style={{ height: '40px', lineHeight: '40px' }}
+                            // Đặt chiều cao và line-height cho button
+                            className='bg-primary'
                         >
                             Search
                         </Button>
@@ -40,7 +42,7 @@ export const CheckOrder = () => {
                         placeholder="OTP"
                     />
                 </div>
-                <Button type="primary">
+                <Button type="primary" className='bg-primary'>
                     TIẾP TỤC
                 </Button>
             </div>
