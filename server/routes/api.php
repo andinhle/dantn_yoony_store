@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\RoleHasModelController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\CouponUserController;
+use App\Http\Controllers\Client\FilterController;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\Client\OderCheckController;
@@ -44,6 +45,10 @@ Route::get('home/products/featured', [HomeController::class, 'getFeaturedProduct
 Route::get('home/products/good-deal', [HomeController::class, 'getGoodDealProducts']);
 Route::get('home/product/category/{id}', [HomeController::class, 'getProductsByCategory']);
 
+//filter
+Route::get('products/filter', [FilterController::class, 'getFilter']);
+Route::post('products/filter', [FilterController::class, 'filter']);
+
 //Blog
 Route::get('/list-blogs', [HomeController::class, 'listBlogs'])->name('blogs.listBlogs');
 Route::get('/detailBlog/{slug}', [HomeController::class, 'detailBlog'])->name('blog.detailBlog');
@@ -64,6 +69,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Admin
     Route::middleware(['dynamic.permission'])->group(function () {
         //QL user
+        
         // Lấy tất cả thông tin user
         Route::get('/users', [UserController::class, 'index']);
         // Cập nhật role của user
