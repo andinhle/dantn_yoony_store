@@ -23,7 +23,7 @@ const ConfirmOrder = ({ current }: Prop) => {
   );
   const orderDataRaw = localStorage.getItem("orderData");
   const orderData = orderDataRaw ? JSON.parse(orderDataRaw) : null;
-
+  console.log(orderData)
   const { Search } = Input;
   const showModal = () => {
     setIsModalOpen(true);
@@ -37,7 +37,8 @@ const ConfirmOrder = ({ current }: Prop) => {
   const navigate = useNavigate();
   const submitOrder = async () => {
     try {
-      console.log(orderData);
+      const orderDataRaw = localStorage.getItem("orderData");
+      const orderData = orderDataRaw ? JSON.parse(orderDataRaw) : null;
       const { data } = await instance.post("order", {
         name: orderData.fullName,
         tel: orderData.phone,
@@ -51,6 +52,7 @@ const ConfirmOrder = ({ current }: Prop) => {
         });
         toast.success(data.message);
         navigate("/");
+        // localStorage.removeItem("addressOrderFormData");
         localStorage.removeItem("id_cart");
         localStorage.removeItem("orderData");
         localStorage.removeItem("final_total");
@@ -100,7 +102,7 @@ const ConfirmOrder = ({ current }: Prop) => {
       return voucherCart.code.includes(selectVoucher);
     });
     if (ValidVoucher.length > 0) {
-      message.success("Áp dụng mã giảm giá thành công");
+      message.success("Mã giảm giá đã được áp dụng.");
       setCheckVoucher(ValidVoucher[0]);
       orderData.coupon_id=ValidVoucher[0].id
       orderData.discount_amount=ValidVoucher[0].discount
@@ -193,7 +195,7 @@ const ConfirmOrder = ({ current }: Prop) => {
                             {voucherCart.max_order_value.toLocaleString()}
                           </span>
                           <span className="text-primary border border-primary block w-fit px-2 text-xs">
-                            Đủ kiều kiện
+                            Đủ điều kiện
                           </span>
                         </div>
                         <div>

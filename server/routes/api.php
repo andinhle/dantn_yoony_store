@@ -8,8 +8,10 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\admin\EventController;
 use App\Http\Controllers\Admin\ModelController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\RoleHasModelController;
 use App\Http\Controllers\Admin\UserController;
@@ -19,6 +21,8 @@ use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\Client\OderCheckController;
 use App\Http\Controllers\Client\OrderController;
+use App\Http\Controllers\client\ChatbotController;
+use App\Http\Controllers\client\SpinController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -44,7 +48,7 @@ Route::get('home/product/{slug}', [HomeController::class, 'getOneProductBySlug']
 Route::get('home/products/featured', [HomeController::class, 'getFeaturedProducts']);
 Route::get('home/products/good-deal', [HomeController::class, 'getGoodDealProducts']);
 Route::get('home/product/category/{id}', [HomeController::class, 'getProductsByCategory']);
-
+      
 //filter
 Route::get('products/filter', [FilterController::class, 'getFilter']);
 Route::post('products/filter', [FilterController::class, 'filter']);
@@ -69,12 +73,20 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Admin
     Route::middleware(['dynamic.permission'])->group(function () {
         //QL user
-        
         // Lấy tất cả thông tin user
         Route::get('/users', [UserController::class, 'index']);
         // Cập nhật role của user
         Route::patch('/users/{id}/role', [UserController::class, 'updateRole']);
+        // questions
+        Route::apiResource('admin/questions', QuestionController::class);
+        Route::apiResource('questions', QuestionController::class);
 
+        // Câu trả lời
+        Route::get('questions/{questionId}/answers', [QuestionController::class, 'getAnswers']);
+        Route::post('questions/{questionId}/answers', [QuestionController::class, 'storeAnswer']);
+        Route::put('answers/{id}', [QuestionController::class, 'updateAnswer']);
+        Route::delete('answers/{id}', [QuestionController::class, 'destroyAnswer']);
+      
         // QL danh mục
         Route::apiResource('category', CategoryController::class);
         Route::patch('category/{id}/is-active', [CategoryController::class, 'updateIsActive'])->name('category.updateIsActive');
@@ -125,27 +137,41 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::patch('product/{id}/is_active', [ProductController::class, 'updateIsActive'])->name('category.updateIsActive');
         Route::patch('product/restore/{id}', [ProductController::class, 'restore'])->name('product.restore');
         Route::delete('product/hard-delete/{id}', [ProductController::class, 'hardDelete'])->name('product.hardDelete');
-    });
+        
+        //QL Event
+        Route::get('/admin/events/coupons', [EventController::class, 'getEventCoupons']);
 
-    //Client
+        Route::post('/admin/events', [EventController::class, 'createEvent']);
+        Route::get('/admin/showEvent/{id}', [EventController::class, 'showEvent']);
+
+        Route::put('/admin/updateEvent/{id}', [EventController::class, 'updateEvent']);
+        Route::delete('/admin/events/{id}', [EventController::class, 'destroy']);
+    });
     
-    // Giỏ hàng
+    // Giỏ hàng_user
     Route::apiResource('cart', CartController::class);
     Route::patch('/cart/{id}/{operation?}', [CartController::class, 'update']);
 
-    //Wishlist
+    //Wishlist_user
     Route::get('/list-wishlists', [HomeController::class, 'getWishlists']);
     Route::post('/insert-wishlists', [HomeController::class, 'insertWishlists']);
     Route::delete('/delete-wishlists/{product_id}', [HomeController::class, 'deleteWishlist']);
     
-    // Order 
+    // Order_user
     // Route::get('/order', [OrderController::class, 'getProduct'])->name('order.getProduct');
     Route::post('/order', [OrderController::class, 'store'])->name('order.store');
 
     //Coupon_user
     Route::apiResource('coupon-user', CouponUserController::class);
     Route::patch('coupon-user/{id}', [CouponUserController::class, 'update']);
-    
+  
+    //Counpon_cart
     Route::post('/coupon-cart', [HomeController::class, 'getCouponCart']);
 
+    //Event_user
+    Route::post('/spin', [SpinController::class, 'spin']);
+    Route::post('/reset-daily-spins', [SpinController::class, 'resetDailySpins']);
+    Route::post('/claim-coupon/{eventId}/{couponId}', [CouponUserController::class, 'claimCoupon']);
+    Route::get('/event-coupons', [OderCheckController::class, 'getEventCoupons']);
 });
+
