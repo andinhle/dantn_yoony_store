@@ -16,6 +16,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 
 
@@ -31,27 +32,60 @@ class OrderController extends Controller
         return 'ORD-' . $date . '-' . str_pad($increment, 3, '0', STR_PAD_LEFT); // Định dạng mã đơn hàng
     }
 
-    public function applyDiscount(Request $request)
+    public function getOrder()
     {
-        $request->validate([
-            'discount_code' => 'required|string|max:255',
+        try {
+            
+            $data = Order::query()
+            ->where('user_id', Auth::id())
+            ->get();
+
+        return response()->json([
+            'data' => $data,
+            'status' => 'success'
         ]);
-
-        $discountCode = $request->input('discount_code');
-
-        // Kiểm tra mã giảm giá (ví dụ: so với bảng discount_codes trong CSDL)
-        $discount = Coupon::where('code', $discountCode)->first();
-
-        if ($discount) {
+        } catch (\Throwable $th) {
+            Log::error(__CLASS__ . '@' . __FUNCTION__, [
+                'line' => $th->getLine(),
+                'message' => $th->getMessage()
+            ]);
 
             return response()->json([
-                'message' => 'Mã giảm giá đã được áp dụng.',
-                'discount' => $discount->value,
-            ]);
-        } else {
-            // Mã giảm giá không hợp lệ
-            return response()->json(['message' => 'Mã giảm giá không hợp lệ.'], 400);
+                'message' => 'Lỗi tải trang',
+                'status' => 'error',
+
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+        
+    }
+
+    public function getOrderDetail($id)
+    {
+        try {
+            
+            $data = Order::query()
+            ->with(['items.variant.attributeValues.attribute', 'items.variant.product'])
+            ->where('user_id', Auth::id())
+            ->where('id', $id)
+            ->firstOrFail();
+
+            return response()->json([
+                'data' => $data,
+                'status' => 'success'
+            ],Response::HTTP_OK);
+        } catch (\Throwable $th) {
+            Log::error(__CLASS__ . '@' . __FUNCTION__, [
+                'line' => $th->getLine(),
+                'message' => $th->getMessage()
+            ]);
+
+            return response()->json([
+                'message' => 'Lỗi tải trang',
+                'status' => 'error',
+
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+        
     }
 
     public function store(Request $request)
@@ -72,7 +106,7 @@ class OrderController extends Controller
                 $cartItems = [];
                 // Lấy thông tin các sản phẩm đã chọn
                 $cartItems = Cart::query()
-                ->with(['variant.attributeValues.attribute'])
+                ->with(['variant.attributeValues.attribute', 'variant.product'])
                 ->where('user_id', Auth::id()) 
                 ->whereIn('id', $selectedItems)
                 ->get();
@@ -102,9 +136,9 @@ class OrderController extends Controller
                         $orderItems[] = $orderItem;
 
                
-                        $variant = Variant::query()->where('id', $value->variant_id)->first();
-                        $variant->quantity -= $value->quantity; 
-                        $variant->save();
+                        Variant::query()
+                        ->where('id', $value->variant_id)
+                        ->decrement('quantity', $value->quantity); 
                     }
                     OrderItem::insert($orderItems);
                     
@@ -113,6 +147,7 @@ class OrderController extends Controller
                 
 
                 if($request->coupon_id && $request->discount_amount){
+                    
                     $coupon = Coupon::query()->where('id',  $request->coupon_id)->first();
                     $coupon->usage_limit -= 1;
                     $coupon->save();
@@ -122,20 +157,26 @@ class OrderController extends Controller
                         'discount_amount' => $request->discount_amount,
                         'coupon_id' => $request->coupon_id
                     ]);
+
+
+
+
                 }
                 
                 
                 Cart::query()->where('user_id', Auth::id())
                 ->whereIn('id',  $selectedItems )
                 ->delete();
+                
+                
+                Log::info($cartItems);
 
-                
-                
                 $order['discount_amount'] = $request->discount_amount;
-                OrderShipped::dispatch($order,$cartItems);
+                $user = \Auth::user(); // Lấy người dùng hiện tại
+                OrderShipped::dispatch($order,$cartItems, $user);
+                
+
                 return response()->json([
-                    // 'dataOrder' => $cartItems, 
-                    // 'dataOrderItem' =>  $itemOrder , 
                     'message' =>  'ĐẶT HÀNG THÀNH CÔNG',
                     'description'=>'Xin cảm ơn Quý khách đã tin tưởng và mua sắm tại cửa hàng của chúng tôi.'
                 ]);

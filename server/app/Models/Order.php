@@ -38,4 +38,11 @@ class Order extends Model
     const STATUS_ORDER_SHIPPING = 'shipping';
     const STATUS_ORDER_DELIVERED = 'delivered';
     const STATUS_ORDER_CANCELED = 'canceled';
+
+
+    public function items() 
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
 }

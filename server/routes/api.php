@@ -137,7 +137,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::delete('/delete-wishlists/{product_id}', [HomeController::class, 'deleteWishlist']);
     
     // Order 
-    // Route::get('/order', [OrderController::class, 'getProduct'])->name('order.getProduct');
+    Route::get('/order-detail/{id}', [OrderController::class, 'getOrderDetail'])->name('order.getOrderDetail');
+    Route::get('/order', [OrderController::class, 'getOrder'])->name('order.getOrder');
     Route::post('/order', [OrderController::class, 'store'])->name('order.store');
 
     //Coupon_user
