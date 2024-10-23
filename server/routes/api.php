@@ -153,6 +153,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Giỏ hàng_user
     Route::apiResource('cart', CartController::class);
     Route::patch('/cart/{id}/{operation?}', [CartController::class, 'update']);
+    Route::post('cart/delete-much', [CartController::class, 'deleteMuch'])->name('cart.deleteMuch');
 
     //Wishlist_user
     Route::get('/list-wishlists', [HomeController::class, 'getWishlists']);
