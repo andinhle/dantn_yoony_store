@@ -299,3 +299,16 @@ a:hover .number-cart{
   padding: 15px 0px 10px 0px; 
   border-radius: 10px;
 }
+
+.box-shaw-voucher-cart{
+  box-shadow: rgba(149, 157, 165, 0.2) 0px 0px 5px;
+}
+
+:where(.css-dev-only-do-not-override-ccdg5a).ant-modal{
+  top: 25px;
+}
+
+.css-xsl00c-MuiBadge-badge{
+  background-color:#ff9900 !important;
+}
+
