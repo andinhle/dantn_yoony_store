@@ -21,6 +21,7 @@ use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\Client\OderCheckController;
 use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\client\ChatbotController;
+use App\Http\Controllers\client\SpinController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -80,6 +81,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Order
     // Route::get('/order', [OrderController::class, 'getProduct'])->name('order.getProduct');
     Route::post('/order', [OrderController::class, 'store'])->name('order.store');
+
+    Route::post('/spin', [SpinController::class, 'spin']);
+    Route::post('/reset-daily-spins', [SpinController::class, 'resetDailySpins']);
 });
 
 

@@ -36,7 +36,7 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Đăng nhập thành công!',
                 'user' => $user,
-                'model' => $user->role->modelTypes,
+                // 'model' => $user->role->modelTypes,
                 'token' => $token
             ], 200);
         } catch (\Exception $e) {
