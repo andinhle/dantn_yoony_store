@@ -20,7 +20,7 @@ class Event extends Model
     // Thiết lập quan hệ với model Coupon
     public function coupons()
     {
-        return $this->belongsToMany(Coupon::class, 'event_coupon', 'event_id', 'coupon_id');
+        return $this->belongsToMany(Coupon::class, 'event_coupons', 'event_id', 'coupon_id');
 
     }
 
