@@ -69,7 +69,7 @@ const ShowDetailProduct: React.FC = () => {
         quantity: variant.quantity,
         image: variant.image,
         attributes: variant.attribute_values.reduce((acc: any, attr: any) => {
-          acc[attr.attribute.slug] = attr.value;
+          acc[attr.attribute.name] = attr.value;
           return acc;
         }, {}),
       }));
@@ -241,7 +241,7 @@ const ShowDetailProduct: React.FC = () => {
                   : "border-input hover:border-primary/80"
               }`}
             >
-              <p className="text-xs font-medium overflow-hidden text-ellipsis white-space">
+              <p className="text-xs font-normal overflow-hidden text-ellipsis white-space">
                 {value}
               </p>
             </div>
@@ -270,7 +270,9 @@ const ShowDetailProduct: React.FC = () => {
     );
   };
 
-  console.log(attributeGroups);
+  console.log(product)
+
+
   return (
     <section className="space-y-8">
       <Breadcrumb

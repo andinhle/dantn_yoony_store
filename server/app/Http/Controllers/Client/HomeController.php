@@ -249,6 +249,7 @@ class HomeController extends Controller
             $data = Coupon::query()
             ->where('status', true)
             ->where('usage_limit','>' , 0)
+            ->where('start_date', '<', Carbon::now())
             ->where('end_date', '>', Carbon::now())
             ->where('min_order_value', '<=', $request->totalCart)
             ->where('max_order_value', '>=', $request->totalCart)
