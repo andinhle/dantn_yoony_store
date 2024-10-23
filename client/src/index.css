@@ -196,14 +196,14 @@ a:hover .number-cart{
   width: 67px !important;;
   height: 67px !important;;
 }
-:where(.css-dev-only-do-not-override-ccdg5a).ant-input-outlined:focus, :where(.css-dev-only-do-not-override-ccdg5a).ant-input-outlined:focus-within{
+:where(.css-dev-only-do-not-override-vryruh).ant-input-outlined:focus, :where(.css-dev-only-do-not-override-vryruh).ant-input-outlined:focus-within{
   border-color: #ff9900 !important;
   box-shadow: none !important;
 }
-:where(.css-dev-only-do-not-override-ccdg5a).ant-input-outlined:hover{
+:where(.css-dev-only-do-not-override-vryruh).ant-input-outlined:hover{
   border-color: #ff9900 !important;
 }
-:where(.css-dev-only-do-not-override-ccdg5a).ant-btn-variant-solid{
+:where(.css-dev-only-do-not-override-vryruh).ant-btn-variant-solid{
   background-color: #ff9900 !important;
 }
 .img-zoom div{
@@ -213,14 +213,14 @@ a:hover .number-cart{
   height: 16px !important;
   width: 16px !important;
 }
-:where(.css-dev-only-do-not-override-ccdg5a).ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled){
+:where(.css-dev-only-do-not-override-vryruh).ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled){
   color: #ff9900 !important;
   border-color: #ff9900;
 }
-:where(.css-dev-only-do-not-override-ccdg5a).ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):hover{
+:where(.css-dev-only-do-not-override-vryruh).ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):hover{
   color: #ff9900;
 }
-:where(.css-dev-only-do-not-override-ccdg5a).ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):first-child{
+:where(.css-dev-only-do-not-override-vryruh).ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):first-child{
   border-color: #ff9900;
 }
 
@@ -228,35 +228,37 @@ a:hover .number-cart{
   box-shadow: none !important;
   border: 1px solid #F2F2F7;
 }
-:where(.css-dev-only-do-not-override-ccdg5a).ant-checkbox-checked .ant-checkbox-inner{
+.ant-checkbox-checked .ant-checkbox-inner{
   background-color: #ff9900 !important;
   border-color: white;
 }
-:where(.css-dev-only-do-not-override-ccdg5a).ant-checkbox-indeterminate .ant-checkbox-inner:after{
+
+
+.ant-checkbox-indeterminate .ant-checkbox-inner:after{
   background-color: rgb(255, 153, 0) !important;
 }
 
-:where(.css-dev-only-do-not-override-ccdg5a).ant-table-wrapper .ant-table-tbody .ant-table-row.ant-table-row-selected >.ant-table-cell{
+:where(.css-dev-only-do-not-override-vryruh).ant-table-wrapper .ant-table-tbody .ant-table-row.ant-table-row-selected >.ant-table-cell{
   background-color: #fffbf0 !important;
 }
-:where(.css-dev-only-do-not-override-ccdg5a).ant-pagination .ant-pagination-item-active,:where(.css-dev-only-do-not-override-ccdg5a).ant-pagination .ant-pagination-item-active:hover{
+:where(.css-dev-only-do-not-override-vryruh).ant-pagination .ant-pagination-item-active,:where(.css-dev-only-do-not-override-vryruh).ant-pagination .ant-pagination-item-active:hover{
   border-color: #ff9900;
 }
 
-:where(.css-dev-only-do-not-override-ccdg5a).ant-pagination .ant-pagination-item-active a,:where(.css-dev-only-do-not-override-ccdg5a).ant-pagination .ant-pagination-item-active:hover a{
+:where(.css-dev-only-do-not-override-vryruh).ant-pagination .ant-pagination-item-active a,:where(.css-dev-only-do-not-override-vryruh).ant-pagination .ant-pagination-item-active:hover a{
   color:#ff9900
 }
 
-:where(.css-dev-only-do-not-override-ccdg5a).ant-table-wrapper .ant-table-thead >tr>th{
+:where(.css-dev-only-do-not-override-vryruh).ant-table-wrapper .ant-table-thead >tr>th{
   background-color: #ff9900;
   color: white;
 }
 
-:where(.css-dev-only-do-not-override-ccdg5a).ant-btn-variant-outlined:not(:disabled):not(.ant-btn-disabled):hover, :where(.css-dev-only-do-not-override-ccdg5a).ant-btn-variant-dashed:not(:disabled):not(.ant-btn-disabled):hover{
+:where(.css-dev-only-do-not-override-vryruh).ant-btn-variant-outlined:not(:disabled):not(.ant-btn-disabled):hover, :where(.css-dev-only-do-not-override-vryruh).ant-btn-variant-dashed:not(:disabled):not(.ant-btn-disabled):hover{
   color:#ff9900;
   border-color: #ff9900;
 }
-:where(.css-dev-only-do-not-override-ccdg5a) a:hover{
+:where(.css-dev-only-do-not-override-vryruh) a:hover{
   color:#ff9900;
 }
 
@@ -276,26 +278,44 @@ a:hover .number-cart{
   border-radius: 5px;
 }
 
-:where(.css-dev-only-do-not-override-ccdg5a).ant-steps.ant-steps-label-vertical .ant-steps-item-content{
+:where(.css-dev-only-do-not-override-vryruh).ant-steps.ant-steps-label-vertical .ant-steps-item-content{
   width: 120px;
   margin: 0;
 
 }
-:where(.css-dev-only-do-not-override-ccdg5a).ant-steps .ant-steps-item-tail{
+:where(.css-dev-only-do-not-override-vryruh).ant-steps .ant-steps-item-tail{
   top: 20px;
 }
-:where(.css-dev-only-do-not-override-ccdg5a).ant-steps .ant-steps-item-title{
+:where(.css-dev-only-do-not-override-vryruh).ant-steps .ant-steps-item-title{
   font-size: 14px;
 }
-:where(.css-dev-only-do-not-override-ccdg5a).ant-steps.ant-steps-label-vertical .ant-steps-item-tail{
+:where(.css-dev-only-do-not-override-vryruh).ant-steps.ant-steps-label-vertical .ant-steps-item-tail{
   margin-inline-start: 60px;
   padding: 0 25px;
 }
-:where(.css-dev-only-do-not-override-ccdg5a).ant-steps .ant-steps-item-finish>.ant-steps-item-container>.ant-steps-item-tail::after{
+
+:where(.css-dev-only-do-not-override-vryruh).ant-steps .ant-steps-item-finish>.ant-steps-item-container>.ant-steps-item-tail::after{
   background-color:#ff9900
 }
-:where(.css-dev-only-do-not-override-ccdg5a).ant-steps{
+
+:where(.css-dev-only-do-not-override-vryruh).ant-steps{
   background-color: #fff5e5;
   padding: 15px 0px 10px 0px; 
   border-radius: 10px;
+}
+
+.box-shaw-voucher-cart{
+  box-shadow: rgba(149, 157, 165, 0.2) 0px 0px 5px;
+}
+
+:where(.css-dev-only-do-not-override-vryruh).ant-modal{
+  top: 25px;
+}
+
+.css-xsl00c-MuiBadge-badge{
+  background-color:rgb(255, 153, 0) !important;
+}
+
+.shadow-btn-wheel {
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
 }
