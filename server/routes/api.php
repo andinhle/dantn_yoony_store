@@ -84,6 +84,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     Route::post('/spin', [SpinController::class, 'spin']);
     Route::post('/reset-daily-spins', [SpinController::class, 'resetDailySpins']);
+    Route::post('/claim-coupon/{eventId}/{couponId}', [CouponUserController::class, 'claimCoupon']);
+    Route::get('/event-coupons', [OderCheckController::class, 'getEventCoupons']);
+
 });
 
 

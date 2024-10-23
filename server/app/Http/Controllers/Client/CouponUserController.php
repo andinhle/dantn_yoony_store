@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Models\Coupon;
 use App\Models\CouponUser;
+use App\Models\Event;
+use App\Models\EventCoupon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
@@ -48,7 +51,7 @@ class CouponUserController extends Controller
             $data['coupon_id'] = $request->coupon_id;
 
             $voucher = CouponUser::create($data);
-            
+
             return response()->json([
                 'status' => 'success',
                 'data' => $voucher,
@@ -106,5 +109,37 @@ class CouponUserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-   
+
+
+     public function claimCoupon(Request $request, $eventId, $couponId)
+     {
+         $user = $request->user();
+
+         $eventCouponExists = EventCoupon::where('event_id', $eventId)
+             ->where('coupon_id', $couponId)
+             ->exists();
+
+         if (!$eventCouponExists) {
+             return response()->json(['message' => 'Coupon không thuộc sự kiện này.'], 404);
+         }
+
+         $coupon = Coupon::find($couponId);
+         if (!$coupon || $coupon->usage_limit <= 0) {
+             return response()->json(['message' => 'Coupon không còn số lượng.'], 404);
+         }
+
+         $couponUser = CouponUser::create([
+             'user_id' => $user->id,
+             'coupon_id' => $couponId,
+         ]);
+
+         $coupon->decrement('usage_limit');
+
+         return response()->json([
+             'message' => 'Bạn đã nhận coupon thành công!',
+             'coupon_user_id' => $couponUser->id,
+         ], 201);
+     }
+
+
 }
