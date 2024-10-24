@@ -17,7 +17,7 @@ return new class extends Migration
             $table->integer('grand_total');
             $table->integer('final_total')->nullable();
             $table->string('payment_method');
-            $table->string('status');
+            $table->string('status_order')->default(\App\Models\Order::STATUS_ORDER_PENDING);
             $table->string('code');
             $table->text('notes')->nullable();
             $table->string('name');

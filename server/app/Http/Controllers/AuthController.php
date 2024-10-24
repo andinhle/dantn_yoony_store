@@ -26,15 +26,17 @@ class AuthController extends Controller
                 return $this->error([], 'Tài khoản hoặc mật khẩu không chính xác', 401);
             }
 
-            $user = User::where('email', $request->email)->first();
+            $user = User::where('email', $request->email)->with('role.modelTypes')->first();
 
             // Xóa các token của tài khoản trước đó
-            $user->tokens()->delete();
+            // $user->tokens()->delete();
+            $newToken = $user->createToken('API Token', ['*'], now()->addHours(2));
+            $token = $newToken->plainTextToken;
 
             return response()->json([
                 'message' => 'Đăng nhập thành công!',
                 'user' => $user,
-                'token' => $user->createToken('API Token')->plainTextToken
+                'token' => $token
             ], 200);
         } catch (\Exception $e) {
             Log::error('Có lỗi xảy ra: ' . $e->getMessage());

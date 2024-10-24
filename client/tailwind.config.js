@@ -1,10 +1,12 @@
 // tailwind.config.js
 import flowbite from 'flowbite-react/tailwind'
+
 export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
-    flowbite.content()
+    flowbite.content(),
+    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
@@ -15,7 +17,8 @@ export default {
         "primary":"#FF9900",
         "secondary":"#000",
         "util":"#fff",
-        "hover":"#6F757E"
+        "hover":"#6F757E",
+        'custom-light': '#FCF7EB',
       },
       borderColor:{
         "input":"#e6e6eb"
