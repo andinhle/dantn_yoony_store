@@ -44,7 +44,7 @@ const ChatModal: React.FC<{ visible: boolean; onClose: () => void }> = ({ visibl
 
     return (
         <Modal
-            title={<span style={{  color: '#fff' }}>Hỗ trợ</span>} // Đổi màu chữ header nếu cần
+            title={<span style={{  color: '#000' }}>Trợ lí YoonyStore</span>} // Đổi màu chữ header nếu cần
             visible={visible}
             onCancel={onClose}
             footer={null} // Không cần footer trong modal
@@ -80,7 +80,7 @@ const ChatModal: React.FC<{ visible: boolean; onClose: () => void }> = ({ visibl
                     <Button
                         type="primary"
                         onClick={handleSendMessage}
-                        className="rounded-full h-10 px-4 shadow-sm transition-colors duration-300 hover:bg-blue-700"
+                        className="bg-primary rounded-full h-10 px-4 shadow-sm transition-colors duration-300 hover:bg-primary"
                     >
                         Gửi
                     </Button>
