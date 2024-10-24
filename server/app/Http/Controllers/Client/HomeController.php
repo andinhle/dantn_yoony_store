@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\BlogResource;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProductResource;
+use App\Models\Answer;
 use App\Models\Blog;
 use App\Models\Category;
 use App\Models\Coupon;
 use App\Models\Product;
+use App\Models\Question;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -271,5 +273,27 @@ class HomeController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     
+    }
+
+    // FAQ
+    // Lấy ra các câu hỏi đầu tiên
+    public function getListFirstQuestion()
+    {
+        $questions = Question::where('answer_id', null)->get();
+        return response()->json($questions);
+    }
+
+    // Lấy ra câu hỏi theo câu trả lời
+    public function getQuestionByAnswer(string $id)
+    {
+        $questions = Question::where('answer_id', $id)->get();
+        return response()->json($questions);
+    }
+
+    // Lấy ra câu trả lời theo câu hỏi
+    public function getAnswerByQuestion(string $id)
+    {
+        $answers = Answer::where('question_id', $id)->get();
+        return response()->json($answers);
     }
 }

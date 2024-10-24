@@ -12,12 +12,17 @@ class ModelName extends Model
 
     protected $fillable = ['name', 'type'];
 
+    // Tự động trim giá trị type khi lấy từ database
+    protected function getTypeAttribute($value)
+    {
+        return trim($value);
+    }
 
-    // Một model có thể có nhiều vai trò qua bảng trung gian role_has_models
     public function roleHasModels()
     {
         return $this->hasMany(RoleHasModel::class);
     }
+
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'role_has_models', 'model_id', 'role_id');
