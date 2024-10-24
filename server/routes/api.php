@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\admin\EventController;
 use App\Http\Controllers\Admin\ModelController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\QuestionController;
@@ -63,12 +64,8 @@ Route::get('/detailBlog/{slug}', [HomeController::class, 'detailBlog'])->name('b
 //Checkoder
 Route::get('check-order', [OderCheckController::class, 'checkOrder'])->name('order.check');
 
-//Blog
-Route::get('/list-blogs', [HomeController::class, 'listBlogs'])->name('blogs.listBlogs');
-Route::get('/detailBlog/{slug}', [HomeController::class, 'detailBlog'])->name('blog.detailBlog');
-
-//Checkoder
-Route::get('check-order', [OderCheckController::class, 'checkOrder'])->name('order.check');
+// Coupon
+Route::get('/coupon-home', [HomeController::class, 'getCouponHome']);
 
 // Quyền khi đăng nhập
 Route::group(['middleware' => ['auth:sanctum']], function () {
@@ -90,7 +87,16 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 Route::post('/auth/password/request-reset', [AuthController::class, 'requestPasswordReset'])->name('password.request');
 Route::post('/auth/password/reset', [AuthController::class, 'resetPassword'])->name('password.reset');
+// questions
+Route::apiResource('admin/questions', QuestionController::class);
 
+Route::apiResource('questions', QuestionController::class);
+
+// Câu trả lời
+Route::get('questions/{questionId}/answers', [QuestionController::class, 'getAnswers']);
+Route::post('questions/{questionId}/answers', [QuestionController::class, 'storeAnswer']);
+Route::put('answers/{id}', [QuestionController::class, 'updateAnswer']);
+Route::delete('answers/{id}', [QuestionController::class, 'destroyAnswer']);
 
 //category
 Route::apiResource('category', CategoryController::class);
@@ -159,3 +165,13 @@ Route::post('cart/delete-much', [CartController::class, 'deleteMuch'])->name('ca
 
 //checkoder
 Route::get('check-order', [OderCheckController::class, 'checkOrder'])->name('order.check');
+
+
+//chatbot
+Route::get('/admin/events/coupons', [EventController::class, 'getEventCoupons']);
+
+Route::post('/admin/events', [EventController::class, 'createEvent']);
+Route::get('/admin/showEvent/{id}', [EventController::class, 'showEvent']);
+
+Route::put('/admin/updateEvent/{id}', [EventController::class, 'updateEvent']);
+Route::delete('/admin/events/{id}', [EventController::class, 'destroy']);

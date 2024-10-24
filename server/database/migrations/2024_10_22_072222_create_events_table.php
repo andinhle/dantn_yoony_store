@@ -11,10 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('questions', function (Blueprint $table) {
+        Schema::create('events', function (Blueprint $table) {
             $table->id();
-            $table->string('text');
-            $table->unsignedBigInteger('answer_id')->nullable();
+            $table->string('name'); // Tên sự kiện
+            $table->string('description')->nullable(); // Mô tả sự kiện
+            $table->date('start_date'); // Ngày bắt đầu
+            $table->date('end_date'); // Ngày kết thúc
+            $table->boolean('is_active')->default(false);
             $table->timestamps();
         });
     }
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('questions');
+        Schema::dropIfExists('events');
     }
 };

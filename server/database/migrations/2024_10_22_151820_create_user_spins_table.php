@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('questions', function (Blueprint $table) {
+        Schema::create('user_spins', function (Blueprint $table) {
             $table->id();
-            $table->string('text');
-            $table->unsignedBigInteger('answer_id')->nullable();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); 
+            $table->integer('remaining_spins')->default(2);
+            $table->date('last_spin_date')->nullable();
             $table->timestamps();
         });
     }
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('questions');
+        Schema::dropIfExists('user_spins');
     }
 };
