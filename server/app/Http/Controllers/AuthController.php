@@ -26,7 +26,7 @@ class AuthController extends Controller
                 return $this->error([], 'Tài khoản hoặc mật khẩu không chính xác', 401);
             }
 
-            $user = User::where('email', $request->email)->first();
+            $user = User::where('email', $request->email)->with('role.modelTypes')->first();
 
             // Xóa các token của tài khoản trước đó
             // $user->tokens()->delete();
@@ -36,7 +36,6 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Đăng nhập thành công!',
                 'user' => $user,
-                'model' => $user->role->modelTypes,
                 'token' => $token
             ], 200);
         } catch (\Exception $e) {

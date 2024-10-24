@@ -22,7 +22,7 @@ const productValidSchema = z.object(
         description: z.string().optional(),
         category_id: z.string(
             {
-                required_error: "Vui lòng chọn danh mục !"
+              required_error: "Vui lòng chọn danh mục !"
             }
         ).or(z.number()),
         is_active: z.boolean(),

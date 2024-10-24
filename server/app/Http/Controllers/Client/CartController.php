@@ -23,7 +23,7 @@ class CartController extends Controller
     {
         try {
             $data = Cart::query()
-                ->with(['variant.product.category', 'variant.attributeValues.attribute'])
+                ->with(['variant.product', 'variant.attributeValues.attribute'])
                 ->where('user_id', Auth::id())
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -219,6 +219,25 @@ class CartController extends Controller
                 'messages' => 'Lỗi',
                 'status' => 'error'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    //xóa nhiều cart
+    public function deleteMuch(Request $request)
+    {
+        try {
+            $ids = $request->ids;
+
+            if (!is_array($ids) || empty($ids)) {
+                return response()->json(['message' => 'Danh sách ID không hợp lệ!'], 400);
+            }
+
+            // Xóa nhiều theo id
+            Cart::whereIn('id', $ids)->delete();
+
+            return response()->json(['message' => 'Xóa nhiều giỏ hàng thành công!'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
         }
     }
 

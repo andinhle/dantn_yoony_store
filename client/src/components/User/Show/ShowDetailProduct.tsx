@@ -69,7 +69,7 @@ const ShowDetailProduct: React.FC = () => {
         quantity: variant.quantity,
         image: variant.image,
         attributes: variant.attribute_values.reduce((acc: any, attr: any) => {
-          acc[attr.attribute.slug] = attr.value;
+          acc[attr.attribute.name] = attr.value;
           return acc;
         }, {}),
       }));
@@ -120,6 +120,14 @@ const ShowDetailProduct: React.FC = () => {
       }
       return newAttributes;
     });
+
+    const currentGroup = attributeGroups.find(group => group.name === attributeName);
+    if (currentGroup) {
+      const valueIndex = currentGroup.values.indexOf(value);
+      if (valueIndex !== -1 && currentGroup.images[valueIndex]) {
+        setSelectedImage(currentGroup.images[valueIndex]);
+      }
+    }
   };
 
   const isAttributeAvailable = (
@@ -143,11 +151,7 @@ const ShowDetailProduct: React.FC = () => {
       )
     );
     setSelectedVariant(matchingVariant || null);
-    if (matchingVariant?.image) {
-      setSelectedImage(matchingVariant.image);
-    }
   }, [selectedAttributes, variants]);
-
   const handleImageClick = () => {
     setIsZoomEnabled(!isZoomEnabled);
   };
@@ -241,7 +245,7 @@ const ShowDetailProduct: React.FC = () => {
                   : "border-input hover:border-primary/80"
               }`}
             >
-              <p className="text-xs font-medium overflow-hidden text-ellipsis white-space">
+              <p className="text-xs font-normal overflow-hidden text-ellipsis white-space">
                 {value}
               </p>
             </div>
@@ -270,7 +274,10 @@ const ShowDetailProduct: React.FC = () => {
     );
   };
 
-  console.log(attributeGroups);
+  console.log(attributeGroups)
+  console.log(selectedAttributes)
+
+
   return (
     <section className="space-y-8">
       <Breadcrumb

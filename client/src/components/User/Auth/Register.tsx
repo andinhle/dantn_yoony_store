@@ -1,14 +1,16 @@
 import { Label } from "flowbite-react";
 import { IUser } from "../../../interfaces/IUser";
-import { useForm } from "react-hook-form";
+import { useForm,Controller } from "react-hook-form";
 import registerValidScheme from "../../../validations/registerValidScheme";
 import { zodResolver } from "../../../../node_modules/@hookform/resolvers/zod/src/zod";
 import instance from "../../../instance/instance";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { Input } from "antd";
 const Register = () => {
   const {
     register,
+    control,
     formState: { errors },
     handleSubmit,
     reset,
@@ -18,14 +20,17 @@ const Register = () => {
   //Xử lý Đăng ký
   const onSubmit = async (dataForm: IUser) => {
     try {
-      const {name,email,password}=dataForm
-      const data=await instance.post('register',{
-        name,email,password
-      })
-      console.log(data)
+      const { name, email, password } = dataForm;
+      console.log(dataForm)
+      const data = await instance.post("register", {
+        name,
+        email,
+        password,
+      });
+      console.log(data);
       if (data) {
-        reset()
-        toast.success('Đăng ký tài khoản thành công!')
+        reset();
+        toast.success("Đăng ký tài khoản thành công!");
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -33,7 +38,7 @@ const Register = () => {
       } else if (error instanceof Error) {
         console.log(error.message);
       } else {
-        console.log('Đã xảy ra lỗi không mong muốn');
+        console.log("Đã xảy ra lỗi không mong muốn");
       }
     }
   };
@@ -77,17 +82,21 @@ const Register = () => {
               {errors.email?.message}
             </span>
           </div>
-          <div className="flex justify-between gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <div>
               <div className="mb-2 block">
                 <Label htmlFor="pass-input" value="Mật khẩu" />
               </div>
-              <input
-                type="password"
-                placeholder="Mật khẩu"
-                id="pass-input"
-                className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none text-sm"
-                {...register("password")}
+              <Controller
+                name="password"
+                control={control}
+                render={({ field }) => (
+                  <Input.Password
+                    {...field}
+                    placeholder="Mật khẩu"
+                    className="h-10"
+                  />
+                )}
               />
               <span className="block text-sm text-red-500 mt-1">
                 {errors.password?.message}
@@ -97,12 +106,16 @@ const Register = () => {
               <div className="mb-2 block">
                 <Label htmlFor="confirmPass-input" value="Nhập lại mật khẩu" />
               </div>
-              <input
-                type="password"
-                placeholder="Nhập lại mật khẩu"
-                id="confirmPass-input"
-                className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none text-sm"
-                {...register("confirmPass")}
+              <Controller
+                name="confirmPass"
+                control={control}
+                render={({ field }) => (
+                  <Input.Password
+                    {...field}
+                    placeholder="Nhập lại mật khẩu"
+                    className="h-10"
+                  />
+                )}
               />
               <span className="block text-sm text-red-500 mt-1">
                 {errors.confirmPass?.message}
