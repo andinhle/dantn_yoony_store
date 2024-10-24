@@ -162,7 +162,7 @@ const CartListClient = () => {
           />
           <div>
             <Link
-              to={`/${variant.product.category.slug}/${variant.product.slug}`}
+              to={`/${variant.product.category?.slug}/${variant.product.slug}`}
               className="line-clamp-1"
             >
               {variant.product?.name}
@@ -339,6 +339,7 @@ const CartListClient = () => {
   localStorage.setItem("id_cart", JSON.stringify(selectedRowKeys));
   localStorage.setItem("final_total", JSON.stringify(selectedTotal));
 
+  console.log(carts)
   return (
     <section className="my-7 space-y-7">
       <h2 className="flex gap-1.5 text-2xl text-primary font-medium">
