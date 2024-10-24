@@ -10,6 +10,15 @@ use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
+    public function getAllEventCoupons()
+    {
+        // Truy vấn các coupon có type là 'event'
+        $eventCoupons = Coupon::where('type', 'event')->get();
+
+        return response()->json([
+            'event_coupons' => $eventCoupons,
+        ]);
+    }
 
 
 
@@ -100,7 +109,7 @@ class EventController extends Controller
         ], 201);
     }
 
-    
+
     public function showEvent($id)
     {
         $eventWithCoupons = Event::with('coupons')->findOrFail($id);
