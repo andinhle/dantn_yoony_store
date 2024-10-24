@@ -383,7 +383,7 @@ const CategoryList: React.FC = () => {
         popup
         show={openModal}
         onClose={() => setOpenModal(false)}
-        className="z-50 mt-10"
+        className="z-50"
         size={"md"}
       >
         <Modal.Header>
