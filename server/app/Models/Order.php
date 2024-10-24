@@ -22,7 +22,7 @@ class Order extends Model
         'grand_total',
         'final_total',
         'payment_method',
-        'status',
+        'status_order',
         'notes',
         'name',
         'tel',
@@ -38,4 +38,16 @@ class Order extends Model
     const STATUS_ORDER_SHIPPING = 'shipping';
     const STATUS_ORDER_DELIVERED = 'delivered';
     const STATUS_ORDER_CANCELED = 'canceled';
+
+
+    public function items() 
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function user() 
+    {
+        return $this->belongsTo(User::class);
+    }
+
 }

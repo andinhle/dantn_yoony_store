@@ -46,6 +46,7 @@ import LayoutUserDetails from "./layouts/User/LayoutUserDetails.tsx";
 import { CheckOrder } from "./components/User/Header/CheckOrder.tsx";
 import EventUser from "./components/User/Event/EventUser.tsx";
 import LayoutEventAdmin from "./layouts/Admin/LayoutEventAdmin.tsx";
+import BlogDetail from "./components/User/Blogs/BlogDetail.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -85,6 +86,7 @@ createRoot(document.getElementById("root")!).render(
               </Route>
               <Route path="checkorder" element={<CheckOrder />} />
               <Route path="event" element={<EventUser />} />
+              <Route path="detailBlog/:slug" element={<BlogDetail/>}/>
             </Route>
             {/* Admin */}
             <Route path="admin" element={<LayoutAdmin />}>
