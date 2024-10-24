@@ -120,6 +120,14 @@ const ShowDetailProduct: React.FC = () => {
       }
       return newAttributes;
     });
+
+    const currentGroup = attributeGroups.find(group => group.name === attributeName);
+    if (currentGroup) {
+      const valueIndex = currentGroup.values.indexOf(value);
+      if (valueIndex !== -1 && currentGroup.images[valueIndex]) {
+        setSelectedImage(currentGroup.images[valueIndex]);
+      }
+    }
   };
 
   const isAttributeAvailable = (
@@ -143,11 +151,7 @@ const ShowDetailProduct: React.FC = () => {
       )
     );
     setSelectedVariant(matchingVariant || null);
-    if (matchingVariant?.image) {
-      setSelectedImage(matchingVariant.image);
-    }
   }, [selectedAttributes, variants]);
-
   const handleImageClick = () => {
     setIsZoomEnabled(!isZoomEnabled);
   };
@@ -270,7 +274,8 @@ const ShowDetailProduct: React.FC = () => {
     );
   };
 
-  console.log(product)
+  console.log(attributeGroups)
+  console.log(selectedAttributes)
 
 
   return (

@@ -62,10 +62,16 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="register" element={<Register />} />
                 <Route path="login" element={<Login />} />
               </Route>
+              {/* <Route path="reset-password" element={<CheckPermission />}>
+                <Route path="reset-password" element={<LayoutResetPassword />}>
+                  <Route index element={<ResetPassRequest />} />
+                  <Route path=":token/:email" element={<FormResetPass />} />
+                </Route>
+              </Route> */}
               <Route path="reset-password" element={<LayoutResetPassword />}>
-                <Route index element={<ResetPassRequest />} />
-                <Route path=":token/:email" element={<FormResetPass />} />
-              </Route>
+                  <Route index element={<ResetPassRequest />} />
+                  <Route path=":token/:email" element={<FormResetPass />} />
+                </Route>
               <Route
                 path=":category/:slugproduct"
                 element={<ShowDetailProduct />}
