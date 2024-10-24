@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\admin\EventController;
 use App\Http\Controllers\Admin\ModelController;
 use App\Http\Controllers\Admin\ProductController;
@@ -62,6 +63,11 @@ Route::get('check-order', [OderCheckController::class, 'checkOrder'])->name('ord
 
 // Coupon
 Route::get('/coupon-home', [HomeController::class, 'getCouponHome']);
+
+// Chat bot
+Route::get('/first-question', [HomeController::class, 'getListFirstQuestion']);
+Route::get('/question-by-answer/{id}', [HomeController::class, 'getQuestionByAnswer']);
+Route::get('/answer-by-question/{id}', [HomeController::class, 'getAnswerByQuestion']);
 
 // Quyền khi đăng nhập
 Route::group(['middleware' => ['auth:sanctum']], function () {
@@ -138,6 +144,16 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::patch('product/restore/{id}', [ProductController::class, 'restore'])->name('product.restore');
         Route::delete('product/hard-delete/{id}', [ProductController::class, 'hardDelete'])->name('product.hardDelete');
 
+        // QL FAQ
+        Route::controller(FaqController::class)->prefix('faq/')->group(function (){
+            Route::get('list-question', [FaqController::class, 'listQuestions']);
+            Route::post('store-question', [FaqController::class, 'storeQuestions']);
+            Route::delete('delete-question/{id}', [FaqController::class, 'deleteQuestion']);
+            Route::get('list-answer', [FaqController::class, 'listAnswers']);
+            Route::post('store-answer', [FaqController::class, 'storeAnswers']);
+            Route::delete('delete-answer/{id}', [FaqController::class, 'deleteAnswer']);
+        });
+      
         //QL Event
         Route::get('/admin/events/coupons', [EventController::class, 'getEventCoupons']);
 
@@ -146,8 +162,15 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
         Route::put('/admin/updateEvent/{id}', [EventController::class, 'updateEvent']);
         Route::delete('/admin/events/{id}', [EventController::class, 'destroy']);
+        //list danh sách các coupon type event
         Route::get('/admin/coupons/events', [EventController::class, 'getAllEventCoupons']);
-
+      
+        // Quản ly đơn hàng
+        Route::get('admin/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index']);
+        Route::get('admin/order-detail/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'orderDetail']);
+        Route::patch('admin/order-detail/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'updateOrderDetail']);
+        Route::patch('admin/order-cancelation/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'canceledOrder']);
+        
     });
 
     // Giỏ hàng_user
@@ -159,6 +182,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/list-wishlists', [HomeController::class, 'getWishlists']);
     Route::post('/insert-wishlists', [HomeController::class, 'insertWishlists']);
     Route::delete('/delete-wishlists/{product_id}', [HomeController::class, 'deleteWishlist']);
+
+    
+    // Order 
+    Route::get('/order-detail/{id}', [OrderController::class, 'getOrderDetail'])->name('order.getOrderDetail');
+    Route::get('/order', [OrderController::class, 'getOrder'])->name('order.getOrder');
+    Route::patch('/order-cancelation/{id}', [OrderController::class, 'canceledOrder']);
+
 
     // Order_user
     // Route::get('/order', [OrderController::class, 'getProduct'])->name('order.getProduct');
@@ -177,4 +207,3 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/claim-coupon/{eventId}/{couponId}', [CouponUserController::class, 'claimCoupon']);
     Route::get('/event-coupons', [OderCheckController::class, 'getEventCoupons']);
 });
-

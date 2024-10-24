@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
-            $table->string('text');
-            $table->unsignedBigInteger('answer_id')->nullable();
+            $table->text('text');
+            $table->unsignedBigInteger('answer_id')->nullable()->cascadeOnDelete();
             $table->timestamps();
         });
     }
