@@ -8,6 +8,7 @@ use App\Http\Requests\Order\StoreOrderRequest;
 use App\Models\Cart;
 use App\Models\Coupon;
 use App\Models\Order;
+use App\Models\OrderCancellation;
 use App\Models\OrderCoupon;
 use App\Models\OrderItem;
 use App\Models\Variant;
@@ -173,7 +174,11 @@ class OrderController extends Controller
 
                 $order['discount_amount'] = $request->discount_amount;
                 $user = \Auth::user(); // Lấy người dùng hiện tại
-                OrderShipped::dispatch($order,$cartItems, $user);
+
+                $order['items']=$cartItems;
+                $order['user']=$user;
+
+                OrderShipped::dispatch($order);
                 
 
                 return response()->json([
@@ -197,35 +202,47 @@ class OrderController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function canceledOrder(Request $request ,$id)
     {
-        //
-    }
+        try {
+            $order = Order::query()->findOrFail($id);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+            $request->validate([
+                'reason' => 'required|max:225'
+            ], [
+                'reason.required' => 'Vui lòng nhập lý do',
+                'reason.max' => 'Tiêu đề không được vượt quá 225 ký tự.',
+            ]);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+            $reason = $request->reason;
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+            $order->update(['status_order' => Order::STATUS_ORDER_CANCELED]);
+
+            OrderCancellation::create([
+                'reason' => $reason,
+                'order_id' => $id,
+                'user_id' => Auth::id(),
+            ]);
+
+            return response()->json([
+                'message' => 'Đơn hàng đã hủy thành công',
+                'status' => 'success',
+                'data' => $order
+            ], Response::HTTP_OK);
+        } catch (\Throwable $th) {
+            Log::error(__CLASS__ . '@' . __FUNCTION__, [
+                'line' => $th->getLine(),
+                'message' => $th->getMessage()
+            ]);
+    
+            return response()->json([
+                'message' => 'Lỗi tải trang',
+                'status' => 'error',
+    
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+
+
     }
 }

@@ -22,7 +22,7 @@ class Order extends Model
         'grand_total',
         'final_total',
         'payment_method',
-        'status',
+        'status_order',
         'notes',
         'name',
         'tel',
@@ -43,6 +43,11 @@ class Order extends Model
     public function items() 
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function user() 
+    {
+        return $this->belongsTo(User::class);
     }
 
 }

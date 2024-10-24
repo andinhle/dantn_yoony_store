@@ -21,7 +21,9 @@ class Coupon extends Model
         'status',
         'is_featured',
         'min_order_value',
-        'max_order_value'
+        'max_order_value',
+        'winning_probability',
+        'type'
     ];
 
     protected $casts = [
@@ -31,4 +33,9 @@ class Coupon extends Model
     public function users() {
         return $this->belongsToMany(User::class, 'coupon_user');
     }
+    public function event()
+    {
+        return $this->belongsTo(Event::class, 'event_id', 'id'); // Đảm bảo bạn đã xác định đúng tên khóa ngoại
+    }
+
 }

@@ -29,12 +29,15 @@ class AuthController extends Controller
             $user = User::where('email', $request->email)->first();
 
             // Xóa các token của tài khoản trước đó
-            $user->tokens()->delete();
+            // $user->tokens()->delete();
+            $newToken = $user->createToken('API Token', ['*'], now()->addHours(2));
+            $token = $newToken->plainTextToken;
 
             return response()->json([
                 'message' => 'Đăng nhập thành công!',
                 'user' => $user,
-                'token' => $user->createToken('API Token')->plainTextToken
+                // 'model' => $user->role->modelTypes,
+                'token' => $token
             ], 200);
         } catch (\Exception $e) {
             Log::error('Có lỗi xảy ra: ' . $e->getMessage());
