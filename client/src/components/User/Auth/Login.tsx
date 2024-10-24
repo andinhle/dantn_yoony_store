@@ -1,46 +1,55 @@
-
 import { Label } from "flowbite-react";
 import Ilogin from "../../../interfaces/ILogin";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import axios from "axios";
-import { toast } from "react-toastify";
 import instance from "../../../instance/instance";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../providers/AuthProvider";
+import { Input, message } from "antd";
 
 const Login = () => {
-  const {register,formState:{errors},handleSubmit}=useForm<Ilogin>()
-  const onSubmit= async(formData:Ilogin)=>{
+  const {
+    register,
+    control,
+    formState: { errors },
+    handleSubmit,
+  } = useForm<Ilogin>();
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const onSubmit = async (formData: Ilogin) => {
     try {
-      const {data} = await instance.post('login',formData)
-      console.log(data)
+      const { data } = await instance.post("login", formData);
       if (data && data.token) {
-        // Lưu token vào cookie với thời hạn 7 ngày và HttpOnly
-        Cookies.set('authToken', data.token.substring(3,data.token.length), { 
-          expires: 1/12, 
+        Cookies.set("authToken", data.token.substring(3, data.token.length), {
+          expires: 1 / 12,
           secure: true,
-          sameSite: 'strict'
+          sameSite: "strict",
         });
-        toast.success('Đăng nhập thành công!');
+        localStorage.setItem("userInfor", JSON.stringify(data.user));
+        login(data.user);
+        message.success("Đăng nhập thành công!");
+        navigate("/");
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        toast.error(error.response?.data?.message);
+        message.error(error.response?.data?.message);
       } else if (error instanceof Error) {
-        toast.error(error.message);
+        message.error(error.message);
       } else {
-        toast.error("Đã xảy ra lỗi không mong muốn");
+        message.error("Đã xảy ra lỗi không mong muốn");
       }
     }
-  }
+  };
   return (
     <section className="flex items-center justify-evenly mt-14 gap-5">
       <div>
-        <img
-          src="../../../../src/assets/images/login.svg"
-          alt="sign-up-form"
-        />
+        <img src="../../../../src/assets/images/login.svg" alt="sign-up-form" />
       </div>
-      <form className="max-w-[350px] space-y-5 w-full" onSubmit={handleSubmit(onSubmit)}>
+      <form
+        className="max-w-[350px] space-y-5 w-full"
+        onSubmit={handleSubmit(onSubmit)}
+      >
         <h2 className="font-[500] text-[32px] text-primary text-center">
           ĐĂNG NHẬP
         </h2>
@@ -53,7 +62,7 @@ const Login = () => {
               type="text"
               placeholder="Email"
               id="email"
-              {...register('email')}
+              {...register("email")}
               className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none"
             />
           </div>
@@ -61,16 +70,23 @@ const Login = () => {
             <div className="mb-2 block">
               <Label htmlFor="password-input" value="Mật khẩu" />
             </div>
-            <input
-              type="password"
-              placeholder="Mật khẩu"
-              {...register('password')}
-              id="password-input"
-              className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none"
+            <Controller
+              name="password"
+              control={control}
+              render={({ field }) => (
+                <Input.Password
+                  {...field}
+                  placeholder="Mật khẩu"
+                  className="h-10"
+                />
+              )}
             />
           </div>
         </div>
-        <button type="submit" className="w-fit bg-primary py-2 px-6 rounded-md text-util mx-auto block font-[400]">
+        <button
+          type="submit"
+          className="w-fit bg-primary py-2 px-6 rounded-md text-util mx-auto block font-[400]"
+        >
           ĐĂNG NHẬP
         </button>
       </form>
