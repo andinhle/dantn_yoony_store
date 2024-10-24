@@ -15,6 +15,8 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')->hourly();
         // Tự động xóa token hết hạn
         $schedule->command('sanctum:prune-expired --hours=24')->daily();
+        $schedule->command('check:sale-prices')->daily();
+
     }
 
     /**

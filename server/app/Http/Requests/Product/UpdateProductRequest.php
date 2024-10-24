@@ -34,7 +34,6 @@ class UpdateProductRequest extends FormRequest
             'variants' => 'required|array',
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.sale_price' => 'nullable|numeric|min:0',
-            'variants.*.quantity' => 'required|integer|min:0',
             'variants.*.image' => 'nullable|string',
             'variants.*.attribute_value_ids' => 'nullable|array',
         ];
@@ -51,8 +50,6 @@ class UpdateProductRequest extends FormRequest
             'variants.required' => 'Các biến thể là bắt buộc.',
             'variants.*.price.required' => 'Giá là bắt buộc cho mỗi biến thể.',
             'variants.*.price.numeric' => 'Giá phải là một số.',
-            'variants.*.quantity.required' => 'Số lượng là bắt buộc cho mỗi biến thể.',
-            'variants.*.quantity.integer' => 'Số lượng phải là một số nguyên.',
         ];
     }
 }
