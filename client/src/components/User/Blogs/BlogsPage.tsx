@@ -20,17 +20,11 @@ export default function BlogHome() {
         return img ? img.src : null;
     };
 
-    const extractTextContent = (content: string): string => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(content, "text/html");
-        return doc.body.textContent || ""; 
-    };
-
     const extractH1Tag = (content: string): string => {
         const parser = new DOMParser();
         const doc = parser.parseFromString(content, "text/html");
         const h1 = doc.querySelector("h1");
-        return h1 ? h1.textContent || "" : "No title"; 
+        return h1 ? h1.textContent || "" : "No title";
     };
 
     return (
@@ -38,79 +32,30 @@ export default function BlogHome() {
             <div className="container m-auto">
                 <h2 className="text-2xl font-bold mb-10 text-orange-500 flex justify-center mt-4">TIN TỨC</h2>
 
-                <div className="flex flex-col gap-4"> 
-                    {blogs && blogs.length > 0 && (
-                        <div className="flex bg-white rounded-lg shadow-lg"> 
-                            <img
-                                src={extractFirstImage(blogs[0].content) || blogs[0].image}
-                                className="w-[284px] h-auto rounded-l-lg object-cover " 
-                                alt={blogs[0].slug}
-                            />
-                            <div className="p-4 flex-1">
-                                <h1 className="text-lg font-bold text-gray-700 mb-2">
-                                    {extractH1Tag(blogs[0].content)} 
-                                </h1>
-                                <p className="text-sm text-gray-500 mb-2">
-                                    Người viết: {blogs[0].user_id} - {new Date(blogs[0].createdAt).toLocaleDateString()} 
-                                </p>
-                                <p className="text-sm text-gray-600 line-clamp-2">
-                                    {extractTextContent(blogs[0].content)} 
-                                </p>
-                             
-                                <Link
-                                    to={`/detailBlog/${blogs[0].slug}`} 
-                                    className="inline-flex items-center bg-orange-400 text-white py-2 px-4 rounded mt-4 hover:bg-orange-500 transition"
-                                >
-                                    Xem chi tiết
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 24 24"
-                                        fill="currentColor"
-                                        width="25px"
-                                        height="25px"
-                                        className="ml-2"
-                                    >
-                                        <path d="M16.0037 9.41421L7.39712 18.0208L5.98291 16.6066L14.5895 8H7.00373V6H18.0037V17H16.0037V9.41421Z"></path>
-                                    </svg>
-                                </Link>
-                            </div>
-                        </div>
-                    )}
-
-                    {blogs &&
-                        blogs.length > 1 &&
-                        blogs.slice(1).map((blog) => (
-                            <div key={blog.id} className="flex bg-white rounded-lg shadow-md">
-                                <img
-                                    src={extractFirstImage(blog.content) || blog.image} 
-                                    className="w-[284px] h-auto object-cover rounded-l-md"
-                                    alt={blog.slug}
-                                />
-                                <div className="p-4 flex-1">
-                                    <h2 className="text-base font-bold text-gray-700 mb-2">
-                                        {extractH1Tag(blog.content)} 
-                                    </h2>
-                                    <p className="text-sm text-gray-500 mb-2">Người viết: {blog.user_id} </p>
-                                    <p className="text-sm text-gray-600 line-clamp-2">
-                                        {extractTextContent(blog.content)} 
+                {/* Grid Layout for All Blogs */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {blogs.length > 0 &&
+                        blogs.map((blog, index) => (
+                            <div
+                                key={blog.id}
+                                className={`bg-white rounded-lg overflow-hidden flex flex-col items-center ${
+                                    index === 1 ? 'h-[500px]' : ''
+                                }`}
+                            >
+                                <div className="relative w-full h-58">
+                                    <img
+                                        src={extractFirstImage(blog.content) || blog.image}
+                                        className="w-full h-full object-cover"
+                                        alt={blog.slug}
+                                    />
+                                </div>
+                                <div className="p-4 text-center">
+                                    <h1 className="text-lg font-bold text-gray-700 mb-2">
+                                        {extractH1Tag(blog.content)}
+                                    </h1>
+                                    <p className="text-sm text-gray-500 mb-2 flex items-center justify-center gap-2">
+                                        Người viết: {blog.user_id} - {new Date(blog.createdAt).toLocaleDateString()}
                                     </p>
-                                  
-                                    <Link
-                                        to={`/detailBlog/${blog.slug}`} 
-                                        className="inline-flex items-center bg-orange-400 text-white py-2 px-4 rounded mt-4 hover:bg-orange-500 transition"
-                                    >
-                                        Xem chi tiết
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            fill="currentColor"
-                                            width="25px"
-                                            height="25px"
-                                            className="ml-2"
-                                        >
-                                            <path d="M16.0037 9.41421L7.39712 18.0208L5.98291 16.6066L14.5895 8H7.00373V6H18.0037V17H16.0037V9.41421Z"></path>
-                                        </svg>
-                                    </Link>
                                 </div>
                             </div>
                         ))}
