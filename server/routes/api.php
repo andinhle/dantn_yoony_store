@@ -146,6 +146,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
         Route::put('/admin/updateEvent/{id}', [EventController::class, 'updateEvent']);
         Route::delete('/admin/events/{id}', [EventController::class, 'destroy']);
+        //list danh sách các coupon type event
         Route::get('/admin/coupons/events', [EventController::class, 'getAllEventCoupons']);
 
     });

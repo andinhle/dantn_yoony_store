@@ -45,6 +45,7 @@ import OrdersUser from "./components/componentUserDetails/OrdersUser.tsx";
 import LayoutUserDetails from "./layouts/User/LayoutUserDetails.tsx";
 import { CheckOrder } from "./components/User/Header/CheckOrder.tsx";
 import EventUser from "./components/User/Event/EventUser.tsx";
+import LayoutEventAdmin from "./layouts/Admin/LayoutEventAdmin.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -60,10 +61,16 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="register" element={<Register />} />
                 <Route path="login" element={<Login />} />
               </Route>
+              {/* <Route path="reset-password" element={<CheckPermission />}>
+                <Route path="reset-password" element={<LayoutResetPassword />}>
+                  <Route index element={<ResetPassRequest />} />
+                  <Route path=":token/:email" element={<FormResetPass />} />
+                </Route>
+              </Route> */}
               <Route path="reset-password" element={<LayoutResetPassword />}>
-                <Route index element={<ResetPassRequest />} />
-                <Route path=":token/:email" element={<FormResetPass />} />
-              </Route>
+                  <Route index element={<ResetPassRequest />} />
+                  <Route path=":token/:email" element={<FormResetPass />} />
+                </Route>
               <Route
                 path=":category/:slugproduct"
                 element={<ShowDetailProduct />}
@@ -96,6 +103,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="role-manager" element={<UserRoleManager />} />
               </Route>
               <Route path="vouchers" element={<LayoutVoucherAdmin />} />
+              <Route path="events" element={<LayoutEventAdmin />} />
               <Route path="banner" element={<BannerList />} />
               <Route path="orders/orderDetails" element={<OrderDetails />} />
               <Route path="rates" element={<Rates />} />
