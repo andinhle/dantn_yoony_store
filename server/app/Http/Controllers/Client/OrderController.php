@@ -107,7 +107,7 @@ class OrderController extends Controller
                 $cartItems = [];
                 // Lấy thông tin các sản phẩm đã chọn
                 $cartItems = Cart::query()
-                ->with(['variant.attributeValues.attribute', 'variant.product'])
+                ->with(['variant.attributeValues.attribute', 'variant.product', 'user'])
                 ->where('user_id', Auth::id()) 
                 ->whereIn('id', $selectedItems)
                 ->get();
@@ -170,15 +170,13 @@ class OrderController extends Controller
                 ->delete();
                 
                 
-                Log::info($cartItems);
 
                 $order['discount_amount'] = $request->discount_amount;
-                $user = \Auth::user(); // Lấy người dùng hiện tại
 
                 $order['items']=$cartItems;
-                $order['user']=$user;
-
-                OrderShipped::dispatch($order);
+                $order['user']=Auth::user();
+                $orderData = json_decode($order);
+                OrderShipped::dispatch($orderData);
                 
 
                 return response()->json([
