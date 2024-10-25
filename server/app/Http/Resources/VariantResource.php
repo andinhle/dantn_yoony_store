@@ -18,9 +18,11 @@ class VariantResource extends JsonResource
             'id' => $this->id,
             'price' => $this->price,
             'sale_price' => $this->sale_price,
-            'quantity' => $this->quantity,
-            'image' =>$this->image,
-            'attribute_values' => $this->whenLoaded('attributeValues'), 
+            'end_sale' => $this->end_sale,
+            'quantity' => optional($this->inventoryStock)->quantity, // Lấy quantity từ bảng inventory_stocks
+            'image' => $this->image,
+            'attribute_values' => $this->whenLoaded('attributeValues'),
         ];
+
     }
 }
