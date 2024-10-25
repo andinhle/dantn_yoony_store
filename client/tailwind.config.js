@@ -7,32 +7,37 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
     flowbite.content(),
     "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/flowbite-react/**/*.{js,jsx,ts,tsx}",         // Bao gồm Flowbite React
+    "./node_modules/daisyui/dist/**/*.js",  // Bao gồm DaisyUI
   ],
   theme: {
     extend: {
-      fontWeight:{
-        "medium":420
+      fontWeight: {
+        "medium": 420
       },
-      colors:{
-        "primary":"#FF9900",
-        "secondary":"#000",
-        "util":"#fff",
-        "hover":"#6F757E",
+      colors: {
+        "primary": "#FF9900",
+        "secondary": "#000",
+        "util": "#fff",
+        "hover": "#6F757E",
         'custom-light': '#FCF7EB',
       },
-      borderColor:{
-        "input":"#e6e6eb"
+      borderColor: {
+        "input": "#e6e6eb"
       },
-      borderRadius:{
-        "sm":"5px",
-        "md":"8px",
-        "lg":"10px",
-        "xl":"16px"
+      borderRadius: {
+        "sm": "5px",
+        "md": "8px",
+        "lg": "10px",
+        "xl": "16px"
       },
       backgroundImage: {
         'custom-gradient-hover': 'linear-gradient(180deg, rgba(255, 153, 0, 0.45) 52.76%, #FFF 106.15%)',
       }
     },
   },
-  plugins: [flowbite.plugin()],
+  plugins: [flowbite.plugin(),
+  require('daisyui')
+  ],
+
 }

@@ -26,6 +26,7 @@
     "antd-img-crop": "^4.23.0",
     "axios": "^1.7.5",
     "cloudinary-react": "^1.8.1",
+    "daisyui": "^4.12.13",
     "flowbite-react": "^0.10.1",
     "framer-motion": "^11.11.1",
     "html-react-parser": "^5.1.18",
