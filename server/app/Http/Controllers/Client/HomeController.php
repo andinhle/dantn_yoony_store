@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Client;
 
+use App\Events\CheckExpiredSalePrices;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BlogResource;
 use App\Http\Resources\CategoryResource;
@@ -27,6 +28,7 @@ class HomeController extends Controller
     public function getOneProductBySlug(string $slug)
     {
         try {
+            event(new CheckExpiredSalePrices());
             $product = Product::with('category', 'variants.attributeValues.attribute')->where('slug', $slug)->firstOrFail();
             $relatedProducts = Product::with('category', 'variants.attributeValues.attribute')
                 ->where('category_id', $product->category_id)
@@ -243,7 +245,7 @@ class HomeController extends Controller
 
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-    
+
     }
     public function getCouponCart(Request $request)
     {
@@ -273,7 +275,7 @@ class HomeController extends Controller
 
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-    
+
     }
 
     // FAQ

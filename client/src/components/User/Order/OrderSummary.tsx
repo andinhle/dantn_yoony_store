@@ -77,7 +77,7 @@ const OrderSummary = () => {
                     />
                     <div className="space-y-1">
                       <Link
-                        to={`/${itemCart.variant.product.category.slug}/${itemCart.variant.product.slug}`}
+                        to={`/${itemCart.variant.product.category?.slug}/${itemCart.variant.product.slug}`}
                         className="line-clamp-1 hover:text-primary text-sm"
                       >
                         {itemCart.variant.product?.name}
