@@ -1,14 +1,10 @@
 // tailwind.config.js
 import flowbite from 'flowbite-react/tailwind'
-
 export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
     flowbite.content(),
-    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
-    "./node_modules/flowbite-react/**/*.{js,jsx,ts,tsx}",         // Bao gồm Flowbite React
-    "./node_modules/daisyui/dist/**/*.js",  // Bao gồm DaisyUI
   ],
   theme: {
     extend: {
@@ -37,7 +33,6 @@ export default {
     },
   },
   plugins: [flowbite.plugin(),
-  require('daisyui')
   ],
 
 }
