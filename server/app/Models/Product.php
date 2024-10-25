@@ -24,4 +24,10 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
+    // một sản phẩm có nhiều đánh giá
+    public function rates()
+    {
+        return $this->hasMany(Rate::class);
+    }
 }
