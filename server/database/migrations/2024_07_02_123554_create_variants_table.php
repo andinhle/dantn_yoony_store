@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->integer('price');
             $table->integer('sale_price')->nullable();
-            $table->integer('quantity');
+            $table->dateTime('end_sale');
             $table->string('image')->nullable();
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
             $table->timestamps();

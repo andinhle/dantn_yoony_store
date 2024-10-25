@@ -264,14 +264,14 @@
 								<td>
 									<table class="row-content" align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #FFFFFF; color: #333; width: 650px; margin: 0 auto;" width="650">
 										<tbody>
-											@foreach($variant as $value)
+											@foreach($order->items as $value)
 											<tr>
 												<td class="column column-1" width="25%" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; padding-bottom: 5px; padding-top: 5px; vertical-align: top; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;">
 													<table class="image_block block-1" width="100%" border="0" cellpadding="10" cellspacing="0" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
 														<tr>
 															<td class="pad">
 																<div class="alignment" align="center" style="line-height:10px">
-																	<div style="max-width: 142.5px;"><img src="{{ $value->variant->product->images[0] }}" style="display: block; height: auto; border: 0; width: 100%;" width="142.5" alt="Image" title="Image" height="auto"></div>
+																	<div style="max-width: 142.5px;"><img src="{{ $value->variant->image ?? $value->variant->product->images[0]  }}" style="display: block; height: auto; border: 0; width: 100%;" width="142.5" alt="Image" title="Image" height="auto"></div>
 																</div>
 															</td>
 														</tr>
@@ -621,7 +621,7 @@
 														<tr>
 															<td class="pad">
 																<div style="color:#555555;font-family:'Roboto', Tahoma, Verdana, Segoe, sans-serif;font-size:22px;line-height:120%;text-align:right;mso-line-height-alt:26.4px;">
-																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word; background-color: rgb(255,204,0);"><strong>&nbsp;{{ $order->final_total }}&nbsp;</strong></span></p>
+																	<p style="margin: 0; word-break: break-word;"><span style="word-break: break-word; background-color: rgb(255,204,0);"><strong>&nbsp;{{ number_format($order->final_total) }}  VND&nbsp;</strong></span></p>
 																</div>
 															</td>
 														</tr>
@@ -634,31 +634,7 @@
 							</tr>
 						</tbody>
 					</table>
-					<table class="row row-18" align="center" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-image: url('https://d1oco4z2z1fhwp.cloudfront.net/templates/default/122/brickwall.png'); background-position: top center; background-repeat: repeat;">
-						<tbody>
-							<tr>
-								<td>
-									<table class="row-content stack" align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; color: #000000; width: 650px; margin: 0 auto;" width="650">
-										<tbody>
-											<tr>
-												<td class="column column-1" width="100%" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; padding-bottom: 5px; vertical-align: top; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;">
-													<table class="image_block block-1" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
-														<tr>
-															<td class="pad" style="width:100%;">
-																<div class="alignment" align="center" style="line-height:10px">
-																	<div style="max-width: 650px;"><img src="https://d1oco4z2z1fhwp.cloudfront.net/templates/default/122/check.png" style="display: block; height: auto; border: 0; width: 100%;" width="650" alt="Image" title="Image" height="auto"></div>
-																</div>
-															</td>
-														</tr>
-													</table>
-												</td>
-											</tr>
-										</tbody>
-									</table>
-								</td>
-							</tr>
-						</tbody>
-					</table>
+					
 					<table class="row row-19" align="center" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-image: url('https://d1oco4z2z1fhwp.cloudfront.net/templates/default/122/brickwall.png'); background-position: top center; background-repeat: repeat;">
 						<tbody>
 							<tr>

@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import instance from "../../../instance/instance";
 import { IProduct } from "../../../interfaces/IProduct";
 import { HomeOutlined } from "@ant-design/icons";
-import { Breadcrumb, message, Rate } from "antd";
+import { Breadcrumb, message, Rate, Statistic } from "antd";
 import Zoom from "react-zoom-image-hover";
 import { Label } from "flowbite-react";
 import ShowProductRelated from "./ShowProductRelated";
@@ -17,6 +17,7 @@ interface IVariant {
   sale_price: number;
   quantity: number;
   image?: string;
+  end_sale?: string;
   attributes: {
     [key: string]: string;
   };
@@ -28,6 +29,7 @@ interface IAttributeGroup {
 }
 
 const ShowDetailProduct: React.FC = () => {
+  const { Countdown } = Statistic;
   const { category, slugproduct } = useParams<{
     category: string;
     slugproduct: string;
@@ -60,6 +62,36 @@ const ShowDetailProduct: React.FC = () => {
     fetchProduct();
   }, [slugproduct]);
 
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (variants.length > 0) {
+        const endedSaleVariants = variants.filter(variant => !isSaleActive(variant.end_sale));
+        if (endedSaleVariants.length > 0) {
+          clearInterval(intervalId); 
+          callApiToUpdateData();
+        }
+      }
+    }, 1000); 
+
+    return () => clearInterval(intervalId);
+  }, [variants]);
+
+  const isSaleActive = (endSale: string | undefined): boolean => {
+    if (!endSale) return false;
+    const endTime = new Date(endSale).getTime();
+    const now = new Date().getTime();
+    return endTime > now;
+  };
+
+  const callApiToUpdateData = async () => {
+    try {
+      const { data } = await instance.get(`home/product/${slugproduct}`);
+      setProduct(data.product);
+      setRelated_Products(data.related_products);
+    } catch (error) {
+      console.error('Error fetching updated data:', error);
+    }
+  };
   const processProductData = (productData: IProduct) => {
     if (productData) {
       const processedVariants = productData.variants.map((variant: any) => ({
@@ -68,6 +100,7 @@ const ShowDetailProduct: React.FC = () => {
         sale_price: variant.sale_price,
         quantity: variant.quantity,
         image: variant.image,
+        end_sale: variant.end_sale,
         attributes: variant.attribute_values.reduce((acc: any, attr: any) => {
           acc[attr.attribute.name] = attr.value;
           return acc;
@@ -120,6 +153,16 @@ const ShowDetailProduct: React.FC = () => {
       }
       return newAttributes;
     });
+
+    const currentGroup = attributeGroups.find(
+      (group) => group.name === attributeName
+    );
+    if (currentGroup) {
+      const valueIndex = currentGroup.values.indexOf(value);
+      if (valueIndex !== -1 && currentGroup.images[valueIndex]) {
+        setSelectedImage(currentGroup.images[valueIndex]);
+      }
+    }
   };
 
   const isAttributeAvailable = (
@@ -132,7 +175,7 @@ const ShowDetailProduct: React.FC = () => {
           return false;
         }
       }
-      return variant.attributes[attributeName] === value;
+      return variant?.attributes[attributeName] === value;
     });
   };
 
@@ -143,11 +186,7 @@ const ShowDetailProduct: React.FC = () => {
       )
     );
     setSelectedVariant(matchingVariant || null);
-    if (matchingVariant?.image) {
-      setSelectedImage(matchingVariant.image);
-    }
   }, [selectedAttributes, variants]);
-
   const handleImageClick = () => {
     setIsZoomEnabled(!isZoomEnabled);
   };
@@ -270,8 +309,8 @@ const ShowDetailProduct: React.FC = () => {
     );
   };
 
-  console.log(product)
-
+  // console.log(attributeGroups);
+  // console.log(selectedAttributes);
 
   return (
     <section className="space-y-8">
@@ -361,7 +400,7 @@ const ShowDetailProduct: React.FC = () => {
                     strokeLinecap="round"
                   />
                 </svg>
-                Còn hàng: {selectedVariant.quantity}
+                Còn hàng: {selectedVariant?.quantity}
               </div>
             ) : (
               <div className="py-1 px-3 bg-primary/10 text-primary rounded-full flex gap-1 w-fit text-sm">
@@ -391,25 +430,119 @@ const ShowDetailProduct: React.FC = () => {
             )}
           </div>
           {selectedVariant && (
-            <div className="flex gap-3 text-2xl my-5 bg-[#FAFAFA] rounded-md p-3 items-center">
-              <span className="line-through text-xl text-[#929292]">
-                {selectedVariant.price
-                  .toLocaleString("vi-VN", {
-                    useGrouping: true,
-                    maximumFractionDigits: 0,
-                  })
-                  .replace(/,/g, ".")}
-                đ
-              </span>
-              <span className="text-primary font-medium">
-                {selectedVariant.sale_price
-                  .toLocaleString("vi-VN", {
-                    useGrouping: true,
-                    maximumFractionDigits: 0,
-                  })
-                  .replace(/,/g, ".")}
-                đ
-              </span>
+            <div className="my-5 overflow-hidden rounded-md">
+              <div className="py-2 px-4 bg-primary flex items-center justify-between">
+                <img
+                  src="../../../../src/assets/images/flash_sale.svg"
+                  alt="flash_sale_img"
+                />
+                <div className="flex gap-3 items-center">
+                  {isSaleActive(selectedVariant.end_sale) ? (
+                    <>
+                      <span className="flex gap-1 items-center text-util uppercase text-sm">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          className="size-4"
+                          color={"currentColor"}
+                          fill={"none"}
+                        >
+                          <path
+                            d="M5.04798 8.60657L2.53784 8.45376C4.33712 3.70477 9.503 0.999914 14.5396 2.34474C19.904 3.77711 23.0904 9.26107 21.6565 14.5935C20.2227 19.926 14.7116 23.0876 9.3472 21.6553C5.36419 20.5917 2.58192 17.2946 2 13.4844"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M12 8V12L14 14"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>{" "}
+                        Kết thúc trong
+                      </span>
+                      <Countdown
+                        value={selectedVariant.end_sale}
+                        format="H:mm:ss"
+                        className="countdowm-sale"
+                        valueStyle={{
+                          fontSize: 18,
+                          backgroundColor: "#000",
+                          padding: "2px 10px",
+                          borderRadius: 5,
+                          color: "#fff",
+                        }}
+                      />
+                    </>
+                  ) : (
+                    <span className="font-medium py-1 text-util">KẾT THÚC</span>
+                  )}
+                </div>
+              </div>
+              <div className="flex gap-3 bg-gradient-to-r from-primary/5 to-primary/10  px-4 py-5 items-center">
+                {isSaleActive(selectedVariant.end_sale) ? (
+                  <>
+                    <span className="text-primary font-medium text-[28px]">
+                      {selectedVariant.sale_price
+                        ?.toLocaleString("vi-VN", {
+                          useGrouping: true,
+                          maximumFractionDigits: 0,
+                        })
+                        .replace(/,/g, ".") + 'đ'}
+                    </span>
+                    <span className="line-through text-base text-[#929292]">
+                      {selectedVariant.price
+                        ?.toLocaleString("vi-VN", {
+                          useGrouping: true,
+                          maximumFractionDigits: 0,
+                        })
+                        .replace(/,/g, ".") + 'đ'}
+                    </span>
+                    <span className="text-xs text-red-500 font-medium bg-primary/15 px-1.5 py-0.5 rounded-sm">
+                      {selectedVariant.sale_price
+                        ? "-" +
+                          (
+                            ((selectedVariant.price -
+                              selectedVariant.sale_price) /
+                              selectedVariant.price) *
+                            100
+                          ).toFixed(0) +
+                          "%"
+                        : ""}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-primary font-medium text-[28px]">
+                    {selectedVariant.price
+                      ?.toLocaleString("vi-VN", {
+                        useGrouping: true,
+                        maximumFractionDigits: 0,
+                      })
+                      .replace(/,/g, ".")}
+                    đ
+                  </span>
+                )}
+                {/* <span className="text-primary font-medium text-[28px] ">
+                  {selectedVariant.sale_price
+                    ?.toLocaleString("vi-VN", {
+                      useGrouping: true,
+                      maximumFractionDigits: 0,
+                    })
+                    .replace(/,/g, ".")}
+                  đ
+                </span>
+                <span className="line-through text-base text-[#929292]">
+                  {selectedVariant.price
+                    ?.toLocaleString("vi-VN", {
+                      useGrouping: true,
+                      maximumFractionDigits: 0,
+                    })
+                    .replace(/,/g, ".") + "đ"}
+                </span> */}
+              </div>
             </div>
           )}
           <form className="space-y-5">

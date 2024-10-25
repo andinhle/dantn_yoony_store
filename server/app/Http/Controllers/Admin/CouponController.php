@@ -44,9 +44,7 @@ class CouponController extends Controller
     public function store(StoreCouponRequest $request)
     {
         try {
-            $data = $request->all();
-
-            $coupon=Coupon::query()->create($data);
+            $coupon = Coupon::create($request->validated());
             $data['id'] = $coupon->id;
 
             return response()->json([

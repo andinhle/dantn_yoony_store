@@ -162,7 +162,15 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
         Route::put('/admin/updateEvent/{id}', [EventController::class, 'updateEvent']);
         Route::delete('/admin/events/{id}', [EventController::class, 'destroy']);
+        //list danh sách các coupon type event
         Route::get('/admin/coupons/events', [EventController::class, 'getAllEventCoupons']);
+      
+        // Quản ly đơn hàng
+        Route::get('admin/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index']);
+        Route::get('admin/order-detail/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'orderDetail']);
+        Route::patch('admin/order-detail/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'updateOrderDetail']);
+        Route::patch('admin/order-cancelation/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'canceledOrder']);
+        
     });
 
     // Giỏ hàng_user
@@ -174,6 +182,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/list-wishlists', [HomeController::class, 'getWishlists']);
     Route::post('/insert-wishlists', [HomeController::class, 'insertWishlists']);
     Route::delete('/delete-wishlists/{product_id}', [HomeController::class, 'deleteWishlist']);
+
+    
+    // Order 
+    Route::get('/order-detail/{id}', [OrderController::class, 'getOrderDetail'])->name('order.getOrderDetail');
+    Route::get('/order', [OrderController::class, 'getOrder'])->name('order.getOrder');
+    Route::patch('/order-cancelation/{id}', [OrderController::class, 'canceledOrder']);
+
 
     // Order_user
     // Route::get('/order', [OrderController::class, 'getProduct'])->name('order.getProduct');
@@ -192,4 +207,3 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/claim-coupon/{eventId}/{couponId}', [CouponUserController::class, 'claimCoupon']);
     Route::get('/event-coupons', [OderCheckController::class, 'getEventCoupons']);
 });
-

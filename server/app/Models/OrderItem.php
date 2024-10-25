@@ -16,4 +16,13 @@ class OrderItem extends Model
         'unit_price',
         'total_price',
     ];
+
+    public function variant()
+    {
+        return $this->belongsTo(Variant::class);
+    }
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
 }

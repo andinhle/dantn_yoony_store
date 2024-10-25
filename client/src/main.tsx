@@ -49,6 +49,7 @@ import EventUser from "./components/User/Event/EventUser.tsx";
 import BlogDetail from "./components/User/Blogs/BlogDetail.tsx";
 import ProductFilters from "./components/User/Filter/FilterPrice.tsx";
 import FiledsProvider from "./contexts/FiledsContext.tsx";
+import LayoutChatAdmin from "./layouts/Admin/LayoutChatAdmin.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -65,10 +66,16 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="register" element={<Register />} />
                 <Route path="login" element={<Login />} />
               </Route>
+              {/* <Route path="reset-password" element={<CheckPermission />}>
+                <Route path="reset-password" element={<LayoutResetPassword />}>
+                  <Route index element={<ResetPassRequest />} />
+                  <Route path=":token/:email" element={<FormResetPass />} />
+                </Route>
+              </Route> */}
               <Route path="reset-password" element={<LayoutResetPassword />}>
-                <Route index element={<ResetPassRequest />} />
-                <Route path=":token/:email" element={<FormResetPass />} />
-              </Route>
+                  <Route index element={<ResetPassRequest />} />
+                  <Route path=":token/:email" element={<FormResetPass />} />
+                </Route>
               <Route
                 path=":category/:slugproduct"
                 element={<ShowDetailProduct />}
@@ -108,6 +115,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="banner" element={<BannerList />} />
               <Route path="orders/orderDetails" element={<OrderDetails />} />
               <Route path="rates" element={<Rates />} />
+              <Route path="chatbot" element={<LayoutChatAdmin />} />
             </Route>
           </Route>
         </Routes>

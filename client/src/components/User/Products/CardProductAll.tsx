@@ -60,7 +60,7 @@ Props) => {
         <div className="absolute top-2 left-2 z-30 text-primary cursor-pointer bg-primary/10 p-1.5 rounded-full">
           {is_good_deal && (
             <span className="text-xs">
-              {100 - (variants[0].sale_price / variants[0]?.price) * 100}%
+              {100 - (variants[0]?.sale_price / variants[0]?.price) * 100}%
             </span>
           )}
         </div>
@@ -129,17 +129,14 @@ Props) => {
                   useGrouping: true,
                   maximumFractionDigits: 0,
                 })
-                .replace(/,/g, ".")}
-              đ
+                .replace(/,/g, ".")+'đ'}
             </span>
             <span className="text-primary font-medium">
-              {variants[0]?.sale_price
-                .toLocaleString("vi-VN", {
+              {variants[0]?.sale_price?.toLocaleString("vi-VN", {
                   useGrouping: true,
                   maximumFractionDigits: 0,
                 })
-                .replace(/,/g, ".")}
-              đ
+                .replace(/,/g, ".")+'đ'}
             </span>
           </div>
           <Swiper
