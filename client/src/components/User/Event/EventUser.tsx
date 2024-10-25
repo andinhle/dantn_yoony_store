@@ -1,5 +1,3 @@
-
-import ModernWheel from "./ModelWheel"
 import ProbabilityWheel from "./ProbabilityWheel"
 
 const EventUser = () => {

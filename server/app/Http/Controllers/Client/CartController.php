@@ -23,7 +23,7 @@ class CartController extends Controller
     {
         try {
             $data = Cart::query()
-                ->with(['variant.product.category', 'variant.attributeValues.attribute'])
+                ->with(['variant.product', 'variant.attributeValues.attribute'])
                 ->where('user_id', Auth::id())
                 ->orderBy('created_at', 'desc')
                 ->get();

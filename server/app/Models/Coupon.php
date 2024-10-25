@@ -21,7 +21,9 @@ class Coupon extends Model
         'status',
         'is_featured',
         'min_order_value',
-        'max_order_value'
+        'max_order_value',
+        'winning_probability',
+        'type'
     ];
 
     protected $casts = [

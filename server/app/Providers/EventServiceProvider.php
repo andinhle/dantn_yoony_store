@@ -2,7 +2,12 @@
 
 namespace App\Providers;
 
+use App\Events\CheckExpiredSalePrices;
 use App\Events\OrderShipped;
+use App\Listeners\CheckExpiredSalePricesListener;
+use App\Listeners\SendMail;
+use App\Listeners\SendMailOrder;
+use App\Listeners\SendMaiol;
 use App\Listeners\SendNotification;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -21,8 +26,11 @@ class EventServiceProvider extends ServiceProvider
             SendEmailVerificationNotification::class,
         ],
         OrderShipped::class => [
-            SendNotification::class,
+                SendNotification::class
         ],
+        CheckExpiredSalePrices::class => [
+            CheckExpiredSalePricesListener::class,
+    ],
     ];
 
     /**

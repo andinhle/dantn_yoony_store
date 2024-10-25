@@ -10,22 +10,24 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class OrderShipped
+class CheckExpiredSalePrices
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
      * Create a new event instance.
      */
-    
-
-    public function __construct(
-        public $order
-    )
+    public function __construct()
     {
-       
+        //
     }
+    public function someMethod()
+    {
+        // Gọi sự kiện
+        event(new CheckExpiredSalePrices());
 
+        return response()->json(['message' => 'Đã kiểm tra và cập nhật giá khuyến mãi.']);
+    }
     /**
      * Get the channels the event should broadcast on.
      *

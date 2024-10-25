@@ -52,45 +52,6 @@ const Attribute_Value_Variant = ({ index }: Prop) => {
     [key: number]: { id: number; value: string }[];
   }>({});
 
-  // useEffect(() => {
-  //   const initializeAttributeValues = async () => {
-  //     const currentVariant = getValues(`variants.${index}`);
-  //     console.log(currentVariant.image);
-  //     if (currentVariant && currentVariant.attribute_values) {
-  //       const initialSelectedAttributes = currentVariant.attribute_values
-  //         .map((av) => av.attribute_id)
-  //         .filter(Boolean);
-  //       setSelectedAttributes(initialSelectedAttributes);
-    
-  //       const initialAttributeValuesMap = {};
-  //       for (let i = 0; i < currentVariant.attribute_values.length; i++) {
-  //         const av = currentVariant.attribute_values[i];
-  //         if (av.attribute_id) {
-  //           const values = await getAttributeValue(av.attribute_id);
-  //           initialAttributeValuesMap[i] = values;
-  //           setValue(`variants.${index}.attribute_values.${i}.attribute_value_id`, av.attribute_value_id);
-    
-  //           // Check if this attribute is a color attribute and has an image
-  //           const attribute = attributes.find(attr => attr.id === av.attribute_id);
-  //           if (attribute?.type === 'color' && currentVariant.image) {
-  //             setFileList([
-  //               {
-  //                 uid: '-1',
-  //                 name: 'image.png',
-  //                 status: 'done',
-  //                 url: currentVariant.image,
-  //               },
-  //             ]);
-  //           }
-  //         }
-  //       }
-  //       setAttributeValuesMap(initialAttributeValuesMap);
-  //     }
-  //   };
-  
-  //   initializeAttributeValues();
-  // }, [getValues, index,fileList]);
-
   const debouncedInitialize = debounce(async () => {
     const currentVariant = getValues(`variants.${index}`);
     if (currentVariant && currentVariant.attribute_values) {
