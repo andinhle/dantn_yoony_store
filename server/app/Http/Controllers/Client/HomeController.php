@@ -29,7 +29,7 @@ class HomeController extends Controller
     {
         try {
             event(new CheckExpiredSalePrices());
-            $product = Product::with('category', 'variants.attributeValues.attribute')->where('slug', $slug)->firstOrFail();
+            $product = Product::with('category', 'variants.attributeValues.attribute', 'variants.inventoryStock')->where('slug', $slug)->firstOrFail();
             $relatedProducts = Product::with('category', 'variants.attributeValues.attribute')
                 ->where('category_id', $product->category_id)
                 ->where('is_active', true) // Điều kiện kiểm tra sản phẩm phải active
