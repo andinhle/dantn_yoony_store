@@ -20,7 +20,7 @@ class OrderShipped
     
 
     public function __construct(
-        public $order
+        public $order, 
     )
     {
        
