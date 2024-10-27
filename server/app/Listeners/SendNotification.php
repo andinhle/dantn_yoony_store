@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-class SendNotification 
+class SendNotification implements ShouldQueue
 {
     /**
      * Create the event listener.
@@ -25,13 +25,16 @@ class SendNotification
      */
     public function handle(OrderShipped $event): void
     {
-        
-        $user = $event->user;
+        $orderData = $event->order; // Nếu đã dispatch là đối tượng
 
+
+        // Log::info('order', (array) $orderData);
+        $user = $event->order->user;
+       
         Mail::send('orderShipperdMail', [
             'name' => $user->name,
-            'order' => $event->order,
-            'variant' => $event->variant
+            'order' =>  $event->order,
+            'variant' =>  $event->order->items
         ], function($message) use ($user) 
         {
             $message->to($user->email, $user->name)
