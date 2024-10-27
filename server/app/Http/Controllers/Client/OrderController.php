@@ -197,7 +197,7 @@ class OrderController extends Controller
                         'discount_amount' => $request->discount_amount,
                         'coupon_id' => $request->coupon_id
                     ]);
-
+                  
                     CouponUser::create([
                         'user_id' => Auth::id(),
                         'coupon_id' => $request->coupon_id,
