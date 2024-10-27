@@ -13,6 +13,7 @@ use App\Models\OrderCancellation;
 use App\Models\OrderCoupon;
 use App\Models\OrderItem;
 use App\Models\Variant;
+use App\Services\VNPAYService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -204,10 +205,25 @@ class OrderController extends Controller
                     ]);
                 }
 
+                
+
                 if (!$order) {
                     return response()->json(['error' => 'Đặt hàng không thành công.']);
                 }
                 
+
+                if ($request->payment_method === 'vnpay') {
+                    // Tạo URL thanh toán VNPAY
+                    $paymentUrl = app(VNPAYService::class)->createPaymentUrl($data['final_total'], $order->code, 'Thông tin đơn hàng');
+                    $order['idCart'] = $selectedItems;
+                    $order['discount_amount'] = $request->discount_amount;
+                    $order['items']=$cartItems;
+                    $order['user']=Auth::user();
+                    $orderData = json_decode($order);
+                    OrderShipped::dispatch($orderData);
+                    // Chuyển hướng đến URL thanh toán
+                    return response()->json(['payment_url' => $paymentUrl], 200);
+                }
 
 
                 //Gửi mail && Xóa cart
