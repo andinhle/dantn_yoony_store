@@ -50,7 +50,7 @@ const CategoryList: React.FC = () => {
     reset,
     formState: { errors },
   } = useForm<ICategory>();
-  //Hàm xử lí call API danh mục 
+  //Hàm xử lí call API danh mục
   const fetchCategories = async () => {
     try {
       const { data } = await instance.get("category");
@@ -67,8 +67,8 @@ const CategoryList: React.FC = () => {
     setFileList([]);
     SetAddOrUpdate("ADD");
     reset({
-      is_active: true
-    })
+      is_active: true,
+    });
   }, [openModal === false]);
   //Hàm xử lí xóa danh mục
   const handleDelete = async (_id: number) => {
@@ -122,8 +122,7 @@ const CategoryList: React.FC = () => {
       if (fileList[0]?.url) {
         setActive(true);
         imageUrl = fileList[0]?.url;
-      } 
-      else {
+      } else {
         setActive(true);
         const imageupload = new FormData();
         const check_type_image = image_type.some(
@@ -200,13 +199,23 @@ const CategoryList: React.FC = () => {
     }
   };
   return (
-    <div className="container mx-auto space-y-5">
+    <div className="container mx-auto space-y-5 bg-util p-5 rounded-md">
       <div className="flex justify-between">
+        <div>
+          <Search
+            placeholder="Tên danh mục"
+            allowClear
+            onChange={(e) => {
+              SetValSearch(e.target.value);
+            }}
+            size="large"
+          />
+        </div>
         <button
           onClick={() => {
             setOpenModal(true);
           }}
-          className="flex items-center font-medium gap-1 text-white py-2 px-3.5 bg-primary hover:bg-transparent hover:outline-primary hover:outline-1 hover:outline hover:text-primary transition-all rounded-md text-sm"
+          className="flex items-center gap-1 text-white py-1.5 px-3.5 bg-primary hover:bg-transparent hover:outline-primary hover:outline-1 hover:outline hover:text-primary transition-all rounded-md text-sm"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -224,37 +233,26 @@ const CategoryList: React.FC = () => {
           </svg>
           THÊM DANH MỤC
         </button>
-        <div>
-          <Search
-            placeholder="Tên danh mục"
-            allowClear
-            onChange={(e) => {
-              SetValSearch(e.target.value);
-            }}
-            size="large"
-            enterButton
-          />
-        </div>
       </div>
       <div className="overflow-x-auto rounded-lg">
-        <Table hoverable>
+        <Table>
           <Table.Head className="text-center">
-            <Table.HeadCell className="bg-primary text-white text-sm font-medium">
-              STT
+            <Table.HeadCell className="bg-[#F4F7FA] text-secondary/75 text-sm font-medium">
+              Danh Mục
             </Table.HeadCell>
-            <Table.HeadCell className="bg-primary text-white text-sm font-medium">
-              Tên Danh Mục
-            </Table.HeadCell>
-            <Table.HeadCell className="bg-primary text-white text-sm font-medium">
+            {/* <Table.HeadCell className="bg-[#F4F7FA] text-secondary/75 text-sm font-medium">
               Slug
+            </Table.HeadCell> */}
+            <Table.HeadCell className="bg-[#F4F7FA] text-secondary/75 text-sm font-medium">
+              Tổng số sản phẩm
             </Table.HeadCell>
-            <Table.HeadCell className="bg-primary text-white text-sm font-medium">
-              Hình Ảnh
+            <Table.HeadCell className="bg-[#F4F7FA] text-secondary/75 text-sm font-medium">
+              Ngày tạo
             </Table.HeadCell>
-            <Table.HeadCell className="bg-primary text-white text-sm font-medium">
-              Kích hoạt
+            <Table.HeadCell className="bg-[#F4F7FA] text-secondary/75 text-sm font-medium">
+              Trạng thái
             </Table.HeadCell>
-            <Table.HeadCell className="bg-primary text-white text-sm font-medium">
+            <Table.HeadCell className="bg-[#F4F7FA] text-secondary/75 text-sm font-medium">
               Hành động
             </Table.HeadCell>
           </Table.Head>
@@ -271,9 +269,9 @@ const CategoryList: React.FC = () => {
                     className="bg-white dark:border-gray-700 dark:bg-gray-800 text-center"
                     key={category.id}
                   >
-                    <Table.Cell className="font-medium text-primary text-base border-[#f5f5f5] border-r ">
+                    {/* <Table.Cell className="font-medium text-primary text-base border-[#f5f5f5] border-r ">
                       {index + 1}
-                    </Table.Cell>
+                    </Table.Cell> */}
                     <Table.Cell className="whitespace-nowrap font-medium text-secondary dark:text-white">
                       <Highlighter
                         highlightClassName="YourHighlightClass"
@@ -480,7 +478,9 @@ const CategoryList: React.FC = () => {
                   </Upload>
                 </ImgCrop>
               </div>
-              <span className="block text-primary text-sm mb-5">{fileList.length <= 0 ? "Ảnh là bắt buộc *" : ""}</span>
+              <span className="block text-primary text-sm mb-5">
+                {fileList.length <= 0 ? "Ảnh là bắt buộc *" : ""}
+              </span>
               <div className="mb-6">
                 <label className="inline-flex items-center cursor-pointer">
                   <input

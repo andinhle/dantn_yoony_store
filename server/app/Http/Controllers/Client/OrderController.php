@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Order\StoreOrderRequest;
 use App\Models\Cart;
 use App\Models\Coupon;
+use App\Models\CouponUser;
 use App\Models\Order;
 use App\Models\OrderCancellation;
 use App\Models\OrderCoupon;
@@ -131,6 +132,11 @@ class OrderController extends Controller
                         'order_id' =>  $order->id,
                         'discount_amount' => $request->discount_amount,
                         'coupon_id' => $request->coupon_id
+                    ]);
+                    CouponUser::create([
+                        'user_id' => Auth::id(),
+                        'coupon_id' => $request->coupon_id,
+                        'used_at' => now(),
                     ]);
                 }
 
