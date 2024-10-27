@@ -8,18 +8,18 @@ const Orders = () => {
           <tr>
             <th className="w-12 px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">STT</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">Đơn hàng</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">Sản Phẩm</th>
+
             <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">Tổng tiền</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">Ngày đặt hàng</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">Trạng thái</th>
-            <th className="px-6 py-3 text-left text-center text-xs font-medium text-secondary-500 uppercase tracking-wider">Hoạt động</th>
+            <th className="px-6 py-3 text-left  text-xs font-medium text-secondary-500 uppercase tracking-wider">Hoạt động</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-secondary-200">
           <tr>
             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-secondary-900">1</td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-900">03ertgjnb7899</td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm  text-secondary-500">5</td>
+        
             <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">3,000,000 VND</td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">22/08/2024</td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 text-secondary-500">Đã hoàn thành</td>
@@ -37,7 +37,7 @@ const Orders = () => {
           <tr>
             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-secondary-900">2 </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-900">03ertgjnb7899</td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm  text-secondary-500">5</td>
+          
             <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">3,000,000 VND</td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">22/08/2024</td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 text-secondary-500">Đã hủy</td>
@@ -55,7 +55,6 @@ const Orders = () => {
           <tr>
             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-secondary-900">3</td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-900">03ertgjnb7899</td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm  text-secondary-500">5</td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">3,000,000 VND</td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">22/08/2024</td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-yellow-600 text-secondary-500">Đang chờ xử lí</td>
