@@ -27,23 +27,82 @@ class OrderController extends Controller
 
     private function generateOrderCode()
     {
-        $date = date('Ymd'); // Lấy ngày hiện tại theo định dạng Ymd
-        $lastOrder = Order::whereDate('created_at', today())->orderBy('id', 'desc')->first();
-        
-        $increment = $lastOrder ? intval(substr($lastOrder->order_code, -3)) + 1 : 1; // Tăng mã đơn hàng
-        return 'ORD-' . $date . '-' . str_pad($increment, 3, '0', STR_PAD_LEFT); // Định dạng mã đơn hàng
+    $date = date('Ymd');
+    $lastOrder = Order::whereDate('created_at', today())->orderBy('code', 'desc')->first();
+    
+    if ($lastOrder && preg_match('/ORD-' . $date . '-(\d{3})$/', $lastOrder->code, $matches)) {
+        $increment = intval($matches[1]) + 1; 
+    } else {
+        $increment = 1; 
+    }
+    
+    return 'ORD-' . $date . '-' . str_pad($increment, 3, '0', STR_PAD_LEFT);
     }
 
-    public function getOrder()
+    public function getOrder(Request $request)
     {
         try {
             
-            $data = Order::query()
-            ->where('user_id', Auth::id())
-            ->get();
+            switch ($request->status) {
+                case Order::STATUS_ORDER_PENDING:
+                    $orders = Order::query()
+                    ->where('status_order', '=', Order::STATUS_ORDER_PENDING)
+                    ->with(['items.variant'])
+                    ->where('user_id', Auth::id())
+                    ->get();
+
+                    break;
+                case Order::STATUS_ORDER_CONFIRMED:
+                    $orders = Order::query()
+                    ->where('status_order', '=', Order::STATUS_ORDER_CONFIRMED)
+                    ->with(['items.variant'])
+                    ->where('user_id', Auth::id())
+                    ->get();
+
+                    break;
+                case Order::STATUS_ORDER_PREPARING_GOODS:
+                    $orders = Order::query()
+                    ->where('status_order', '=', Order::STATUS_ORDER_PREPARING_GOODS)
+                    ->with(['items.variant'])
+                    ->where('user_id', Auth::id())
+                    ->get();
+
+                    break;
+                case Order::STATUS_ORDER_SHIPPING:
+                    $orders = Order::query()
+                    ->where('status_order', '=', Order::STATUS_ORDER_SHIPPING)
+                    ->with(['items.variant'])
+                    ->where('user_id', Auth::id())
+                    ->get();
+
+                    break;
+                case Order::STATUS_ORDER_DELIVERED:
+                    $orders = Order::query()
+                    ->where('status_order', '=', Order::STATUS_ORDER_DELIVERED)
+                    ->with(['items.variant'])
+                    ->where('user_id', Auth::id())
+                    ->get();
+
+                     break;
+                case Order::STATUS_ORDER_CANCELED:
+                    $orders = Order::query()
+                    ->where('status_order', '=', Order::STATUS_ORDER_CANCELED)
+                    ->with(['items.variant'])
+                    ->where('user_id', Auth::id())
+                    ->get();
+
+                    break;    
+                default:
+                    $orders = Order::query()
+                    ->with(['items.variant'])
+                    ->where('user_id', Auth::id())
+                    ->get();
+                }
+
+           
 
         return response()->json([
-            'data' => $data,
+            'data' => $orders,
             'status' => 'success'
         ]);
         } catch (\Throwable $th) {
@@ -61,14 +120,14 @@ class OrderController extends Controller
         
     }
 
-    public function getOrderDetail($id)
+    public function getOrderDetail($code)
     {
         try {
             
             $data = Order::query()
             ->with(['items.variant.attributeValues.attribute', 'items.variant.product'])
             ->where('user_id', Auth::id())
-            ->where('id', $id)
+            ->where('code', $code)
             ->firstOrFail();
 
             return response()->json([
@@ -111,6 +170,10 @@ class OrderController extends Controller
                 ->whereIn('id', $selectedItems)
                 ->get();
 
+                if ($cartItems->isEmpty()) {
+                    return response()->json(['error' => 'Không tìm thấy sản phẩm nào trong giỏ hàng.']);
+                }
+
                 $data =  $request->all();
                 $data['user_id'] = Auth::id();
                 $data['code'] = $this->generateOrderCode();
@@ -133,6 +196,7 @@ class OrderController extends Controller
                         'discount_amount' => $request->discount_amount,
                         'coupon_id' => $request->coupon_id
                     ]);
+                  
                     CouponUser::create([
                         'user_id' => Auth::id(),
                         'coupon_id' => $request->coupon_id,
@@ -140,9 +204,8 @@ class OrderController extends Controller
                     ]);
                 }
 
-                
-                if($order){
-                    
+                if (!$order) {
+                    return response()->json(['error' => 'Đặt hàng không thành công.']);
                 }
                 
 
