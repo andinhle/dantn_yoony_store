@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\CouponUserController;
 use App\Http\Controllers\Client\FilterController;
 use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\Client\OderCheckController;
 use App\Http\Controllers\Client\OrderController;
@@ -176,7 +177,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('/admin/coupons/events', [EventController::class, 'getAllEventCoupons']);
       
         // Quản ly đơn hàng
-        Route::get('admin/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index']);
+        Route::get('admin/orders/{status?}', [\App\Http\Controllers\Admin\OrderController::class, 'index']);
         Route::get('admin/order-detail/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'orderDetail']);
         Route::patch('admin/order-detail/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'updateOrderDetail']);
         Route::patch('admin/order-cancelation/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'canceledOrder']);
@@ -195,8 +196,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     
     // Order 
-    Route::get('/order-detail/{id}', [OrderController::class, 'getOrderDetail'])->name('order.getOrderDetail');
-    Route::get('/order', [OrderController::class, 'getOrder'])->name('order.getOrder');
+    Route::get('/order-detail/{code}', [OrderController::class, 'getOrderDetail'])->name('order.getOrderDetail');
+    Route::get('/order/{status?}', [OrderController::class, 'getOrder'])->name('order.getOrder');
     Route::patch('/order-cancelation/{id}', [OrderController::class, 'canceledOrder']);
 
 
@@ -216,4 +217,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/reset-daily-spins', [SpinController::class, 'resetDailySpins']);
     Route::post('/claim-coupon/{eventId}/{couponId}', [CouponUserController::class, 'claimCoupon']);
     Route::get('/event-coupons', [OderCheckController::class, 'getEventCoupons']);
+
+    //Thanh toán
+    Route::get('/payment', [PaymentController::class, 'createPayment']);
+    Route::get('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
 });

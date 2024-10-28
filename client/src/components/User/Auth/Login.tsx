@@ -21,7 +21,7 @@ const Login = () => {
     try {
       const { data } = await instance.post("login", formData);
       if (data && data.token) {
-        Cookies.set("authToken", data.token.substring(3, data.token.length), {
+        Cookies.set("authToken", data.token, {
           expires: 1 / 12,
           secure: true,
           sameSite: "strict",

@@ -78,20 +78,35 @@ class CartController extends Controller
                 ->first();
     
 
-            if ($idExist) {
-                if($request->quantity>1){
-                    $idExist->quantity += $request->quantity;
-                    $idExist->save();
-                }else{
-                    $idExist->quantity++;
-                    $idExist->save();
-                    
-                }
+            $variant = Variant::query()->with(['inventoryStock'])->find($request->variant_id);
 
+            if($request->quantity > $variant->inventoryStock->quantity){
                 
-            } else {
-                $idExist = Cart::query()->create($data);    
+                return response()->json([
+                    'message' => 'Số lượng trong kho không đủ. Vui lòng giảm số lượng!'
+                ]);
+
+            }else{
+                if ($idExist) {
+
+
+
+                    if($request->quantity>1){
+                        $idExist->quantity += $request->quantity;
+                        $idExist->save();
+                    }else{
+                        $idExist->quantity++;
+                        $idExist->save();
+                        
+                    }
+    
+                    
+                } else {
+                    $idExist = Cart::query()->create($data);    
+                }
             }
+
+            
 
             $idExist->load(['variant.product.category','variant.attributeValues.attribute', "user"]);
 

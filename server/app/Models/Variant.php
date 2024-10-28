@@ -10,7 +10,7 @@ class Variant extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['price', 'sale_price', 'quantity','image', 'product_id'];
+    protected $fillable = ['price', 'sale_price','end_sale','image', 'product_id'];
 
     public function attributeValues()
     {
@@ -25,6 +25,11 @@ class Variant extends Model
     public function carts()
     {
         return $this->hasMany(related: Cart::class);
+    }
+
+    public function inventoryStock()
+    {
+        return $this->hasOne(InventoryStock::class);
     }
 
 }
