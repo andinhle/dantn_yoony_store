@@ -197,7 +197,7 @@ class OrderController extends Controller
                         'discount_amount' => $request->discount_amount,
                         'coupon_id' => $request->coupon_id
                     ]);
-                  
+
                     CouponUser::create([
                         'user_id' => Auth::id(),
                         'coupon_id' => $request->coupon_id,
@@ -207,23 +207,26 @@ class OrderController extends Controller
 
                 
 
-                if (!$order) {
-                    return response()->json(['error' => 'Đặt hàng không thành công.']);
-                }
+                // if (!$order) {
+                //     return response()->json(['error' => 'Đặt hàng không thành công.']);
+                // }
                 
 
-                if ($request->payment_method === 'vnpay') {
-                    // Tạo URL thanh toán VNPAY
-                    $paymentUrl = app(VNPAYService::class)->createPaymentUrl($data['final_total'], $order->code, 'Thông tin đơn hàng');
-                    $order['idCart'] = $selectedItems;
-                    $order['discount_amount'] = $request->discount_amount;
-                    $order['items']=$cartItems;
-                    $order['user']=Auth::user();
-                    $orderData = json_decode($order);
-                    OrderShipped::dispatch($orderData);
-                    // Chuyển hướng đến URL thanh toán
-                    return response()->json(['payment_url' => $paymentUrl], 200);
-                }
+                // if ($request->payment_method === 'vnpay') {
+                //     // Tạo URL thanh toán VNPAY
+                //     $paymentUrl = app(VNPAYService::class)->createPaymentUrl($data['final_total'], $order->code, 'Thông tin đơn hàng');
+                    
+                //     $order['idCart'] = $selectedItems;
+                //     $order['discount_amount'] = $request->discount_amount;
+                //     $order['items']=$cartItems;
+                //     $order['user']=Auth::user();
+                //     $orderData = json_decode($order);
+                //     OrderShipped::dispatch($orderData);
+                //     // Chuyển hướng đến URL thanh toán
+                //     // return response()->json(['payment_url' => $paymentUrl], 200);
+                //     Log::info('url', (array)$paymentUrl);
+                //     return redirect($paymentUrl);
+                // }
 
 
                 //Gửi mail && Xóa cart

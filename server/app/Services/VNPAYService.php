@@ -27,7 +27,7 @@ class VNPAYService
         $vnp_Params['vnp_Version'] = '2.0.0';
         $vnp_Params['vnp_Command'] = 'pay';
         $vnp_Params['vnp_TmnCode'] = $this->merchantId;
-        $vnp_Params['vnp_Amount'] = $amount * 100; // Đơn vị là đồng
+        $vnp_Params['vnp_Amount'] = $amount * 100; 
         $vnp_Params['vnp_CurrCode'] = 'VND';
         $vnp_Params['vnp_TxnRef'] = $orderId;
         $vnp_Params['vnp_OrderInfo'] = $orderInfo;
