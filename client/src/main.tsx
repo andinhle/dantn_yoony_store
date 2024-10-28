@@ -50,6 +50,7 @@ import BlogDetail from "./components/User/Blogs/BlogDetail.tsx";
 import ProductFilters from "./components/User/Filter/FilterPrice.tsx";
 import FiledsProvider from "./contexts/FiledsContext.tsx";
 import LayoutChatAdmin from "./layouts/Admin/LayoutChatAdmin.tsx";
+import ManagerOrdersUser from "./components/User/Manager/ManagerOrdersUser.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -87,12 +88,12 @@ createRoot(document.getElementById("root")!).render(
               <Route path="layout-userDetails" element={<LayoutUserDetails />}>
                 <Route path="userDetails" element={<UserDetails />} />
                 <Route path="wishlist" element={<WishList />} />
-                <Route path="orderuser" element={<OrdersUser />} />
+                <Route path="orderuser" element={<ManagerOrdersUser />} />
+                <Route path="order-detail/:code_order" element={<ManagerOrdersUser />} />
               </Route>
               <Route path="checkorder" element={<CheckOrder />} />
               <Route path="event" element={<EventUser />} />
               <Route path="detailBlog/:slug" element={<BlogDetail/>}/>
-              
             </Route>
             {/* Admin */}
             <Route path="admin" element={<LayoutAdmin />}>
