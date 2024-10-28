@@ -39,72 +39,76 @@ class OrderController extends Controller
     return 'ORD-' . $date . '-' . str_pad($increment, 3, '0', STR_PAD_LEFT);
     }
 
-    public function getOrder(Request $request)
+    public function getOrder(Request $request) 
     {
         try {
-            
             switch ($request->status) {
                 case Order::STATUS_ORDER_PENDING:
                     $orders = Order::query()
-                    ->where('status_order', '=', Order::STATUS_ORDER_PENDING)
-                    ->with(['items.variant'])
-                    ->where('user_id', Auth::id())
-                    ->get();
-
+                        ->where('status_order', '=', Order::STATUS_ORDER_PENDING)
+                        ->with(['items.variant'])
+                        ->where('user_id', Auth::id())
+                        ->orderBy('created_at', 'desc')
+                        ->get();
                     break;
+
                 case Order::STATUS_ORDER_CONFIRMED:
                     $orders = Order::query()
-                    ->where('status_order', '=', Order::STATUS_ORDER_CONFIRMED)
-                    ->with(['items.variant'])
-                    ->where('user_id', Auth::id())
-                    ->get();
-
+                        ->where('status_order', '=', Order::STATUS_ORDER_CONFIRMED)
+                        ->with(['items.variant'])
+                        ->where('user_id', Auth::id())
+                        ->orderBy('created_at', 'desc')
+                        ->get();
                     break;
+
                 case Order::STATUS_ORDER_PREPARING_GOODS:
                     $orders = Order::query()
-                    ->where('status_order', '=', Order::STATUS_ORDER_PREPARING_GOODS)
-                    ->with(['items.variant'])
-                    ->where('user_id', Auth::id())
-                    ->get();
-
+                        ->where('status_order', '=', Order::STATUS_ORDER_PREPARING_GOODS)
+                        ->with(['items.variant'])
+                        ->where('user_id', Auth::id())
+                        ->orderBy('created_at', 'desc')
+                        ->get();
                     break;
+
                 case Order::STATUS_ORDER_SHIPPING:
                     $orders = Order::query()
-                    ->where('status_order', '=', Order::STATUS_ORDER_SHIPPING)
-                    ->with(['items.variant'])
-                    ->where('user_id', Auth::id())
-                    ->get();
-
+                        ->where('status_order', '=', Order::STATUS_ORDER_SHIPPING)
+                        ->with(['items.variant'])
+                        ->where('user_id', Auth::id())
+                        ->orderBy('created_at', 'desc')
+                        ->get();
                     break;
+
                 case Order::STATUS_ORDER_DELIVERED:
                     $orders = Order::query()
-                    ->where('status_order', '=', Order::STATUS_ORDER_DELIVERED)
-                    ->with(['items.variant'])
-                    ->where('user_id', Auth::id())
-                    ->get();
+                        ->where('status_order', '=', Order::STATUS_ORDER_DELIVERED)
+                        ->with(['items.variant'])
+                        ->where('user_id', Auth::id())
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+                    break;
 
-                     break;
                 case Order::STATUS_ORDER_CANCELED:
                     $orders = Order::query()
-                    ->where('status_order', '=', Order::STATUS_ORDER_CANCELED)
-                    ->with(['items.variant'])
-                    ->where('user_id', Auth::id())
-                    ->get();
+                        ->where('status_order', '=', Order::STATUS_ORDER_CANCELED)
+                        ->with(['items.variant'])
+                        ->where('user_id', Auth::id())
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+                    break;
 
-                    break;    
                 default:
                     $orders = Order::query()
-                    ->with(['items.variant'])
-                    ->where('user_id', Auth::id())
-                    ->get();
-                }
+                        ->with(['items.variant'])
+                        ->where('user_id', Auth::id())
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+            }
 
-           
-
-        return response()->json([
-            'data' => $orders,
-            'status' => 'success'
-        ]);
+            return response()->json([
+                'data' => $orders,
+                'status' => 'success'
+            ]);
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
@@ -114,12 +118,9 @@ class OrderController extends Controller
             return response()->json([
                 'message' => 'Lỗi tải trang',
                 'status' => 'error',
-
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-        
     }
-
     public function getOrderDetail($code)
     {
         try {
