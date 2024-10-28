@@ -323,3 +323,13 @@ a:hover .number-cart{
   letter-spacing: 1px !important;
   display: block;
 }
+
+.table-order-users::-webkit-scrollbar{
+  width: 0px;
+  height: 0px;
+}
+
+.table-order-users:hover::-webkit-scrollbar{
+  width: 4px;
+  height: 4px;
+}

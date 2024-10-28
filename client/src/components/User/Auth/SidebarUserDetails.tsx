@@ -8,10 +8,8 @@ const SidebarUserDetails = () => {
         setSelectedItem(item);
     };
     return (
-        <>
-       
-        <div className="flex  w-[250px]">
-            <div className="w-64 bg-white shadow-sm border border-gray h-screen">
+        <div className="col-span-2">
+            <div className="bg-white shadow-sm border border-gray h-screen">
                 <div className="flex items-center p-4 border-b border-gray-200">
                     <img className="w-12 h-12 rounded-full" src="https://via.placeholder.com/150" alt="Avatar" />
                     <div className="ml-3">
@@ -82,7 +80,6 @@ const SidebarUserDetails = () => {
                 </nav>
             </div>
         </div>
-        </>
         
     );
 };
