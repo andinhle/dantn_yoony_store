@@ -4,13 +4,10 @@ import { Table } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { IOrderUserClient } from "../../../interfaces/IOrderUserClient";
 import instance from "../../../instance/instance";
-import { useParams } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import dayjs from "dayjs";
 const ManagerOrdersUser = () => {
   const [orderUsers, setListOrderUsers] = useState<IOrderUserClient[]>([]);
-  // const [codeOrder, setCodeOrder] = useState<string>("")
-  const { code_order } = useParams();
-  console.log(code_order);
   //Get danh sách đơn hàng của người dùng
   useEffect(() => {
     (async () => {
@@ -655,8 +652,7 @@ const ManagerOrdersUser = () => {
                       </Table.Cell>
                       <Table.Cell className="whitespace-nowrap text-secondary/75">
                         <div className="flex items-center gap-2">
-                          <button
-                            type="button"
+                          <NavLink to={`/user-manager/user-orders/order-detail/${orderUser.code}`}
                             className="text-util bg-primary py-1.5 px-2 flex items-center flex-nowrap gap-1 rounded-sm"
                           >
                             <svg
@@ -688,7 +684,7 @@ const ManagerOrdersUser = () => {
                               />
                             </svg>
                             <span>Chi tiết</span>
-                          </button>
+                          </NavLink>
                           {checkIsCancelOrder(orderUser.status_order)}
                           <button>
                             <svg

@@ -21,22 +21,13 @@ const ConfirmOrder = ({ current }: Prop) => {
   const [voucherCheck, setCheckVoucher] = useState<IVoucher | undefined>(
     undefined
   );
-  const [orderData, setOrderData] = useState<any>(null);
+
+  const finalPaymentAmount = voucherCheck 
+  ? final_total - voucherCheck.discount 
+  : final_total;
+
   const { Search } = Input;
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const orderDataRaw = localStorage.getItem("orderData");
-    if (orderDataRaw) {
-      try {
-        const parsedOrderData = JSON.parse(orderDataRaw);
-        setOrderData(parsedOrderData);
-      } catch (error) {
-        console.error("Error parsing order data:", error);
-        message.error("Error loading order data");
-      }
-    }
-  }, []);
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -49,7 +40,7 @@ const ConfirmOrder = ({ current }: Prop) => {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
-  
+
   const submitOrder = async () => {
     try {
       const orderDataRaw = localStorage.getItem("orderData");
@@ -57,6 +48,9 @@ const ConfirmOrder = ({ current }: Prop) => {
       const { data } = await instance.post("order", {
         name: parsedOrderData.fullName,
         tel: parsedOrderData.phone,
+        coupon_id:voucherCheck?.id,
+        discount_amount:voucherCheck?.discount,
+        final_total:finalPaymentAmount,
         ...parsedOrderData,
       });
 
@@ -68,10 +62,10 @@ const ConfirmOrder = ({ current }: Prop) => {
         });
         toast.success(data.message);
         navigate("/");
-        localStorage.removeItem("id_cart");
-        localStorage.removeItem("orderData");
-        localStorage.removeItem("final_total");
-        localStorage.removeItem("final_total");
+        
+        ["id_cart", "orderData", "final_total"].forEach(key => 
+          localStorage.removeItem(key)
+        );
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -121,17 +115,7 @@ const ConfirmOrder = ({ current }: Prop) => {
     const validVoucher = voucherCarts.find(
       (voucherCart) => voucherCart.code === selectVoucher
     );
-
     if (validVoucher) {
-      const updatedOrderData = {
-        ...orderData,
-        coupon_id: validVoucher.id,
-        discount_amount: validVoucher.discount,
-        final_total: final_total - validVoucher.discount,
-      };
-
-      setOrderData(updatedOrderData);
-      localStorage.setItem("orderData", JSON.stringify(updatedOrderData));
       setCheckVoucher(validVoucher);
       message.success("Mã giảm giá đã được áp dụng");
     } else {
@@ -362,11 +346,11 @@ const ConfirmOrder = ({ current }: Prop) => {
         <p className="font-medium">
           Tổng thanh toán:{" "}
           <span className="text-primary">
-            {voucherCheck
-              ? `${(
-                  orderData?.final_total || final_total
-                ).toLocaleString()} VNĐ`
-              : `${final_total.toLocaleString()} VNĐ`}
+            {(voucherCheck
+              ? final_total - voucherCheck.discount
+              : final_total
+            ).toLocaleString()}
+            đ
           </span>
         </p>
       </div>
