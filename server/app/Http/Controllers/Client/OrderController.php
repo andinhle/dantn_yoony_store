@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Session;
 class OrderController extends Controller
 {
 
+
     private function generateOrderCode()
     {
     $date = date('Ymd');
@@ -205,30 +206,13 @@ class OrderController extends Controller
                         'used_at' => now(),
                     ]);
                 }
-
+                
                 
 
-                // if (!$order) {
-                //     return response()->json(['error' => 'Đặt hàng không thành công.']);
-                // }
+                if (!$order) {
+                    return response()->json(['error' => 'Đặt hàng không thành công.']);
+                }
                 
-
-                // if ($request->payment_method === 'vnpay') {
-                //     // Tạo URL thanh toán VNPAY
-                //     $paymentUrl = app(VNPAYService::class)->createPaymentUrl($data['final_total'], $order->code, 'Thông tin đơn hàng');
-                    
-                //     $order['idCart'] = $selectedItems;
-                //     $order['discount_amount'] = $request->discount_amount;
-                //     $order['items']=$cartItems;
-                //     $order['user']=Auth::user();
-                //     $orderData = json_decode($order);
-                //     OrderShipped::dispatch($orderData);
-                //     // Chuyển hướng đến URL thanh toán
-                //     // return response()->json(['payment_url' => $paymentUrl], 200);
-                //     Log::info('url', (array)$paymentUrl);
-                //     return redirect($paymentUrl);
-                // }
-
 
                 //Gửi mail && Xóa cart
                 $order['idCart'] = $selectedItems;
@@ -298,8 +282,6 @@ class OrderController extends Controller
     
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-
 
     }
 }
