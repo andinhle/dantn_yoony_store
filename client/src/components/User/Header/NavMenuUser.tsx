@@ -254,7 +254,7 @@ const NavMenuUser = () => {
             ) : (
               <MenuItem
 
-                className=" flex flex-col transition-all gap-2"
+                className="flex flex-col transition-all gap-2"
               >
                 <div className="hover:!text-primary transition-all flex items-center gap-2 w-full" onClick={handleLogout}>
                   <svg
@@ -278,7 +278,7 @@ const NavMenuUser = () => {
                   </ListItemText>
                 </div>
                 <div className="hover:!text-primary transition-all flex items-center gap-2 w-full">
-                  <a href="/layout-userDetails" className="hover:!text-primary transition-all flex items-center gap-1 w-full">
+                  <Link to={'user-manager'} className="hover:!text-primary transition-all flex items-center gap-1 w-full">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none" viewBox="0 0 24 24"
@@ -295,7 +295,7 @@ const NavMenuUser = () => {
                     >
                       Thông tin tài khoản
                     </ListItemText>
-                  </a>
+                  </Link>
 
                 </div>
               </MenuItem>

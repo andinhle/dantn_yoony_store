@@ -35,7 +35,6 @@ const OrderSummary = () => {
     setTotalAmount(total);
     setOrderData({
       ...OrderFormData,
-      final_total: total,
     });
   }, [carts]);
 
