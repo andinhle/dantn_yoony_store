@@ -4,7 +4,7 @@ export interface Orders {
     grand_total: number;
     final_total: number;
     payment_method: string;
-    status_order: boolean;
+    status_order: string;
     code: string;
     notes: string;
     name: string;

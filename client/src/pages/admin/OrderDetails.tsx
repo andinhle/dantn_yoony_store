@@ -1,20 +1,27 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Orders } from "../../interfaces/IOrders";
 import instance from "../../instance/instance";
 import { toast } from "react-toastify";
 
 const OrderDetails = () => {
+    const navigate = useNavigate();
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
     const [orderDetail, setOrderDetail] = useState<Orders>();
     const [selectedStatus, setSelectedStatus] = useState(orderDetail?.status_order || '');
     const { code } = useParams<{ code: string }>();
+    const orderStatuses = [
+        { value: "pending", label: "pending" },
+        { value: "confirmed", label: "confirmed" },
+        { value: "preparing_goods", label: "preparing_goods" },
+        { value: "delivered", label: "delivered" },
+        { value: "canceled", label: "canceled" },
+    ];
     const handleCancelOrder = () => {
         // Hiển thị modal khi người dùng nhấn vào nút "Hủy"
         setShowCancelModal(true);
     };
-
     const handleCloseModal = () => {
         setShowCancelModal(false);
         setCancelReason(''); // Reset lý do hủy
@@ -22,6 +29,7 @@ const OrderDetails = () => {
     const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedStatus(event.target.value);
     };
+    console.log(selectedStatus)
     const handleConfirmCancel = async () => {
         try {
             // Gửi yêu cầu hủy đơn hàng với lý do hủy
@@ -37,9 +45,10 @@ const OrderDetails = () => {
     const handleUpdateStatus = async () => {
         try {
             // Gửi yêu cầu cập nhật trạng thái
-            await instance.patch(`admin/order-detail/${code}`);
+            await instance.patch(`admin/order-detail/${code}`, { status: selectedStatus });
             toast.success("Cập nhật trạng thái đơn hàng thành công!");
             fetchOrderDetail(code as string); // Refresh lại thông tin đơn hàng sau khi cập nhật
+            navigate("/admin/orders")
         } catch (error: any) {
             // Log lỗi chi tiết hơn
             console.error("Error updating status:", error);
@@ -54,27 +63,17 @@ const OrderDetails = () => {
         try {
             const { data } = await instance.get(`admin/order-detail/${code}`);
             setOrderDetail(data.data);
-            console.log("data:", data)
-            //   toast.success('Successfully fetched order details');
+            console.log("data:", data.data)
+            // Đảm bảo rằng bạn set selectedStatus bằng với status_order của đơn hàng
+            const currentStatus = data.data.status_order; // Trạng thái hiện tại
+            const statusExists = orderStatuses.some(status => status.value === currentStatus);
+
+            setSelectedStatus(statusExists ? currentStatus : "pending"); // Nếu trạng thái không hợp lệ, fallback về "pending"
         } catch (error: any) {
-            // Kiểm tra lỗi phản hồi từ server
-            if (error.response) {
-                console.error("Error response from server:", error.response.data); // Nội dung lỗi từ server
-                console.error("Status code:", error.response.status); // Mã trạng thái (vd: 404, 500)
-                toast.error(`Server Error: ${error.response.data.message || "Unknown server error"}`);
-            }
-            // Kiểm tra lỗi mạng
-            else if (error.request) {
-                console.error("No response received from server:", error.request);
-                toast.error("Network Error: No response from server. Please check your connection.");
-            }
-            // Lỗi cấu hình hoặc thiết lập request
-            else {
-                console.error("Error setting up request:", error.message);
-                toast.error(`Request Error: ${error.message}`);
-            }
+            toast.error(`Error fetching order details: ${error.response?.data?.message || "Unknown error"}`);
         }
     };
+
     useEffect(() => {
         if (code) {
             fetchOrderDetail(code); // Gọi hàm với mã đơn hàng
@@ -93,13 +92,14 @@ const OrderDetails = () => {
                             <thead className="bg-secondary-100">
                                 <tr>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-secondary-600 uppercase tracking-wider border-b">STT</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-secondary-600 uppercase tracking-wider border-b">Tên sản phẩm</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-secondary-600 uppercase tracking-wider border-b">Màu</th>
+                                    <th className="px-4 py-3 text-center text-xs font-medium text-secondary-600 uppercase tracking-wider border-b">Sản phẩm</th>
+                                    {/* <th className="px-4 py-3 text-left text-xs font-medium text-secondary-600 uppercase tracking-wider border-b">Ảnh sản phẩm</th> */}
+                                    {/* <th className="px-4 py-3 text-left text-xs font-medium text-secondary-600 uppercase tracking-wider border-b">Màu</th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-secondary-600 uppercase tracking-wider border-b">Size</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-secondary-600 uppercase tracking-wider border-b">Loại vải</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-secondary-600 uppercase tracking-wider border-b">Loại vải</th> */}
                                     <th className="px-4 py-3 text-left text-xs font-medium text-secondary-600 uppercase tracking-wider border-b">Số lượng</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-secondary-600 uppercase tracking-wider border-b">Đơn giá</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-secondary-600 uppercase tracking-wider border-b">Tổng</th>
+                                    <th className="px-4 py-3 text-center text-xs font-medium text-secondary-600 uppercase tracking-wider border-b">Đơn giá</th>
+                                    <th className="px-4 py-3 text-center text-xs font-medium text-secondary-600 uppercase tracking-wider border-b">Tổng</th>
                                 </tr>
                             </thead>
 
@@ -112,40 +112,107 @@ const OrderDetails = () => {
                             </tbody>
                             <tbody className="divide-y divide-secondary-200">
                                 {orderDetail?.items?.map((item, index) => {
-                                    console.log("item", item?.variant?.attribute_values)
+                                    // console.log("item", item?.variant?.attribute_values)
                                     // console.log("name:")
 
                                     return (
-                                        <tr key={item.id}>
-                                            <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-secondary-900">{index + 1}</td>
-                                            <td className="px-4 py-4 text-sm text-secondary-900 break-words">
-                                                {item?.variant?.product?.name}
+                                        // <tr key={item.id}>
+                                        //     <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-secondary-900">{index + 1}</td>
+                                        //     <td className="px-4 py-4 text-sm text-secondary-900 break-words">
+                                        //         {item?.variant?.product?.name}
+                                        //     </td>
+                                        //     <td className="px-4 py-4 text-sm text-secondary-900 break-words">
+                                        //         <img src={item?.variant?.product?.images} alt="" />
+                                        //     </td>
+                                        //     {item?.variant?.attribute_values.map((i) => {
+                                        //         return (
+                                        //             <>
+                                        //                 <td className="px-4 py-4 whitespace-nowrap text-sm text-secondary-500">{i.value}</td>
+                                        //             </>
+                                        //         )
+                                        //     }
+                                        //     )}
+                                        //     <td className="px-4 py-4 whitespace-nowrap text-sm text-secondary-900">{item?.quantity}</td>
+                                        //     <td className="px-4 py-4 whitespace-nowrap text-sm text-secondary-900">{item?.variant?.price}</td>
+                                        //     <td className="px-4 py-4 whitespace-nowrap text-sm text-secondary-900">{item?.total_price}</td>
+                                        // </tr>
+                                        <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50 transition">
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-primary text-center">{index + 1}</td>
+
+                                            {/* Tên sản phẩm */}
+                                            <td className="px-4 py-4 text-sm font-medium break-words text-primary flex items-center space-x-4">
+                                                <div>
+                                                    <img
+                                                        src={item?.variant?.product?.images}
+                                                        alt={item?.variant?.product?.name || 'Product Image'}
+                                                        className="w-16 h-16 object-cover rounded-md border border-gray-300"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <div>
+                                                        {item?.variant?.product?.name || 'N/A'}
+                                                    </div>
+                                                    <div className="text-uppercase">
+                                                        <td className="text-primary text-uppercase whitespace-nowrap text-sm text-left">
+                                                            {item?.variant?.attribute_values
+                                                                .map((i) => {
+                                                                    switch (i.attribute_id) {
+                                                                        case 2:
+                                                                            return `Màu : ${i.value}`;
+                                                                        case 1:
+                                                                            return `Size : ${i.value}`;
+                                                                        case 3:
+                                                                            return `Loại vải : ${i.value}`;
+                                                                        default:
+                                                                            return '';
+                                                                    }
+                                                                })
+                                                                .filter((text) => text !== '') // Lọc bỏ các giá trị rỗng
+                                                                .map((text, index, array) => (
+                                                                    <span key={index}>
+                                                                        {text}
+                                                                        {index < array.length - 1 && (
+                                                                            <span className="text-black px-2"> | </span>
+                                                                        )}
+                                                                    </span>
+                                                                ))}
+                                                        </td>
+                                                    </div>
+                                                </div>
+
                                             </td>
-                                            {item?.variant?.attribute_values.map((i) => {
-                                                return (
-                                                    <>
-                                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-secondary-500">{i.value}</td>
-                                                    </>
-                                                )
-                                            }
-                                            )}
-                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-secondary-900">{item?.quantity}</td>
-                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-secondary-900">{item?.variant?.price}</td>
-                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-secondary-900">{item?.total_price}</td>
+
+                                            {/* Số lượng */}
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-primary text-center">
+                                                {item?.quantity || 0}
+                                            </td>
+
+                                            {/* Giá */}
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-primary text-center">
+                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item?.variant?.price || 0)}
+                                            </td>
+
+                                            {/* Tổng giá */}
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-primary text-center">
+                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item?.total_price || 0)}
+                                            </td>
                                         </tr>
+
                                     )
                                 }
                                 )}
 
-                                <tr>
-                                    <td colSpan="7" className="px-4 py-4  text-right text-sm font-semibold text-secondary-900">Voucher giảm giá:</td>
+                                {/* <tr>
+                                    <td colSpan="5" className="px-4 py-4  text-right text-sm font-semibold text-secondary-900">Voucher giảm giá:</td>
                                     <td className="px-4 py-4 whitespace-nowrap  text-sm font-semibold text-secondary-900">500,000 VND</td>
-                                </tr>
+                                </tr> */}
                                 <tr className="bg-gray-100">
-                                    <td colSpan="7" className="px-4 py-4  text-right text-sm font-semibold text-secondary-900">Tổng thanh toán:</td>
+                                    <td colSpan="4" className="px-4 py-4 text-primary  text-right text-sm font-semibold text-secondary-900">Tổng thanh toán:</td>
                                     {orderDetail?.items?.map((item) => {
                                         return (
-                                            <td className="px-4 py-4 whitespace-nowrap  text-sm font-semibold text-secondary-900">{item?.total_price}</td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-primary  text-sm font-semibold text-secondary-900">
+                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item?.total_price || 0)}
+                                            </td>
                                         )
                                     })}
 
@@ -154,19 +221,21 @@ const OrderDetails = () => {
                         </table>
                     </div>
                     <div className="flex">
-                        <div className="mb-6 bg-white  rounded-lg  w-full h-max lg:w-2/3 mr-4">
-                            <label htmlFor="orderStatus" className="block text-sm font-medium text-primary px-4 py-4">Cập nhật trạng thái đơn hàng</label>
+                        <div className="mb-6 bg-white rounded-lg w-full h-max lg:w-2/3 mr-4">
+                            <label htmlFor="orderStatus" className="block text-sm font-medium text-primary px-4 py-4">
+                                Cập nhật trạng thái đơn hàng
+                            </label>
                             <select
                                 id="orderStatus"
                                 value={selectedStatus}
                                 onChange={handleStatusChange}
-                                className="mt-1 block mx-4  border-gray-300 rounded-md min-w-max shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                                className="mt-1 block mx-4 border-gray-300 rounded-md min-w-max shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                             >
-                                <option value="pending">Chờ xác nhận</option>
-                                <option value="confirmed">Đã xác thật</option>
-                                <option value="preparing_goods">Đang vận chuyển</option>
-                                <option value="delivered">Đã giao hàng</option>
-                                <option value="canceled">Đơn hàng đã bị hủy</option>
+                                {orderStatuses.map((status) => (
+                                    <option key={status.value} value={status.value}>
+                                        {status.label}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <div>
@@ -236,7 +305,7 @@ const OrderDetails = () => {
                                 disabled
                             />
                         </div>
-                        <div className="mb-4">
+                        {/* <div className="mb-4">
                             <label htmlFor="totalPrice" className="block text-sm font-medium text-secondary-600">Giảm giá</label>
                             <input
                                 type="text"
@@ -245,7 +314,7 @@ const OrderDetails = () => {
 
                                 disabled
                             />
-                        </div>
+                        </div> */}
                         <div className="mb-4">
                             <label htmlFor="finalPrice" className="block text-sm font-medium text-secondary-600">Giá cuối</label>
                             <input
