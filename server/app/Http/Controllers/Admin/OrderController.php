@@ -89,7 +89,7 @@ class OrderController extends Controller
         ->with(['items.variant.attributeValues.attribute', 'items.variant.product'])
         ->where('code', $code)
         ->firstOrFail();
-
+       
         return response()->json(
             [
                 'data' => $orders,
