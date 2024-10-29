@@ -25,6 +25,7 @@ use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\Client\OderCheckController;
 use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\client\ChatbotController;
+use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\client\SpinController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -221,4 +222,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     //Thanh toán
     Route::get('/payment', [PaymentController::class, 'createPayment']);
     Route::get('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
+
+    //Review 
+    Route::post('ratings/review', [ReviewController::class, 'review'])->name('ratings.review');
 });
