@@ -133,6 +133,22 @@ class OrderController extends Controller
             ->where('code', $code)
             ->firstOrFail();
 
+            $data = $data->toArray();
+            foreach ($data['items'] as &$item) {
+            if (isset($item['variant']['product'])) {
+                $product = &$item['variant']['product'];
+                if (isset($product['images'])) {
+                    $images = json_decode($product['images'], true);
+                    if (is_array($images)) {
+                        foreach ($images as &$imageUrl) {
+                            $imageUrl = stripslashes($imageUrl);
+                        }
+                    }
+                    $product['images'] = $images;
+                }
+            
+            }}
+            
             return response()->json([
                 'data' => $data,
                 'status' => 'success'
