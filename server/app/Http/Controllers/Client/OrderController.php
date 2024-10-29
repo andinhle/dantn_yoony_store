@@ -7,11 +7,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Order\StoreOrderRequest;
 use App\Models\Cart;
 use App\Models\Coupon;
+use App\Models\CouponUser;
 use App\Models\Order;
 use App\Models\OrderCancellation;
 use App\Models\OrderCoupon;
 use App\Models\OrderItem;
 use App\Models\Variant;
+use App\Services\VNPAYService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -24,27 +26,91 @@ use Illuminate\Support\Facades\Session;
 class OrderController extends Controller
 {
 
+
     private function generateOrderCode()
     {
-        $date = date('Ymd'); // Lấy ngày hiện tại theo định dạng Ymd
-        $lastOrder = Order::whereDate('created_at', today())->orderBy('id', 'desc')->first();
-        
-        $increment = $lastOrder ? intval(substr($lastOrder->order_code, -3)) + 1 : 1; // Tăng mã đơn hàng
-        return 'ORD-' . $date . '-' . str_pad($increment, 3, '0', STR_PAD_LEFT); // Định dạng mã đơn hàng
+    $date = date('Ymd');
+    $lastOrder = Order::whereDate('created_at', today())->orderBy('code', 'desc')->first();
+    
+    if ($lastOrder && preg_match('/ORD-' . $date . '-(\d{3})$/', $lastOrder->code, $matches)) {
+        $increment = intval($matches[1]) + 1; 
+    } else {
+        $increment = 1; 
+    }
+    
+    return 'ORD-' . $date . '-' . str_pad($increment, 3, '0', STR_PAD_LEFT);
     }
 
-    public function getOrder()
+    public function getOrder(Request $request) 
     {
         try {
-            
-            $data = Order::query()
-            ->where('user_id', Auth::id())
-            ->get();
+            switch ($request->status) {
+                case Order::STATUS_ORDER_PENDING:
+                    $orders = Order::query()
+                        ->where('status_order', '=', Order::STATUS_ORDER_PENDING)
+                        ->with(['items.variant'])
+                        ->where('user_id', Auth::id())
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+                    break;
 
-        return response()->json([
-            'data' => $data,
-            'status' => 'success'
-        ]);
+                case Order::STATUS_ORDER_CONFIRMED:
+                    $orders = Order::query()
+                        ->where('status_order', '=', Order::STATUS_ORDER_CONFIRMED)
+                        ->with(['items.variant'])
+                        ->where('user_id', Auth::id())
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+                    break;
+
+                case Order::STATUS_ORDER_PREPARING_GOODS:
+                    $orders = Order::query()
+                        ->where('status_order', '=', Order::STATUS_ORDER_PREPARING_GOODS)
+                        ->with(['items.variant'])
+                        ->where('user_id', Auth::id())
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+                    break;
+
+                case Order::STATUS_ORDER_SHIPPING:
+                    $orders = Order::query()
+                        ->where('status_order', '=', Order::STATUS_ORDER_SHIPPING)
+                        ->with(['items.variant'])
+                        ->where('user_id', Auth::id())
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+                    break;
+
+                case Order::STATUS_ORDER_DELIVERED:
+                    $orders = Order::query()
+                        ->where('status_order', '=', Order::STATUS_ORDER_DELIVERED)
+                        ->with(['items.variant'])
+                        ->where('user_id', Auth::id())
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+                    break;
+
+                case Order::STATUS_ORDER_CANCELED:
+                    $orders = Order::query()
+                        ->where('status_order', '=', Order::STATUS_ORDER_CANCELED)
+                        ->with(['items.variant'])
+                        ->where('user_id', Auth::id())
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+                    break;
+
+                default:
+                    $orders = Order::query()
+                        ->with(['items.variant'])
+                        ->where('user_id', Auth::id())
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+            }
+
+            return response()->json([
+                'data' => $orders,
+                'status' => 'success'
+            ]);
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
@@ -54,22 +120,35 @@ class OrderController extends Controller
             return response()->json([
                 'message' => 'Lỗi tải trang',
                 'status' => 'error',
-
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-        
     }
-
-    public function getOrderDetail($id)
+    public function getOrderDetail($code)
     {
         try {
             
             $data = Order::query()
             ->with(['items.variant.attributeValues.attribute', 'items.variant.product'])
             ->where('user_id', Auth::id())
-            ->where('id', $id)
+            ->where('code', $code)
             ->firstOrFail();
 
+            $data = $data->toArray();
+            foreach ($data['items'] as &$item) {
+            if (isset($item['variant']['product'])) {
+                $product = &$item['variant']['product'];
+                if (isset($product['images'])) {
+                    $images = json_decode($product['images'], true);
+                    if (is_array($images)) {
+                        foreach ($images as &$imageUrl) {
+                            $imageUrl = stripslashes($imageUrl);
+                        }
+                    }
+                    $product['images'] = $images;
+                }
+            
+            }}
+            
             return response()->json([
                 'data' => $data,
                 'status' => 'success'
@@ -95,8 +174,6 @@ class OrderController extends Controller
 
             return DB::transaction(function() use ($request) {
 
-
-
                 $selectedItems = $request->selected_items;
                 // Nếu không có sản phẩm nào được chọn
                 if (empty($selectedItems)) {
@@ -107,10 +184,14 @@ class OrderController extends Controller
                 $cartItems = [];
                 // Lấy thông tin các sản phẩm đã chọn
                 $cartItems = Cart::query()
-                ->with(['variant.attributeValues.attribute', 'variant.product', 'user'])
+                ->with(['variant.attributeValues.attribute', 'variant.product', 'user', 'variant.inventoryStock'])
                 ->where('user_id', Auth::id()) 
                 ->whereIn('id', $selectedItems)
                 ->get();
+
+                if ($cartItems->isEmpty()) {
+                    return response()->json(['error' => 'Không tìm thấy sản phẩm nào trong giỏ hàng.']);
+                }
 
                 $data =  $request->all();
                 $data['user_id'] = Auth::id();
@@ -122,30 +203,6 @@ class OrderController extends Controller
                 }
 
                 $order = Order::query()->create($data);
-
-                
-                if($order){
-                    $orderItems = [];
-
-                    foreach ($cartItems as $value) {
-                        $orderItem['order_id'] =   $order->id;
-                        $orderItem['variant_id'] =   $value->variant_id;
-                        $orderItem['quantity'] =   $value->quantity;
-                        $orderItem['unit_price'] =   $value->variant->sale_price ?: $value->variant->price;
-                        $orderItem['total_price'] =   $value->quantity * ($value->variant->sale_price ?: $value->variant->price);
- 
-                        $orderItems[] = $orderItem;
-
-               
-                        Variant::query()
-                        ->where('id', $value->variant_id)
-                        ->decrement('quantity', $value->quantity); 
-                    }
-                    OrderItem::insert($orderItems);
-                    
-                    
-                }
-                
 
                 if($request->coupon_id && $request->discount_amount){
                     
@@ -159,26 +216,28 @@ class OrderController extends Controller
                         'coupon_id' => $request->coupon_id
                     ]);
 
-
-
-
+                    CouponUser::create([
+                        'user_id' => Auth::id(),
+                        'coupon_id' => $request->coupon_id,
+                        'used_at' => now(),
+                    ]);
                 }
                 
                 
-                Cart::query()->where('user_id', Auth::id())
-                ->whereIn('id',  $selectedItems )
-                ->delete();
-                
+
+                if (!$order) {
+                    return response()->json(['error' => 'Đặt hàng không thành công.']);
+                }
                 
 
+                //Gửi mail && Xóa cart
+                $order['idCart'] = $selectedItems;
                 $order['discount_amount'] = $request->discount_amount;
-
                 $order['items']=$cartItems;
                 $order['user']=Auth::user();
                 $orderData = json_decode($order);
                 OrderShipped::dispatch($orderData);
                 
-
                 return response()->json([
                     'message' =>  'ĐẶT HÀNG THÀNH CÔNG',
                     'description'=>'Xin cảm ơn Quý khách đã tin tưởng và mua sắm tại cửa hàng của chúng tôi.'
@@ -239,8 +298,6 @@ class OrderController extends Controller
     
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-
 
     }
 }

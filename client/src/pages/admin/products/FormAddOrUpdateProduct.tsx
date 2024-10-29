@@ -1,7 +1,14 @@
 import { Select } from "antd";
 import { Label, ToggleSwitch } from "flowbite-react";
 import JoditEditor from "jodit-react";
-import { useEffect, useMemo, useRef, useState, useCallback, useContext } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+  useContext,
+} from "react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { FreeMode } from "swiper/modules";
@@ -21,6 +28,9 @@ import productValidSchema, {
   ProductFormData,
 } from "../../../validations/productValidSchema";
 import ProductContext from "../../../contexts/ProductContext";
+import { DatePicker } from "antd";
+import { Controller } from "react-hook-form";
+import dayjs from "dayjs";
 
 const FormAddOrUpdateProduct = () => {
   const editor = useRef(null);
@@ -82,7 +92,7 @@ const FormAddOrUpdateProduct = () => {
     }),
     []
   );
-  const {dispatch}=useContext(ProductContext)
+  const { dispatch } = useContext(ProductContext);
   const navigate = useNavigate();
   const method = useForm<IProduct>({
     defaultValues: {
@@ -98,7 +108,7 @@ const FormAddOrUpdateProduct = () => {
         {
           price: undefined,
           sale_price: undefined,
-          quantity: undefined,
+          end_sale: undefined,
           image: undefined,
           attribute_values: [{}],
         },
@@ -143,7 +153,6 @@ const FormAddOrUpdateProduct = () => {
     fetchData();
   }, []);
 
-  console.log([...imagesProduct]);
   const fetchProductData = useCallback(async () => {
     if (id) {
       try {
@@ -155,6 +164,7 @@ const FormAddOrUpdateProduct = () => {
           ...response,
           variants: response.variants.map((variant) => ({
             ...variant,
+            end_sale: variant.end_sale ? variant.end_sale : null,
             attribute_values: variant.attribute_values.map((av) => ({
               attribute_id: av.attribute_id,
               attribute_value_id: av.pivot.attribute_value_id,
@@ -251,29 +261,29 @@ const FormAddOrUpdateProduct = () => {
           data: { data: response },
         } = await instance.post("products", dataForm);
         if (response) {
-          console.log(response)
+          console.log(response);
           toast.success("Thêm sản phẩm thành công!");
           setLoadingProduct(false);
           reset();
           setImagesProduct([]);
           setDescProduct("");
           dispatch({
-            type:"ADD",
-            payload:response
-          })
+            type: "ADD",
+            payload: response,
+          });
           navigate("/admin/products");
         }
       }
       if (AddOrUpdate === "UPDATE") {
         const { data } = await instance.put(`products/${id}`, dataForm);
         if (data) {
-          console.log(data)
+          console.log(data);
           toast.success("Update sản phẩm thành công!");
           dispatch({
-            type:"UPDATE",
-            payload:data
-          })
-          setAddOrUpdate("ADD")
+            type: "UPDATE",
+            payload: data,
+          });
+          setAddOrUpdate("ADD");
           setLoadingProduct(false);
           navigate("/admin/products");
         }
@@ -285,10 +295,11 @@ const FormAddOrUpdateProduct = () => {
       } else if (error instanceof Error) {
         console.log(error.message);
       } else {
-        console.log('Đã xảy ra lỗi không mong muốn');
+        console.log("Đã xảy ra lỗi không mong muốn");
       }
     }
   };
+
   return (
     <FormProvider {...method}>
       <LoadingOverlay
@@ -642,8 +653,8 @@ const FormAddOrUpdateProduct = () => {
                         className="block focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-input rounded-[5px] w-full focus:!shadow-none"
                       />
                     </div>
-                    <div>
-                      <div className="mb-2 block">
+                    {/* <div>
+                      <div className="flex">
                         <Label htmlFor="quality-product" value="Số lượng" />
                       </div>
                       <input
@@ -654,6 +665,26 @@ const FormAddOrUpdateProduct = () => {
                           valueAsNumber: true,
                         })}
                         className="block focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-input rounded-[5px] w-full focus:!shadow-none"
+                      />
+                    </div> */}
+                    <div>
+                      <div className="flex mb-2">
+                        <Label htmlFor="end-sale" value="Sale kết thúc sau" />
+                      </div>
+                      <Controller
+                        name={`variants.${index}.end_sale`}
+                        control={control}
+                        render={({ field }) => (
+                          <DatePicker
+                            placeholder="Sale kết thúc sau"
+                            showTime
+                            value={field.value ? dayjs(field.value) : null}
+                            onChange={(date, dateString) => {
+                              field.onChange(dateString);
+                            }}
+                            className="h-[35px] w-full"
+                          />
+                        )}
                       />
                     </div>
                   </div>

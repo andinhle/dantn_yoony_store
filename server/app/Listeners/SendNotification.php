@@ -28,8 +28,8 @@ class SendNotification implements ShouldQueue
         $orderData = $event->order; // Nếu đã dispatch là đối tượng
 
 
+        // Log::info('order', (array) $orderData);
         $user = $event->order->user;
-        // Log::info('order', (array) $event->order);
        
         Mail::send('orderShipperdMail', [
             'name' => $user->name,

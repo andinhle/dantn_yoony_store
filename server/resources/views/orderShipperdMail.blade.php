@@ -109,8 +109,8 @@
 													<table class="image_block block-1" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
 														<tr>
 															<td class="pad" style="width:100%;">
-																<div class="alignment" align="left" style="line-height:10px">
-																	<div style="max-width: 213px;"><img src="{{ asset('/img/logo-web-header.png') }}" style="display: block; height: auto; border: 0; width: 100%;" width="213" alt="Image" title="Image" height="auto"></div>
+																<div class="" align="left" style="line-height:10px">
+																	<div style="max-width: 213px;"><img src="https://drive.google.com/file/d/1AjM-HNpFLDaQOMLtUCYHhNja1o3rXnDN/view?usp=sharing" style="display: block; height: auto; border: 0; width: 100%;" width="213" alt="Image" title="Image" height="auto"></div>
 																</div>
 															</td>
 														</tr>
