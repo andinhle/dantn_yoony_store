@@ -22,9 +22,9 @@ class PaymentController extends Controller
         $paymentMethod = $request->payment_method; // Nhận phương thức thanh toán từ form
 
         switch ($paymentMethod) {
-            case 'cod':
+            case 'COD':
                 return $this->handleCOD($request);
-            case 'vnpay':
+            case 'VNPAY':
                 return $this->handleVNPay($request);
             default:
                 return response()->json(['error' => 'Invalid payment method'], 400);

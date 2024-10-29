@@ -45,7 +45,7 @@ const ConfirmOrder = ({ current }: Prop) => {
     try {
       const orderDataRaw = localStorage.getItem("orderData");
       const parsedOrderData = JSON.parse(orderDataRaw!);
-      const { data } = await instance.post("order", {
+      const { data } = await instance.post("checkout", {
         name: parsedOrderData.fullName,
         tel: parsedOrderData.phone,
         coupon_id:voucherCheck?.id,
