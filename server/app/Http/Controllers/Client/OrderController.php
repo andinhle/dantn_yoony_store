@@ -13,6 +13,7 @@ use App\Models\OrderCancellation;
 use App\Models\OrderCoupon;
 use App\Models\OrderItem;
 use App\Models\Variant;
+use App\Services\VNPAYService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +25,7 @@ use Illuminate\Support\Facades\Session;
 
 class OrderController extends Controller
 {
+
 
     private function generateOrderCode()
     {
@@ -213,19 +215,20 @@ class OrderController extends Controller
                         'discount_amount' => $request->discount_amount,
                         'coupon_id' => $request->coupon_id
                     ]);
-                  
+
                     CouponUser::create([
                         'user_id' => Auth::id(),
                         'coupon_id' => $request->coupon_id,
                         'used_at' => now(),
                     ]);
                 }
+                
+                
 
                 if (!$order) {
                     return response()->json(['error' => 'Đặt hàng không thành công.']);
                 }
                 
-
 
                 //Gửi mail && Xóa cart
                 $order['idCart'] = $selectedItems;
@@ -295,8 +298,6 @@ class OrderController extends Controller
     
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-
 
     }
 }

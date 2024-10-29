@@ -20,7 +20,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\CouponUserController;
 use App\Http\Controllers\Client\FilterController;
 use App\Http\Controllers\Client\HomeController;
-use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\client\PaymentController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\Client\OderCheckController;
 use App\Http\Controllers\Client\OrderController;
@@ -179,9 +179,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
       
         // Quản ly đơn hàng
         Route::get('admin/orders/{status?}', [\App\Http\Controllers\Admin\OrderController::class, 'index']);
-        Route::get('admin/order-detail/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'orderDetail']);
-        Route::patch('admin/order-detail/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'updateOrderDetail']);
-        Route::patch('admin/order-cancelation/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'canceledOrder']);
+        Route::get('admin/order-detail/{code}', [\App\Http\Controllers\Admin\OrderController::class, 'orderDetail']);
+        Route::patch('admin/order-detail/{code}', [\App\Http\Controllers\Admin\OrderController::class, 'updateOrderDetail']);
+        Route::patch('admin/order-cancelation/{code}', [\App\Http\Controllers\Admin\OrderController::class, 'canceledOrder']);
         
     });
 
@@ -202,9 +202,11 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::patch('/order-cancelation/{id}', [OrderController::class, 'canceledOrder']);
 
 
-    // Order_user
-    // Route::get('/order', [OrderController::class, 'getProduct'])->name('order.getProduct');
+    // checkout
     Route::post('/order', [OrderController::class, 'store'])->name('order.store');
+    Route::post('/checkout', [PaymentController::class, 'processPayment']);
+    Route::get('/vnpay/callback', [PaymentController::class, 'callback']);
+
 
     //Coupon_user
     Route::apiResource('coupon-user', CouponUserController::class);
@@ -219,10 +221,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/claim-coupon/{eventId}/{couponId}', [CouponUserController::class, 'claimCoupon']);
     Route::get('/event-coupons', [OderCheckController::class, 'getEventCoupons']);
 
-    //Thanh toán
-    Route::get('/payment', [PaymentController::class, 'createPayment']);
-    Route::get('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
-
     //Review 
     Route::post('ratings/review', [ReviewController::class, 'review'])->name('ratings.review');
+
 });
