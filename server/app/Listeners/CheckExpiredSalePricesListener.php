@@ -30,6 +30,7 @@ class CheckExpiredSalePricesListener
         foreach ($variants as $variant) {
             // Xóa sale_price
             $variant->sale_price = null;
+            $variant->end_sale = null;
             $variant->save();
         }
     }
