@@ -45,13 +45,19 @@ import OrdersUser from "./components/componentUserDetails/OrdersUser.tsx";
 import LayoutUserDetails from "./layouts/User/LayoutUserDetails.tsx";
 import { CheckOrder } from "./components/User/Header/CheckOrder.tsx";
 import EventUser from "./components/User/Event/EventUser.tsx";
-import LayoutEventAdmin from "./layouts/Admin/LayoutEventAdmin.tsx";
+// import LayoutEventAdmin from "./layouts/Admin/LayoutEventAdmin.tsx";
 import BlogDetail from "./components/User/Blogs/BlogDetail.tsx";
+import ProductFilters from "./components/User/Filter/FilterPrice.tsx";
+import FiledsProvider from "./contexts/FiledsContext.tsx";
+import LayoutChatAdmin from "./layouts/Admin/LayoutChatAdmin.tsx";
+import ManagerOrdersUser from "./components/User/Manager/ManagerOrdersUser.tsx";
+import UserOrderDetail from "./components/User/Manager/UserOrderDetail.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <BlogProvider>
+        <FiledsProvider>
         <ScrollToTop />
         <Routes>
           <Route element={<App />}>
@@ -79,10 +85,12 @@ createRoot(document.getElementById("root")!).render(
               <Route path="gio-hang" element={<CartListClient />} />
               <Route path="check-out" element={<CheckOutOrder />} />
               <Route path="blogs" element={<BlogPage />} />
-              <Route path="layout-userDetails" element={<LayoutUserDetails />}>
-                <Route path="userDetails" element={<UserDetails />} />
+              <Route path="fileds" element={<ProductFilters />} />
+              <Route path="user-manager" element={<LayoutUserDetails />}>
+                <Route index element={<UserDetails />} />
                 <Route path="wishlist" element={<WishList />} />
-                <Route path="orderuser" element={<OrdersUser />} />
+                <Route path="user-orders" element={<ManagerOrdersUser />} />
+                <Route path="user-orders/order-detail/:code_order" element={<UserOrderDetail />} />
               </Route>
               <Route path="checkorder" element={<CheckOrder />} />
               <Route path="event" element={<EventUser />} />
@@ -105,15 +113,17 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="role-manager" element={<UserRoleManager />} />
               </Route>
               <Route path="vouchers" element={<LayoutVoucherAdmin />} />
-              <Route path="events" element={<LayoutEventAdmin />} />
+              {/* <Route path="events" element={<LayoutEventAdmin />} /> */}
               <Route path="banner" element={<BannerList />} />
-              <Route path="orders/orderDetails" element={<OrderDetails />} />
+              <Route path="orders/orderDetails/:code" element={<OrderDetails />} />
               <Route path="rates" element={<Rates />} />
+              <Route path="chatbot" element={<LayoutChatAdmin />} />
             </Route>
           </Route>
         </Routes>
         <ToastContainer autoClose={3000} newestOnTop={true} />
-      </BlogProvider>
+        </FiledsProvider>
+      </BlogProvider>  
     </BrowserRouter>
   </StrictMode>
 );

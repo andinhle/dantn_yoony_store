@@ -15,16 +15,19 @@ use App\Http\Controllers\Admin\InventoryStockController;
 use App\Http\Controllers\Admin\ModelController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\QuestionController;
+use App\Http\Controllers\Admin\RatingController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\RoleHasModelController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\CouponUserController;
 use App\Http\Controllers\Client\FilterController;
 use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\client\PaymentController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\Client\OderCheckController;
 use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\client\ChatbotController;
+use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\client\SpinController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -81,6 +84,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Admin
     Route::middleware(['dynamic.permission'])->group(function () {
         //QL user
+
         // Lấy tất cả thông tin user
         Route::get('/users', [UserController::class, 'index']);
         // Cập nhật role của user
@@ -119,6 +123,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         // QL blog
         Route::apiResource('blogs', BlogController::class);
         Route::patch('blogs/{id}/is-active', [BlogController::class, 'updateIsActive'])->name('blogs.updateIsActive');
+
+        // QL Rating 
+        Route::get('ratings', [RatingController::class, 'getAllRating']);
+        Route::get('ratings/limit10', [RatingController::class, 'getLimitRating10']);
+        Route::get('ratings/by-user', [RatingController::class, 'getRatingByUser']);
+        Route::get('ratings/by-product', [RatingController::class, 'getRatingByProduct']);
+        Route::get('ratings/filter', [RatingController::class, 'filterRating']);
+        Route::get('ratings/{id}', [RatingController::class, 'getOneRatingById'])->name('ratings.getOne');
 
         // QL quyền
         Route::apiResource('roles', RoleController::class);
@@ -191,14 +203,16 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     
     // Order 
-    Route::get('/order-detail/{id}', [OrderController::class, 'getOrderDetail'])->name('order.getOrderDetail');
-    Route::get('/order', [OrderController::class, 'getOrder'])->name('order.getOrder');
+    Route::get('/order-detail/{code}', [OrderController::class, 'getOrderDetail'])->name('order.getOrderDetail');
+    Route::get('/order/{status?}', [OrderController::class, 'getOrder'])->name('order.getOrder');
     Route::patch('/order-cancelation/{id}', [OrderController::class, 'canceledOrder']);
 
 
-    // Order_user
-    // Route::get('/order', [OrderController::class, 'getProduct'])->name('order.getProduct');
+    // checkout
     Route::post('/order', [OrderController::class, 'store'])->name('order.store');
+    Route::post('/checkout', [PaymentController::class, 'processPayment']);
+    Route::get('/vnpay/callback', [PaymentController::class, 'callback']);
+
 
     //Coupon_user
     Route::apiResource('coupon-user', CouponUserController::class);
@@ -212,4 +226,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/reset-daily-spins', [SpinController::class, 'resetDailySpins']);
     Route::post('/claim-coupon/{eventId}/{couponId}', [CouponUserController::class, 'claimCoupon']);
     Route::get('/event-coupons', [OderCheckController::class, 'getEventCoupons']);
+
+    //Review 
+    Route::post('ratings/review', [ReviewController::class, 'review'])->name('ratings.review');
+
 });

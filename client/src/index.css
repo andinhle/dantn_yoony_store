@@ -319,3 +319,17 @@ a:hover .number-cart{
 .shadow-btn-wheel {
   box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
 }
+:where(.countdowm-sale).ant-statistic .ant-statistic-content .ant-statistic-content-value{
+  letter-spacing: 1px !important;
+  display: block;
+}
+
+.table-order-users::-webkit-scrollbar{
+  width: 0px;
+  height: 0px;
+}
+
+.table-order-users:hover::-webkit-scrollbar{
+  width: 4px;
+  height: 4px;
+}

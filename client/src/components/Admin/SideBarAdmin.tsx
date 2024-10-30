@@ -170,13 +170,13 @@ const SideBarAdmin = () => {
                 </svg>
               </div>
               {is_openProduct && (
-                <ul className="flex flex-col gap-2">
+                <ul className="flex flex-col gap-2 bg-primary/15 rounded-md p-2">
                   <li className="">
                     <NavLink
                       to={"products/add"}
                       end
                       className={
-                        "flex p-2 rounded-md gap-2 border border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
                       }
                     >
                       <svg
@@ -209,7 +209,7 @@ const SideBarAdmin = () => {
                       to={"products"}
                       end
                       className={
-                        "flex p-2 rounded-md gap-2 border border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
                       }
                     >
                       <svg
@@ -252,109 +252,10 @@ const SideBarAdmin = () => {
                   </li>
                   <li className="">
                     <NavLink
-                      to={"products"}
-                      end
-                      className={
-                        "flex p-2 rounded-md gap-2 border border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
-                      }
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        className="size-6"
-                        color={"currentColor"}
-                        fill={"none"}
-                      >
-                        <path
-                          d="M11 22C10.1818 22 9.40019 21.6698 7.83693 21.0095C3.94564 19.3657 2 18.5438 2 17.1613C2 16.7742 2 10.0645 2 7M11 22L11 11.3548M11 22C11.7248 22 12.293 21.7409 13.5 21.2226M20 7V11"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M15 17.5H22M18.5 21L18.5 14"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
-                        <path
-                          d="M7.32592 9.69138L4.40472 8.27785C2.80157 7.5021 2 7.11423 2 6.5C2 5.88577 2.80157 5.4979 4.40472 4.72215L7.32592 3.30862C9.12883 2.43621 10.0303 2 11 2C11.9697 2 12.8712 2.4362 14.6741 3.30862L17.5953 4.72215C19.1984 5.4979 20 5.88577 20 6.5C20 7.11423 19.1984 7.5021 17.5953 8.27785L14.6741 9.69138C12.8712 10.5638 11.9697 11 11 11C10.0303 11 9.12883 10.5638 7.32592 9.69138Z"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M5 12L7 13"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M16 4L6 9"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      Nhập đơn hàng
-                    </NavLink>
-                  </li>
-                  <li className="">
-                    <NavLink
-                      to={"products"}
-                      end
-                      className={
-                        "flex p-2 rounded-md gap-2 border border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
-                      }
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        className="size-6"
-                        color={"currentColor"}
-                        fill={"none"}
-                      >
-                        <path
-                          d="M2.5 12C2.5 7.52166 2.5 5.28249 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12Z"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M11 7.5H17M8 7.5C8 7.77614 7.77614 8 7.5 8C7.22386 8 7 7.77614 7 7.5C7 7.22386 7.22386 7 7.5 7C7.77614 7 8 7.22386 8 7.5Z"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M11 12H17M8 12C8 12.2761 7.77614 12.5 7.5 12.5C7.22386 12.5 7 12.2761 7 12C7 11.7239 7.22386 11.5 7.5 11.5C7.77614 11.5 8 11.7239 8 12Z"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M11 16.5H17M8 16.5C8 16.7761 7.77614 17 7.5 17C7.22386 17 7 16.7761 7 16.5C7 16.2239 7.22386 16 7.5 16C7.77614 16 8 16.2239 8 16.5Z"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      Tồn kho
-                    </NavLink>
-                  </li>
-                  <li className="">
-                    <NavLink
                       to={"variants"}
                       end
                       className={
-                        "flex p-2 rounded-md gap-2 border border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
                       }
                     >
                       <svg
@@ -407,6 +308,113 @@ const SideBarAdmin = () => {
                         />
                       </svg>
                       Biến thể
+                    </NavLink>
+                  </li>
+                  <li className="">
+                    <NavLink
+                      to={"nhap-hang"}
+                      end
+                      className={
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
+                      }
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        className="size-6"
+                        color={"currentColor"}
+                        fill={"none"}
+                      >
+                        <path
+                          d="M11 22C10.1818 22 9.40019 21.6698 7.83693 21.0095C3.94564 19.3657 2 18.5438 2 17.1613C2 16.7742 2 10.0645 2 7M11 22L11 11.3548M11 22C11.7248 22 12.293 21.7409 13.5 21.2226M20 7V11"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M15 17.5H22M18.5 21L18.5 14"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M7.32592 9.69138L4.40472 8.27785C2.80157 7.5021 2 7.11423 2 6.5C2 5.88577 2.80157 5.4979 4.40472 4.72215L7.32592 3.30862C9.12883 2.43621 10.0303 2 11 2C11.9697 2 12.8712 2.4362 14.6741 3.30862L17.5953 4.72215C19.1984 5.4979 20 5.88577 20 6.5C20 7.11423 19.1984 7.5021 17.5953 8.27785L14.6741 9.69138C12.8712 10.5638 11.9697 11 11 11C10.0303 11 9.12883 10.5638 7.32592 9.69138Z"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M5 12L7 13"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M16 4L6 9"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      Nhập đơn hàng
+                    </NavLink>
+                  </li>
+                  <li className="">
+                    <NavLink
+                      to={"ton-kho"}
+                      end
+                      className={
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
+                      }
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        className="size-6"
+                        color={"currentColor"}
+                        fill={"none"}
+                      >
+                        <path
+                          d="M11 22C10.1818 22 9.40019 21.6698 7.83693 21.0095C3.94564 19.3657 2 18.5438 2 17.1613C2 16.7742 2 10.0645 2 7M11 22L11 11.3548M11 22C11.3404 22 11.6463 21.9428 12 21.8285M20 7V11.5"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M18 18.0005L18.9056 17.0949M22 18C22 15.7909 20.2091 14 18 14C15.7909 14 14 15.7909 14 18C14 20.2091 15.7909 22 18 22C20.2091 22 22 20.2091 22 18Z"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M7.32592 9.69138L4.40472 8.27785C2.80157 7.5021 2 7.11423 2 6.5C2 5.88577 2.80157 5.4979 4.40472 4.72215L7.32592 3.30862C9.12883 2.43621 10.0303 2 11 2C11.9697 2 12.8712 2.4362 14.6741 3.30862L17.5953 4.72215C19.1984 5.4979 20 5.88577 20 6.5C20 7.11423 19.1984 7.5021 17.5953 8.27785L14.6741 9.69138C12.8712 10.5638 11.9697 11 11 11C10.0303 11 9.12883 10.5638 7.32592 9.69138Z"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M5 12L7 13"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M16 4L6 9"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      Tồn kho
                     </NavLink>
                   </li>
                 </ul>
@@ -528,13 +536,13 @@ const SideBarAdmin = () => {
                 </svg>
               </div>
               {is_openUser && (
-                <ul className="flex flex-col gap-2">
+                <ul className="flex flex-col gap-2 bg-primary/15 rounded-md p-2">
                   <li className="">
                     <NavLink
                       to={"users/role-manager"}
                       end
                       className={
-                        "flex p-2 rounded-md gap-2 border border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
                       }
                     >
                       <svg
@@ -583,7 +591,7 @@ const SideBarAdmin = () => {
                       to={"users"}
                       end
                       className={
-                        "flex p-2 rounded-md gap-2 border border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
                       }
                     >
                       <svg
@@ -767,6 +775,72 @@ const SideBarAdmin = () => {
                   />
                 </svg>
                 Blogs
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to={"chatbot"}
+                end
+                onClick={() => {
+                  setOpenProduct(false);
+                  setOpenUser(false);
+                }}
+                className={
+                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] hover:text-hover transition-all"
+                }
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  className="size-6"
+                  color={"currentColor"}
+                  fill={"none"}
+                >
+                  <path
+                    d="M11 8H13C15.8284 8 17.2426 8 18.1213 8.87868C19 9.75736 19 11.1716 19 14C19 16.8284 19 18.2426 18.1213 19.1213C17.2426 20 15.8284 20 13 20H12C12 20 11.5 22 8 22C8 22 9 20.9913 9 19.9827C7.44655 19.9359 6.51998 19.7626 5.87868 19.1213C5 18.2426 5 16.8284 5 14C5 11.1716 5 9.75736 5.87868 8.87868C6.75736 8 8.17157 8 11 8Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M19 11.5H19.5C20.4346 11.5 20.9019 11.5 21.25 11.701C21.478 11.8326 21.6674 12.022 21.799 12.25C22 12.5981 22 13.0654 22 14C22 14.9346 22 15.4019 21.799 15.75C21.6674 15.978 21.478 16.1674 21.25 16.299C20.9019 16.5 20.4346 16.5 19.5 16.5H19"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M5 11.5H4.5C3.56538 11.5 3.09808 11.5 2.75 11.701C2.52197 11.8326 2.33261 12.022 2.20096 12.25C2 12.5981 2 13.0654 2 14C2 14.9346 2 15.4019 2.20096 15.75C2.33261 15.978 2.52197 16.1674 2.75 16.299C3.09808 16.5 3.56538 16.5 4.5 16.5H5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M13.5 3.5C13.5 4.32843 12.8284 5 12 5C11.1716 5 10.5 4.32843 10.5 3.5C10.5 2.67157 11.1716 2 12 2C12.8284 2 13.5 2.67157 13.5 3.5Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  />
+                  <path
+                    d="M12 5V8"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M9 12V13M15 12V13"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M10 16.5C10 16.5 10.6667 17 12 17C13.3333 17 14 16.5 14 16.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                Chatbot
               </NavLink>
             </li>
           </ul>
