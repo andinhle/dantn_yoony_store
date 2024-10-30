@@ -12,7 +12,7 @@ const Orders = () => {
       case "confirmed":
         return "bg-blue-500 bg-opacity-50"; // Đã xác nhận
       case "preparing_goods":
-        return "bg-orange-500 bg-opacity-50"; // Đang chuẩn bị hàng
+        return "bg-yellow-400 bg-opacity-50"; // Đang chuẩn bị hàng
       case "delivered":
         return "bg-green-500 bg-opacity-50"; // Đã giao
       case "canceled":
@@ -29,7 +29,7 @@ const Orders = () => {
       case "confirmed":
         return "text-blue-500"; // Đã xác nhận
       case "preparing_goods":
-        return "text-orange-500"; // Đang chuẩn bị hàng
+        return "text-yellow-500"; // Đang chuẩn bị hàng
       case "delivered":
         return "text-green-500"; // Đã giao
       case "canceled":
