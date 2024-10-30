@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\admin\EventController;
+use App\Http\Controllers\Admin\InventoryImportController;
+use App\Http\Controllers\Admin\InventoryStockController;
 use App\Http\Controllers\Admin\ModelController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\QuestionController;
@@ -165,12 +167,16 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         //list danh sách các coupon type event
         Route::get('/admin/coupons/events', [EventController::class, 'getAllEventCoupons']);
       
-        // Quản ly đơn hàng
+        // Quản lý đơn hàng
         Route::get('admin/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index']);
         Route::get('admin/order-detail/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'orderDetail']);
         Route::patch('admin/order-detail/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'updateOrderDetail']);
         Route::patch('admin/order-cancelation/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'canceledOrder']);
-        
+
+        // Nhập hàng
+        Route::post('/import-orders', [InventoryImportController::class, 'import']);
+        Route::get('/list-import', [InventoryImportController::class, 'index']);
+        Route::get('/list-stock', [InventoryStockController::class, 'index']);
     });
 
     // Giỏ hàng_user
