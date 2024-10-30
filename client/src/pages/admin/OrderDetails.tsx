@@ -31,10 +31,19 @@ const OrderDetails = () => {
     };
     console.log(selectedStatus)
     const handleConfirmCancel = async () => {
+        if (!cancelReason) {
+            toast.warning("Vui lòng chọn lý do hủy đơn hàng.");
+            return;
+        }
         try {
             // Gửi yêu cầu hủy đơn hàng với lý do hủy
             await instance.patch(`admin/order-cancelation/${code}`, { reason: cancelReason });
+            console.log("reason")
             toast.success("Hủy đơn hàng thành công!");
+            setSelectedStatus("canceled");
+            setOrderDetail((prev) => prev ? { ...prev, status_order: "canceled" } : prev);
+            // Gọi lại fetchOrderDetail để cập nhật thông tin đơn hàng nếu cần
+            fetchOrderDetail(code as string);
         } catch (error: any) {
             console.error("Error cancelling order:", error);
             toast.error(`Error cancelling order: ${error.response?.data?.message || "Unknown error"}`);
@@ -140,7 +149,7 @@ const OrderDetails = () => {
                                             <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-primary text-center">{index + 1}</td>
 
                                             {/* Tên sản phẩm */}
-                                            <td className="px-4 py-4 text-sm font-medium break-words text-primary flex items-center space-x-4">
+                                            <td className="px-4 py-3 text-sm font-medium break-words text-primary flex items-center space-x-4">
                                                 <div>
                                                     <img
                                                         src={item?.variant?.product?.images}
@@ -153,7 +162,7 @@ const OrderDetails = () => {
                                                         {item?.variant?.product?.name || 'N/A'}
                                                     </div>
                                                     <div className="text-uppercase">
-                                                        <td className="text-primary text-uppercase whitespace-nowrap text-sm text-left">
+                                                        <td className="text-gray-400 text-uppercase whitespace-nowrap text-sm text-left">
                                                             {item?.variant?.attribute_values
                                                                 .map((i) => {
                                                                     switch (i.attribute_id) {
@@ -245,16 +254,21 @@ const OrderDetails = () => {
                             <button onClick={handleCancelOrder} type="submit" className="cursor-pointer focus:outline-none my-12 mx-24 text-white bg-red-700 focus:ring-4 focus:ring-red-700 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-primary dark:hover:bg-primary dark:focus:ring-primary">Hủy</button>
                         </div>
                         {showCancelModal && (
-                            <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                                <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+                            <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 overflow-hidden">
+                                <div className="bg-white p-6 rounded-lg shadow-lg w-1/3 max-h-screen overflow-y-auto">
                                     <h3 className="text-lg font-semibold mb-4">Lý do hủy đơn hàng</h3>
-                                    <textarea
-                                        className="w-full p-2 border border-gray-300 rounded-md"
-                                        rows="4"
-                                        value={cancelReason}
-                                        onChange={(e) => setCancelReason(e.target.value)}
-                                        placeholder="Nhập lý do hủy..."
-                                    ></textarea>
+                                    <div className="space-y-2">
+                                        {["Hàng không đúng mẫu", "Giao hàng chậm quá số ngày quy định", "Sai chính sách"].map((reason, idx) => (
+                                            <button
+                                                key={idx}
+                                                className={`w-full p-2 border border-gray-300 rounded-md text-left ${cancelReason === reason ? "bg-gray-200" : ""
+                                                    }`}
+                                                onClick={() => setCancelReason(reason)}
+                                            >
+                                                {reason}
+                                            </button>
+                                        ))}
+                                    </div>
                                     <div className="flex justify-end mt-4">
                                         <button
                                             onClick={handleCloseModal}
@@ -272,6 +286,7 @@ const OrderDetails = () => {
                                 </div>
                             </div>
                         )}
+
                     </div>
 
                 </div>
