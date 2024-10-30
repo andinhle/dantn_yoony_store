@@ -7,6 +7,7 @@ export interface IProduct{
     name:string,
     slug:string,
     images:string[],
+    category?:ICategory
     description:string,
     category_id:ICategory,
     is_active:boolean,
