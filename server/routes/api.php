@@ -200,6 +200,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/order-detail/{code}', [OrderController::class, 'getOrderDetail'])->name('order.getOrderDetail');
     Route::get('/order/{status?}', [OrderController::class, 'getOrder'])->name('order.getOrder');
     Route::patch('/order-cancelation/{id}', [OrderController::class, 'canceledOrder']);
+    Route::post('/orders/filter', [FilterController::class, 'filterOrdersByDate'])->middleware('auth');
+    Route::get('/orders/filter-by-price', [FilterController::class, 'filterOrdersByPrice'])->name('orders.filterByPrice');
 
 
     // checkout
