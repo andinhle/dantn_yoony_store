@@ -8,20 +8,21 @@ import {
   MenuList,
 } from "@mui/material";
 import { MouseEvent, useContext, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import CartContext from "../../../contexts/CartContext";
 import { Popover } from "antd";
 import ShowMiniCart from "../Show/ShowMiniCart";
 import { useAuth } from "../../../providers/AuthProvider";
 import ChatModal from "./ChatModal";
 import ShowNotificationUser from "../Show/ShowNotificationUser";
+import { Divider } from 'antd';
 const NavMenuUser = () => {
   const [chatVisible, setChatVisible] = useState(false); // State cho chat modal
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const { carts } = useContext(CartContext);
   const { user, logout } = useAuth();
-
+  const navigate=useNavigate()
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -32,6 +33,7 @@ const NavMenuUser = () => {
   const handleLogout = () => {
     logout();
     handleClose();
+    navigate('/')
   };
   const toggleChat = () => {
     setChatVisible(!chatVisible); // Chuyển đổi trạng thái của chat modal
@@ -81,7 +83,10 @@ const NavMenuUser = () => {
     <nav className="hidden lg:block">
       <ul className="flex items-center gap-3">
         <li>
-          <Link to="/checkorder" className="flex gap-2 items-center py-2 px-3.5 rounded-md  hover:bg-primary hover:text-util transition-all">
+          <Link
+            to="/checkorder"
+            className="flex gap-2 items-center py-2 px-3.5 rounded-md  hover:bg-primary hover:text-util transition-all"
+          >
             <svg
               width="24"
               height="24"
@@ -174,14 +179,18 @@ const NavMenuUser = () => {
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              fill="none" viewBox="0 0 24 24"
-              strokeWidth={1.5} stroke="currentColor"
-              className="size-6 fill-icon">
-              <path strokeLinecap="round"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="size-6 fill-icon"
+            >
+              <path
+                strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
+                d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418"
+              />
             </svg>
-
             Hỗ trợ
           </button>
         </li>
@@ -192,6 +201,14 @@ const NavMenuUser = () => {
             anchorEl={anchorEl}
             open={open}
             onClose={handleClose}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
             MenuListProps={{
               "aria-labelledby": "btn-account",
             }}
@@ -252,58 +269,95 @@ const NavMenuUser = () => {
                 </Link>
               </MenuList>
             ) : (
-              <MenuItem
-
-                className="flex flex-col transition-all gap-2"
-              >
-                <div className="hover:!text-primary transition-all flex items-center gap-2 w-full" onClick={handleLogout}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="size-5"
+              <MenuList sx={{ width: "100%", maxWidth: "100%", padding: 0 }}>
+                <Link to={"/user-manager"}>
+                  <MenuItem
+                    onClick={handleClose}
+                    className=" hover:!text-primary transition-all py-2 flex items-center gap-2"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"
-                    />
-                  </svg>
-                  <ListItemText
-                    primaryTypographyProps={{ fontSize: 14, padding: 0.5 }}
-                  >
-                    Đăng xuất
-                  </ListItemText>
-                </div>
-                <div className="hover:!text-primary transition-all flex items-center gap-2 w-full">
-                  <Link to={'user-manager'} className="hover:!text-primary transition-all flex items-center gap-1 w-full">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      fill="none" viewBox="0 0 24 24"
-                      strokeWidth={1.5} stroke="currentColor"
-                      className="size-6">
+                      viewBox="0 0 24 24"
+                      className="size-5"
+                      color={"currentColor"}
+                      fill={"none"}
+                    >
                       <path
+                        d="M14 8.99988H18"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d="M14 12.4999H17"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                      <rect
+                        x="2"
+                        y="2.99988"
+                        width="20"
+                        height="18"
+                        rx="5"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M5 15.9999C6.20831 13.4188 10.7122 13.249 12 15.9999"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                      />
+                      <path
+                        d="M10.5 8.99988C10.5 10.1044 9.60457 10.9999 8.5 10.9999C7.39543 10.9999 6.5 10.1044 6.5 8.99988C6.5 7.89531 7.39543 6.99988 8.5 6.99988C9.60457 6.99988 10.5 7.89531 10.5 8.99988Z"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      />
                     </svg>
-
                     <ListItemText
                       primaryTypographyProps={{ fontSize: 14, padding: 0.5 }}
                     >
                       Thông tin tài khoản
                     </ListItemText>
-                  </Link>
-
-                </div>
-              </MenuItem>
+                  </MenuItem>
+                </Link>
+                <Divider style={{margin:7}} dashed />
+                <MenuItem className="flex flex-col transition-all gap-2 hover:!text-primary">
+                  <div
+                    className="flex items-center gap-2 w-full"
+                    onClick={handleLogout}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="size-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"
+                      />
+                    </svg>
+                    <ListItemText
+                      primaryTypographyProps={{ fontSize: 14, padding: 0.5 }}
+                    >
+                      Đăng xuất
+                    </ListItemText>
+                  </div>
+                </MenuItem>
+              </MenuList>
             )}
           </Menu>
         </li>
       </ul>
-      <ChatModal visible={chatVisible} onClose={toggleChat} /> {/* Hiển thị modal chat */}
+      <ChatModal visible={chatVisible} onClose={toggleChat} />{" "}
+      {/* Hiển thị modal chat */}
     </nav>
   );
 };

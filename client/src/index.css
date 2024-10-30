@@ -333,3 +333,14 @@ a:hover .number-cart{
   width: 4px;
   height: 4px;
 }
+.anticon svg{
+  color: #ff9900;
+}
+:where(.css-dev-only-do-not-override-vryruh).ant-steps .ant-steps-item-finish .ant-steps-item-icon{
+  background-color: rgb(255, 153, 0,0.2);
+  border-color:rgb(255, 153, 0,0.2)
+}
+:where(.css-dev-only-do-not-override-vryruh).ant-steps .ant-steps-item-process .ant-steps-item-icon{
+  background-color: #ff9900;
+  border-color:#ff9900
+}

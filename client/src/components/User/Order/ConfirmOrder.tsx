@@ -61,7 +61,7 @@ const ConfirmOrder = ({ current }: Prop) => {
           payload: id_carts,
         });
         toast.success(data.message);
-        navigate("/");
+        navigate("/user-manager/user-orders");
         
         ["id_cart", "orderData", "final_total"].forEach(key => 
           localStorage.removeItem(key)
