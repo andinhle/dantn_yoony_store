@@ -21,7 +21,8 @@ const SidebarUserDetails = () => {
                     <ul>
                         <li className="mb-2">
                             <NavLink
-                                to="user-detail"
+                                to="/user-manager"
+                                end
                                 onClick={() => handleItemClick("tai-khoan")}
                                 className={`flex items-center p-3 cursor-pointer border m-4 rounded-sm border-gray-200  ${selectedItem === "tai-khoan" ? "text-white bg-primary" : "text-gray-700 hover:bg-gray-100"}`}>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 mr-2">

@@ -160,8 +160,8 @@ class OrderController extends Controller
     public function canceledOrder(Request $request ,$code)
     {
         try {
-            $order = Order::query()->findOrFail($code);
-
+            $order = Order::query()->where('code', $code)->first();
+            
             $request->validate([
                 'reason' => 'required|max:225'
             ], [
@@ -175,7 +175,7 @@ class OrderController extends Controller
 
             OrderCancellation::create([
                 'reason' => $reason,
-                'order_id' => $code,
+                'order_id' =>  $order->id,
                 'user_id' => Auth::id(),
             ]);
 
