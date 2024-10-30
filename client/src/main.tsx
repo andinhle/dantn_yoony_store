@@ -87,7 +87,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="blogs" element={<BlogPage />} />
               <Route path="fileds" element={<ProductFilters />} />
               <Route path="user-manager" element={<LayoutUserDetails />}>
-                <Route path="user-detail" element={<UserDetails />} />
+                <Route index element={<UserDetails />} />
                 <Route path="wishlist" element={<WishList />} />
                 <Route path="user-orders" element={<ManagerOrdersUser />} />
                 <Route path="user-orders/order-detail/:code_order" element={<UserOrderDetail />} />
