@@ -9,14 +9,20 @@ use App\Models\Coupon;
 use App\Models\CouponUser;
 use App\Models\Order;
 use App\Models\OrderCoupon;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class PaymentController extends Controller
 {
+    private $tmnCode = "KFDM60UR";
+    private $secretKey = "TSM1WWZ64ZAR2KYEEHAE99OWBYBCW9VQ";
+    private $vnpUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+    private $returnUrl = "http://localhost:5173/returnUrl";
     public function processPayment(Request $request)
     {
         $paymentMethod = $request->payment_method; // Nhận phương thức thanh toán từ form
@@ -279,6 +285,50 @@ class PaymentController extends Controller
     }
 
     return response()->json(['message' => 'Payment processed successfully']);
-}
+    }
+
+    function createPaymentUrl(Request $request)
+    {
+        $language = $request->input('language', 'vn');
+        $ipAddr = request()->ip();
+        $createDate = Carbon::now('Asia/Ho_Chi_Minh')->format('YmdHis');
+        $currCode = "VND";
+        $vnpParams = [
+            'vnp_Version' => '2.1.0',
+            'vnp_Command' => 'pay',
+            'vnp_TmnCode' => $this->tmnCode,
+            'vnp_Locale' => $language,
+            'vnp_CurrCode' => $currCode,
+            'vnp_TxnRef' => Str::random(10),
+            'vnp_OrderInfo' => 'orderDescription 12345646',
+            'vnp_OrderType' => 'other',
+            'vnp_Amount' => 10000 * 100,
+            'vnp_ReturnUrl' => $this->returnUrl,
+            'vnp_IpAddr' => $ipAddr,
+            'vnp_CreateDate' => $createDate,
+        ];
+
+        ksort($vnpParams);
+        $query = "";
+        $hashdata = "";
+        $i = 0;
+        foreach ($vnpParams as $key => $value) {
+            if ($i == 1) {
+                $hashdata .= '&' . urlencode($key) . "=" . urlencode($value);
+            } else {
+                $hashdata .= urlencode($key) . "=" . urlencode($value);
+                $i = 1;
+            }
+            $query .= urlencode($key) . "=" . urlencode($value) . '&';
+        }
+    
+        $query = rtrim($query, '&'); // Remove trailing '&' from query string
+        $vnpSecureHash = hash_hmac('sha512', $hashdata, $this->secretKey);
+        $vnp_Url = $this->vnpUrl . "?" . $query . '&vnp_SecureHash=' . $vnpSecureHash;
+    
+        return response()->json(['paymentUrl' => $vnp_Url]);
+    }
+    
+
 
 }

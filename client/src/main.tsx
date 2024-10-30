@@ -52,6 +52,7 @@ import FiledsProvider from "./contexts/FiledsContext.tsx";
 import LayoutChatAdmin from "./layouts/Admin/LayoutChatAdmin.tsx";
 import ManagerOrdersUser from "./components/User/Manager/ManagerOrdersUser.tsx";
 import UserOrderDetail from "./components/User/Manager/UserOrderDetail.tsx";
+import PaymentCheckVnpay from "./components/User/Order/PaymentCheckVnpay.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -95,6 +96,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="checkorder" element={<CheckOrder />} />
               <Route path="event" element={<EventUser />} />
               <Route path="detailBlog/:slug" element={<BlogDetail/>}/>
+              <Route path="returnUrl" element={<PaymentCheckVnpay/>}/>
             </Route>
             {/* Admin */}
             <Route path="admin" element={<LayoutAdmin />}>
