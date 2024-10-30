@@ -115,7 +115,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="vouchers" element={<LayoutVoucherAdmin />} />
               {/* <Route path="events" element={<LayoutEventAdmin />} /> */}
               <Route path="banner" element={<BannerList />} />
-              <Route path="orders/orderDetails" element={<OrderDetails />} />
+              <Route path="orders/orderDetails/:code" element={<OrderDetails />} />
               <Route path="rates" element={<Rates />} />
               <Route path="chatbot" element={<LayoutChatAdmin />} />
             </Route>
