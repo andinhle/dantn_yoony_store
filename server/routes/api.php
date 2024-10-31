@@ -15,16 +15,19 @@ use App\Http\Controllers\Admin\InventoryStockController;
 use App\Http\Controllers\Admin\ModelController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\QuestionController;
+use App\Http\Controllers\Admin\RatingController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\RoleHasModelController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\CouponUserController;
 use App\Http\Controllers\Client\FilterController;
 use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\client\PaymentController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\Client\OderCheckController;
 use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\client\ChatbotController;
+use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\client\SpinController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -81,6 +84,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Admin
     Route::middleware(['admin'])->group(function () {
         //QL user
+
         // Lấy tất cả thông tin user
         Route::get('/users', [UserController::class, 'index']);
         // Cập nhật role của user
@@ -102,6 +106,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::apiResource('attribute', AttributeController::class);
         Route::apiResource('attribute-value', AttributeValueController::class);
         Route::get('/attribute-values/{id}', [AttributeValueController::class, 'getByAttributeId']);
+
+        // QL banner
+        Route::apiResource('banners', BannerController::class);
+        Route::patch('banners/{id}/is-active', [BannerController::class, 'updateIsActive'])->name('blogs.updateIsActive');
+
+        // QL blog
+        Route::apiResource('blogs', BlogController::class);
+        Route::patch('blogs/{id}/is-active', [BlogController::class, 'updateIsActive'])->name('blogs.updateIsActive');
 
         // QL sản phẩm
         Route::get('/product/{slug}', [ProductController::class, 'findBySlug']);
@@ -167,14 +179,16 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     
     // Order 
-    Route::get('/order-detail/{id}', [OrderController::class, 'getOrderDetail'])->name('order.getOrderDetail');
-    Route::get('/order', [OrderController::class, 'getOrder'])->name('order.getOrder');
+    Route::get('/order-detail/{code}', [OrderController::class, 'getOrderDetail'])->name('order.getOrderDetail');
+    Route::get('/order/{status?}', [OrderController::class, 'getOrder'])->name('order.getOrder');
     Route::patch('/order-cancelation/{id}', [OrderController::class, 'canceledOrder']);
 
 
-    // Order_user
-    // Route::get('/order', [OrderController::class, 'getProduct'])->name('order.getProduct');
+    // checkout
     Route::post('/order', [OrderController::class, 'store'])->name('order.store');
+    Route::post('/checkout', [PaymentController::class, 'processPayment']);
+    Route::get('/vnpay/callback', [PaymentController::class, 'callback']);
+
 
     //Coupon_user
     Route::apiResource('coupon-user', CouponUserController::class);
@@ -188,4 +202,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/reset-daily-spins', [SpinController::class, 'resetDailySpins']);
     Route::post('/claim-coupon/{eventId}/{couponId}', [CouponUserController::class, 'claimCoupon']);
     Route::get('/event-coupons', [OderCheckController::class, 'getEventCoupons']);
+
+    //Review 
+    Route::post('ratings/review', [ReviewController::class, 'review'])->name('ratings.review');
+
 });

@@ -17,7 +17,50 @@ class OrderController extends Controller
        try {
         $perPage = $request->input('per_page', 10);
 
-        $orders = Order::with(['items'])->paginate($perPage);
+        switch ($request->status) {
+            case Order::STATUS_ORDER_PENDING:
+                $orders = Order::query()
+                ->where('status_order', '=', Order::STATUS_ORDER_PENDING)
+                ->with(['items.variant'])
+                ->paginate($perPage);
+                break;
+            case Order::STATUS_ORDER_CONFIRMED:
+                $orders = Order::query()
+                ->where('status_order', '=', Order::STATUS_ORDER_CONFIRMED)
+                ->with(['items.variant'])
+                ->paginate($perPage);                
+                break;
+            case Order::STATUS_ORDER_PREPARING_GOODS:
+                $orders = Order::query()
+                ->where('status_order', '=', Order::STATUS_ORDER_PREPARING_GOODS)
+                ->with(['items.variant'])
+                ->paginate($perPage);                
+                break;
+            case Order::STATUS_ORDER_SHIPPING:
+                $orders = Order::query()
+                ->where('status_order', '=', Order::STATUS_ORDER_SHIPPING)
+                ->with(['items.variant'])
+                ->paginate($perPage);                
+                break;
+            case Order::STATUS_ORDER_DELIVERED:
+                $orders = Order::query()
+                ->where('status_order', '=', Order::STATUS_ORDER_DELIVERED)
+                ->with(['items.variant'])
+                ->paginate($perPage);               
+                 break;
+            case Order::STATUS_ORDER_CANCELED:
+                $orders = Order::query()
+                ->where('status_order', '=', Order::STATUS_ORDER_CANCELED)
+                ->with(['items.variant'])
+                ->paginate($perPage);                
+                break;    
+            default:
+                $orders = Order::query()
+                ->with(['items.variant'])
+                ->paginate($perPage);        
+            }
+
+
 
         return response()->json(
             [
@@ -38,15 +81,15 @@ class OrderController extends Controller
        }
     }
 
-    public function orderDetail($id)
+    public function orderDetail($code)
     {
        try {
 
         $orders = Order::query()
         ->with(['items.variant.attributeValues.attribute', 'items.variant.product'])
-        ->where('id', $id)
+        ->where('code', $code)
         ->firstOrFail();
-
+       
         return response()->json(
             [
                 'data' => $orders,
@@ -66,26 +109,39 @@ class OrderController extends Controller
        }
     }
 
-    public function updateOrderDetail(Request $request, $id)
+    public function updateOrderDetail(Request $request, $code)
     {
        try {
 
         $order = Order::query()
         ->with(['items.variant.attributeValues.attribute', 'items.variant.product'])
-        ->where('id', $id)
+        ->where('code', $code)
         ->firstOrFail();
        
-        // if (!array_key_exists($request->status_order, Order::STATUS_ORDER)) {
-        //     return response()->json(['message' => 'Trạng thái không hợp lệ.'], 400);
-        // }
+        $status = $request->input('status');
 
 
-        $order->update(['status_order' => Order::STATUS_ORDER_CONFIRMED]);
+        switch ($status) {
+            case Order::STATUS_ORDER_PENDING:
+            case Order::STATUS_ORDER_CONFIRMED:
+            case Order::STATUS_ORDER_PREPARING_GOODS:
+            case Order::STATUS_ORDER_SHIPPING:
+            case Order::STATUS_ORDER_DELIVERED:
+            case Order::STATUS_ORDER_CANCELED:
+                $order->status_order = $status;
+                $order->save();
 
-        return response()->json([
-            'message' => 'Cập nhật trạng thái đơn hàng thành công.',
-            'order' => $order,
-        ]);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Trạng thái đơn hàng đã được cập nhật.',
+                    'order' => $order
+                ]);
+            default:
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Trạng thái không hợp lệ.'
+                ], 400);
+        }
 
        } catch (\Throwable $th) {
         Log::error(__CLASS__ . '@' . __FUNCTION__, [
@@ -101,11 +157,11 @@ class OrderController extends Controller
        }
     }
 
-    public function canceledOrder(Request $request ,$id)
+    public function canceledOrder(Request $request ,$code)
     {
         try {
-            $order = Order::query()->findOrFail($id);
-
+            $order = Order::query()->where('code', $code)->first();
+            
             $request->validate([
                 'reason' => 'required|max:225'
             ], [
@@ -119,7 +175,7 @@ class OrderController extends Controller
 
             OrderCancellation::create([
                 'reason' => $reason,
-                'order_id' => $id,
+                'order_id' =>  $order->id,
                 'user_id' => Auth::id(),
             ]);
 

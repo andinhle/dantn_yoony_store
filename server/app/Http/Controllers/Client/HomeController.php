@@ -11,6 +11,7 @@ use App\Models\Answer;
 use App\Models\Blog;
 use App\Models\Category;
 use App\Models\Coupon;
+use App\Models\CouponUser;
 use App\Models\Product;
 use App\Models\Question;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -29,7 +30,7 @@ class HomeController extends Controller
     {
         try {
             event(new CheckExpiredSalePrices());
-            $product = Product::with('category', 'variants.attributeValues.attribute')->where('slug', $slug)->firstOrFail();
+            $product = Product::with('category', 'variants.attributeValues.attribute', 'variants.inventoryStock')->where('slug', $slug)->firstOrFail();
             $relatedProducts = Product::with('category', 'variants.attributeValues.attribute')
                 ->where('category_id', $product->category_id)
                 ->where('is_active', true) // Điều kiện kiểm tra sản phẩm phải active
@@ -247,35 +248,69 @@ class HomeController extends Controller
         }
 
     }
-    public function getCouponCart(Request $request)
+    
+    public function getCouponCart(Request $request) 
     {
         try {
-            $data = Coupon::query()
-            ->where('status', true)
-            ->where('usage_limit','>' , 0)
-            ->where('start_date', '<', Carbon::now())
-            ->where('end_date', '>', Carbon::now())
-            ->where('min_order_value', '<=', $request->totalCart)
-            ->where('max_order_value', '>=', $request->totalCart)
-            ->get();
-
+            // Lấy user id từ request
+            $user = $request->user();
+            
+            // Lấy danh sách coupon_id đã được user sử dụng
+            $usedCouponIds = CouponUser::where('user_id', $user->id)
+                ->whereNotNull('used_at')
+                ->pluck('coupon_id')
+                ->toArray();
+    
+            $query = Coupon::query()
+                ->where('status', true)
+                ->where('usage_limit', '>', 0)
+                ->where('start_date', '<', Carbon::now())
+                ->where('end_date', '>', Carbon::now())
+                ->whereNotIn('id', $usedCouponIds);
+    
+            // Xử lý điều kiện min và max order value
+            $query->where(function($q) use ($request) {
+                $q->where(function($subQuery) use ($request) {
+                    // Trường hợp 1: Không có cả min và max (null)
+                    $subQuery->whereNull('min_order_value')
+                             ->whereNull('max_order_value');
+                })->orWhere(function($subQuery) use ($request) {
+                    // Trường hợp 2: Chỉ có min, không có max
+                    $subQuery->where('min_order_value', '<=', $request->totalCart)
+                             ->whereNull('max_order_value');
+                })->orWhere(function($subQuery) use ($request) {
+                    // Trường hợp 3: Có min, có max
+                    $subQuery->where('min_order_value', '<=', $request->totalCart)
+                             ->where('max_order_value', '>=', $request->totalCart);
+                })->orWhere(function($subQuery) use ($request) {
+                    // Trường hợp 4: Không có min, chỉ có max
+                    $subQuery->whereNull('min_order_value')
+                             ->where('max_order_value', '>=', $request->totalCart);
+                });
+            });
+    
+            // Debug query
+            \Log::info($query->toSql());
+            \Log::info($query->getBindings());
+    
+            $data = $query->get();
+    
             return response()->json([
                 'status' => 'success',
                 'data' => $data,
             ]);
+    
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
                 'message' => $th->getMessage()
             ]);
-
+    
             return response()->json([
                 'message' => 'Đã có lỗi. Vui lòng thử lại',
                 'status' => 'error',
-
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
     }
 
     // FAQ

@@ -42,4 +42,10 @@ class User extends Authenticatable
     public function coupons() {
         return $this->belongsToMany(Coupon::class, 'coupon_user');
     }
+
+    // một người dùng có thể tạo nhiều đánh giá
+     public function rates()
+     {
+         return $this->hasMany(Rate::class);
+     }
 }
