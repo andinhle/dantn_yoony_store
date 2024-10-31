@@ -86,22 +86,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Admin
-    Route::middleware(['dynamic.permission'])->group(function () {
+    Route::middleware(['admin'])->group(function () {
         //QL user
 
         // Lấy tất cả thông tin user
         Route::get('/users', [UserController::class, 'index']);
         // Cập nhật role của user
         Route::patch('/users/{id}/role', [UserController::class, 'updateRole']);
-        // questions
-        Route::apiResource('admin/questions', QuestionController::class);
-        Route::apiResource('questions', QuestionController::class);
-
-        // Câu trả lời
-        Route::get('questions/{questionId}/answers', [QuestionController::class, 'getAnswers']);
-        Route::post('questions/{questionId}/answers', [QuestionController::class, 'storeAnswer']);
-        Route::put('answers/{id}', [QuestionController::class, 'updateAnswer']);
-        Route::delete('answers/{id}', [QuestionController::class, 'destroyAnswer']);
 
         // QL danh mục
         Route::apiResource('category', CategoryController::class);
@@ -128,31 +119,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::apiResource('blogs', BlogController::class);
         Route::patch('blogs/{id}/is-active', [BlogController::class, 'updateIsActive'])->name('blogs.updateIsActive');
 
-        // QL Rating 
-        Route::get('ratings', [RatingController::class, 'getAllRating']);
-        Route::get('ratings/limit10', [RatingController::class, 'getLimitRating10']);
-        Route::get('ratings/by-user', [RatingController::class, 'getRatingByUser']);
-        Route::get('ratings/by-product', [RatingController::class, 'getRatingByProduct']);
-        Route::get('ratings/filter', [RatingController::class, 'filterRating']);
-        Route::get('ratings/{id}', [RatingController::class, 'getOneRatingById'])->name('ratings.getOne');
-
-        // QL quyền
-        Route::apiResource('roles', RoleController::class);
-
-        // Route cho model
-        Route::get('models', [ModelController::class, 'index']);       // Lấy danh sách tất cả các model
-        Route::post('models', [ModelController::class, 'store']);      // Tạo mới một model
-        Route::get('models/{id}', [ModelController::class, 'show']);   // Lấy thông tin chi tiết một model theo ID
-        Route::put('models/{id}', [ModelController::class, 'update']); // Cập nhật thông tin model theo ID
-        Route::delete('models/{id}', [ModelController::class, 'destroy']); // Xóa một model theo ID
-        Route::get('models1', [ModelController::class, 'getModels']); // lấy path của model
-
-        // Route cho gán model vào vai trò
-        Route::get('role-assign-models', [RoleHasModelController::class, 'index']);        // Lấy danh sách các role và model đã gán
-        Route::post('role-assign-model', [RoleHasModelController::class, 'store']);  // Gán một model vào vai trò
-        Route::delete('role-assign-model/{roleId}', [RoleHasModelController::class, 'destroy']); // Gỡ tất cả models khỏi vai trò
-        Route::get('all-models-by-role', [RoleHasModelController::class, 'getAllByRole'])->name('roles.get');
-
         // QL sản phẩm
         Route::get('/product/{slug}', [ProductController::class, 'findBySlug']);
         Route::apiResource('products', ProductController::class);
@@ -161,16 +127,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::patch('product/{id}/is_active', [ProductController::class, 'updateIsActive'])->name('category.updateIsActive');
         Route::patch('product/restore/{id}', [ProductController::class, 'restore'])->name('product.restore');
         Route::delete('product/hard-delete/{id}', [ProductController::class, 'hardDelete'])->name('product.hardDelete');
-
-        // QL FAQ
-        Route::controller(FaqController::class)->prefix('faq/')->group(function (){
-            Route::get('list-question', [FaqController::class, 'listQuestions']);
-            Route::post('store-question', [FaqController::class, 'storeQuestions']);
-            Route::delete('delete-question/{id}', [FaqController::class, 'deleteQuestion']);
-            Route::get('list-answer', [FaqController::class, 'listAnswers']);
-            Route::post('store-answer', [FaqController::class, 'storeAnswers']);
-            Route::delete('delete-answer/{id}', [FaqController::class, 'deleteAnswer']);
-        });
       
         //QL Event
         Route::get('/admin/events/coupons', [EventController::class, 'getEventCoupons']);
@@ -193,6 +149,26 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::post('/import-orders', [InventoryImportController::class, 'import']);
         Route::get('/list-import', [InventoryImportController::class, 'index']);
         Route::get('/list-stock', [InventoryStockController::class, 'index']);
+    });
+    // Admin & Manage
+    Route::middleware(['manage'])->group(function () {
+        // QL FAQ
+        Route::controller(FaqController::class)->prefix('faq/')->group(function (){
+            Route::get('list-question', [FaqController::class, 'listQuestions']);
+            Route::post('store-question', [FaqController::class, 'storeQuestions']);
+            Route::delete('delete-question/{id}', [FaqController::class, 'deleteQuestion']);
+            Route::get('list-answer', [FaqController::class, 'listAnswers']);
+            Route::post('store-answer', [FaqController::class, 'storeAnswers']);
+            Route::delete('delete-answer/{id}', [FaqController::class, 'deleteAnswer']);
+        });
+
+        // QL banner
+        Route::apiResource('banners', BannerController::class);
+        Route::patch('banners/{id}/is-active', [BannerController::class, 'updateIsActive'])->name('blogs.updateIsActive');
+
+        // QL blog
+        Route::apiResource('blogs', BlogController::class);
+        Route::patch('blogs/{id}/is-active', [BlogController::class, 'updateIsActive'])->name('blogs.updateIsActive');
     });
 
     // Giỏ hàng_user
