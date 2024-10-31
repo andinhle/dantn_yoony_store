@@ -88,7 +88,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Admin
     Route::middleware(['admin'])->group(function () {
         //QL user
-
         // Lấy tất cả thông tin user
         Route::get('/users', [UserController::class, 'index']);
         // Cập nhật role của user
@@ -169,6 +168,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         // QL blog
         Route::apiResource('blogs', BlogController::class);
         Route::patch('blogs/{id}/is-active', [BlogController::class, 'updateIsActive'])->name('blogs.updateIsActive');
+
+        // QL Rating 
+        Route::get('ratings', [RatingController::class, 'getAllRating']);
+        Route::get('ratings/limit10', [RatingController::class, 'getLimitRating10']);
+        Route::get('ratings/by-user', [RatingController::class, 'getRatingByUser']);
+        Route::get('ratings/by-product', [RatingController::class, 'getRatingByProduct']);
+        Route::get('ratings/filter', [RatingController::class, 'filterRating']);
+        Route::get('ratings/{id}', [RatingController::class, 'getOneRatingById'])->name('ratings.getOne');
     });
 
     // Giỏ hàng_user

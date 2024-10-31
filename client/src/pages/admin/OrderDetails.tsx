@@ -12,11 +12,12 @@ const OrderDetails = () => {
     const [selectedStatus, setSelectedStatus] = useState(orderDetail?.status_order || '');
     const { code } = useParams<{ code: string }>();
     const orderStatuses = [
-        { value: "pending", label: "pending" },
-        { value: "confirmed", label: "confirmed" },
-        { value: "preparing_goods", label: "preparing_goods" },
-        { value: "delivered", label: "delivered" },
-        { value: "canceled", label: "canceled" },
+        { value: "pending", label: "Chờ xác nhận" },
+        { value: "confirmed", label: "Đã xác nhận" },
+        { value: "preparing_goods", label: "Chuẩn bị hàng" },
+        { value: "shipping", label: "Đang giao" },
+        { value: "delivered", label: "Đã giao hàng" },
+        { value: "canceled", label: "Hủy" },
     ];
     const handleCancelOrder = () => {
         // Hiển thị modal khi người dùng nhấn vào nút "Hủy"
@@ -27,7 +28,14 @@ const OrderDetails = () => {
         setCancelReason(''); // Reset lý do hủy
     };
     const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedStatus(event.target.value);
+        const newStatus = event.target.value;
+        setSelectedStatus(newStatus); // Lưu trạng thái đã chọn
+        if (newStatus === "canceled") {
+            setShowCancelModal(true); // Hiện modal lý do hủy
+        } else {
+            setShowCancelModal(false); // Ẩn modal nếu không phải "Canceled"
+        }
+        // setSelectedStatus(event.target.value);
     };
     console.log(selectedStatus)
     const handleConfirmCancel = async () => {
@@ -203,7 +211,7 @@ const OrderDetails = () => {
 
                                             {/* Tổng giá */}
                                             <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-primary text-center">
-                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item?.total_price|| 0)}
+                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item?.total_price || 0)}
                                             </td>
                                         </tr>
 
@@ -217,9 +225,9 @@ const OrderDetails = () => {
                                 </tr> */}
                                 <tr className="bg-gray-100">
                                     <td colSpan="4" className="px-4 py-4 text-primary  text-right text-sm font-semibold text-secondary-900">Tổng thanh toán:</td>
-                                            <td className="px-4 py-4 whitespace-nowrap text-primary  text-sm font-semibold text-secondary-900">
-                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(orderDetail?.final_total || 0)}
-                                            </td>
+                                    <td className="px-4 py-4 whitespace-nowrap text-primary  text-sm font-semibold text-secondary-900">
+                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(orderDetail?.final_total || 0)}
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -281,11 +289,8 @@ const OrderDetails = () => {
                                 </div>
                             </div>
                         )}
-
                     </div>
-
                 </div>
-
             </div>
 
             <div className="bg-white shadow-md rounded-lg overflow-hidden w-full lg:w-1/3">
