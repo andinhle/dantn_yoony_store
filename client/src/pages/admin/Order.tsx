@@ -7,16 +7,22 @@ import { Input, Space } from 'antd';
 const Orders = () => {
   const [orders, setOrders] = useState<Orders[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-
+  const [searchDate, setSearchDate] = useState("");
   // Hàm xử lý tìm kiếm
-  const handleSearch = (value: any) => {
+  const handleSearch = (value: string) => {
     setSearchTerm(value);
   };
-
+  const handleDateSearch = (value: string) => {
+    setSearchDate(value);
+  };
   // Lọc danh sách đơn hàng theo mã sản phẩm
-  const filteredOrders = orders.filter((item) =>
-    item.code.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredOrders = orders.filter((item) => {
+    const matchesCode = item.code.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDate = searchDate
+      ? new Date(item.created_at).toLocaleDateString("vi-VN") === searchDate
+      : true;
+    return matchesCode && matchesDate;
+  });
   const { Search } = Input;
 
   const getStatusBackground = (status: string) => {
@@ -52,10 +58,6 @@ const Orders = () => {
         return "text-red-500"; // Trạng thái không xác định
     }
   };
-
-
-
-
   const fetchOrders = async () => {
     try {
       const { data: { data: { data: respone } } } = await instance.get("admin/orders");
@@ -84,14 +86,23 @@ const Orders = () => {
   }, [])
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
-      <div className="m-4">
-        <Space direction="vertical">
+      <div className="m-4 flex space-x-4">
+        <Space direction="vertical" className="">
           <Search
             placeholder="Mã đơn hàng (code)"
             allowClear
             enterButton="Search"
             size="large"
             onSearch={handleSearch}
+          />
+        </Space>
+        <Space direction="vertical" className="">
+          <Search
+            placeholder="Ngày đặt hàng"
+            allowClear
+            enterButton="Search"
+            size="large"
+            onSearch={handleDateSearch}
           />
         </Space>
       </div>
