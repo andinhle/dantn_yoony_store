@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('avatar')->nullable();
             $table->string('tel')->nullable();
             $table->string('address')->nullable();
-            $table->foreignId('role_id')->nullable()->constrained('roles');
+            $table->enum('role', ['admin', 'manage'])->nullable()->default(null);
             $table->timestamps();
         });
     }

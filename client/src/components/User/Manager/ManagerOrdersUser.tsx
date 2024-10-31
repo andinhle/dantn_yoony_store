@@ -6,7 +6,7 @@ import { IOrderUserClient } from "../../../interfaces/IOrderUserClient";
 import instance from "../../../instance/instance";
 import { NavLink } from "react-router-dom";
 import dayjs from "dayjs";
-const ManagerOrdersUser = () => {
+const ManagerOrdersUser = () => { 
   const [orderUsers, setListOrderUsers] = useState<IOrderUserClient[]>([]);
   //Get danh sách đơn hàng của người dùng
   useEffect(() => {
