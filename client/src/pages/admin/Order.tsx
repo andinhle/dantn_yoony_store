@@ -24,7 +24,6 @@ const Orders = () => {
     return matchesCode && matchesDate;
   });
   const { Search } = Input;
-
   const getStatusBackground = (status: string) => {
     switch (status) {
       case "pending":
@@ -41,7 +40,6 @@ const Orders = () => {
         return "bg-gray-500 bg-opacity-50"; // Trạng thái không xác định
     }
   };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
@@ -61,9 +59,6 @@ const Orders = () => {
   const fetchOrders = async () => {
     try {
       const { data: { data: { data: respone } } } = await instance.get("admin/orders");
-      // console.log("data:", respone);
-      // toast.success("Successfully");
-      // Kiểm tra xem data.data có phải là mảng không
       if (Array.isArray(respone)) {
         setOrders(respone);
       } else {
