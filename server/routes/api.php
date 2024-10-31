@@ -193,6 +193,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/order-detail/{code}', [OrderController::class, 'getOrderDetail'])->name('order.getOrderDetail');
     Route::get('/order/{status?}', [OrderController::class, 'getOrder'])->name('order.getOrder');
     Route::patch('/order-cancelation/{id}', [OrderController::class, 'canceledOrder']);
+    Route::post('/orders/filter', [FilterController::class, 'filterOrdersByDate'])->middleware('auth');
+    Route::get('/orders/filter-by-price', [FilterController::class, 'filterOrdersByPrice'])->name('orders.filterByPrice');
 
 
     // checkout
@@ -214,7 +216,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/claim-coupon/{eventId}/{couponId}', [CouponUserController::class, 'claimCoupon']);
     Route::get('/event-coupons', [OderCheckController::class, 'getEventCoupons']);
 
-    //Review 
+    //Review client
     Route::post('ratings/review', [ReviewController::class, 'review'])->name('ratings.review');
+    Route::get('/orders/pending-reviews', [ReviewController::class, 'getPendingReviews'])->name('orders.pendingReviews');
+    Route::get('/orders/detail-reviews/{id}', [ReviewController::class, 'detailReview'])->name('orders.detailReview');
+    Route::get('reviews/reviewed-orders', [ReviewController::class, 'getReviewedOrders'])->name('reviews.getReviewedOrders');
 
 });
