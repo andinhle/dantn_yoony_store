@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import instance from "../../../instance/instance";
-import { IOrderUserClient } from "../../../interfaces/IOrderUserClient";
+import instance from "../../../../instance/instance";
+import { IOrderUserClient } from "../../../../interfaces/IOrderUserClient";
 import { Steps, Popover, Input, Radio, Space, message } from "antd";
 import type { RadioChangeEvent } from "antd";
 import { useForm } from "react-hook-form";

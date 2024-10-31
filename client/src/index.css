@@ -344,3 +344,13 @@ a:hover .number-cart{
   background-color: #ff9900;
   border-color:#ff9900
 }
+
+:where(.css-dev-only-do-not-override-o98sq).ant-tabs .ant-tabs-tab-btn .ant-tabs-tab-icon:not(:last-child){
+  margin-inline-end:5px !important;
+}
+
+.rating-user .ant-tabs-tab-btn{
+  display: flex;
+  gap:0;
+  align-items: center;
+}

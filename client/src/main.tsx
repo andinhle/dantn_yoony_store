@@ -50,9 +50,10 @@ import BlogDetail from "./components/User/Blogs/BlogDetail.tsx";
 import ProductFilters from "./components/User/Filter/FilterPrice.tsx";
 import FiledsProvider from "./contexts/FiledsContext.tsx";
 import LayoutChatAdmin from "./layouts/Admin/LayoutChatAdmin.tsx";
-import ManagerOrdersUser from "./components/User/Manager/ManagerOrdersUser.tsx";
-import UserOrderDetail from "./components/User/Manager/UserOrderDetail.tsx";
+import ManagerOrdersUser from "./components/User/Manager/Orders/ManagerOrdersUser.tsx";
+import UserOrderDetail from "./components/User/Manager/Orders/UserOrderDetail.tsx";
 import PaymentCheckVnpay from "./components/User/Order/PaymentCheckVnpay.tsx";
+import UserRatings from "./components/User/Manager/Ratings/UserRatings.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -92,6 +93,8 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="wishlist" element={<WishList />} />
                 <Route path="user-orders" element={<ManagerOrdersUser />} />
                 <Route path="user-orders/order-detail/:code_order" element={<UserOrderDetail />} />
+                <Route path="user-ratings" element={<UserRatings />} />
+                <Route path="user-ratings/rating-detail/:code_order" element={<UserRatings />} />
               </Route>
               <Route path="checkorder" element={<CheckOrder />} />
               <Route path="event" element={<EventUser />} />

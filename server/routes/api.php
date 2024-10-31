@@ -219,7 +219,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     //Review client
     Route::post('ratings/review', [ReviewController::class, 'review'])->name('ratings.review');
     Route::get('/orders/pending-reviews', [ReviewController::class, 'getPendingReviews'])->name('orders.pendingReviews');
-    Route::get('/orders/detail-reviews/{id}', [ReviewController::class, 'detailReview'])->name('orders.detailReview');
+    Route::get('/orders/detail-reviews/{code}', [ReviewController::class, 'detailReview'])->name('orders.detailReview');
     Route::get('reviews/reviewed-orders', [ReviewController::class, 'getReviewedOrders'])->name('reviews.getReviewedOrders');
 
 });

@@ -98,70 +98,87 @@ class ReviewController extends Controller
     public function getPendingReviews(Request $request)
     {
         $userId = auth()->id();
-
+        
         if (!$userId) {
             return response()->json(['message' => 'Người dùng chưa đăng nhập.'], 401);
         }
-
+        
         try {
             $orders = Order::where('user_id', $userId)
                 ->where('status_order', Order::STATUS_ORDER_DELIVERED)
                 ->with(['items.variant.product', 'rates'])
                 ->get();
-
+            
             // Giải mã images cho từng sản phẩm trong đơn hàng
             $pendingReviews = $orders->filter(function ($order) {
                 foreach ($order->items as $item) {
                     $hasRated = $order->rates->contains('product_id', $item->variant->product_id);
+                    
                     if (!$hasRated) {
-                        // Giải mã hình ảnh
+                        // Kiểm tra và giải mã hình ảnh một cách an toàn
                         if ($item->variant->product->images) {
-                            $item->variant->product->images = json_decode($item->variant->product->images, true);
+                            // Nếu đã là mảng thì giữ nguyên, nếu là chuỗi JSON thì giải mã
+                            $item->variant->product->images = is_string($item->variant->product->images) 
+                                ? json_decode($item->variant->product->images, true) 
+                                : $item->variant->product->images;
                         }
                         return true;
                     }
                 }
                 return false;
             });
-
+            
             return response()->json($pendingReviews);
-
         } catch (\Exception $e) {
             // Trả về lỗi nếu có ngoại lệ
             return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
         }
     }
-
-    public function detailReview(string $id)
+    public function detailReview(string $code)
     {
+        // Kiểm tra xác thực người dùng
         $userId = auth()->id();
-
+        
         if (!$userId) {
-            return response()->json(['message' => 'Người dùng chưa đăng nhập.'], 401);
+            return response()->json([
+                'message' => 'Người dùng chưa đăng nhập.'
+            ], 401);
         }
-
+        
         try {
+            // Truy vấn đơn hàng với các quan hệ liên quan
             $order = Order::with(['items.variant.product', 'rates'])
-                ->where('id', $id)
-                ->where('user_id', $userId) // Đảm bảo người dùng là chủ đơn hàng
+                ->where('code', $code)
+                ->where('user_id', $userId)
                 ->first();
-
+            
+            // Kiểm tra đơn hàng có tồn tại không
             if (!$order) {
-                return response()->json(['message' => 'Đơn hàng không tồn tại.'], 404);
+                return response()->json([
+                    'message' => 'Đơn hàng không tồn tại.'
+                ], 404);
             }
-
-            // Giải mã images cho từng sản phẩm trong items
+            
+            // Xử lý hình ảnh sản phẩm
             foreach ($order->items as $item) {
                 if ($item->variant->product->images) {
-                    $item->variant->product->images = json_decode($item->variant->product->images, true);
+                    // Kiểm tra và chuyển đổi hình ảnh
+                    $images = is_string($item->variant->product->images) 
+                        ? json_decode($item->variant->product->images, true) 
+                        : $item->variant->product->images;
+                    
+                    $item->variant->product->images = $images ?: [];
                 }
             }
-
+            
+            // Trả về thông tin đơn hàng
             return response()->json($order, 200);
-
+        
         } catch (\Exception $e) {
-            // Trả về lỗi nếu có ngoại lệ
-            return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
+            // Xử lý ngoại lệ
+            return response()->json([
+                'message' => 'Đã xảy ra lỗi: ' . $e->getMessage()
+            ], 500);
         }
     }
 
