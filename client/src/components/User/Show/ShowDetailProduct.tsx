@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import instance from "../../../instance/instance";
 import { IProduct } from "../../../interfaces/IProduct";
@@ -45,7 +45,7 @@ const ShowDetailProduct: React.FC = () => {
   }>({});
   const [selectedVariant, setSelectedVariant] = useState<IVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const { dispatch } = useContext(CartContext);
+  const {dispatch } = useContext(CartContext);
   const [isZoomEnabled, setIsZoomEnabled] = useState(false);
 
   useEffect(() => {
@@ -62,19 +62,39 @@ const ShowDetailProduct: React.FC = () => {
     fetchProduct();
   }, [slugproduct]);
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      if (variants.length > 0) {
-        const endedSaleVariants = variants.filter(variant => !isSaleActive(variant.end_sale));
-        if (endedSaleVariants.length > 0) {
-          clearInterval(intervalId); 
-          callApiToUpdateData();
-        }
-      }
-    }, 1000); 
+  const intervalId = useRef(null);
+  const callApiToUpdateData = useCallback(async () => {
+    try {
+      const { data } = await instance.get(`home/product/${slugproduct}`);
+      const { data: { data: response } } = await instance.get('cart');
+      dispatch({
+        type: "LIST",
+        payload: response
+      });
+      setRelated_Products(data.related_products);
+    } catch (error) {
+      console.error('Error fetching updated data:', error);
+    }
+  }, [slugproduct, setProduct, setRelated_Products]);
 
-    return () => clearInterval(intervalId);
-  }, [variants]);
+  useEffect(() => {
+    if (variants.length > 0) {
+      const checkVariantSale = variants.filter((item) => item.sale_price);
+      if (checkVariantSale.length > 0) {
+        const updateData = () => {
+          callApiToUpdateData();
+          intervalId.current = setTimeout(updateData, 1000);
+        };
+        updateData();
+      }
+    }
+  
+    return () => {
+      if (intervalId.current) {
+        clearTimeout(intervalId.current);
+      }
+    };
+  }, [callApiToUpdateData, variants]);
 
   const isSaleActive = (endSale: string | undefined): boolean => {
     if (!endSale) return false;
@@ -83,15 +103,7 @@ const ShowDetailProduct: React.FC = () => {
     return endTime > now;
   };
 
-  const callApiToUpdateData = async () => {
-    try {
-      const { data } = await instance.get(`home/product/${slugproduct}`);
-      setProduct(data.product);
-      setRelated_Products(data.related_products);
-    } catch (error) {
-      console.error('Error fetching updated data:', error);
-    }
-  };
+
   const processProductData = (productData: IProduct) => {
     if (productData) {
       const processedVariants = productData.variants.map((variant: any) => ({
@@ -215,6 +227,7 @@ const ShowDetailProduct: React.FC = () => {
           type: "ADD",
           payload: response,
         });
+        console.log(response)
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {

@@ -6,7 +6,7 @@ import { IOrderUserClient } from "../../../interfaces/IOrderUserClient";
 import instance from "../../../instance/instance";
 import { NavLink } from "react-router-dom";
 import dayjs from "dayjs";
-const ManagerOrdersUser = () => {
+const ManagerOrdersUser = () => { 
   const [orderUsers, setListOrderUsers] = useState<IOrderUserClient[]>([]);
   //Get danh sách đơn hàng của người dùng
   useEffect(() => {
@@ -18,17 +18,12 @@ const ManagerOrdersUser = () => {
         if (response) {
           setListOrderUsers(response);
         }
+        console.log(response)
       } catch (error) {
         console.log(error);
       }
     })();
   }, []);
-  //Get detail đơn hàng của người dùng
-  // useEffect(() => {
-  //   return () => {
-  //     effect
-  //   };
-  // }, [])
   const items: MenuProps["items"] = [
     {
       label: <a href="https://www.antgroup.com">1st menu item</a>,
@@ -374,7 +369,6 @@ const ManagerOrdersUser = () => {
             <span>Huỷ đơn</span>
           </button>
         );
-
       case "delivered":
         return (
           <button
@@ -628,7 +622,7 @@ const ManagerOrdersUser = () => {
               {orderUsers &&
                 orderUsers.map((orderUser) => {
                   return (
-                    <Table.Row className="bg-white border-b border-[#EBEDF0] border-dashed">
+                    <Table.Row className="bg-white border-b border-[#EBEDF0] border-dashed" key={orderUser.id}>
                       <Table.Cell className="whitespace-nowrap text-primary">
                         <span className="border border-primary border-dashed py-1 px-2 rounded-sm bg-primary/10">
                           {`#${orderUser.code}`}

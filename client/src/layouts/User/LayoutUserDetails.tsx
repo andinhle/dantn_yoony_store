@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import SidebarUserDetails from "../../components/User/Auth/SidebarUserDetails";
+import SidebarUserDetails from "../../components/User/Header/SidebarUserDetails";
 
 const LayoutUserDetails = () => {
   return (
