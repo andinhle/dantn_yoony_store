@@ -198,10 +198,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 
     // checkout
-    Route::post('/order', [OrderController::class, 'store'])->name('order.store');
     Route::post('/checkout', [PaymentController::class, 'processPayment']);
-    Route::get('/vnpay/callback', [PaymentController::class, 'callback']);
-
+    Route::post('/vnpay/callback', [PaymentController::class, 'callback'])->name('callback');
+    
+    
 
     //Coupon_user
     Route::apiResource('coupon-user', CouponUserController::class);
