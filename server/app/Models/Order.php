@@ -50,4 +50,9 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
+     // Thêm mối quan hệ với Rate
+     public function rates()
+     {
+         return $this->hasMany(Rate::class);
+     }
 }
