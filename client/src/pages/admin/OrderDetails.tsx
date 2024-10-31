@@ -203,7 +203,7 @@ const OrderDetails = () => {
 
                                             {/* Tổng giá */}
                                             <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-primary text-center">
-                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item?.total_price || 0)}
+                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item?.total_price|| 0)}
                                             </td>
                                         </tr>
 
@@ -217,14 +217,9 @@ const OrderDetails = () => {
                                 </tr> */}
                                 <tr className="bg-gray-100">
                                     <td colSpan="4" className="px-4 py-4 text-primary  text-right text-sm font-semibold text-secondary-900">Tổng thanh toán:</td>
-                                    {orderDetail?.items?.map((item) => {
-                                        return (
                                             <td className="px-4 py-4 whitespace-nowrap text-primary  text-sm font-semibold text-secondary-900">
-                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item?.total_price || 0)}
+                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(orderDetail?.final_total || 0)}
                                             </td>
-                                        )
-                                    })}
-
                                 </tr>
                             </tbody>
                         </table>
