@@ -8,9 +8,11 @@ import axios from "axios";
 import { AttributeContext } from "../../../contexts/AttributeContext";
 import { useContext } from "react";
 import { IAttributeValue } from "../../../interfaces/IAttributeValue";
+import { AttributeValueContext } from "../../../contexts/AttributeValueContext";
 
 const AddAttributeValue = () => {
-  const { attributes, dispatch } = useContext(AttributeContext);
+  const { attributes } = useContext(AttributeContext);
+  const { dispatch } = useContext(AttributeValueContext);
   const {
     register,
     formState: { errors },
@@ -22,9 +24,12 @@ const AddAttributeValue = () => {
   //Thêm giá trị thuộc tính biến thể
   const onSubmit = async (dataForm: IAttributeValue) => {
     try {
-      console.log(dataForm);
-      const data = await instance.post("attribute-value", dataForm);
-      if (data) {
+      const {data:{data:response}} = await instance.post("attribute-value", dataForm);
+      if (response) {
+        dispatch({
+          type:"ADD",
+          payload:response
+        })
         reset();
         toast.success("Thêm giá trị attribute thành công!");
       }

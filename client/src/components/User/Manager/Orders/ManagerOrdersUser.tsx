@@ -2,8 +2,8 @@ import { Dropdown, Input } from "antd";
 import type { MenuProps } from "antd";
 import { Table } from "flowbite-react";
 import { useEffect, useState } from "react";
-import { IOrderUserClient } from "../../../interfaces/IOrderUserClient";
-import instance from "../../../instance/instance";
+import { IOrderUserClient } from "../../../../interfaces/IOrderUserClient";
+import instance from "../../../../instance/instance";
 import { NavLink } from "react-router-dom";
 import dayjs from "dayjs";
 const ManagerOrdersUser = () => { 

@@ -338,8 +338,6 @@ const CartListClient = () => {
 
   localStorage.setItem("id_cart", JSON.stringify(selectedRowKeys));
   localStorage.setItem("final_total", JSON.stringify(selectedTotal));
-
-  console.log(carts)
   return (
     <section className="my-7 space-y-7">
       <h2 className="flex gap-1.5 text-2xl text-primary font-medium">
