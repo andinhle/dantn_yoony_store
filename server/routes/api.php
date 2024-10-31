@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\admin\EventController;
+use App\Http\Controllers\Admin\InventoryImportController;
+use App\Http\Controllers\Admin\InventoryStockController;
 use App\Http\Controllers\Admin\ModelController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\QuestionController;
@@ -29,6 +31,10 @@ use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\client\SpinController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -177,12 +183,16 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         //list danh sách các coupon type event
         Route::get('/admin/coupons/events', [EventController::class, 'getAllEventCoupons']);
       
-        // Quản ly đơn hàng
-        Route::get('admin/orders/{status?}', [\App\Http\Controllers\Admin\OrderController::class, 'index']);
-        Route::get('admin/order-detail/{code}', [\App\Http\Controllers\Admin\OrderController::class, 'orderDetail']);
-        Route::patch('admin/order-detail/{code}', [\App\Http\Controllers\Admin\OrderController::class, 'updateOrderDetail']);
-        Route::patch('admin/order-cancelation/{code}', [\App\Http\Controllers\Admin\OrderController::class, 'canceledOrder']);
-        
+        // Quản lý đơn hàng
+        Route::get('admin/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index']);
+        Route::get('admin/order-detail/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'orderDetail']);
+        Route::patch('admin/order-detail/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'updateOrderDetail']);
+        Route::patch('admin/order-cancelation/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'canceledOrder']);
+
+        // Nhập hàng
+        Route::post('/import-orders', [InventoryImportController::class, 'import']);
+        Route::get('/list-import', [InventoryImportController::class, 'index']);
+        Route::get('/list-stock', [InventoryStockController::class, 'index']);
     });
 
     // Giỏ hàng_user
@@ -203,9 +213,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 
     // checkout
-
     Route::post('/checkout', [PaymentController::class, 'processPayment']);
-    Route::get('/vnpay/callback', [PaymentController::class, 'callback'])->name('callback');
+    Route::post('/vnpay/callback', [PaymentController::class, 'callback'])->name('callback');
     
     
 

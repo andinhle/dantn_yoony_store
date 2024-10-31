@@ -1,4 +1,5 @@
 import { IAttributeValue } from "./IAttributeValue";
+import { IProduct } from "./IProduct";
 
 export interface IVariants{
     id?:number,
@@ -7,6 +8,7 @@ export interface IVariants{
     end_sale?:string,
     image:string,
     attribute_values:IAttributeValue[]
+    product:IProduct
 }
 
 
