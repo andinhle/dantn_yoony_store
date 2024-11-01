@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import {  useNavigate } from "react-router-dom"
-import type { Orders } from "../../interfaces/IOrders";
-import instance from "../../instance/instance";
+import type { Orders } from "../../../interfaces/IOrders";
+import instance from "../../../instance/instance";
 import { toast } from "react-toastify";
 import { Input, Select, Space } from 'antd';
 const Orders = () => {
@@ -42,7 +42,7 @@ const Orders = () => {
       case "delivered":
         return "bg-green-200 bg-opacity-100"; // Đã giao
       case "canceled":
-        return "bg-red-500 bg-opacity-100"; // Đã hủy
+        return "bg-red-200 bg-opacity-100"; // Đã hủy
       default:
         return "bg-gray-500 bg-opacity-100"; // Trạng thái không xác định
     }
