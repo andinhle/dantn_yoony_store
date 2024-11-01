@@ -17,7 +17,6 @@ class ReviewController extends Controller
             // Xác thực dữ liệu đầu vào
             $validatedData = $request->validate([
                 'order_id' => 'required|exists:orders,id',
-                'review' => 'required|array',
                 'review.*.product_id' => 'required|exists:products,id',
                 'review.*.rating' => 'required|integer|min:1|max:5',
                 'review.*.content' => 'nullable|string',
