@@ -48,7 +48,7 @@ public function index()
             $variant = Variant::create([
                 'price' => $variantData['price'],
                 'sale_price' => $variantData['sale_price'],
-                'end_sale' => $variantData['end_sale'],
+                'end_sale' => $variantData['end_sale'] ?? null,
                 'image' => $variantData['image'] ?? null,
                 'product_id' => $product->id,
             ]);
@@ -107,7 +107,7 @@ public function index()
                 [
                     'price' => $variantData['price'],
                     'sale_price' => $variantData['sale_price'],
-                    'end_sale' => $variantData['end_sale'],
+                    'end_sale' => $variantData['end_sale']?? null,
                     'image' => $variantData['image'] ?? null,
                 ]
             );

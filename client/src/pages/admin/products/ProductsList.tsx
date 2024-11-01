@@ -20,6 +20,7 @@ const ProductList = () => {
     }
     return avatars;
   };
+  
   const handleRemoveProduct = async (id: number) => {
     try {
       const data = await instance.delete(`products/${id}`);
@@ -40,6 +41,7 @@ const ProductList = () => {
       }
     }
   };
+
   return (
     <div className="space-y-5">
       <div className="flex justify-between">

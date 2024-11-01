@@ -54,4 +54,9 @@ class Order extends Model
     {
         return $this->hasMany(OrderCoupon::class);
     }
+  
+     public function rates()
+     {
+         return $this->hasMany(Rate::class);
+     }
 }
