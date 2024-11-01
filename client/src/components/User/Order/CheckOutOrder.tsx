@@ -4,7 +4,7 @@ import ConfirmOrder from "./ConfirmOrder";
 import AddressOrder from "./AddressOrder";
 import SelectMethodPayment from "./SelectMethodPayment";
 import OrderSummary from "./OrderSummary";
-
+import { LoadingOverlay } from "@achmadk/react-loading-overlay";
 const CustomIcon = ({ icon, isCompleted }) => (
   <div
     className={`custom-icon-wrapper p-2 rounded-md ${
@@ -140,30 +140,34 @@ const CheckOutOrder = () => {
 
   return (
     <>
-      <section className="my-7 space-y-7">
-        <h2 className="flex gap-1.5 text-2xl text-primary font-medium">
-          ĐẶT HÀNG
-        </h2>
-        <div className="grid grid-cols-12 gap-5">
-          <div className="col-span-9">
-            <Steps labelPlacement="vertical" current={current} items={items} />
-            <div style={contentStyle}>
+        <section className="my-7 space-y-7">
+          <h2 className="flex gap-1.5 text-2xl text-primary font-medium">
+            ĐẶT HÀNG
+          </h2>
+          <div className="grid grid-cols-12 gap-5">
+            <div className="col-span-9">
+              <Steps
+                labelPlacement="vertical"
+                current={current}
+                items={items}
+              />
+              <div style={contentStyle}>
                 {/* {steps[current].content} */}
                 {current === 0 && <AddressOrder ref={addressOrderRef} />}
                 {current === 1 && <SelectMethodPayment />}
                 {current === 2 && <OrderSummary />}
-            </div>
-            <div style={{ marginTop: 24 }}>
-              {current < steps.length - 1 && (
-                <Button
-                  type="primary"
-                  style={{ marginRight: "8px" }}
-                  onClick={() => next()}
-                >
-                  Tiếp tục
-                </Button>
-              )}
-              {/* {current === steps.length - 1 && (
+              </div>
+              <div style={{ marginTop: 24 }}>
+                {current < steps.length - 1 && (
+                  <Button
+                    type="primary"
+                    style={{ marginRight: "8px" }}
+                    onClick={() => next()}
+                  >
+                    Tiếp tục
+                  </Button>
+                )}
+                {/* {current === steps.length - 1 && (
                 <Button
                   type="primary"
                   onClick={() => message.success("Processing complete!")}
@@ -171,12 +175,14 @@ const CheckOutOrder = () => {
                   Done
                 </Button>
               )} */}
-              {current > 0 && <Button onClick={() => prev()}>Quay lại</Button>}
+                {current > 0 && (
+                  <Button onClick={() => prev()}>Quay lại</Button>
+                )}
+              </div>
             </div>
+            <ConfirmOrder current={current}  />
           </div>
-          <ConfirmOrder current={current} />
-        </div>
-      </section>
+        </section>
     </>
   );
 };
