@@ -128,7 +128,7 @@ class OrderController extends Controller
         try {
             
             $data = Order::query()
-            ->with(['items.variant.attributeValues.attribute', 'items.variant.product','items.variant.product.category'])
+            ->with(['items.variant.attributeValues.attribute', 'items.variant.product','items.variant.product.category', 'coupons', 'user'])
             ->where('user_id', Auth::id())
             ->where('code', $code)
             ->firstOrFail();
