@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('rates', function (Blueprint $table) {
             $table->id();
-            $table->text('content');
-            $table->tinyInteger('rating');
+            $table->text('content')->nullable();
+            $table->tinyInteger('rating')->default(5);
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
