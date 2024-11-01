@@ -198,10 +198,11 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 
     // checkout
-    Route::post('/order', [OrderController::class, 'store'])->name('order.store');
     Route::post('/checkout', [PaymentController::class, 'processPayment']);
-    Route::get('/vnpay/callback', [PaymentController::class, 'callback']);
-
+    Route::post('/vnpay/callback', [PaymentController::class, 'callback'])->name('callback');
+    Route::post('/checkout-vnpay', [PaymentController::class, 'handleOrder']);
+    
+    
 
     //Coupon_user
     Route::apiResource('coupon-user', CouponUserController::class);
@@ -219,7 +220,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     //Review client
     Route::post('ratings/review', [ReviewController::class, 'review'])->name('ratings.review');
     Route::get('/orders/pending-reviews', [ReviewController::class, 'getPendingReviews'])->name('orders.pendingReviews');
-    Route::get('/orders/detail-reviews/{id}', [ReviewController::class, 'detailReview'])->name('orders.detailReview');
+    Route::get('/orders/detail-reviews/{code}', [ReviewController::class, 'detailReview'])->name('orders.detailReview');
     Route::get('reviews/reviewed-orders', [ReviewController::class, 'getReviewedOrders'])->name('reviews.getReviewedOrders');
 
 });
