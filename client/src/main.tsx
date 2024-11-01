@@ -54,6 +54,7 @@ import ManagerOrdersUser from "./components/User/Manager/Orders/ManagerOrdersUse
 import UserOrderDetail from "./components/User/Manager/Orders/UserOrderDetail.tsx";
 import PaymentCheckVnpay from "./components/User/Order/PaymentCheckVnpay.tsx";
 import UserRatings from "./components/User/Manager/Ratings/UserRatings.tsx";
+import RatingDetailOrder from "./components/User/Manager/Ratings/RatingDetailOrder.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -94,12 +95,11 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="user-orders" element={<ManagerOrdersUser />} />
                 <Route path="user-orders/order-detail/:code_order" element={<UserOrderDetail />} />
                 <Route path="user-ratings" element={<UserRatings />} />
-                <Route path="user-ratings/rating-detail/:code_order" element={<UserRatings />} />
+                <Route path="user-ratings/rating-detail/:code_order" element={<RatingDetailOrder />} />
               </Route>
               <Route path="checkorder" element={<CheckOrder />} />
               <Route path="event" element={<EventUser />} />
               <Route path="detailBlog/:slug" element={<BlogDetail/>}/>
-              <Route path="returnUrl" element={<PaymentCheckVnpay/>}/>
             </Route>
             {/* Admin */}
             <Route path="admin" element={<LayoutAdmin />}>

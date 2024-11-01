@@ -66,7 +66,7 @@ const SidebarUserDetails = () => {
           </li>
           <li className="mb-2">
             <NavLink
-              to="user-ratings" end
+              to="user-ratings"
               className={`flex items-center px-3 py-2.5 cursor-pointer border m-4 rounded-sm hover:bg-[#fafafe] hover:text-hover transition-all border-[#f1f1f1] gap-2 
               }`}
             >

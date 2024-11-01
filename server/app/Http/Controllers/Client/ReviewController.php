@@ -134,55 +134,86 @@ class ReviewController extends Controller
             return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
         }
     }
+
     public function detailReview(string $code)
     {
-        // Kiểm tra xác thực người dùng
         $userId = auth()->id();
-        
+
         if (!$userId) {
-            return response()->json([
-                'message' => 'Người dùng chưa đăng nhập.'
-            ], 401);
+            return response()->json(['message' => 'Người dùng chưa đăng nhập.'], 401);
         }
-        
+
         try {
-            // Truy vấn đơn hàng với các quan hệ liên quan
-            $order = Order::with(['items.variant.product', 'rates'])
+            $order = Order::with(['items.variant.product','items.variant.attributeValues.attribute', 'rates','items.variant.product.category'])
                 ->where('code', $code)
-                ->where('user_id', $userId)
+                ->where('user_id', $userId) 
                 ->first();
-            
-            // Kiểm tra đơn hàng có tồn tại không
+
             if (!$order) {
-                return response()->json([
-                    'message' => 'Đơn hàng không tồn tại.'
-                ], 404);
+                return response()->json(['message' => 'Đơn hàng không tồn tại.'], 404);
             }
-            
-            // Xử lý hình ảnh sản phẩm
+
             foreach ($order->items as $item) {
-                if ($item->variant->product->images) {
-                    // Kiểm tra và chuyển đổi hình ảnh
-                    $images = is_string($item->variant->product->images) 
-                        ? json_decode($item->variant->product->images, true) 
-                        : $item->variant->product->images;
-                    
-                    $item->variant->product->images = $images ?: [];
+                if (is_string($item->variant->product->images)) {
+                    $item->variant->product->images = json_decode($item->variant->product->images, true);
                 }
             }
-            
-            // Trả về thông tin đơn hàng
-            return response()->json($order, 200);
-        
+
+            $reviews = [];
+            foreach ($order->rates as $rate) {
+                $reviews[$rate->product_id] = [
+                    'rating' => $rate->rating,
+                    'content' => $rate->content,
+                ];
+            }
+
+            $groupedItems = [];
+            foreach ($order->items as $item) {
+                $productId = $item->variant->product_id;
+
+                if (!isset($groupedItems[$productId])) {
+                    $groupedItems[$productId] = [
+                        'product' => $item->variant->product, 
+                        'variant_lists' => [], 
+                        'review' => isset($reviews[$productId]) ? $reviews[$productId] : null, 
+                    ];
+                }
+
+                // Thêm item vào mảng items của sản phẩm
+                $groupedItems[$productId]['variant_lists'][] = [
+                    'id' => $item->id,
+                    'order_id' => $item->order_id,
+                    'variant_id' => $item->variant_id,
+                    'quantity' => $item->quantity,
+                    'unit_price' => $item->unit_price,
+                    'total_price' => $item->total_price,
+                    'variant' => $item->variant, 
+                ];
+            }
+
+            // Tạo cấu trúc JSON cần thiết
+            $response = [
+                'order_id' => $order->id,
+                'user_id' => $order->user_id,
+                'grand_total' => $order->grand_total,
+                'final_total' => $order->final_total,
+                'payment_method' => $order->payment_method,
+                'status_order' => $order->status_order,
+                'code' => $order->code,
+                'notes' => $order->notes,
+                'name' => $order->name,
+                'tel' => $order->tel,
+                'address' => $order->address,
+                'items' => array_values($groupedItems), // Chuyển đổi mảng liên kết thành mảng số
+            ];
+
+            return response()->json($response, 200);
+
         } catch (\Exception $e) {
-            // Xử lý ngoại lệ
-            return response()->json([
-                'message' => 'Đã xảy ra lỗi: ' . $e->getMessage()
-            ], 500);
+            // Trả về lỗi nếu có ngoại lệ
+            return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
         }
     }
-
-
 
     public function getReviewedOrders(Request $request)
     {

@@ -333,9 +333,8 @@ a:hover .number-cart{
   width: 4px;
   height: 4px;
 }
-.anticon svg{
-  color: #ff9900;
-}
+
+
 :where(.css-dev-only-do-not-override-vryruh).ant-steps .ant-steps-item-finish .ant-steps-item-icon{
   background-color: rgb(255, 153, 0,0.2);
   border-color:rgb(255, 153, 0,0.2)
@@ -348,9 +347,10 @@ a:hover .number-cart{
 :where(.css-dev-only-do-not-override-o98sq).ant-tabs .ant-tabs-tab-btn .ant-tabs-tab-icon:not(:last-child){
   margin-inline-end:5px !important;
 }
+:where(.css-dev-only-do-not-override-vryruh).ant-steps .ant-steps-item-finish .ant-steps-item-icon >.ant-steps-icon{
+  color: #ff9900 !important;
+}
 
-.rating-user .ant-tabs-tab-btn{
-  display: flex;
-  gap:0;
-  align-items: center;
+._loading_overlay_content{
+  color: #ff9900 !important;
 }

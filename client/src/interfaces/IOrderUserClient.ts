@@ -5,6 +5,7 @@ interface ItemsOrder {
     total_price: number
     unit_price: number,
     variant: IVariants
+    
 }
 export interface IOrderUserClient {
     id?: number;

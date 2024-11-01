@@ -200,6 +200,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // checkout
     Route::post('/checkout', [PaymentController::class, 'processPayment']);
     Route::post('/vnpay/callback', [PaymentController::class, 'callback'])->name('callback');
+    Route::post('/checkout-vnpay', [PaymentController::class, 'handleOrder']);
     
     
 
