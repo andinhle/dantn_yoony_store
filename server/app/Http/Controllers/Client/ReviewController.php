@@ -138,27 +138,27 @@ class ReviewController extends Controller
     public function detailReview(string $code)
     {
         $userId = auth()->id();
-
+    
         if (!$userId) {
             return response()->json(['message' => 'Người dùng chưa đăng nhập.'], 401);
         }
-
+    
         try {
-            $order = Order::with(['items.variant.product','items.variant.attributeValues.attribute', 'rates','items.variant.product.category'])
+            $order = Order::with(['items.variant.product', 'items.variant.attributeValues.attribute', 'rates', 'items.variant.product.category'])
                 ->where('code', $code)
-                ->where('user_id', $userId) 
+                ->where('user_id', $userId)
                 ->first();
-
+    
             if (!$order) {
                 return response()->json(['message' => 'Đơn hàng không tồn tại.'], 404);
             }
-
+    
             foreach ($order->items as $item) {
                 if (is_string($item->variant->product->images)) {
                     $item->variant->product->images = json_decode($item->variant->product->images, true);
                 }
             }
-
+    
             $reviews = [];
             foreach ($order->rates as $rate) {
                 $reviews[$rate->product_id] = [
@@ -166,19 +166,24 @@ class ReviewController extends Controller
                     'content' => $rate->content,
                 ];
             }
-
+    
             $groupedItems = [];
             foreach ($order->items as $item) {
                 $productId = $item->variant->product_id;
-
+    
+                $review = isset($reviews[$productId]) ? $reviews[$productId] : null;
+                if ($review === null) {
+                    continue;
+                }
+    
                 if (!isset($groupedItems[$productId])) {
                     $groupedItems[$productId] = [
-                        'product' => $item->variant->product, 
-                        'variant_lists' => [], 
-                        'review' => isset($reviews[$productId]) ? $reviews[$productId] : null, 
+                        'product' => $item->variant->product,
+                        'variant_lists' => [],
+                        'review' => $review,
                     ];
                 }
-
+    
                 // Thêm item vào mảng items của sản phẩm
                 $groupedItems[$productId]['variant_lists'][] = [
                     'id' => $item->id,
@@ -187,10 +192,10 @@ class ReviewController extends Controller
                     'quantity' => $item->quantity,
                     'unit_price' => $item->unit_price,
                     'total_price' => $item->total_price,
-                    'variant' => $item->variant, 
+                    'variant' => $item->variant,
                 ];
             }
-
+    
             // Tạo cấu trúc JSON cần thiết
             $response = [
                 'order_id' => $order->id,
@@ -206,15 +211,15 @@ class ReviewController extends Controller
                 'address' => $order->address,
                 'items' => array_values($groupedItems), // Chuyển đổi mảng liên kết thành mảng số
             ];
-
+    
             return response()->json($response, 200);
-
+    
         } catch (\Exception $e) {
             // Trả về lỗi nếu có ngoại lệ
             return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
         }
     }
-
+    
     public function getReviewedOrders(Request $request)
     {
         $userId = auth()->id();
