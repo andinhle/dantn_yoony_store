@@ -28,6 +28,7 @@ const CardProductAll = ({
   category,
 }: // id_Product,
 Props) => {
+  const saleVariant = variants.find((variant) => variant.sale_price);
   return (
     <div className="min-h-[355px] group max-w-[220px] w-full bg-util rounded-lg overflow-hidden shadow-[0px_1px_4px_0px_rgba(255,_138,_0,_0.25)] cursor-pointer">
       <div className="relative z-40 overflow-hidden">
@@ -121,23 +122,37 @@ Props) => {
       </div>
       <Link to={`/${category}/${slugify(nameProduct)}`}>
         <div className="px-3.5 space-y-3 py-3">
-          <p className="line-clamp-1 text-sm  md:text-base">{nameProduct}</p>
+          <p className="line-clamp-1 text-sm md:text-base">{nameProduct}</p>
           <div className="flex gap-2 text-sm">
-            <span className="line-through">
-              {variants[0]?.price
-                .toLocaleString("vi-VN", {
-                  useGrouping: true,
-                  maximumFractionDigits: 0,
-                })
-                .replace(/,/g, ".")+'đ'}
-            </span>
-            <span className="text-primary font-medium">
-              {variants[0]?.sale_price?.toLocaleString("vi-VN", {
-                  useGrouping: true,
-                  maximumFractionDigits: 0,
-                })
-                .replace(/,/g, ".")+'đ'}
-            </span>
+            {saleVariant ? (
+              <>
+                <span className="line-through">
+                  {saleVariant.price
+                    .toLocaleString("vi-VN", {
+                      useGrouping: true,
+                      maximumFractionDigits: 0,
+                    })
+                    .replace(/,/g, ".") + "đ"}
+                </span>
+                <span className="text-primary font-medium">
+                  {saleVariant.sale_price
+                    ?.toLocaleString("vi-VN", {
+                      useGrouping: true,
+                      maximumFractionDigits: 0,
+                    })
+                    .replace(/,/g, ".") + "đ"}
+                </span>
+              </>
+            ) : (
+              <span className="text-primary font-medium">
+                {variants[0]?.price
+                  .toLocaleString("vi-VN", {
+                    useGrouping: true,
+                    maximumFractionDigits: 0,
+                  })
+                  .replace(/,/g, ".") + "đ"}
+              </span>
+            )}
           </div>
           <Swiper
             slidesPerView={6}

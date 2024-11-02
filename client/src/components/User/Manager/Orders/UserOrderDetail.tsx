@@ -20,6 +20,7 @@ const UserOrderDetail = () => {
       const {
         data: { data: response },
       } = await instance.get(`order-detail/${code_order}`);
+      console.log(response);
       setOrderDetails(response);
     })();
   }, [valueReason]);
@@ -299,7 +300,7 @@ const UserOrderDetail = () => {
       case "shipping":
         return setCheckStatusCurrent(3);
       case "delivered":
-        return setCheckStatusCurrent(4);
+        return setCheckStatusCurrent(5);
       default:
         break;
     }
@@ -425,6 +426,86 @@ const UserOrderDetail = () => {
     }
   };
 
+  const checkButtonCancel = (status_order: string) => {
+    switch (status_order) {
+      case "shipping":
+      case "delivered":
+      case "canceled":
+        return (
+          <button
+            type="button"
+            disabled
+            className=" text-secondary/20 bg-secondary/10 hover:cursor-not-allowed py-1.5 px-2 flex items-center flex-nowrap gap-1 rounded-sm"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="size-5"
+              color={"currentColor"}
+              fill={"none"}
+            >
+              <path
+                d="M12 22C11.1818 22 10.4002 21.6708 8.83693 21.0123C4.94564 19.3734 3 18.5539 3 17.1754V7.54234M12 22C12.8182 22 13.5998 21.6708 15.1631 21.0123C19.0544 19.3734 21 18.5539 21 17.1754V7.54234M12 22V12.0292M21 7.54234C21 8.15478 20.1984 8.54152 18.5953 9.315L15.6741 10.7244C13.8712 11.5943 12.9697 12.0292 12 12.0292M21 7.54234C21 6.9299 20.1984 6.54316 18.5953 5.76969L17 5M3 7.54234C3 8.15478 3.80157 8.54152 5.40472 9.315L8.32592 10.7244C10.1288 11.5943 11.0303 12.0292 12 12.0292M3 7.54234C3 6.9299 3.80157 6.54317 5.40472 5.76969L7 5M6 13.0263L8 14.0234"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M10 2L12 4M12 4L14 6M12 4L10 6M12 4L14 2"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+            <span>Huỷ đơn</span>
+          </button>
+        );
+      case "pending":
+      case "confirmed":
+      case "preparing_goods":
+        return (
+          <Popover
+            content={content}
+            title="Lý do huỷ đơn hàng ?"
+            trigger="click"
+            placement={"topRight"}
+          >
+            <button
+              type="button"
+              className="text-[#FF7F40] bg-primary/10 py-1.5 px-2 flex items-center flex-nowrap gap-1 rounded-sm"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className="size-5"
+                color={"currentColor"}
+                fill={"none"}
+              >
+                <path
+                  d="M12 22C11.1818 22 10.4002 21.6708 8.83693 21.0123C4.94564 19.3734 3 18.5539 3 17.1754V7.54234M12 22C12.8182 22 13.5998 21.6708 15.1631 21.0123C19.0544 19.3734 21 18.5539 21 17.1754V7.54234M12 22V12.0292M21 7.54234C21 8.15478 20.1984 8.54152 18.5953 9.315L15.6741 10.7244C13.8712 11.5943 12.9697 12.0292 12 12.0292M21 7.54234C21 6.9299 20.1984 6.54316 18.5953 5.76969L17 5M3 7.54234C3 8.15478 3.80157 8.54152 5.40472 9.315L8.32592 10.7244C10.1288 11.5943 11.0303 12.0292 12 12.0292M3 7.54234C3 6.9299 3.80157 6.54317 5.40472 5.76969L7 5M6 13.0263L8 14.0234"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M10 2L12 4M12 4L14 6M12 4L10 6M12 4L14 2"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span>Huỷ đơn</span>
+            </button>
+          </Popover>
+        );
+
+      default:
+        break;
+    }
+  };
+
   return (
     <div className="grid grid-cols-7 gap-5">
       <div className="col-span-5 w-full space-y-4">
@@ -511,11 +592,16 @@ const UserOrderDetail = () => {
                       <span>
                         Giảm giá:{" "}
                         <span className="text-secondary/30">
-                          (E0FR5RLLPWRN)
+                          {Number(orderDetails?.coupons.length) >= 1 &&
+                            `(${orderDetails?.coupons[0].coupon.code})`}
                         </span>
                       </span>
                       <span className="block mr-2 text-primary">
-                        -{Number(10000).toLocaleString()}đ
+                        {Number(orderDetails?.coupons.length) >= 1
+                          ? `-${Number(
+                              orderDetails?.coupons[0].discount_amount
+                            ).toLocaleString()}đ`
+                          : "0đ"}
                       </span>
                     </p>
                     <p className="border-t border-dashed border-input pt-3 font-medium flex justify-between">
@@ -533,44 +619,9 @@ const UserOrderDetail = () => {
         <div className="border border-[#f1f1f1] rounded-md bg-util p-3 space-y-2">
           <div className="flex items-center justify-between pt-2 pb-4 border-b border-input/50">
             <h3 className="uppercase font-medium text-sm flex items-center gap-2">
-              Trạng thái đơn hàng: {status(orderDetails?.status_order)}
+              Trạng thái đơn hàng: {status(orderDetails?.status_order!)}
             </h3>
-            {orderDetails?.status_order !== "canceled" && (
-              <Popover
-                content={content}
-                title="Lý do huỷ đơn hàng ?"
-                trigger="click"
-                placement={"topRight"}
-              >
-                <button
-                  type="button"
-                  className="text-[#FF7F40] bg-primary/10 py-1.5 px-2 flex items-center flex-nowrap gap-1 rounded-sm"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    className="size-5"
-                    color={"currentColor"}
-                    fill={"none"}
-                  >
-                    <path
-                      d="M12 22C11.1818 22 10.4002 21.6708 8.83693 21.0123C4.94564 19.3734 3 18.5539 3 17.1754V7.54234M12 22C12.8182 22 13.5998 21.6708 15.1631 21.0123C19.0544 19.3734 21 18.5539 21 17.1754V7.54234M12 22V12.0292M21 7.54234C21 8.15478 20.1984 8.54152 18.5953 9.315L15.6741 10.7244C13.8712 11.5943 12.9697 12.0292 12 12.0292M21 7.54234C21 6.9299 20.1984 6.54316 18.5953 5.76969L17 5M3 7.54234C3 8.15478 3.80157 8.54152 5.40472 9.315L8.32592 10.7244C10.1288 11.5943 11.0303 12.0292 12 12.0292M3 7.54234C3 6.9299 3.80157 6.54317 5.40472 5.76969L7 5M6 13.0263L8 14.0234"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M10 2L12 4M12 4L14 6M12 4L10 6M12 4L14 2"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <span>Huỷ đơn</span>
-                </button>
-              </Popover>
-            )}
+            {checkButtonCancel(orderDetails?.status_order)}
           </div>
           <div>
             {orderDetails?.status_order !== "canceled" ? (
@@ -673,7 +724,7 @@ const UserOrderDetail = () => {
             <p>
               <label htmlFor="email" className="text-sm font-medium">
                 Email:{" "}
-                <span className="font-normal">andinhle163@gmail.com</span>
+                <span className="font-normal">{orderDetails?.user.email}</span>
               </label>
             </p>
             <p>

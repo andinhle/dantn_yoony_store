@@ -117,12 +117,6 @@ class PaymentController extends Controller
 
                 $order = Order::query()->create($data);
 
-
-                Log::info("Chuỗi coupon_id: " . $request->coupon_id);
-                Log::info("Chuỗi discount_amount: " . $request->discount_amount);
-                Log::info("Chuỗi userid: " . Auth::id());
-                Log::info("Chuỗi orderid: " . $order->id);
-
                 if($request->coupon_id && $request->discount_amount){
                 
                     $coupon = Coupon::query()->where('id',  $request->coupon_id)->first();
@@ -201,9 +195,6 @@ class PaymentController extends Controller
             }
     
             $secureHash = hash_hmac('sha512', $hashData, $this->secretKey);
-            Log::info("Chuỗi hashData: " . $hashData);
-            Log::info("Chữ ký tạo ra: " . $secureHash);
-            Log::info("Chữ ký nhận được: " . $vnp_SecureHash);
 
             if ($secureHash == $vnp_SecureHash) {
                 
