@@ -73,7 +73,6 @@ const ConfirmOrder = ({ current }: Prop) => {
                 payload: id_carts,
               });
               toast.success(checkoutData.data.message);
-
               navigate("/user-manager/user-orders");
               ["id_cart", "orderData", "final_total","vnpay_callback_processed","selected_voucher"].forEach((key) =>
                 localStorage.removeItem(key)

@@ -55,6 +55,7 @@ import UserOrderDetail from "./components/User/Manager/Orders/UserOrderDetail.ts
 import PaymentCheckVnpay from "./components/User/Order/PaymentCheckVnpay.tsx";
 import UserRatings from "./components/User/Manager/Ratings/UserRatings.tsx";
 import RatingDetailOrder from "./components/User/Manager/Ratings/RatingDetailOrder.tsx";
+import CallBackLoginGoogle from "./components/User/Auth/CallBackLoginGoogle.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -77,10 +78,11 @@ createRoot(document.getElementById("root")!).render(
                   <Route path=":token/:email" element={<FormResetPass />} />
                 </Route>
               </Route> */}
+              <Route path='api/auth/google/callback' element={<CallBackLoginGoogle />}/>
               <Route path="reset-password" element={<LayoutResetPassword />}>
                   <Route index element={<ResetPassRequest />} />
                   <Route path=":token/:email" element={<FormResetPass />} />
-                </Route>
+              </Route>
               <Route
                 path=":category/:slugproduct"
                 element={<ShowDetailProduct />}

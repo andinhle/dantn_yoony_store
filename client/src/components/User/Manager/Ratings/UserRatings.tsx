@@ -18,8 +18,6 @@ const UserRatings = () => {
       }
     })();
   }, []);
-  
-
   const items: TabsProps["items"] = [
     {
       key: "1",
@@ -45,7 +43,7 @@ const UserRatings = () => {
         },
       }}
     >
-      <div className="bg-util border border-[#f1f1f1] rounded-md px-4 min-h-screen">
+      <div className="bg-util border border-[#f1f1f1] rounded-md px-4 pb-4 min-h-screen">
         <Tabs defaultActiveKey="1" items={items} className="rating-user" />
       </div>
     </ConfigProvider>

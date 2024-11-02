@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ReviewController extends Controller
-{
+{   
+    //đánh giá
     public function review(Request $request)
     {
         
@@ -94,7 +95,7 @@ class ReviewController extends Controller
         }
     }
 
-
+    //lấy sản phẩm đã giao và chưa đánh giá
     public function getPendingReviews(Request $request)
     {
         $userId = auth()->id();
@@ -104,37 +105,35 @@ class ReviewController extends Controller
         }
         
         try {
-            // Retrieve delivered orders for the authenticated user
             $orders = Order::where('user_id', $userId)
                 ->where('status_order', Order::STATUS_ORDER_DELIVERED)
-                ->with(['items.variant.product', 'rates'])
+                ->with(['items.variant.product', 'rates','items.variant.attributeValues'])
                 ->get();
             
-            // Filter for items that haven't been rated yet
             $pendingReviews = $orders->filter(function ($order) {
                 foreach ($order->items as $item) {
                     $hasRated = $order->rates->contains('product_id', $item->variant->product_id);
                     
                     if (!$hasRated) {
-                        // Safely decode product images if needed
+
                         if ($item->variant->product->images) {
                             $item->variant->product->images = is_string($item->variant->product->images) 
                                 ? json_decode($item->variant->product->images, true) 
                                 : $item->variant->product->images;
                         }
-                        return true; // Keep this order if at least one item is unrated
+                        return true; 
                     }
                 }
-                return false; // Exclude if all items have been rated
-            })->values(); // Re-index the collection
+                return false; 
+            })->values();
             
             return response()->json($pendingReviews);
         } catch (\Exception $e) {
-            // Return an error response if an exception occurs
             return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
         }
     }
 
+    //lấy chi tiết đánh giá
     public function detailReview(string $code)
     {
         $userId = auth()->id();
@@ -216,39 +215,57 @@ class ReviewController extends Controller
             return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
         }
     }
-    
+
+    //lấy những sản phẩm đã đánh giá
     public function getReviewedOrders(Request $request)
     {
         $userId = auth()->id();
-    
+        
         if (!$userId) {
             return response()->json(['message' => 'Người dùng chưa đăng nhập.'], 401);
         }
-    
+        
         try {
             // Lấy các đơn hàng đã giao và có đánh giá từ người dùng
             $orders = Order::with([
-                'rates.product',                // Eager load product for rates
-                'rates.user',                   // Eager load user for rates
-                'rates.product.variants',       // Correct eager load for variants
-                'rates.product.variants.attributeValues.attribute' // Include attribute values and their attributes
+                'rates.product',
+                'rates.user',
+                'items.variant.attributeValues.attribute' // Load attribute values thông qua variant
             ])
             ->where('user_id', $userId)
             ->where('status_order', Order::STATUS_ORDER_DELIVERED)
             ->get();
-    
+            
             // Lập danh sách đánh giá cho mỗi đơn hàng
             $reviewedOrders = $orders->filter(function ($order) {
                 return $order->rates->isNotEmpty(); // Kiểm tra nếu có đánh giá
             })->map(function ($order) {
                 return [
                     'order_id' => $order->id,
+                    'items' => $order->items ? $order->items->map(function ($item) {
+                        return [
+                            'id' => $item->id,
+                            'variant_id' => $item->variant_id,
+                            'quantity' => $item->quantity,
+                            'unit_price' => $item->unit_price,
+                            'total_price' => $item->total_price,
+                            'attribute_values' => $item->variant ? $item->variant->attributeValues->map(function ($attrValue) {
+                                return [
+                                    'id' => $attrValue->id,
+                                    'value' => $attrValue->value,
+                                    'attribute' => [
+                                        'id' => $attrValue->attribute->id,
+                                        'name' => $attrValue->attribute->name,
+                                    ]
+                                ];
+                            }) : [],
+                        ];
+                    }) : [],
                     'rates' => $order->rates->map(function ($rate) {
-                        // Safely decode images if they are strings
                         if (is_string($rate->product->images)) {
                             $rate->product->images = json_decode($rate->product->images, true);
                         }
-    
+                        
                         return [
                             'id' => $rate->id,
                             'content' => $rate->content,
@@ -258,20 +275,6 @@ class ReviewController extends Controller
                                 'name' => $rate->product->name,
                                 'slug' => $rate->product->slug,
                                 'images' => $rate->product->images,
-                                'variants' => $rate->product->variants->map(function ($variant) {
-                                    return [
-                                        'attribute_values' => $variant->attributeValues->map(function ($attrValue) {
-                                            return [
-                                                'id' => $attrValue->id,
-                                                'value' => $attrValue->value,
-                                                'attribute' => [
-                                                    'id' => $attrValue->attribute->id,
-                                                    'name' => $attrValue->attribute->name,
-                                                ],
-                                            ];
-                                        }),
-                                    ];
-                                })->values(),
                             ],
                             'user' => [
                                 'id' => $rate->user->id,
@@ -283,20 +286,16 @@ class ReviewController extends Controller
                             'created_at' => $rate->created_at,
                             'updated_at' => $rate->updated_at,
                         ];
-                    })->values() // Reset keys for rates
+                    })->values()
                 ];
-            })->values(); // Reset keys for orders
-    
+            })->values();
+            
             return response()->json($reviewedOrders);
-    
+            
         } catch (\Exception $e) {
             return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
         }
     }
     
-
-
     
-    
-
 }

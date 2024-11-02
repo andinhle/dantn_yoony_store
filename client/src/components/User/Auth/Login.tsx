@@ -7,6 +7,7 @@ import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../providers/AuthProvider";
 import { Input, message } from "antd";
+import LoginGoogle from "./LoginGoogle";
 
 const Login = () => {
   const {
@@ -89,6 +90,8 @@ const Login = () => {
         >
           ĐĂNG NHẬP
         </button>
+        <span className="text-secondary/50 block text-center">HOẶC</span>
+        <LoginGoogle />
       </form>
     </section>
   );
