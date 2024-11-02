@@ -4,7 +4,6 @@ import ConfirmOrder from "./ConfirmOrder";
 import AddressOrder from "./AddressOrder";
 import SelectMethodPayment from "./SelectMethodPayment";
 import OrderSummary from "./OrderSummary";
-import { LoadingOverlay } from "@achmadk/react-loading-overlay";
 const CustomIcon = ({ icon, isCompleted }) => (
   <div
     className={`custom-icon-wrapper p-2 rounded-md ${

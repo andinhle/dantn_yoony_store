@@ -2,13 +2,29 @@ import { Tabs, ConfigProvider } from "antd";
 import type { TabsProps } from "antd";
 import UserRatingsPending from "./UserRatingsPending";
 import UserRatingsDone from "./UserRatingsDone";
+import { useEffect, useState } from "react";
+import { IOrderUserClient } from "../../../../interfaces/IOrderUserClient";
+import instance from "../../../../instance/instance";
 
 const UserRatings = () => {
+  const [listRatingsPending, setListRatingsPending] = useState<IOrderUserClient[]>([]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await instance.get("orders/pending-reviews");
+        setListRatingsPending(data);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, []);
+  
+
   const items: TabsProps["items"] = [
     {
       key: "1",
-      label: "Chưa đánh giá",
-      children: <UserRatingsPending />,
+      label: <p>Chưa đánh giá <span className="bg-primary py-0.5 px-1.5 text-xs text-util rounded-full">{listRatingsPending.length}</span></p>,
+      children: <UserRatingsPending listRatingsPending={listRatingsPending} />,
     },
     {
       key: "2",

@@ -354,3 +354,10 @@ a:hover .number-cart{
 ._loading_overlay_content{
   color: #ff9900 !important;
 }
+.rating-done .ant-rate-star{
+  margin-inline-end: 5px !important;
+}
+.rating-done .anticon-star svg{
+  height: 12px !important;
+  width: 12px !important;
+}

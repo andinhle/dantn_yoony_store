@@ -1,3 +1,4 @@
+import { IAttributeValue } from "./IAttributeValue";
 import { ICategory } from "./ICategory";
 
 export interface IRatingOrder {
@@ -58,4 +59,5 @@ interface Variant {
     created_at: string;
     updated_at: string;
     product: Product;
+    attribute_values:IAttributeValue
 }
