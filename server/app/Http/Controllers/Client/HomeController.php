@@ -421,7 +421,7 @@ class HomeController extends Controller
     private function getPagedRatings(Request $request, Product $product)
     {
         $ratingFilter = $request->input('ratingFilter');
-
+    
         $rateQuery = Rate::with([
             'user:id,name,avatar',
             'product:id,name,slug',
@@ -432,19 +432,41 @@ class HomeController extends Controller
             },
             'order.items.variant.attributeValues.attribute'
         ])
-            ->where('product_id', $product->id);
-
+        ->where('product_id', $product->id);
+    
         if (in_array($ratingFilter, [1, 2, 3, 4, 5])) {
             $rateQuery->where('rating', $ratingFilter);
         }
-
+    
         $pagedRates = $rateQuery->orderByDesc('created_at')->paginate(8);
-
+    
         return $pagedRates->through(function ($rate) {
-            $orderItem = $rate->order?->items
+            // Lấy tất cả các items có variant thuộc sản phẩm được đánh giá
+            $attributeValuesList = collect($rate->order?->items)
                 ->where('variant.product_id', $rate->product_id)
-                ->first();
-
+                ->flatMap(function ($orderItem) {
+                    // Map attributeValues cho từng variant
+                    return $orderItem->variant->attributeValues
+                        ->map(function ($attrValue) {
+                            return [
+                                'id' => $attrValue->id,
+                                'value' => $attrValue->value,
+                                'attribute' => [
+                                    'id' => $attrValue->attribute->id,
+                                    'name' => $attrValue->attribute->name,
+                                ]
+                            ];
+                        })
+                        ->sortBy(function ($item) {
+                            // Sắp xếp để Size luôn ở trước Color
+                            return $item['attribute']['name'] === 'Size' ? 0 : 1;
+                        })
+                        ->values()
+                        ->all();
+                })
+                ->values()
+                ->all();
+    
             return [
                 'id' => $rate->id,
                 'content' => $rate->content,
@@ -454,16 +476,7 @@ class HomeController extends Controller
                     'name' => $rate->user->name,
                     'avatar' => $rate->user->avatar,
                 ],
-                'attribute_values' => $orderItem ? $orderItem->variant->attributeValues->map(function ($attrValue) {
-                    return [
-                        'id' => $attrValue->id,
-                        'value' => $attrValue->value,
-                        'attribute' => [
-                            'id' => $attrValue->attribute->id,
-                            'name' => $attrValue->attribute->name,
-                        ]
-                    ];
-                })->values()->all() : [],
+                'attribute_values' => $attributeValuesList
             ];
         });
     }
