@@ -56,6 +56,8 @@ Route::get('/auth/{provider}/callback', [ProviderController::class, 'callback'])
 
 // Sản phẩm
 Route::get('home/product/{slug}', [HomeController::class, 'getOneProductBySlug']);
+Route::get('home/products/{slug}/ratings', [HomeController::class, 'ratingListAllbyProductToSlug']);
+
 Route::get('home/products/featured', [HomeController::class, 'getFeaturedProducts']);
 Route::get('home/products/good-deal', [HomeController::class, 'getGoodDealProducts']);
 Route::get('home/product/category/{id}', [HomeController::class, 'getProductsByCategory']);
@@ -229,5 +231,5 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/orders/pending-reviews', [ReviewController::class, 'getPendingReviews'])->name('orders.pendingReviews');
     Route::get('/orders/detail-reviews/{code}', [ReviewController::class, 'detailReview'])->name('orders.detailReview');
     Route::get('reviews/reviewed-orders', [ReviewController::class, 'getReviewedOrders'])->name('reviews.getReviewedOrders');
-    
+
 });

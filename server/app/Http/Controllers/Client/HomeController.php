@@ -33,12 +33,12 @@ class HomeController extends Controller
     {
         try {
             event(new CheckExpiredSalePrices());
-            
+
             // Lấy thông tin sản phẩm
             $product = Product::with('category', 'variants.attributeValues.attribute', 'variants.inventoryStock')
                 ->where('slug', $slug)
                 ->firstOrFail();
-                
+
             // Lấy sản phẩm liên quan
             $relatedProducts = Product::with('category', 'variants.attributeValues.attribute')
                 ->where('category_id', $product->category_id)
@@ -46,96 +46,20 @@ class HomeController extends Controller
                 ->where('id', '!=', $product->id)
                 ->limit(5)
                 ->get();
-                
+
             // Lấy 10 đánh giá gần nhất
             $rates = Rate::with('user', 'product.variants.attributeValues.attribute')
                 ->where('product_id', $product->id)
                 ->latest('created_at')
                 ->limit(10)
                 ->get();
-                
-            // Tính trung bình số sao
-            $averageRating = Rate::where('product_id', $product->id)->average('rating');
-            
-            // Đếm số lượng đánh giá theo từng mức sao
-            $ratingCounts = Rate::where('product_id', $product->id)
-                ->selectRaw('rating, COUNT(*) as count')
-                ->groupBy('rating')
-                ->pluck('count', 'rating')
-                ->toArray();
-                
-            for ($i = 1; $i <= 5; $i++) {
-                if (!isset($ratingCounts[$i])) {
-                    $ratingCounts[$i] = 0;
-                }
-            }
-            
-            // Lấy đánh giá có phân trang và thông tin variant
-            $ratingFilter = $request->input('ratingFilter');
-            $rateQuery = Rate::with([
-                'user:id,name,avatar', 
-                'product:id,name,slug',
-                'order.items' => function($query) use ($product) {
-                    $query->whereHas('variant', function($q) use ($product) {
-                        $q->where('product_id', $product->id);
-                    });
-                },
-                'order.items.variant.attributeValues.attribute'
-            ])
-            ->where('product_id', $product->id);
-            
-            if (in_array($ratingFilter, [1, 2, 3, 4, 5])) {
-                $rateQuery->where('rating', $ratingFilter);
-            }
-            
-            $pagedRates = $rateQuery->orderByDesc('created_at')->paginate(8);
-            
-            // Định dạng lại dữ liệu đánh giá có phân trang
-            $formattedPagedRates = $pagedRates->through(function ($rate) {
-                // Tìm item trong order có variant thuộc về sản phẩm được đánh giá
-                $orderItem = $rate->order?->items
-                    ->where('variant.product_id', $rate->product_id)
-                    ->first();
-    
-                return [
-                    'id' => $rate->id,
-                    'content' => $rate->content,
-                    'rating' => $rate->rating,
-                    'created_at' => $rate->created_at,
-                    'user' => [
-                        'name' => $rate->user->name,
-                        'avatar' => $rate->user->avatar,
-                    ],
-                    'attribute_values' => $orderItem ? $orderItem->variant->attributeValues->map(function ($attrValue) {
-                        return [
-                            'id' => $attrValue->id,
-                            'value' => $attrValue->value,
-                            'attribute' => [
-                                'id' => $attrValue->attribute->id,
-                                'name' => $attrValue->attribute->name,
-                            ]
-                        ];
-                    })->values()->all() : [],
-                ];
-            });
-    
+
             return response()->json([
                 'product' => new ProductResource($product),
                 'related_products' => ProductResource::collection($relatedProducts),
-                'ratingslide10' => RateResource::collection($rates),
-                'ratings' => [
-                    'average_rating' => round($averageRating * 2) / 2,
-                    'rating_counts' => [
-                        '5_star' => $ratingCounts[5] ?? 0,
-                        '4_star' => $ratingCounts[4] ?? 0,
-                        '3_star' => $ratingCounts[3] ?? 0,
-                        '2_star' => $ratingCounts[2] ?? 0,
-                        '1_star' => $ratingCounts[1] ?? 0,
-                    ],
-                    'rate_paginate8' => $formattedPagedRates,
-                ],
+                'ratingslide10' => RateResource::collection($rates)
             ], 200);
-                
+
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Không tìm thấy sản phẩm.'], 404);
         } catch (\Throwable $e) {
@@ -441,5 +365,106 @@ class HomeController extends Controller
     {
         $answers = Answer::where('question_id', $id)->get();
         return response()->json($answers);
+    }
+
+
+    public function ratingListAllbyProductToSlug(Request $request, $slug)
+    {
+        // Lấy thông tin sản phẩm từ slug
+        $product = Product::where('slug', $slug)->firstOrFail();
+
+        // Tính trung bình số sao
+        $averageRating = Rate::where('product_id', $product->id)
+            ->average('rating');
+
+        // Đếm số lượng đánh giá theo từng mức sao
+        $ratingCounts = $this->getRatingCounts($product->id);
+
+        // Lấy danh sách đánh giá có phân trang
+        $formattedPagedRates = $this->getPagedRatings($request, $product);
+
+        return [
+            'ratings' => [
+                'average_rating' => round($averageRating * 2) / 2,
+                'rating_counts' => [
+                    '5_star' => $ratingCounts[5] ?? 0,
+                    '4_star' => $ratingCounts[4] ?? 0,
+                    '3_star' => $ratingCounts[3] ?? 0,
+                    '2_star' => $ratingCounts[2] ?? 0,
+                    '1_star' => $ratingCounts[1] ?? 0,
+                ],
+                'rate_paginate8' => $formattedPagedRates,
+            ]
+        ];
+    }
+
+    // Hàm phụ để lấy số lượng đánh giá theo từng sao
+    private function getRatingCounts($productId)
+    {
+        $ratingCounts = Rate::where('product_id', $productId)
+            ->selectRaw('rating, COUNT(*) as count')
+            ->groupBy('rating')
+            ->pluck('count', 'rating')
+            ->toArray();
+
+        // Đảm bảo có đủ các mức sao từ 1-5
+        for ($i = 1; $i <= 5; $i++) {
+            if (!isset($ratingCounts[$i])) {
+                $ratingCounts[$i] = 0;
+            }
+        }
+
+        return $ratingCounts;
+    }
+
+    // Hàm phụ để lấy danh sách đánh giá có phân trang
+    private function getPagedRatings(Request $request, Product $product)
+    {
+        $ratingFilter = $request->input('ratingFilter');
+
+        $rateQuery = Rate::with([
+            'user:id,name,avatar',
+            'product:id,name,slug',
+            'order.items' => function ($query) use ($product) {
+                $query->whereHas('variant', function ($q) use ($product) {
+                    $q->where('product_id', $product->id);
+                });
+            },
+            'order.items.variant.attributeValues.attribute'
+        ])
+            ->where('product_id', $product->id);
+
+        if (in_array($ratingFilter, [1, 2, 3, 4, 5])) {
+            $rateQuery->where('rating', $ratingFilter);
+        }
+
+        $pagedRates = $rateQuery->orderByDesc('created_at')->paginate(8);
+
+        return $pagedRates->through(function ($rate) {
+            $orderItem = $rate->order?->items
+                ->where('variant.product_id', $rate->product_id)
+                ->first();
+
+            return [
+                'id' => $rate->id,
+                'content' => $rate->content,
+                'rating' => $rate->rating,
+                'created_at' => $rate->created_at,
+                'user' => [
+                    'name' => $rate->user->name,
+                    'avatar' => $rate->user->avatar,
+                ],
+                'attribute_values' => $orderItem ? $orderItem->variant->attributeValues->map(function ($attrValue) {
+                    return [
+                        'id' => $attrValue->id,
+                        'value' => $attrValue->value,
+                        'attribute' => [
+                            'id' => $attrValue->attribute->id,
+                            'name' => $attrValue->attribute->name,
+                        ]
+                    ];
+                })->values()->all() : [],
+            ];
+        });
     }
 }
