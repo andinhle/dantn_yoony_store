@@ -67,6 +67,9 @@ Route::get('home/product/category/{id}', [HomeController::class, 'getProductsByC
 Route::get('auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
 Route::get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
 
+Route::get('auth/facebook', [GoogleAuthController::class, 'redirectToFacebook']);
+Route::get('auth/facebook/callback', [GoogleAuthController::class, 'handleFacebookCallback']);
+
 
 //filter
 Route::get('products/filter', [FilterController::class, 'getFilter']);

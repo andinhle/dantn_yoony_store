@@ -26,10 +26,7 @@ class ProviderController extends Controller
                 $user->update([
                     'provider_id' => $SocialUser->id,
                     'provider' => $provider,
-                    'name' => $SocialUser->name,
-                    'nickname' => $SocialUser->nickname,
                     'provider_token' => $SocialUser->token,
-                    'avatar' => $SocialUser->avatar,
                 ]);
             } else {
                 // Nếu người dùng chưa tồn tại, tạo mới
@@ -61,4 +58,8 @@ class ProviderController extends Controller
         }
     }
 
+
+
+
+    
 }
