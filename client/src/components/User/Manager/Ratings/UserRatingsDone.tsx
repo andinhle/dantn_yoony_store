@@ -36,7 +36,7 @@ const UserRatingsDone = () => {
   const flapMapRateDoneList = ratingDoneLists.flatMap((item) => item.rates);
   console.log(flapMapRateDoneList);
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+    <div className="grid grid-cols-1 gap-5 max-h-screen overflow-y-auto rating-scroll-done pr-1">
       {flapMapRateDoneList &&
         flapMapRateDoneList.map((RateDoneItem) => {
           const attribute_values = RateDoneItem.product.variants.flatMap(
@@ -51,7 +51,7 @@ const UserRatingsDone = () => {
                   sx={{ width: 32, height: 32 }}
                 />
                 <div className="space-y-2">
-                  <div className="flex flex-col">
+                  <div className="flex flex-col gap-0.5">
                     <p>{RateDoneItem.user?.name}</p>
                     <Rate
                       disabled
@@ -121,7 +121,7 @@ const UserRatingsDone = () => {
                 </div>
               </div>
             </div>
-          );
+          ); 
         })}
     </div>
   );

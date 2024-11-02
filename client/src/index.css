@@ -361,3 +361,7 @@ a:hover .number-cart{
   height: 12px !important;
   width: 12px !important;
 }
+
+.rating-scroll-done::-webkit-scrollbar-thumb{
+  background-color: #FAFAFA;
+}
