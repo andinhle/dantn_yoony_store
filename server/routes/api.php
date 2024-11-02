@@ -202,8 +202,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/vnpay/callback', [PaymentController::class, 'callback'])->name('callback');
     Route::post('/checkout-vnpay', [PaymentController::class, 'handleOrder']);
     
-    
-
     //Coupon_user
     Route::apiResource('coupon-user', CouponUserController::class);
     Route::patch('coupon-user/{id}', [CouponUserController::class, 'update']);

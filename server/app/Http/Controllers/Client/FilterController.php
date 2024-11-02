@@ -54,7 +54,7 @@ class FilterController extends Controller
             }
         }
         // Sắp xếp sản phẩm mới nhất
-        if ($request->has('newest') && $request->input('newest')) {
+        if ($request->has('newest') && $request->input(key: 'newest')) {
             $query->orderBy('created_at', 'desc');
         }
 
