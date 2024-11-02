@@ -27,7 +27,6 @@ class ProviderController extends Controller
                     'provider_id' => $SocialUser->id,
                     'provider' => $provider,
                     'provider_token' => $SocialUser->token,
-                    'avatar' => $SocialUser->avatar,
                 ]);
             } else {
                 // Nếu người dùng chưa tồn tại, tạo mới
