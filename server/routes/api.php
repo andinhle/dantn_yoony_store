@@ -63,6 +63,7 @@ Route::get('home/product/category/{id}', [HomeController::class, 'getProductsByC
 
 
 Route::get('auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
+Route::get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
 
 
 //filter
@@ -90,7 +91,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         return $request->user();
     });
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
 
     // Admin
     Route::middleware(['admin'])->group(function () {
@@ -210,7 +210,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/checkout-vnpay', [PaymentController::class, 'handleOrder']);
 
 
-    
+
     //Coupon_user
     Route::apiResource('coupon-user', CouponUserController::class);
     Route::patch('coupon-user/{id}', [CouponUserController::class, 'update']);

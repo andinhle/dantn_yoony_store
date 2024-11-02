@@ -12,18 +12,18 @@ class GoogleAuthController extends Controller
     // Điều hướng đến Google để đăng nhập
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->stateless()->redirect();
+        $url = Socialite::driver('google')->stateless()->redirect()->getTargetUrl();
+
+        return response()->json(['url' => $url]);
     }
 
+
     // Xử lý callback từ Google
-    public function handleGoogleCallback(Request $request)
+    public function handleGoogleCallback()
     {
         try {
-            // Lấy mã token từ yêu cầu
-            $token = $request->input('token');
-
-            // Xác thực người dùng từ mã token
-            $googleUser = Socialite::driver('google')->stateless()->userFromToken($token);
+            // Lấy thông tin người dùng từ Google
+            $googleUser = Socialite::driver('google')->stateless()->user();
 
             // Tìm hoặc tạo người dùng
             $user = User::firstOrCreate(
@@ -34,12 +34,14 @@ class GoogleAuthController extends Controller
                     'provider' => 'google',
                     'provider_id' => $googleUser->getId(),
                     'avatar' => $googleUser->getAvatar(),
-                    'password' => null, 
+                    'password' => null, // không cần mật khẩu cho OAuth
                 ]
             );
 
-            // Đăng nhập người dùng và tạo token
+            // Đăng nhập người dùng
             Auth::login($user);
+
+            // Tạo token cho người dùng
             $token = $user->createToken('GoogleLoginToken')->plainTextToken;
 
             // Trả về JSON chứa token và thông tin người dùng
@@ -48,6 +50,7 @@ class GoogleAuthController extends Controller
                 'user' => $user,
             ]);
         } catch (\Exception $e) {
+            // Xử lý lỗi khi không thể lấy thông tin người dùng
             return response()->json([
                 'message' => 'Đăng nhập Google thất bại',
                 'error' => $e->getMessage()
