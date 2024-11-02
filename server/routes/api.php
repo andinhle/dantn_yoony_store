@@ -229,5 +229,5 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/orders/pending-reviews', [ReviewController::class, 'getPendingReviews'])->name('orders.pendingReviews');
     Route::get('/orders/detail-reviews/{code}', [ReviewController::class, 'detailReview'])->name('orders.detailReview');
     Route::get('reviews/reviewed-orders', [ReviewController::class, 'getReviewedOrders'])->name('reviews.getReviewedOrders');
-
+    
 });
