@@ -15,8 +15,8 @@ import { MdCancel } from "react-icons/md"
 import { FaUserCheck } from "react-icons/fa";
 import { FaAddressBook } from "react-icons/fa";
 import { MdLocalShipping } from "react-icons/md";
+import VNPAY from "./vnpay1.png"
 
-import Vnpay from "./vnpay.jpg"
 const OrderDetails = () => {
     const navigate = useNavigate();
     const [showCancelModal, setShowCancelModal] = useState(false);
@@ -28,7 +28,7 @@ const OrderDetails = () => {
         { value: "pending", label: "Chờ xác nhận" },
         { value: "confirmed", label: "Đã xác nhận" },
         { value: "preparing_goods", label: "Chuẩn bị hàng" },
-        { value: "shipping", label: "Đang giao" },
+        { value: "shipping", label: "Đang giao hàng" },
         { value: "delivered", label: "Đã giao hàng" },
         { value: "canceled", label: "Hủy" },
     ];
@@ -164,26 +164,6 @@ const OrderDetails = () => {
                                     // console.log("name:")
 
                                     return (
-                                        // <tr key={item.id}>
-                                        //     <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-secondary-900">{index + 1}</td>
-                                        //     <td className="px-4 py-4 text-sm text-secondary-900 break-words">
-                                        //         {item?.variant?.product?.name}
-                                        //     </td>
-                                        //     <td className="px-4 py-4 text-sm text-secondary-900 break-words">
-                                        //         <img src={item?.variant?.product?.images} alt="" />
-                                        //     </td>
-                                        //     {item?.variant?.attribute_values.map((i) => {
-                                        //         return (
-                                        //             <>
-                                        //                 <td className="px-4 py-4 whitespace-nowrap text-sm text-secondary-500">{i.value}</td>
-                                        //             </>
-                                        //         )
-                                        //     }
-                                        //     )}
-                                        //     <td className="px-4 py-4 whitespace-nowrap text-sm text-secondary-900">{item?.quantity}</td>
-                                        //     <td className="px-4 py-4 whitespace-nowrap text-sm text-secondary-900">{item?.variant?.price}</td>
-                                        //     <td className="px-4 py-4 whitespace-nowrap text-sm text-secondary-900">{item?.total_price}</td>
-                                        // </tr>
                                         <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50 transition">
                                             <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-primary text-center">{index + 1}</td>
 
@@ -231,7 +211,7 @@ const OrderDetails = () => {
                                             </td>
 
                                             {/* Số lượng */}
-                                            <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-primary text-center">
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-b text-center">
                                                 {item?.quantity || 0}
                                             </td>
 
@@ -245,7 +225,6 @@ const OrderDetails = () => {
                                                 {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item?.total_price || 0)}
                                             </td>
                                         </tr>
-
                                     )
                                 }
                                 )}
@@ -255,34 +234,35 @@ const OrderDetails = () => {
                                     <td className="px-4 py-4 whitespace-nowrap  text-sm font-semibold text-secondary-900">500,000 VND</td>
                                 </tr> */}
                                 <tr className="border-none">
-                                    <td colSpan="4" className="px-4 py-2 text-primary text-right text-sm font-semibold text-secondary-900">
+                                    <td colSpan="4" className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
                                         Tổng phụ:
                                     </td>
-                                    <td className="px-4  whitespace-nowrap text-primary text-sm font-semibold text-secondary-900">
+                                    <td className="px-4  whitespace-nowrap text-gray-500 text-sm font-semibold text-secondary-900">
                                         {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 }).format(orderDetail?.grand_total || 0)}
                                     </td>
                                 </tr>
                                 <tr className="border-none">
-                                    <td colSpan="4" className="px-4 py-2 text-primary text-right text-sm font-semibold text-secondary-900">
-                                        Giảm giá:
+                                    <td colSpan="4" className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
+                                        Giảm giá (JDGAG70C8JY9): 
                                     </td>
                                     <td className="px-4 whitespace-nowrap text-primary text-sm font-semibold text-secondary-900">
-                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 }).format(0)}
+                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 }).format(10000)}
                                     </td>
                                 </tr>
                                 <tr className="border-none">
-                                    <td colSpan="4" className="px-4 py-2 text-primary text-right text-sm font-semibold text-secondary-900">
+                                    <td colSpan="4" className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
                                         Thuế:
                                     </td>
-                                    <td className="px-4  whitespace-nowrap text-primary text-sm font-semibold text-secondary-900">
+                                    <td className="px-4  whitespace-nowrap text-gray-400 text-sm font-semibold text-secondary-900">
                                         {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 }).format(0)}
                                     </td>
                                 </tr>
+
                                 <tr className="border-none">
-                                    <td colSpan="4" className="px-4 py-2 text-primary text-right text-sm font-semibold text-secondary-900">
+                                    <td colSpan="4" className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
                                         Tổng thanh toán:
                                     </td>
-                                    <td className="px-4 whitespace-nowrap text-primary text-sm font-semibold text-secondary-900">
+                                    <td className="px-4 whitespace-nowrap text-green-500 text-sm font-semibold text-secondary-900">
                                         {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 }).format(orderDetail?.final_total || 0)}
                                     </td>
                                 </tr>
@@ -375,7 +355,16 @@ const OrderDetails = () => {
                 <div className="bg-white p-8 mt-4">
                     <h3 className="font-bold uppercase">
                         Trạng thái đơn hàng :
-                        <span className="pl-2 font-medium">
+                        <span
+                            className={`pl-2 font-medium ${orderDetail?.status_order === 'canceled' ? 'text-red-500' :
+                                    orderDetail?.status_order === 'delivered' ? 'text-green-500' :
+                                        orderDetail?.status_order === 'pending' ? 'text-yellow-500' :
+                                        orderDetail?.status_order === 'shipping' ? 'text-primary' :
+                                        orderDetail?.status_order === 'preparing_goods' ? 'text-yellow-500' :
+                                        orderDetail?.status_order === 'confirmed' ? 'text-blue-500' :
+                                            'text-black'
+                                }`}
+                        >
                             {translateStatus(orderDetail?.status_order)}
                         </span>
                     </h3>
@@ -434,7 +423,7 @@ const OrderDetails = () => {
                 <div className="bg-white rounded-lg shadow-lg p-6">
                     <div className="pb-3 flex justify-between items-center space-x-1">
                         <div className="flex justify-start items-center">
-                            <MdLocalShipping className="text-primary w-10" size={20}/>
+                            <MdLocalShipping className="text-primary w-10" size={20} />
                             <h2 className="text-primary font-bold">THÔNG TIN HẬU CẦN</h2>
                         </div>
                         <div className="font-mono text-xs w-fit p-2 bg-yellow-100 text-yellow-400 rounded-lg">
@@ -496,7 +485,7 @@ const OrderDetails = () => {
                             </div>
 
                             {orderDetail?.payment_method === 'VNPAY' && (
-                                <img src={Vnpay} className="w-16 h-7" />
+                                <img src={VNPAY} className="w-16 h-7" />
                             )}
                             {orderDetail?.payment_method === 'COD' && (
                                 <span className="text-green-600 text-sm">Thanh toán khi nhận hàng (COD)</span>
