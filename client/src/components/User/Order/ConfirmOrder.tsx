@@ -6,14 +6,15 @@ import CartContext from "../../../contexts/CartContext";
 import { useNavigate } from "react-router-dom";
 import { Modal, Input, Progress, message } from "antd";
 import { IVoucher } from "../../../interfaces/IVouchers";
-
+import queryString from "query-string";
+import { useRef } from "react";
 type Prop = {
   current: number;
 };
 
 const ConfirmOrder = ({ current }: Prop) => {
   const { dispatch } = useContext(CartContext);
-  const final_total = JSON.parse(localStorage.getItem("final_total")!);
+  const final_total = JSON.parse(localStorage.getItem("final_total") || "0");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [voucherCarts, setVoucherCarts] = useState<IVoucher[]>([]);
   const [valueSearch, setChangeValueSearch] = useState<string>("");
@@ -21,41 +22,133 @@ const ConfirmOrder = ({ current }: Prop) => {
   const [voucherCheck, setCheckVoucher] = useState<IVoucher | undefined>(
     undefined
   );
-  const orderDataRaw = localStorage.getItem("orderData");
-  const orderData = orderDataRaw ? JSON.parse(orderDataRaw) : null;
-  console.log(orderData)
+  const callbackProcessedRef = useRef(false);
+  const parsed = queryString.parse(location.search);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const vnp_ResponseCode = parsed?.vnp_ResponseCode;
+        const vnp_TransactionStatus = parsed?.vnp_TransactionStatus;
+
+        // Kiểm tra xem callback đã được xử lý chưa
+        const isCallbackProcessed = localStorage.getItem("vnpay_callback_processed");
+        const savedVoucher = JSON.parse(localStorage.getItem('selected_voucher') || 'null');
+        const finalPaymentAmountVnpay = savedVoucher
+        ? final_total - savedVoucher.discount
+        : final_total;
+        if (vnp_ResponseCode && !isCallbackProcessed && !callbackProcessedRef.current) {
+          localStorage.setItem("vnpay_callback_processed", "true");
+          callbackProcessedRef.current = true;
+
+          const orderDataRaw = localStorage.getItem("orderData");
+          const parsedOrderData = JSON.parse(orderDataRaw!);
+
+          const { data } = await instance.post("vnpay/callback", {
+            coupon_id: savedVoucher?.id,
+            discount_amount: savedVoucher?.discount,
+            ...parsed,
+          });
+          console.log(data)
+          if (
+            vnp_ResponseCode === "00" &&
+            vnp_TransactionStatus === "00" &&
+            String(data.status) === "success"
+          ) {
+            message.success("Thanh toán thành công!");
+            const checkoutData = await instance.post("checkout-vnpay", {
+              name: parsedOrderData.fullName,
+              tel: parsedOrderData.phone,
+              coupon_id: savedVoucher?.id,
+              discount_amount: savedVoucher?.discount,
+              final_total: finalPaymentAmountVnpay,
+              ...parsedOrderData,
+            });
+
+            if (checkoutData) {
+              const id_carts = JSON.parse(localStorage.getItem("id_cart") || "[]");
+              dispatch({
+                type: "REMOVE_SELECTED",
+                payload: id_carts,
+              });
+              toast.success(checkoutData.data.message);
+              navigate("/user-manager/user-orders");
+              ["id_cart", "orderData", "final_total","vnpay_callback_processed","selected_voucher"].forEach((key) =>
+                localStorage.removeItem(key)
+              );
+            }
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+
+    return () => {
+      callbackProcessedRef.current = false;
+    };
+  }, []);
+
+  const finalPaymentAmount = voucherCheck
+    ? final_total - voucherCheck.discount
+    : final_total;
+
   const { Search } = Input;
+
   const showModal = () => {
     setIsModalOpen(true);
   };
+
   const handleOk = () => {
     setIsModalOpen(false);
   };
+
   const handleCancel = () => {
     setIsModalOpen(false);
   };
-  const navigate = useNavigate();
+
   const submitOrder = async () => {
     try {
       const orderDataRaw = localStorage.getItem("orderData");
-      const orderData = orderDataRaw ? JSON.parse(orderDataRaw) : null;
-      const { data } = await instance.post("order", {
-        name: orderData.fullName,
-        tel: orderData.phone,
-        ...orderData,
-      });
-      if (data) {
-        const id_carts = JSON.parse(localStorage.getItem("id_cart") || "[]");
-        dispatch({
-          type: "REMOVE_SELECTED",
-          payload: id_carts,
+      const parsedOrderData = JSON.parse(orderDataRaw!);
+      if (parsedOrderData?.payment_method === "COD") {
+        const { data } = await instance.post("checkout", {
+          name: parsedOrderData.fullName,
+          tel: parsedOrderData.phone,
+          coupon_id: voucherCheck?.id,
+          discount_amount: voucherCheck?.discount,
+          final_total: finalPaymentAmount,
+          ...parsedOrderData,
         });
-        toast.success(data.message);
-        navigate("/");
-        // localStorage.removeItem("addressOrderFormData");
-        localStorage.removeItem("id_cart");
-        localStorage.removeItem("orderData");
-        localStorage.removeItem("final_total");
+
+        if (data) {
+          const id_carts = JSON.parse(localStorage.getItem("id_cart") || "[]");
+          dispatch({
+            type: "REMOVE_SELECTED",
+            payload: id_carts,
+          });
+          toast.success(data.message);
+          navigate("/user-manager/user-orders");
+          ["id_cart", "orderData", "final_total","selected_voucher"].forEach((key) =>
+            localStorage.removeItem(key)
+          );
+        }
+      }
+      if (parsedOrderData?.payment_method === "VNPAY") {
+        const { data } = await instance.post("checkout", {
+          name: parsedOrderData.fullName,
+          tel: parsedOrderData.phone,
+          coupon_id: voucherCheck?.id,
+          discount_amount: voucherCheck?.discount,
+          final_total: finalPaymentAmount,
+          ...parsedOrderData,
+        });
+
+        if (data) {
+          console.log(data);
+          window.location.assign(data.paymentUrl);
+        }
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -67,29 +160,33 @@ const ConfirmOrder = ({ current }: Prop) => {
       }
     }
   };
+
   useEffect(() => {
-    (async () => {
+    const fetchVoucherCarts = async () => {
       try {
         const {
           data: { data: response },
         } = await instance.post("coupon-cart", {
           totalCart: final_total,
         });
+
         if (response) {
           setVoucherCarts(response);
         }
         setCheckVoucher(undefined);
-        if (isModalOpen == true) {
+        if (isModalOpen) {
           setSelectVoucher("");
         }
-        console.log(response);
       } catch (error) {
-        console.log(error);
+        console.error("Error fetching vouchers:", error);
+        message.error("Không thể tải danh sách voucher");
       }
-    })();
-  }, [isModalOpen]);
+    };
 
-  const changeValueSearch = (e: any) => {
+    fetchVoucherCarts();
+  }, [isModalOpen, final_total]);
+
+  const changeValueSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setChangeValueSearch(e.target.value);
   };
 
@@ -98,22 +195,17 @@ const ConfirmOrder = ({ current }: Prop) => {
   };
 
   const handleCheckVoucher = () => {
-    const ValidVoucher = voucherCarts.filter((voucherCart) => {
-      return voucherCart.code.includes(selectVoucher);
-    });
-    if (ValidVoucher.length > 0) {
-      message.success("Mã giảm giá đã được áp dụng.");
-      setCheckVoucher(ValidVoucher[0]);
-      orderData.coupon_id=ValidVoucher[0].id
-      orderData.discount_amount=ValidVoucher[0].discount
-      orderData.final_total=final_total-ValidVoucher[0].discount
-      localStorage.setItem('orderData',JSON.stringify(orderData))
+    const validVoucher = voucherCarts.find(
+      (voucherCart) => voucherCart.code === selectVoucher
+    );
+    if (validVoucher) {
+      setCheckVoucher(validVoucher);
+      localStorage.setItem('selected_voucher', JSON.stringify(validVoucher));
+      message.success("Mã giảm giá đã được áp dụng");
     } else {
-      message.warning("Mã voucher không hợp lệ !");
+      message.warning("Mã voucher không hợp lệ!");
     }
   };
-
-  console.log(voucherCheck);
 
   return (
     <div className="col-span-3 border border-input p-3 rounded-md h-fit space-y-6 sticky top-20 bg-util">
@@ -133,7 +225,7 @@ const ConfirmOrder = ({ current }: Prop) => {
             enterButton="Tìm kiếm"
           />
         </form>
-        <div className="space-y-5 max-h-[400px] overflow-y-auto pr-1">
+        <div className="space-y-5 max-h-[400px] overflow-y-auto pr-0.5 py-1">
           {voucherCarts &&
             voucherCarts
               .filter((item) => {
@@ -141,12 +233,15 @@ const ConfirmOrder = ({ current }: Prop) => {
               })
               .map((voucherCart) => {
                 return (
-                  <div className="flex gap-5 overflow-hidden rounded-sm box-shaw-voucher-cart" key={voucherCart.id}>
+                  <div
+                    className="flex gap-5 overflow-hidden rounded-sm box-shaw-voucher-cart"
+                    key={voucherCart.id}
+                  >
                     <div className="p-6 w-full max-w-[115px] bg-primary text-util relative flex flex-col items-center gap-2">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
-                        className="size-8"
+                        className="size-9"
                         color={"currentColor"}
                         fill={"none"}
                       >
@@ -181,6 +276,7 @@ const ConfirmOrder = ({ current }: Prop) => {
                         <div className="w-2 h-2 bg-util rounded-full"></div>
                         <div className="w-2 h-2 bg-util rounded-full"></div>
                         <div className="w-2 h-2 bg-util rounded-full"></div>
+                        <div className="w-2 h-2 bg-util rounded-full"></div>
                       </div>
                     </div>
                     <div className="py-2 w-full pr-5 flex flex-col justify-between">
@@ -191,12 +287,39 @@ const ConfirmOrder = ({ current }: Prop) => {
                           </h4>
                           <span className="text-secondary/65 block">
                             Đơn Tối Thiểu đ
-                            {voucherCart.min_order_value.toLocaleString()} - đ
-                            {voucherCart.max_order_value.toLocaleString()}
+                            {voucherCart?.min_order_value?.toLocaleString()} - đ
+                            {voucherCart?.max_order_value?.toLocaleString()}
                           </span>
-                          <span className="text-primary border border-primary block w-fit px-2 text-xs">
-                            Đủ điều kiện
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <p className="flex items-center gap-1 text-primary text-xs bg-primary/10 py-1 px-2 rounded-[2px]">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                className="size-3"
+                                color="currentColor"
+                                fill="none"
+                              >
+                                <circle
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                />
+                                <path
+                                  d="M12 8V12L14 14"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                              Hết hạn: {voucherCart.end_date}
+                            </p>
+                            <span className="text-primary border border-primary block w-fit px-2 text-xs">
+                              Đủ điều kiện
+                            </span>
+                          </div>
                         </div>
                         <div>
                           <button
@@ -205,9 +328,7 @@ const ConfirmOrder = ({ current }: Prop) => {
                               handleSelectVoucher(voucherCart.code)
                             }
                           >
-                            <div
-                              className={`w-5 h-5 border shadow-inner rounded-full flex justify-center items-center`}
-                            >
+                            <div className="w-5 h-5 border shadow-inner rounded-full flex justify-center items-center">
                               {selectVoucher === voucherCart.code && (
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
@@ -229,11 +350,19 @@ const ConfirmOrder = ({ current }: Prop) => {
                           </button>
                         </div>
                       </div>
-                      <Progress
-                        percent={voucherCart.usage_limit}
-                        size="small"
-                        strokeColor="#ff9900"
-                      />
+                      <div className="flex items-center mt-1 text-xs">
+                        <div className="w-[25%]">
+                          Còn lại: {voucherCart.usage_limit}
+                        </div>
+                        <Progress
+                          percent={voucherCart.usage_limit}
+                          size="small"
+                          strokeColor="#ff9900"
+                          status="active"
+                          showInfo={false}
+                          className="w-[75%]"
+                        />
+                      </div>
                     </div>
                   </div>
                 );
@@ -268,12 +397,15 @@ const ConfirmOrder = ({ current }: Prop) => {
               value={selectVoucher}
               placeholder="Nhập code"
               id="value-voucher"
-              className="block  max-w-[73%] h-[35px] focus:!border-primary/50 focus:!border-r-transparent rounded-[5px] rounded-r-none border-r-transparent border border-input text-sm placeholder-[#00000040] focus:!shadow-none"
+              className="block max-w-[73%] h-[35px] focus:!border-primary/50 focus:!border-r-transparent rounded-[5px] rounded-r-none border-r-transparent border border-input text-sm placeholder-[#00000040] focus:!shadow-none"
             />
             <button
               type="button"
-              className="block bg-primary w-full h-[35px] px-2 text-sm text-util"
+              className={`block ${
+                voucherCheck ? "bg-gray-400" : "bg-primary"
+              } w-full h-[35px] px-2 text-sm text-util`}
               onClick={handleCheckVoucher}
+              disabled={voucherCheck !== undefined}
             >
               Áp dụng
             </button>
@@ -298,19 +430,20 @@ const ConfirmOrder = ({ current }: Prop) => {
         <p className="font-medium">
           Tổng thanh toán:{" "}
           <span className="text-primary">
-            {voucherCheck
-              ? `${(final_total - voucherCheck?.discount).toLocaleString()} VNĐ`
-              : `${final_total.toLocaleString()} VNĐ`}
+            {(voucherCheck
+              ? final_total - voucherCheck.discount
+              : final_total
+            ).toLocaleString()}
+            đ
           </span>
         </p>
       </div>
       <button
         className={`${
-          current !== 2
-            ? "bg-[#D1D1D6] pointer-events-none"
-            : "bg-primary pointer-events-auto"
+          current !== 2 ? "bg-[#D1D1D6]" : "bg-primary"
         } w-full block rounded-sm py-2 text-util`}
         onClick={submitOrder}
+        disabled={current !== 2}
       >
         TIẾN HÀNH THANH TOÁN
       </button>

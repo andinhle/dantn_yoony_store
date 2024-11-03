@@ -20,6 +20,7 @@ const ProductList = () => {
     }
     return avatars;
   };
+  
   const handleRemoveProduct = async (id: number) => {
     try {
       const data = await instance.delete(`products/${id}`);
@@ -40,6 +41,7 @@ const ProductList = () => {
       }
     }
   };
+
   return (
     <div className="space-y-5">
       <div className="flex justify-between">
@@ -84,9 +86,9 @@ const ProductList = () => {
             <Table.HeadCell className="bg-primary text-white text-sm font-medium">
               Tên sản phẩm
             </Table.HeadCell>
-            <Table.HeadCell className="bg-primary text-white text-sm font-medium">
+            {/* <Table.HeadCell className="bg-primary text-white text-sm font-medium">
               Slug
-            </Table.HeadCell>
+            </Table.HeadCell> */}
             <Table.HeadCell className="bg-primary text-white text-sm font-medium">
               Danh mục
             </Table.HeadCell>
@@ -130,7 +132,7 @@ const ProductList = () => {
                         textToHighlight={product.name}
                       />
                     </Table.Cell>
-                    <Table.Cell>{product.slug}</Table.Cell>
+                    {/* <Table.Cell>{product.slug}</Table.Cell> */}
                     <Table.Cell>{product?.category?.name}</Table.Cell>
                     <Table.Cell>
                       <Avatar.Group className="justify-center">

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class InventoryStock extends Model
 {
+    use HasFactory;
     protected $fillable = ['quantity', 'variant_id'];
 
     public function variant()

@@ -14,4 +14,8 @@ class OrderCoupon extends Model
         'discount_amount',
         'coupon_id'
     ];
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class);
+    }
 }

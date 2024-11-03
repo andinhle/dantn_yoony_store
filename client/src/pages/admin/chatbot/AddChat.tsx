@@ -64,7 +64,8 @@ const AddChatForm = () => {
                 </div>
                 <div>
                     <div className="mb-2 block">
-                        <Label htmlFor="desc-event" value="..." />
+                        <Label htmlFor="desc-event"
+                            value="..." />
                     </div>
                     <textarea
                         placeholder="..."

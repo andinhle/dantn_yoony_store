@@ -79,7 +79,7 @@ const AddressOrder = forwardRef((props, ref) => {
       } = await axios.get(
         `${import.meta.env.VITE_API_ADRRESS}/provinces?page=0&size=63`,
         {
-          timeout:5000
+          timeout:3000
         }
       );
       setProvinces(response);
@@ -95,9 +95,9 @@ const AddressOrder = forwardRef((props, ref) => {
       } = await axios.get(
         `${
           import.meta.env.VITE_API_ADRRESS
-        }/districts?page=0&size=100&provinceId=${idProvince}`,
+        }/districts/${idProvince}?page=0&size=100`,
         {
-          timeout:5000
+          timeout:3000
         }
       );
       setDistricts(response);
@@ -113,9 +113,9 @@ const AddressOrder = forwardRef((props, ref) => {
       } = await axios.get(
         `${
           import.meta.env.VITE_API_ADRRESS
-        }/wards?page=0&size=100&districtId=${idDistrict}`,
+        }/wards/${idDistrict}?page=0&size=100`,
         {
-          timeout:5000
+          timeout:3000
         }
       );
       setWards(response);

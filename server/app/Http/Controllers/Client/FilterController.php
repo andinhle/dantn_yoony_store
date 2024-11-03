@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Attribute;
 use App\Models\Category;
+use App\Models\Order;
+use Illuminate\Support\Facades\Validator;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class FilterController extends Controller
@@ -51,7 +54,7 @@ class FilterController extends Controller
             }
         }
         // Sắp xếp sản phẩm mới nhất
-        if ($request->has('newest') && $request->input('newest')) {
+        if ($request->has('newest') && $request->input(key: 'newest')) {
             $query->orderBy('created_at', 'desc');
         }
 
@@ -68,6 +71,7 @@ class FilterController extends Controller
         return response()->json($products);
     }
 
+    //lấy thông tin category và atributes
     public function getFilter()
     {
         Log::info('Đang gọi hàm getFilter');
@@ -85,6 +89,95 @@ class FilterController extends Controller
         ]);
     }
     
- 
+    
+    public function filterOrdersByDate(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date|after_or_equal:start_date',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation errors',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $userId = Auth::id();
+
+            $query = Order::where('user_id', $userId);
+
+            //lọc ngày bắt đầu
+            if ($request->filled('start_date')) {
+                $query->whereDate('created_at', '>=', $request->start_date);
+            }
+
+            //lọc ngày kết thúc
+            if ($request->filled('end_date')) {
+                $query->whereDate('created_at', '<=', $request->end_date);
+            }
+
+            $orders = $query->with(['items.variant'])->get();
+
+            // Trả về kết quả dưới dạng JSON
+            return response()->json([
+                'success' => true,
+                'data' => $orders
+            ]);
+        } catch (\Exception $e) {
+            // Xử lý lỗi chung và trả về thông báo lỗi
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi không mong muốn xảy ra!',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function filterOrdersByPrice(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'sort_order' => 'nullable|in:asc,desc',
+            ]);
+    
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation errors',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+    
+            $userId = Auth::id();
+    
+            $query = Order::where('user_id', $userId);
+    
+            // Áp dụng sắp xếp theo giá trị đơn hàng
+            if ($request->filled('sort_order')) {
+                $query->orderBy('final_total', $request->sort_order);
+            }
+            $orders = $query->with(['items.variant'])->get();
+            Log::info('Sort order: ' . $request->sort_order);
+            Log::info('Query: ' . $query->toSql());
+            
+            return response()->json([
+                'success' => true,
+                'data' => $orders
+            ]);
+        } catch (\Exception $e) {
+            // Ghi log lỗi
+            Log::error('Lỗi lọc đơn hàng theo giá: ' . $e->getMessage());
+    
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi không mong muốn xảy ra!',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
     
 }

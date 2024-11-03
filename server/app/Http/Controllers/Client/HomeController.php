@@ -7,12 +7,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\BlogResource;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProductResource;
+use App\Http\Resources\RateAllByProductResource;
+use App\Http\Resources\RateResource;
 use App\Models\Answer;
 use App\Models\Blog;
 use App\Models\Category;
 use App\Models\Coupon;
+use App\Models\CouponUser;
 use App\Models\Product;
 use App\Models\Question;
+use App\Models\Rate;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,26 +29,46 @@ class HomeController extends Controller
 {
 
     //get one getOneProductBySlug
-    public function getOneProductBySlug(string $slug)
+    public function getOneProductBySlug(Request $request, string $slug)
     {
         try {
             event(new CheckExpiredSalePrices());
-            $product = Product::with('category', 'variants.attributeValues.attribute')->where('slug', $slug)->firstOrFail();
+
+            // Lấy thông tin sản phẩm
+            $product = Product::with('category', 'variants.attributeValues.attribute', 'variants.inventoryStock')
+                ->where('slug', $slug)
+                ->firstOrFail();
+
+            // Lấy sản phẩm liên quan
             $relatedProducts = Product::with('category', 'variants.attributeValues.attribute')
                 ->where('category_id', $product->category_id)
-                ->where('is_active', true) // Điều kiện kiểm tra sản phẩm phải active
+                ->where('is_active', true)
                 ->where('id', '!=', $product->id)
                 ->limit(5)
                 ->get();
+
+            // Lấy 10 đánh giá gần nhất
+            $rates = Rate::with('user', 'product.variants.attributeValues.attribute')
+                ->where('product_id', $product->id)
+                ->latest('created_at')
+                ->limit(10)
+                ->get();
+
             return response()->json([
                 'product' => new ProductResource($product),
                 'related_products' => ProductResource::collection($relatedProducts),
+                'ratingslide10' => RateResource::collection($rates)
             ], 200);
+
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Không tìm thấy sản phẩm.'], 404);
         } catch (\Throwable $e) {
-            Log::error('Lỗi khi tìm sản phẩm liên quan: ' . $e->getMessage(), ['slug' => $slug]);
-            return response()->json(['error' => 'Đã xảy ra lỗi khi tìm các sản phẩm liên quan.'], 500);
+            Log::error('Lỗi khi xử lý thông tin sản phẩm:', [
+                'slug' => $slug,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Đã xảy ra lỗi khi xử lý thông tin sản phẩm.'], 500);
         }
     }
 
@@ -224,10 +248,10 @@ class HomeController extends Controller
     {
         try {
             $data = Coupon::query()
-            ->where('status', true)
-            ->where('usage_limit','>' , 0)
-            ->where('end_date', '>', Carbon::now())
-            ->get();
+                ->where('status', true)
+                ->where('usage_limit', '>', 0)
+                ->where('end_date', '>', Carbon::now())
+                ->get();
 
             return response()->json([
                 'status' => 'success',
@@ -247,22 +271,67 @@ class HomeController extends Controller
         }
 
     }
+
     public function getCouponCart(Request $request)
     {
         try {
-            $data = Coupon::query()
-            ->where('status', true)
-            ->where('usage_limit','>' , 0)
-            ->where('start_date', '<', Carbon::now())
-            ->where('end_date', '>', Carbon::now())
-            ->where('min_order_value', '<=', $request->totalCart)
-            ->where('max_order_value', '>=', $request->totalCart)
-            ->get();
+            // Lấy user id từ request
+            $user = $request->user();
+
+            // Lấy danh sách coupon_id đã được user sử dụng
+            $usedCouponIds = CouponUser::where('user_id', $user->id)
+                ->whereNotNull('used_at')
+                ->pluck('coupon_id')
+                ->toArray();
+
+            $query = Coupon::query()
+                ->where('status', true)
+                ->where('usage_limit', '>', 0)
+                ->where(function ($q) {
+                    $q->where(function ($subQ) {
+                        // Trường hợp có thời hạn
+                        $subQ->where('start_date', '<', Carbon::now())
+                            ->where('end_date', '>', Carbon::now());
+                    })->orWhere(function ($subQ) {
+                        // Trường hợp không có thời hạn
+                        $subQ->whereNull('start_date')
+                            ->whereNull('end_date');
+                    });
+                })
+                ->whereNotIn('id', $usedCouponIds);
+
+            // Xử lý điều kiện min và max order value
+            $query->where(function ($q) use ($request) {
+                $q->where(function ($subQuery) use ($request) {
+                    // Trường hợp 1: Không có cả min và max (null)
+                    $subQuery->whereNull('min_order_value')
+                        ->whereNull('max_order_value');
+                })->orWhere(function ($subQuery) use ($request) {
+                    // Trường hợp 2: Chỉ có min, không có max
+                    $subQuery->where('min_order_value', '<=', $request->totalCart)
+                        ->whereNull('max_order_value');
+                })->orWhere(function ($subQuery) use ($request) {
+                    // Trường hợp 3: Có min, có max
+                    $subQuery->where('min_order_value', '<=', $request->totalCart)
+                        ->where('max_order_value', '>=', $request->totalCart);
+                })->orWhere(function ($subQuery) use ($request) {
+                    // Trường hợp 4: Không có min, chỉ có max
+                    $subQuery->whereNull('min_order_value')
+                        ->where('max_order_value', '>=', $request->totalCart);
+                });
+            });
+
+            // Debug query
+            \Log::info($query->toSql());
+            \Log::info($query->getBindings());
+
+            $data = $query->get();
 
             return response()->json([
                 'status' => 'success',
                 'data' => $data,
             ]);
+
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
@@ -272,10 +341,8 @@ class HomeController extends Controller
             return response()->json([
                 'message' => 'Đã có lỗi. Vui lòng thử lại',
                 'status' => 'error',
-
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
     }
 
     // FAQ
@@ -298,5 +365,119 @@ class HomeController extends Controller
     {
         $answers = Answer::where('question_id', $id)->get();
         return response()->json($answers);
+    }
+
+
+    public function ratingListAllbyProductToSlug(Request $request, $slug)
+    {
+        // Lấy thông tin sản phẩm từ slug
+        $product = Product::where('slug', $slug)->firstOrFail();
+
+        // Tính trung bình số sao
+        $averageRating = Rate::where('product_id', $product->id)
+            ->average('rating');
+
+        // Đếm số lượng đánh giá theo từng mức sao
+        $ratingCounts = $this->getRatingCounts($product->id);
+
+        // Lấy danh sách đánh giá có phân trang
+        $formattedPagedRates = $this->getPagedRatings($request, $product);
+
+        return [
+            'ratings' => [
+                'average_rating' => round($averageRating * 2) / 2,
+                'rating_counts' => [
+                    '5_star' => $ratingCounts[5] ?? 0,
+                    '4_star' => $ratingCounts[4] ?? 0,
+                    '3_star' => $ratingCounts[3] ?? 0,
+                    '2_star' => $ratingCounts[2] ?? 0,
+                    '1_star' => $ratingCounts[1] ?? 0,
+                ],
+                'rate_paginate8' => $formattedPagedRates,
+            ]
+        ];
+    }
+
+    // Hàm phụ để lấy số lượng đánh giá theo từng sao
+    private function getRatingCounts($productId)
+    {
+        $ratingCounts = Rate::where('product_id', $productId)
+            ->selectRaw('rating, COUNT(*) as count')
+            ->groupBy('rating')
+            ->pluck('count', 'rating')
+            ->toArray();
+
+        // Đảm bảo có đủ các mức sao từ 1-5
+        for ($i = 1; $i <= 5; $i++) {
+            if (!isset($ratingCounts[$i])) {
+                $ratingCounts[$i] = 0;
+            }
+        }
+
+        return $ratingCounts;
+    }
+
+    // Hàm phụ để lấy danh sách đánh giá có phân trang
+    private function getPagedRatings(Request $request, Product $product)
+    {
+        $ratingFilter = $request->input('ratingFilter');
+    
+        $rateQuery = Rate::with([
+            'user:id,name,avatar',
+            'product:id,name,slug',
+            'order.items' => function ($query) use ($product) {
+                $query->whereHas('variant', function ($q) use ($product) {
+                    $q->where('product_id', $product->id);
+                });
+            },
+            'order.items.variant.attributeValues.attribute'
+        ])
+        ->where('product_id', $product->id);
+    
+        if (in_array($ratingFilter, [1, 2, 3, 4, 5])) {
+            $rateQuery->where('rating', $ratingFilter);
+        }
+    
+        $pagedRates = $rateQuery->orderByDesc('created_at')->paginate(8);
+    
+        return $pagedRates->through(function ($rate) {
+            // Lấy tất cả các items có variant thuộc sản phẩm được đánh giá
+            $attributeValuesList = collect($rate->order?->items)
+                ->where('variant.product_id', $rate->product_id)
+                ->flatMap(function ($orderItem) {
+                    // Map attributeValues cho từng variant
+                    return $orderItem->variant->attributeValues
+                        ->map(function ($attrValue) {
+                            return [
+                                'id' => $attrValue->id,
+                                'value' => $attrValue->value,
+                                'attribute' => [
+                                    'id' => $attrValue->attribute->id,
+                                    'name' => $attrValue->attribute->name,
+                                ]
+                            ];
+                        })
+                        ->sortBy(function ($item) {
+                            // Sắp xếp để Size luôn ở trước Color
+                            return $item['attribute']['name'] === 'Size' ? 0 : 1;
+                        })
+                        ->values()
+                        ->all();
+                })
+                ->values()
+                ->all();
+    
+            return [
+                'id' => $rate->id,
+                'content' => $rate->content,
+                'rating' => $rate->rating,
+                'created_at' => $rate->created_at,
+                'user' => [
+                    'name' => $rate->user->name,
+                    'avatar' => $rate->user->avatar,
+                ],
+                'attribute_values' => $attributeValuesList
+            ];
+        });
     }
 }

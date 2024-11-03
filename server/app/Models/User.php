@@ -21,7 +21,7 @@ class User extends Authenticatable
         'provider_id',
         'provider_token',
         'remember_token',
-        'role_id', 
+        'role', 
     ];
 
     protected $hidden = [
@@ -39,12 +39,13 @@ class User extends Authenticatable
         return $this->hasMany(Wishlist::class, 'user_id', 'id');
     }
 
-    // Mỗi người dùng thuộc về một vai trò
-    public function role()
-    {
-        return $this->belongsTo(Role::class);
-    }
     public function coupons() {
         return $this->belongsToMany(Coupon::class, 'coupon_user');
     }
+
+    // một người dùng có thể tạo nhiều đánh giá
+     public function rates()
+     {
+         return $this->hasMany(Rate::class);
+     }
 }

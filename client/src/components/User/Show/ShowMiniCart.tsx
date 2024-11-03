@@ -35,7 +35,7 @@ const ShowMiniCart = () => {
             return (
               <div
                 key={cart.id}
-                className="flex gap-2 shadow-sm p-2 rounded-md"
+                className="flex gap-2 shadow-sm p-2 rounded-md justify-between"
               >
                 <img
                   src={cart.variant.image || cart.variant.product.images[0]}
