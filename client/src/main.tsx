@@ -91,9 +91,6 @@ createRoot(document.getElementById("root")!).render(
               <Route path="check-out" element={<CheckOutOrder />} />
               <Route path="blogs" element={<BlogPage />} />
               <Route path="sizefileds" element={<SizeFilters />} />
-              <Route path="layout-userDetails" element={<LayoutUserDetails />}>
-                <Route path="userDetails" element={<UserDetails />} />
-              <Route path="fileds" element={<ProductFilters />} />
               <Route path="user-manager" element={<LayoutUserDetails />}>
                 <Route index element={<UserDetails />} />
                 <Route path="wishlist" element={<WishList />} />
