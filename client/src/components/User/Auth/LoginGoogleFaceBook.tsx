@@ -1,6 +1,6 @@
 import instance from "../../../instance/instance";
 
-const LoginGoogle = () => {
+const LoginGoogleFaceBook = () => {
   const handleLoginGoogle = async () => {
     try {
       const {data:responseCreatLogin} = await instance.get("auth/google");
@@ -9,11 +9,24 @@ const LoginGoogle = () => {
       console.log(error);
     }
   };
+  const handleLoginFacebook = async () => {
+    try {
+        const {data: responseCreatLogin} = await instance.get("auth/facebook");
+        if (responseCreatLogin?.url) {
+            window.location.assign(responseCreatLogin.url);
+        } else {
+            throw new Error('Facebook login URL not found');
+        }
+        
+    } catch (error) {
+        console.error('Facebook login error:', error);
+    }
+};
   return (
     <div className="flex items-center justify-center gap-3">
       <button
         type="button"
-        onClick={handleLoginGoogle}
+        onClick={handleLoginFacebook}
         className="flex items-center gap-2 py-2 px-3 rounded-full border border-[#f1f1f1]"
       >
         <svg
@@ -70,4 +83,4 @@ const LoginGoogle = () => {
   );
 };
 
-export default LoginGoogle;
+export default LoginGoogleFaceBook
