@@ -65,14 +65,14 @@ const NavMenuUser = () => {
             <span>Tài khoản</span>
           </>
         ) : (
-          <>
+          <div className="max-w-[125px] flex gap-2">
             <Avatar
-              alt={user.name}
-              src={user.avatar || "/default-avatar.png"}
+              alt={String(user?.name).toUpperCase()}
+              src={user?.avatar || "/default-avatar.png"}
               sx={{ width: 24, height: 24 }}
             />
-            <span>{user.name}</span>
-          </>
+            <p className="overflow-hidden text-ellipsis whitespace-nowrap">{user?.name}</p>
+          </div>
         )}
       </button>
     ),

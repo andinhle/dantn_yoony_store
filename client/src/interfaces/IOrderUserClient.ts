@@ -1,10 +1,13 @@
+import { IUser } from "./IUser";
 import { IVariants } from "./IVariants";
+import { IVoucher } from "./IVouchers";
 
 interface ItemsOrder {
     quantity: number,
     total_price: number
     unit_price: number,
     variant: IVariants
+
 }
 export interface IOrderUserClient {
     id?: number;
@@ -22,5 +25,18 @@ export interface IOrderUserClient {
     complete_at: string;
     created_at: string;
     updated_at: string;
-    items: ItemsOrder[]
+    coupons:CouponUsage[]
+    items: ItemsOrder[],
+    user:IUser
 }
+
+interface CouponUsage {
+    id: number;
+    order_id: number;
+    coupon_id: number;
+    discount_amount: string;
+    created_at: string;
+    updated_at: string; 
+    coupon: IVoucher; 
+}
+

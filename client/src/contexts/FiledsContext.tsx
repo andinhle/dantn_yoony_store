@@ -23,6 +23,7 @@ const FiledsProvider = (props: Props) => {
             min: 0,
             max: 100,
         },
+        
     };
 
     const [fileds, dispatch] = useReducer(FiledReducer, initialState);

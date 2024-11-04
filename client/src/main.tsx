@@ -47,11 +47,15 @@ import { CheckOrder } from "./components/User/Header/CheckOrder.tsx";
 import EventUser from "./components/User/Event/EventUser.tsx";
 // import LayoutEventAdmin from "./layouts/Admin/LayoutEventAdmin.tsx";
 import BlogDetail from "./components/User/Blogs/BlogDetail.tsx";
-import ProductFilters from "./components/User/Filter/FilterPrice.tsx";
 import FiledsProvider from "./contexts/FiledsContext.tsx";
 import LayoutChatAdmin from "./layouts/Admin/LayoutChatAdmin.tsx";
-import ManagerOrdersUser from "./components/User/Manager/ManagerOrdersUser.tsx";
-import UserOrderDetail from "./components/User/Manager/UserOrderDetail.tsx";
+import SizeFilters from "./components/User/Filter/FilterCategory.tsx";
+import ManagerOrdersUser from "./components/User/Manager/Orders/ManagerOrdersUser.tsx";
+import UserOrderDetail from "./components/User/Manager/Orders/UserOrderDetail.tsx";
+import PaymentCheckVnpay from "./components/User/Order/PaymentCheckVnpay.tsx";
+import UserRatings from "./components/User/Manager/Ratings/UserRatings.tsx";
+import RatingDetailOrder from "./components/User/Manager/Ratings/RatingDetailOrder.tsx";
+import CallBackLoginGoogle from "./components/User/Auth/CallBackLoginGoogle.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -74,10 +78,11 @@ createRoot(document.getElementById("root")!).render(
                   <Route path=":token/:email" element={<FormResetPass />} />
                 </Route>
               </Route> */}
+              <Route path='api/auth/google/callback' element={<CallBackLoginGoogle />}/>
               <Route path="reset-password" element={<LayoutResetPassword />}>
                   <Route index element={<ResetPassRequest />} />
                   <Route path=":token/:email" element={<FormResetPass />} />
-                </Route>
+              </Route>
               <Route
                 path=":category/:slugproduct"
                 element={<ShowDetailProduct />}
@@ -85,12 +90,14 @@ createRoot(document.getElementById("root")!).render(
               <Route path="gio-hang" element={<CartListClient />} />
               <Route path="check-out" element={<CheckOutOrder />} />
               <Route path="blogs" element={<BlogPage />} />
-              <Route path="fileds" element={<ProductFilters />} />
+              <Route path="sizefileds" element={<SizeFilters />} />
               <Route path="user-manager" element={<LayoutUserDetails />}>
                 <Route index element={<UserDetails />} />
                 <Route path="wishlist" element={<WishList />} />
                 <Route path="user-orders" element={<ManagerOrdersUser />} />
                 <Route path="user-orders/order-detail/:code_order" element={<UserOrderDetail />} />
+                <Route path="user-ratings" element={<UserRatings />} />
+                <Route path="user-ratings/rating-detail/:code_order" element={<RatingDetailOrder />} />
               </Route>
               <Route path="checkorder" element={<CheckOrder />} />
               <Route path="event" element={<EventUser />} />

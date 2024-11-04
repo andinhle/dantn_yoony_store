@@ -65,31 +65,31 @@ class AttributeValueController extends Controller
                 'value' => 'required',
                 'attribute_id' => 'required'
             ]);
-
-            // $data = $request->all();
-
-            AttributeValue::query()->create($data);
-
+    
+            // Tạo bản ghi mới
+            $attributeValue = AttributeValue::create($data);
+    
+            // Nạp mối liên hệ 'attribute' để hiển thị thêm
+            $attributeValue->load('attribute');
+    
             return response()->json([
                 'message' => 'Thêm mới Attribute value thành công',
                 'status' => 'success',
-                'data' => $data
+                'data' => $attributeValue
             ], Response::HTTP_CREATED);
         } catch (\Throwable $th) {
-
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
                 'message' => $th->getMessage()
             ]);
-
+    
             return response()->json([
                 'message' => 'Thêm attribute value thất bại',
                 'status' => 'error',
-
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
+    
     public function update(Request $request, AttributeValue $attributeValue)
     {
         try {
