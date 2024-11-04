@@ -18,6 +18,7 @@ import { MdLocalShipping } from "react-icons/md";
 import VNPAY from "./vnpay1.png"
 
 const OrderDetails = () => {
+    const [customReason, setCustomReason] = useState("");
     const navigate = useNavigate();
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
@@ -85,8 +86,8 @@ const OrderDetails = () => {
         }
     };
     const handleCancelClick = () => {
-        if (selectedStatus === "shipping") {
-            notification.warning({ message: "Không thể hủy đơn hàng khi đang giao" }); // Thông báo cho người dùng
+        if (selectedStatus === "shipping" || selectedStatus === "delivered") {
+            notification.warning({ message: "Không thể hủy đơn hàng khi đang ở trạng thái này" }); // Thông báo cho người dùng
         } else {
             handleCancelOrder(); // Thực hiện hủy đơn hàng nếu trạng thái không phải đang giao
         }
@@ -171,11 +172,18 @@ const OrderDetails = () => {
                                             <td className="px-4 py-3 text-sm font-medium break-words text-primary flex items-center space-x-4">
                                                 <div>
                                                     <img
-                                                        src={item?.variant?.product?.images}
+                                                        src={
+                                                            item?.variant?.image ||
+                                                            (item?.variant?.product?.images
+                                                                ? JSON.parse(item.variant.product.images)[0]
+                                                                : '/default-image.png')
+                                                        }
                                                         alt={item?.variant?.product?.name || 'Product Image'}
                                                         className="w-16 h-16 object-cover rounded-md border border-gray-300"
                                                     />
                                                 </div>
+
+
                                                 <div className="space-y-2">
                                                     <div>
                                                         {item?.variant?.product?.name || 'N/A'}
@@ -243,7 +251,7 @@ const OrderDetails = () => {
                                 </tr>
                                 <tr className="border-none">
                                     <td colSpan="4" className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
-                                        Giảm giá (JDGAG70C8JY9): 
+                                        Giảm giá (JDGAG70C8JY9):
                                     </td>
                                     <td className="px-4 whitespace-nowrap text-primary text-sm font-semibold text-secondary-900">
                                         {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 }).format(10000)}
@@ -286,7 +294,8 @@ const OrderDetails = () => {
                             className="mt-1 block mx-4 border-gray-300 rounded-md min-w-max shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                         >
                             {orderStatuses
-                                .filter((status) => !(selectedStatus === "shipping" && status.value === "canceled"))
+                                .filter((status) => !(
+                                    (selectedStatus === "shipping" || selectedStatus === "delivered") && status.value === "canceled"))
                                 .map((status) => (
                                     <option key={status.value} value={status.value}>
                                         {status.label}
@@ -319,37 +328,126 @@ const OrderDetails = () => {
                         </>
                     )}
                     {showCancelModal && (
+                        // <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 overflow-hidden">
+                        //     <div className="bg-white p-6 rounded-lg shadow-lg w-1/3 max-h-screen overflow-y-auto">
+                        //         <h3 className="text-lg font-semibold mb-4">Lý do hủy đơn hàng</h3>
+                        //         <div className="space-y-2">
+                        //             {["Hàng không đúng mẫu", "Giao hàng chậm quá số ngày quy định", "Sai chính sách"].map((reason, idx) => (
+                        //                 <button
+                        //                     key={idx}
+                        //                     className={`w-full p-2 border border-gray-300 rounded-md text-left ${cancelReason === reason ? "bg-gray-200" : ""
+                        //                         }`}
+                        //                     onClick={() => setCancelReason(reason)}
+                        //                 >
+                        //                     {reason}
+                        //                 </button>
+                        //             ))}
+                        //         </div>
+                        //         <div className="flex justify-end mt-4">
+                        //             <button
+                        //                 onClick={handleCloseModal}
+                        //                 className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md mr-2"
+                        //             >
+                        //                 Đóng
+                        //             </button>
+                        //             <button
+                        //                 onClick={handleConfirmCancel}
+                        //                 className="px-4 py-2 bg-red-600 text-white rounded-md"
+                        //             >
+                        //                 Xác nhận hủy
+                        //             </button>
+                        //         </div>
+                        //     </div>
+                        // </div>
+                        // <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 overflow-hidden">
+                        //     <div className="bg-white p-4 rounded-lg shadow-lg w-1/4 max-h-screen overflow-y-auto text-sm">
+                        //         <h3 className="text-md font-semibold mb-3">Lý do hủy đơn hàng</h3>
+                        //         <div className="space-y-2">
+                        //             {["Hàng không đúng mẫu", "Giao hàng chậm quá số ngày quy định", "Sai chính sách", "Khác"].map((reason, idx) => (
+                        //                 <label key={idx} className="flex items-center space-x-2">
+                        //                     <input
+                        //                         type="radio"
+                        //                         value={reason}
+                        //                         checked={cancelReason === reason}
+                        //                         onChange={() => setCancelReason(reason)}
+                        //                         className="form-radio h-4 w-4 text-blue-600"
+                        //                     />
+                        //                     <span className="text-left">{reason}</span>
+                        //                 </label>
+                        //             ))}
+                        //             {cancelReason === "Khác" && (
+                        //                 <input
+                        //                     type="text"
+                        //                     placeholder="Nhập lý do hủy khác..."
+                        //                     value={customReason}
+                        //                     onChange={(e) => setCustomReason(e.target.value)}
+                        //                     className="mt-2 p-1 border border-gray-300 rounded-md w-full text-sm"
+                        //                 />
+                        //             )}
+                        //         </div>
+                        //         <div className="flex justify-end mt-3">
+                        //             <button
+                        //                 onClick={handleCloseModal}
+                        //                 className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md mr-2 text-sm"
+                        //             >
+                        //                 Đóng
+                        //             </button>
+                        //             <button
+                        //                 onClick={handleConfirmCancel}
+                        //                 className="px-3 py-1 bg-red-600 text-white rounded-md text-sm"
+                        //             >
+                        //                 Xác nhận hủy
+                        //             </button>
+                        //         </div>
+                        //     </div>
+                        // </div>
                         <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 overflow-hidden">
-                            <div className="bg-white p-6 rounded-lg shadow-lg w-1/3 max-h-screen overflow-y-auto">
-                                <h3 className="text-lg font-semibold mb-4">Lý do hủy đơn hàng</h3>
+                            <div className="bg-white p-4 rounded-lg shadow-lg w-1/4 max-h-screen overflow-y-auto text-sm">
+                                <h3 className="text-md font-semibold mb-3">Lý do hủy đơn hàng</h3>
                                 <div className="space-y-2">
-                                    {["Hàng không đúng mẫu", "Giao hàng chậm quá số ngày quy định", "Sai chính sách"].map((reason, idx) => (
-                                        <button
-                                            key={idx}
-                                            className={`w-full p-2 border border-gray-300 rounded-md text-left ${cancelReason === reason ? "bg-gray-200" : ""
-                                                }`}
-                                            onClick={() => setCancelReason(reason)}
-                                        >
-                                            {reason}
-                                        </button>
+                                    {["Hàng không đúng mẫu", "Giao hàng chậm quá số ngày quy định", "Sai chính sách", "Khác"].map((reason, idx) => (
+                                        <label key={idx} className="flex items-center space-x-2">
+                                            <input
+                                                type="radio"
+                                                value={reason}
+                                                checked={cancelReason === reason}
+                                                onChange={() => setCancelReason(reason)}
+                                                className={`h-4 w-4 ${cancelReason === reason ? 'text-primary' : 'text-blue-600'} appearance-none border border-gray-300 rounded-full checked:bg-primary checked:border-transparent focus:outline-none`}
+                                            />
+                                            <span className="text-left">{reason}</span>
+                                        </label>
                                     ))}
+                                    {cancelReason === "Khác" && (
+                                        <input
+                                            type="text"
+                                            placeholder="Nhập lý do hủy khác..."
+                                            value={customReason}
+                                            onChange={(e) => setCustomReason(e.target.value)}
+                                            className="mt-2 p-1 border border-gray-300 rounded-md w-full text-sm"
+                                        />
+                                    )}
                                 </div>
-                                <div className="flex justify-end mt-4">
+                                <div className="flex justify-end mt-3">
                                     <button
                                         onClick={handleCloseModal}
-                                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md mr-2"
+                                        className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md mr-2 text-sm"
                                     >
                                         Đóng
                                     </button>
                                     <button
                                         onClick={handleConfirmCancel}
-                                        className="px-4 py-2 bg-red-600 text-white rounded-md"
+                                        className="px-3 py-1 bg-red-600 text-white rounded-md text-sm"
                                     >
                                         Xác nhận hủy
                                     </button>
                                 </div>
                             </div>
                         </div>
+
+
+
+
+
                     )}
                 </div>
                 <div className="bg-white p-8 mt-4">
@@ -357,12 +455,12 @@ const OrderDetails = () => {
                         Trạng thái đơn hàng :
                         <span
                             className={`pl-2 font-medium ${orderDetail?.status_order === 'canceled' ? 'text-red-500' :
-                                    orderDetail?.status_order === 'delivered' ? 'text-green-500' :
-                                        orderDetail?.status_order === 'pending' ? 'text-yellow-500' :
+                                orderDetail?.status_order === 'delivered' ? 'text-green-500' :
+                                    orderDetail?.status_order === 'pending' ? 'text-yellow-500' :
                                         orderDetail?.status_order === 'shipping' ? 'text-primary' :
-                                        orderDetail?.status_order === 'preparing_goods' ? 'text-yellow-500' :
-                                        orderDetail?.status_order === 'confirmed' ? 'text-blue-500' :
-                                            'text-black'
+                                            orderDetail?.status_order === 'preparing_goods' ? 'text-yellow-500' :
+                                                orderDetail?.status_order === 'confirmed' ? 'text-blue-500' :
+                                                    'text-black'
                                 }`}
                         >
                             {translateStatus(orderDetail?.status_order)}
@@ -420,11 +518,11 @@ const OrderDetails = () => {
                 </div>
             </div>
             <div className="overflow-hidden w-full lg:w-1/3 space-y-8">
-                <div className="bg-white rounded-lg shadow-lg p-6">
+                <div className="bg-white rounded-lg  p-6">
                     <div className="pb-3 flex justify-between items-center space-x-1">
                         <div className="flex justify-start items-center">
                             <MdLocalShipping className="text-primary w-10" size={20} />
-                            <h2 className="text-primary font-bold">THÔNG TIN HẬU CẦN</h2>
+                            <h2 className="text-primary font-bold text-sm">THÔNG TIN HẬU CẦN</h2>
                         </div>
                         <div className="font-mono text-xs w-fit p-2 bg-yellow-100 text-yellow-400 rounded-lg">
                             Track Order
@@ -433,7 +531,7 @@ const OrderDetails = () => {
                     <hr />
                     <div className="flex justify-center items-center">
                         <svg
-                            className="text-primary"
+                            className="text-primary w-24"
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
                             width="150"
@@ -460,8 +558,8 @@ const OrderDetails = () => {
                     </div>
                     <div className="space-y-3">
                         <div className="flex space-x-2">
-                            <p className="font-bold">Ngày đặt hàng :</p>
-                            <span>
+                            <p className="font-bold text-sm">Ngày đặt hàng :</p>
+                            <span className="text-sm">
                                 {new Date(orderDetail?.created_at).toLocaleDateString("vi-VN", {
                                     year: "numeric",
                                     month: "numeric",
@@ -470,16 +568,16 @@ const OrderDetails = () => {
                             </span>
                         </div>
                         <div className="flex space-x-2">
-                            <p className="font-bold">Phương thức giao hàng :</p>
-                            <span>
+                            <p className="font-bold text-sm">Phương thức giao hàng :</p>
+                            <span className="text-sm">
                                 Giao hàng nhanh
                             </span>
                         </div>
 
                         <div className="">
                             <div className="flex space-x-2">
-                                <p className="font-bold">Phương thức thanh toán :</p>
-                                <span>
+                                <p className="font-bold text-sm">Phương thức thanh toán :</p>
+                                <span className="text-sm">
                                     {orderDetail?.payment_method}
                                 </span>
                             </div>
@@ -492,61 +590,62 @@ const OrderDetails = () => {
                             )}
                         </div>
                         <div className="space-x-2">
-                            <p className="font-bold">Ghi chú đơn hàng :</p>
-                            <span>
+                            <p className="font-bold text-sm">Ghi chú đơn hàng :</p>
+                            <span className="text-sm">
                                 {orderDetail?.notes}
                             </span>
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-lg shadow-lg p-6">
+                <div className="bg-white rounded-lg  p-6">
                     <div className="pb-3 flex justify-start items-center space-x-1">
                         <FaUserCheck className="text-primary w-10" />
-                        <h2 className="text-primary font-bold">THÔNG TIN NHẬN HÀNG</h2>
+                        <h2 className="text-primary font-bold text-sm">THÔNG TIN NHẬN HÀNG</h2>
                     </div>
                     <hr />
                     <div className="pt-4 space-y-3">
                         <div className="flex space-x-2">
-                            <p className="font-bold">Họ và tên :</p>
-                            <span>
+                            <p className="font-bold text-sm">Họ và tên :</p>
+                            <span className="text-sm">
                                 {orderDetail?.name}
                             </span>
                         </div>
                         <div className="flex space-x-2">
-                            <p className="font-bold">Email :</p>
-                            <span>
+                            <p className="font-bold text-sm">Email :</p>
+                            <span className="text-sm">
                                 andinhle163@gmail.com
                             </span>
                         </div>
                         <div className="flex space-x-2">
-                            <p className="font-bold">Số điện thoại :</p>
-                            <span>
+                            <p className="font-bold text-sm">Số điện thoại :</p>
+                            <span className="text-sm">
                                 {orderDetail?.tel}
                             </span>
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-lg shadow-lg p-6">
-                    <div className="pb-3 flex justify-start items-center space-x-1">
+                <div className="bg-white rounded-lg p-6">
+                    <div className="pb-2 flex justify-start items-center space-x-1">
                         <FaAddressBook className="text-primary w-10" />
-                        <h2 className="text-primary font-bold">ĐỊA CHỈ NHẬN HÀNG</h2>
+                        <h2 className="text-primary font-bold text-sm">ĐỊA CHỈ NHẬN HÀNG</h2>
                     </div>
                     <hr />
-                    <div className="pt-4 space-y-3">
+                    <div className="pt-3 space-y-2">
                         <div className="">
-                            <span className="font-bold">Địa chỉ nhận hàng:</span><br />
-                            <span>
+                            <span className="font-bold text-sm">Địa chỉ nhận hàng:</span><br />
+                            <span className="text-sm">
                                 {orderDetail?.address}
                             </span>
                         </div>
                         <div className="">
-                            <span className="font-bold">Địa chỉ thanh toán:</span><br />
-                            <span>
+                            <span className="font-bold text-sm">Địa chỉ thanh toán:</span><br />
+                            <span className="text-sm">
                                 {orderDetail?.address}
                             </span>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     )
