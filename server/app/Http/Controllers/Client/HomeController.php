@@ -77,9 +77,17 @@ class HomeController extends Controller
     {
         if (auth()->check()) {
             $user = auth()->user();
-
-            $wishlists = $user->wishlists()->with('product')->get();
-
+    
+            // Lấy danh sách wishlists và sản phẩm kèm theo
+            $wishlists = $user->wishlists()->with('product.variants')->get();
+    
+            // Giải mã trường 'images' cho mỗi sản phẩm trong wishlist
+            foreach ($wishlists as $wishlist) {
+                if ($wishlist->product && $wishlist->product->images) {
+                    $wishlist->product->images = json_decode($wishlist->product->images);
+                }
+            }
+    
             return response()->json([
                 'wishlists' => $wishlists
             ], 200);
@@ -87,36 +95,41 @@ class HomeController extends Controller
             return response()->json(['error' => 'Tài khoản chưa đăng nhập.'], 401);
         }
     }
+    
     //insert wishlists by user
     public function insertWishlists(Request $request)
-    {
-        if (auth()->check()) {
-            $user = auth()->user();
+{
+    if (auth()->check()) {
+        $user = auth()->user();
 
-            // Kiểm tra xem product_id đã được gửi lên chưa
-            $validatedData = $request->validate([
-                'product_id' => 'required|exists:products,id',
-            ]);
+        // Validate request input
+        $validatedData = $request->validate([
+            'product_id' => 'required|exists:products,id',
+        ]);
 
-            // Kiểm tra xem sản phẩm đã tồn tại trong wishlist CHƯA
-            $exists = $user->wishlists()->where('product_id', $request->product_id)->exists();
+        // Check if product already exists in the wishlist
+        $exists = $user->wishlists()->where('product_id', $request->product_id)->exists();
 
-            if ($exists) {
-                return response()->json(['error' => 'Sản phẩm đã tồn tại trong danh sách yêu thích.'], 400);
-            }
-
-            $wishlist = $user->wishlists()->create([
-                'product_id' => $request->product_id,
-            ]);
-
-            return response()->json([
-                'message' => 'Sản phẩm đã được thêm vào danh sách yêu thích.',
-                'wishlist' => $wishlist
-            ], 201);
-        } else {
-            return response()->json(['error' => 'Tài khoản chưa đăng nhập.'], 401);
+        if ($exists) {
+            return response()->json(['error' => 'Sản phẩm đã tồn tại trong danh sách yêu thích.'], 400);
         }
+
+        // Create a new wishlist entry
+        $wishlist = $user->wishlists()->create([
+            'product_id' => $request->product_id,
+        ]);
+
+        
+
+        return response()->json([
+            'message' => 'Sản phẩm đã được thêm vào danh sách yêu thích.',
+            'wishlist' => $wishlist
+        ], 201);
+    } else {
+        return response()->json(['error' => 'Tài khoản chưa đăng nhập.'], 401);
     }
+}
+
 
 
 
