@@ -168,7 +168,7 @@ const Orders = () => {
                   style: "currency",
                   currency: "VND",
                   minimumFractionDigits: 0,
-                }).format(item.grand_total)}
+                }).format(item.final_total)}
               </td>
               <td className="px-4 py-3 whitespace-nowrap text-sm text-primary font-bold">
                 {new Date(item.created_at).toLocaleDateString("vi-VN", {

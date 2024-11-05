@@ -129,6 +129,8 @@ const OrderDetails = () => {
         };
         return statusTranslations[status] || "Trạng thái không xác định";
     };
+
+
     return (
         <div className="flex">
             <div className=" shadow-md rounded-lg overflow-hidden w-full h-max lg:w-2/3 mr-4">
@@ -161,7 +163,7 @@ const OrderDetails = () => {
                             </tbody>
                             <tbody className="divide-y divide-secondary-200">
                                 {orderDetail?.items?.map((item, index) => {
-                                    // console.log("item", item?.variant?.attribute_values)
+                                    console.log("item", item?.variant?.attribute_values)
                                     // console.log("name:")
 
                                     return (
@@ -188,31 +190,18 @@ const OrderDetails = () => {
                                                     <div>
                                                         {item?.variant?.product?.name || 'N/A'}
                                                     </div>
-                                                    <div className="text-uppercase">
-                                                        <td className="text-gray-400 text-uppercase whitespace-nowrap text-sm text-left">
-                                                            {item?.variant?.attribute_values
-                                                                .map((i) => {
-                                                                    switch (i.attribute_id) {
-                                                                        case 2:
-                                                                            return `Màu : ${i.value}`;
-                                                                        case 1:
-                                                                            return `Size : ${i.value}`;
-                                                                        case 3:
-                                                                            return `Loại vải : ${i.value}`;
-                                                                        default:
-                                                                            return '';
-                                                                    }
-                                                                })
-                                                                .filter((text) => text !== '') // Lọc bỏ các giá trị rỗng
-                                                                .map((text, index, array) => (
-                                                                    <span key={index}>
-                                                                        {text}
-                                                                        {index < array.length - 1 && (
-                                                                            <span className="text-black px-2"> | </span>
-                                                                        )}
-                                                                    </span>
-                                                                ))}
-                                                        </td>
+                                                    <div className="text-uppercase flex gap-3">
+                                                        {item?.variant?.attribute_values.map((i) => {
+                                                            return (
+                                                                <td className="text-gray-400 text-uppercase whitespace-nowrap text-sm text-left">
+                                                                    <span className="">
+                                                                        {i.attribute?.name}
+                                                                    </span>{" "}
+                                                                    : <span>{i.value}</span>
+                                                                </td>
+                                                            )
+                                                        })}
+
                                                     </div>
                                                 </div>
 
@@ -249,13 +238,24 @@ const OrderDetails = () => {
                                         {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 }).format(orderDetail?.grand_total || 0)}
                                     </td>
                                 </tr>
+
                                 <tr className="border-none">
-                                    <td colSpan="4" className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
-                                        Giảm giá (JDGAG70C8JY9):
-                                    </td>
-                                    <td className="px-4 whitespace-nowrap text-primary text-sm font-semibold text-secondary-900">
-                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 }).format(10000)}
-                                    </td>
+                                    {orderDetail?.coupons?.map((value) => {
+                                        return (
+                                            <>
+                                                <td colSpan="4" className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
+                                                    Giảm giá (
+                                                    <span className="text-primary">{value.coupon?.code}</span>
+                                                    ):
+                                                </td>
+
+                                                <td className="px-4 whitespace-nowrap text-primary text-sm font-semibold text-secondary-900">
+                                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 }).format(value.discount_amount)}
+                                                </td>
+                                            </>
+                                        )
+                                    })}
+
                                 </tr>
                                 <tr className="border-none">
                                     <td colSpan="4" className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
@@ -613,7 +613,7 @@ const OrderDetails = () => {
                         <div className="flex space-x-2">
                             <p className="font-bold text-sm">Email :</p>
                             <span className="text-sm">
-                                andinhle163@gmail.com
+                                {orderDetail?.user?.email}
                             </span>
                         </div>
                         <div className="flex space-x-2">
