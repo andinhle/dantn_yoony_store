@@ -24,7 +24,6 @@ const UserOrderDetail = () => {
       setOrderDetails(response);
     })();
   }, [valueReason]);
-  const description = "This is a description.";
   const status = (statusOrder: string) => {
     switch (statusOrder) {
       case "pending":
@@ -631,22 +630,22 @@ const UserOrderDetail = () => {
                 current={checkStatusCurrent}
                 style={{ backgroundColor: "white" }}
                 items={[
-                  { title: "Chờ xác nhận", description },
+                  { title: "Chờ xác nhận", description:"Đơn hàng mới được tạo, đang chờ người bán xác nhận" },
                   {
                     title: "Đã xác nhận",
-                    description,
+                    description:'Người bán đã tiếp nhận và xác nhận đơn hàng',
                   },
                   {
                     title: "Đang chuẩn bị hàng",
-                    description,
+                    description:'Người bán đang đóng gói và chuẩn bị hàng để giao',
                   },
                   {
                     title: "Đang vận chuyển",
-                    description,
+                    description:'Đơn hàng đang được đơn vị vận chuyển giao đến bạn',
                   },
                   {
                     title: "Đã giao hàng",
-                    description,
+                    description:'Đơn hàng đã được giao thành công đến người nhận',
                   },
                 ]}
               />
@@ -659,7 +658,7 @@ const UserOrderDetail = () => {
                 items={[
                   {
                     title: "Đơn hàng đã bị hủy",
-                    description,
+                    description:`${valueReason}`,
                     status: "error",
                   },
                 ]}

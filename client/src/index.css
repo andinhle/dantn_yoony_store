@@ -365,3 +365,7 @@ a:hover .number-cart{
 .rating-scroll-done::-webkit-scrollbar-thumb{
   background-color: #FAFAFA;
 }
+
+.ant-steps-item-description{
+  font-size: 12px !important;
+}

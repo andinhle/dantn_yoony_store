@@ -141,7 +141,7 @@ const useRatingDetail = (codeOrder: string) => {
           setRatingDetail(data);
         } else if (!hasNavigated.current) {
           hasNavigated.current = true; 
-          message.warning("Đơn hàng đánh giá trước đó rồi!");
+          message.warning("Bạn đã đánh giá đơn hàng này rồi");
           navigate('/user-manager/user-ratings');
         }
       } catch (err) {

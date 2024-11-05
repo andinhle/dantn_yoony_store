@@ -47,9 +47,9 @@ import { CheckOrder } from "./components/User/Header/CheckOrder.tsx";
 import EventUser from "./components/User/Event/EventUser.tsx";
 // import LayoutEventAdmin from "./layouts/Admin/LayoutEventAdmin.tsx";
 import BlogDetail from "./components/User/Blogs/BlogDetail.tsx";
-import ProductFilters from "./components/User/Filter/FilterPrice.tsx";
 import FiledsProvider from "./contexts/FiledsContext.tsx";
 import LayoutChatAdmin from "./layouts/Admin/LayoutChatAdmin.tsx";
+import SizeFilters from "./components/User/Filter/FilterCategory.tsx";
 import ManagerOrdersUser from "./components/User/Manager/Orders/ManagerOrdersUser.tsx";
 import UserOrderDetail from "./components/User/Manager/Orders/UserOrderDetail.tsx";
 import PaymentCheckVnpay from "./components/User/Order/PaymentCheckVnpay.tsx";
@@ -90,7 +90,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="gio-hang" element={<CartListClient />} />
               <Route path="check-out" element={<CheckOutOrder />} />
               <Route path="blogs" element={<BlogPage />} />
-              <Route path="fileds" element={<ProductFilters />} />
+              <Route path="sizefileds" element={<SizeFilters />} />
               <Route path="user-manager" element={<LayoutUserDetails />}>
                 <Route index element={<UserDetails />} />
                 <Route path="wishlist" element={<WishList />} />
