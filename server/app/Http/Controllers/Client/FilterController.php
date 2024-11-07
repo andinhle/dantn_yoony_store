@@ -45,6 +45,14 @@ class FilterController extends Controller
             });
         }
 
+        // Lọc theo đánh giá trung bình chính xác
+        if ($request->has('rate')) {
+            $rate = $request->input('rate');
+            $query->whereHas('rates')
+                ->withAvg('rates', 'rating')
+                ->havingRaw('ROUND(rates_avg_rating, 1) >= ?', [$rate]);
+        }
+
         // Lọc theo thuộc tính
         if ($request->has('attributes')) {
             foreach ($request->input('attributes') as $attributeName => $values) {
@@ -61,7 +69,7 @@ class FilterController extends Controller
         Log::info('Thông số truy vấn sql:', [$query->toSql(), $query->getBindings()]);
 
         // Lấy kết quả
-        $products = $query->with(['category', 'variants.attributeValues.attribute'])->paginate(8);
+        $products = $query->with(['category', 'variants.attributeValues.attribute', 'rates'])->paginate(8);
 
         $products->each(function ($product) {
             if (!empty($product->images)) {
@@ -81,9 +89,9 @@ class FilterController extends Controller
     {
         Log::info('Đang gọi hàm getFilter');
 
-        $categories = Category::all(); 
-        $attributes = Attribute::with('attributeValues')->get(); 
-        
+        $categories = Category::all();
+        $attributes = Attribute::with('attributeValues')->get();
+
         // Lấy giá min và max
         $minPrice = Variant::min('price');
         $maxPrice = Variant::max('price');
@@ -98,7 +106,7 @@ class FilterController extends Controller
         ]);
     }
 
-    
+
     public function filterOrdersByDate(Request $request)
     {
         try {
@@ -152,7 +160,7 @@ class FilterController extends Controller
             $validator = Validator::make($request->all(), [
                 'sort_order' => 'nullable|in:asc,desc',
             ]);
-    
+
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
@@ -160,11 +168,11 @@ class FilterController extends Controller
                     'errors' => $validator->errors()
                 ], 422);
             }
-    
+
             $userId = Auth::id();
-    
+
             $query = Order::where('user_id', $userId);
-    
+
             // Áp dụng sắp xếp theo giá trị đơn hàng
             if ($request->filled('sort_order')) {
                 $query->orderBy('final_total', $request->sort_order);
@@ -172,7 +180,7 @@ class FilterController extends Controller
             $orders = $query->with(['items.variant'])->get();
             Log::info('Sort order: ' . $request->sort_order);
             Log::info('Query: ' . $query->toSql());
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $orders
@@ -180,7 +188,7 @@ class FilterController extends Controller
         } catch (\Exception $e) {
             // Ghi log lỗi
             Log::error('Lỗi lọc đơn hàng theo giá: ' . $e->getMessage());
-    
+
             return response()->json([
                 'success' => false,
                 'message' => 'Lỗi không mong muốn xảy ra!',
@@ -188,5 +196,5 @@ class FilterController extends Controller
             ], 500);
         }
     }
-    
+
 }
