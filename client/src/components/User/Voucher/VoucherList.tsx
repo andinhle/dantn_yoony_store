@@ -78,7 +78,7 @@ const VoucherList = () => {
               className="py-2 px-0.5 hover:cursor-pointer"
               key={index + 1}
             >
-              <div className="flex gap-5 w-full md:w-fit justify-center items-center mx-auto shadow-[0px_0px_4px_0px_rgba(255,_153,_0,_0.50)] bg-util rounded-lg py-2.5 px-4">
+              <div className="flex gap-5 w-full md:w-fit justify-center items-center mx-auto border border-[#ffe1e1] bg-util rounded-lg py-2.5 px-4">
                 <div className="space-y-2">
                   <div className="space-y-2">
                     <span className="text-base font-medium">

@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Order;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Product;
+use App\Models\Variant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -35,11 +36,11 @@ class FilterController extends Controller
         if ($request->has('price')) {
             $price = $request->input('price');
             $query->whereHas('variants', function ($q) use ($price) {
-                if (isset($price['min'])) {
-                    $q->where('price', '>=', $price['min']);
+                if (isset($price[0])) {
+                    $q->where('price', '>=', $price[0]);
                 }
-                if (isset($price['max'])) {
-                    $q->where('price', '<=', $price['max']);
+                if (isset($price[1])) {
+                    $q->where('price', '<=', $price[1]);
                 }
             });
         }
@@ -47,9 +48,8 @@ class FilterController extends Controller
         // Lọc theo thuộc tính
         if ($request->has('attributes')) {
             foreach ($request->input('attributes') as $attributeName => $values) {
-                // Lọc theo từng giá trị thuộc tính
                 $query->whereHas('variants.attributeValues', function ($q) use ($values) {
-                    $q->whereIn('value', array_column($values, 'value'));
+                    $q->whereIn('value', $values);
                 });
             }
         }
@@ -61,8 +61,13 @@ class FilterController extends Controller
         Log::info('Thông số truy vấn sql:', [$query->toSql(), $query->getBindings()]);
 
         // Lấy kết quả
-        $products = $query->with(['category', 'variants.attributeValues'])->paginate(8);
+        $products = $query->with(['category', 'variants.attributeValues.attribute'])->paginate(8);
 
+        $products->each(function ($product) {
+            if (!empty($product->images)) {
+                $product->images = json_decode($product->images, true); // Giải mã JSON hoặc xử lý tương ứng
+            }
+        });
         // Kiểm tra nếu không có sản phẩm nào
         if ($products->isEmpty()) {
             Log::warning('Không tìm thấy sản phẩm nào theo tiêu chí lọc nhất định.');
@@ -71,24 +76,28 @@ class FilterController extends Controller
         return response()->json($products);
     }
 
-    //lấy thông tin category và atributes
+    // Lấy thông tin category và attributes
     public function getFilter()
     {
         Log::info('Đang gọi hàm getFilter');
-    
+
         $categories = Category::all(); 
         $attributes = Attribute::with('attributeValues')->get(); 
-    
-        // Ghi log thông tin các dữ liệu
-        Log::info('Thông tin categories:', [$categories]);
-        Log::info('Thông tin attributes:', [$attributes]);
-    
+        
+        // Lấy giá min và max
+        $minPrice = Variant::min('price');
+        $maxPrice = Variant::max('price');
+
         return response()->json([
             'categories' => $categories,
             'attributes' => $attributes,
+            'price' => [ // Use an array to structure the price object correctly
+                'min' => $minPrice,
+                'max' => $maxPrice
+            ]
         ]);
     }
-    
+
     
     public function filterOrdersByDate(Request $request)
     {

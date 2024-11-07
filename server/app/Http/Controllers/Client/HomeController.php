@@ -47,17 +47,22 @@ class HomeController extends Controller
                 ->limit(5)
                 ->get();
 
-            // Lấy 10 đánh giá gần nhất
-            $rates = Rate::with('user', 'product.variants.attributeValues.attribute')
-                ->where('product_id', $product->id)
-                ->latest('created_at')
-                ->limit(10)
-                ->get();
+            // // Lấy 10 đánh giá gần nhất
+            // $rates = Rate::with('user', 'product.variants.attributeValues.attribute')
+            //     ->where('product_id', $product->id)
+            //     ->latest('created_at')
+            //     ->limit(10)
+            //     ->get();
+
+            // Tính trung bình số sao
+            $averageRating = Rate::where('product_id', $product->id)
+            ->average('rating');
 
             return response()->json([
                 'product' => new ProductResource($product),
                 'related_products' => ProductResource::collection($relatedProducts),
-                'ratingslide10' => RateResource::collection($rates)
+                // 'ratingslide10' => RateResource::collection($rates)
+                'average_rating' => round($averageRating * 2) / 2,
             ], 200);
 
         } catch (ModelNotFoundException $e) {
@@ -385,31 +390,36 @@ class HomeController extends Controller
     {
         // Lấy thông tin sản phẩm từ slug
         $product = Product::where('slug', $slug)->firstOrFail();
-
+    
         // Tính trung bình số sao
         $averageRating = Rate::where('product_id', $product->id)
             ->average('rating');
-
+    
         // Đếm số lượng đánh giá theo từng mức sao
         $ratingCounts = $this->getRatingCounts($product->id);
-
+    
         // Lấy danh sách đánh giá có phân trang
         $formattedPagedRates = $this->getPagedRatings($request, $product);
-
+    
         return [
             'ratings' => [
                 'average_rating' => round($averageRating * 2) / 2,
                 'rating_counts' => [
-                    '5_star' => $ratingCounts[5] ?? 0,
-                    '4_star' => $ratingCounts[4] ?? 0,
-                    '3_star' => $ratingCounts[3] ?? 0,
-                    '2_star' => $ratingCounts[2] ?? 0,
-                    '1_star' => $ratingCounts[1] ?? 0,
+                    ['key' => 'Tất cả'],
+                    ['key' => '5', 'value' => $ratingCounts[5] ?? 0],
+                    ['key' => '4', 'value' => $ratingCounts[4] ?? 0],
+                    ['key' => '3', 'value' => $ratingCounts[3] ?? 0],
+                    ['key' => '2', 'value' => $ratingCounts[2] ?? 0],
+                    ['key' => '1', 'value' => $ratingCounts[1] ?? 0],
                 ],
                 'rate_paginate8' => $formattedPagedRates,
             ]
         ];
     }
+    
+    
+    
+    
 
     // Hàm phụ để lấy số lượng đánh giá theo từng sao
     private function getRatingCounts($productId)

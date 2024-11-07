@@ -547,19 +547,27 @@ const UserOrderDetail = () => {
                             >
                               {item.variant.product.name}
                             </Link>
-                            <div className="flex gap-3 text-secondary/50 flex-wrap">
+                            <div className="flex gap-2 text-secondary/50 flex-wrap">
                               {item.variant.attribute_values.map(
-                                (attribute_value) => {
+                                (attribute_value, index) => {
                                   return (
-                                    <div
-                                      className="text-[13px]"
-                                      key={attribute_value.id}
-                                    >
-                                      <span>
-                                        {attribute_value.attribute.name}
-                                      </span>{" "}
-                                      : <span>{attribute_value.value}</span>
-                                    </div>
+                                    <>
+                                      <div
+                                        className="text-[13px]"
+                                        key={attribute_value.id}
+                                      >
+                                        <span>
+                                          {attribute_value.attribute.name}
+                                        </span>
+                                        {": "}
+                                        <span>{attribute_value.value}</span>
+                                      </div>
+                                      {index <
+                                        item.variant.attribute_values.length -
+                                          1 && (
+                                        <span className="text-[13px]">|</span>
+                                      )}
+                                    </>
                                   );
                                 }
                               )}
@@ -630,22 +638,29 @@ const UserOrderDetail = () => {
                 current={checkStatusCurrent}
                 style={{ backgroundColor: "white" }}
                 items={[
-                  { title: "Chờ xác nhận", description:"Đơn hàng mới được tạo, đang chờ người bán xác nhận" },
+                  {
+                    title: "Chờ xác nhận",
+                    description:
+                      "Đơn hàng mới được tạo, đang chờ người bán xác nhận",
+                  },
                   {
                     title: "Đã xác nhận",
-                    description:'Người bán đã tiếp nhận và xác nhận đơn hàng',
+                    description: "Người bán đã tiếp nhận và xác nhận đơn hàng",
                   },
                   {
                     title: "Đang chuẩn bị hàng",
-                    description:'Người bán đang đóng gói và chuẩn bị hàng để giao',
+                    description:
+                      "Người bán đang đóng gói và chuẩn bị hàng để giao",
                   },
                   {
                     title: "Đang vận chuyển",
-                    description:'Đơn hàng đang được đơn vị vận chuyển giao đến bạn',
+                    description:
+                      "Đơn hàng đang được đơn vị vận chuyển giao đến bạn",
                   },
                   {
                     title: "Đã giao hàng",
-                    description:'Đơn hàng đã được giao thành công đến người nhận',
+                    description:
+                      "Đơn hàng đã được giao thành công đến người nhận",
                   },
                 ]}
               />
@@ -658,7 +673,7 @@ const UserOrderDetail = () => {
                 items={[
                   {
                     title: "Đơn hàng đã bị hủy",
-                    description:`${valueReason}`,
+                    description: `${valueReason}`,
                     status: "error",
                   },
                 ]}

@@ -17,6 +17,7 @@ import CartContext from "../../../contexts/CartContext";
 import axios from "axios";
 import { Tooltip } from "@mui/material";
 import isAuthenticated from '../../Middleware/isAuthenticated';
+import RatingProduct from "./RatingProduct";
 interface IVariant {
   id: number;
   price: number;
@@ -44,6 +45,7 @@ const ShowDetailProduct: React.FC = () => {
   const [related_products, setRelated_Products] = useState<IProduct[]>([]);
   const [imageProducts, setImageProducts] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string>("");
+  const [average_rating, setAverage_rating] = useState<number>();
   const [variants, setVariants] = useState<IVariant[]>([]);
   const [attributeGroups, setAttributeGroups] = useState<IAttributeGroup[]>([]);
   const [selectedAttributes, setSelectedAttributes] = useState<{
@@ -61,6 +63,7 @@ const ShowDetailProduct: React.FC = () => {
         setProduct(data.product);
         setRelated_Products(data.related_products);
         processProductData(data.product);
+        setAverage_rating(data.average_rating)
       } catch (error) {
         console.error("Error fetching product:", error);
       }
@@ -395,8 +398,8 @@ const ShowDetailProduct: React.FC = () => {
           <h2 className="font-medium text-xl line-clamp-2">{product.name}</h2>
           <div className="flex gap-7 items-center mt-2">
             <div>
-              <span className="text-primary">4.5 </span>
-              <Rate disabled allowHalf defaultValue={4.5} />
+              <span className="text-primary">{average_rating} </span>
+              <Rate disabled allowHalf value={average_rating} />
             </div>
             {selectedVariant ? (
               <div className="py-1 px-3 bg-[#3CD139]/10 text-[#3CD139] rounded-full flex gap-1 w-fit text-sm">
@@ -744,6 +747,7 @@ const ShowDetailProduct: React.FC = () => {
           </form>
         </div>
       </div>
+      <RatingProduct slugProd={slugproduct} />
       <ShowProductRelated related_products={related_products} />
     </section>
   );

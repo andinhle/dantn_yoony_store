@@ -10,20 +10,20 @@ const CallBackLoginGoogle = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
     const location = useLocation();
-    const [isLoadingProduct, setLoadingProduct] = useState<boolean>(false);
+    const [isLoading, setLoading] = useState<boolean>(false);
     useEffect(() => {
       const fetchLoginInfo = async () => {
         const params = new URLSearchParams(location.search);
         const code = params.get("code");
         if (code) {
           try {
-            setLoadingProduct(true)
+            setLoading(true)
             const { data: responseLoginInfor } = await instance.get(
               `auth/google/callback?code=${code}`
             );
             console.log(responseLoginInfor);
             if (responseLoginInfor && responseLoginInfor.token) {
-                setLoadingProduct(false)
+                setLoading(false)
                 Cookies.set("authToken", responseLoginInfor.token, {
                   expires: 1 / 12,
                   secure: true,
@@ -46,7 +46,7 @@ const CallBackLoginGoogle = () => {
   
     return <div>
             <LoadingOverlay
-                active={isLoadingProduct}
+                active={isLoading}
                 spinner
                 text="Đang đăng nhập ..."
                 styles={{
