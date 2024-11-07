@@ -9,27 +9,6 @@ const WishList = () => {
                     <div>
                         <CardProductWishList />
                     </div>
-                    <div>
-                        <CardProductWishList />
-                    </div>
-                    <div>
-                        <CardProductWishList />
-                    </div>
-                    <div>
-                        <CardProductWishList />
-                    </div>
-                    <div>
-                        <CardProductWishList />
-                    </div>
-                    <div>
-                        <CardProductWishList />
-                    </div>
-                    <div>
-                        <CardProductWishList />
-                    </div>
-                    <div>
-                        <CardProductWishList />
-                    </div>
                 </div>
                 <div className="mt-6 flex justify-center items-center ">
                     <button className="px-4 py-2  rounded hover:bg-primary text flex item-center">
@@ -54,4 +33,5 @@ const WishList = () => {
 
     )
 }
-export default WishList
+export default WishList 
+
