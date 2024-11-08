@@ -13,6 +13,7 @@ use App\Http\Controllers\admin\EventController;
 use App\Http\Controllers\Admin\InventoryImportController;
 use App\Http\Controllers\Admin\InventoryStockController;
 use App\Http\Controllers\Admin\ModelController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\RatingController;
@@ -73,6 +74,10 @@ Route::get('/coupon-home', [HomeController::class, 'getCouponHome']);
 Route::get('/first-question', [HomeController::class, 'getListFirstQuestion']);
 Route::get('/question-by-answer/{id}', [HomeController::class, 'getQuestionByAnswer']);
 Route::get('/answer-by-question/{id}', [HomeController::class, 'getAnswerByQuestion']);
+
+// Thông báo
+Route::get('/notification/{id}', [NotificationController::class, 'getUserNotifications']);
+Route::patch('/notification/{id}/read', [NotificationController::class, 'markAsRead']);
 
 // Quyền khi đăng nhập
 Route::group(['middleware' => ['auth:sanctum']], function () {
