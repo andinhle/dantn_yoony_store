@@ -16,9 +16,9 @@ import "swiper/css/free-mode";
 import MainContentUser from "./pages/user/MainContentUser.tsx";
 import Login from "./components/User/Auth/Login.tsx";
 import ProductList from "./pages/admin/products/ProductsList.tsx";
-import Orders from "./pages/admin/Order.tsx";
+import Orders from "./pages/admin/Orders/Order.tsx";
 import Rates from "./pages/admin/Evaluate.tsx";
-import OrderDetails from "./pages/admin/OrderDetails.tsx";
+import OrderDetails from "./pages/admin/Orders/OrderDetails.tsx";
 import ScrollToTop from "./utils/ScrollToTop.tsx";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
@@ -50,9 +50,11 @@ import BlogDetail from "./components/User/Blogs/BlogDetail.tsx";
 import ProductFilters from "./components/User/Filter/FilterPrice.tsx";
 import FiledsProvider from "./contexts/FiledsContext.tsx";
 import LayoutChatAdmin from "./layouts/Admin/LayoutChatAdmin.tsx";
-import ManagerOrdersUser from "./components/User/Manager/ManagerOrdersUser.tsx";
-import UserOrderDetail from "./components/User/Manager/UserOrderDetail.tsx";
+import ManagerOrdersUser from "./components/User/Manager/Orders/ManagerOrdersUser.tsx";
+import UserOrderDetail from "./components/User/Manager/Orders/UserOrderDetail.tsx";
 import PaymentCheckVnpay from "./components/User/Order/PaymentCheckVnpay.tsx";
+import UserRatings from "./components/User/Manager/Ratings/UserRatings.tsx";
+import RatingDetailOrder from "./components/User/Manager/Ratings/RatingDetailOrder.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -92,11 +94,12 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="wishlist" element={<WishList />} />
                 <Route path="user-orders" element={<ManagerOrdersUser />} />
                 <Route path="user-orders/order-detail/:code_order" element={<UserOrderDetail />} />
+                <Route path="user-ratings" element={<UserRatings />} />
+                <Route path="user-ratings/rating-detail/:code_order" element={<RatingDetailOrder />} />
               </Route>
               <Route path="checkorder" element={<CheckOrder />} />
               <Route path="event" element={<EventUser />} />
               <Route path="detailBlog/:slug" element={<BlogDetail/>}/>
-              <Route path="returnUrl" element={<PaymentCheckVnpay/>}/>
             </Route>
             {/* Admin */}
             <Route path="admin" element={<LayoutAdmin />}>

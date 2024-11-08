@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
-class AdminMiddleware
+class ManageMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
@@ -18,7 +18,7 @@ class AdminMiddleware
         }
 
         try {
-            if($user->role == 'admin'){
+            if($user->role == 'manage' || $user->role == 'admin'){
                 return $next($request);
             }
             

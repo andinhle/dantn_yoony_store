@@ -261,11 +261,20 @@ class HomeController extends Controller
                 ->pluck('coupon_id')
                 ->toArray();
     
-            $query = Coupon::query()
+                $query = Coupon::query()
                 ->where('status', true)
                 ->where('usage_limit', '>', 0)
-                ->where('start_date', '<', Carbon::now())
-                ->where('end_date', '>', Carbon::now())
+                ->where(function($q) {
+                    $q->where(function($subQ) {
+                        // Trường hợp có thời hạn
+                        $subQ->where('start_date', '<', Carbon::now())
+                             ->where('end_date', '>', Carbon::now());
+                    })->orWhere(function($subQ) {
+                        // Trường hợp không có thời hạn
+                        $subQ->whereNull('start_date')
+                             ->whereNull('end_date');
+                    });
+                })
                 ->whereNotIn('id', $usedCouponIds);
     
             // Xử lý điều kiện min và max order value

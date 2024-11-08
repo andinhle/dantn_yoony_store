@@ -67,11 +67,11 @@ const NavMenuUser = () => {
         ) : (
           <>
             <Avatar
-              alt={user.name}
-              src={user.avatar || "/default-avatar.png"}
+              alt={String(user?.name).toUpperCase()}
+              src={user?.avatar || "/default-avatar.png"}
               sx={{ width: 24, height: 24 }}
             />
-            <span>{user.name}</span>
+            <span>{user?.name}</span>
           </>
         )}
       </button>
