@@ -216,9 +216,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     // checkout
     Route::post('/checkout', [PaymentController::class, 'processPayment']);
+    // vnpay
     Route::post('/vnpay/callback', [PaymentController::class, 'callback'])->name('callback');
     Route::post('/checkout-vnpay', [PaymentController::class, 'handleOrder']);
 
+    //momo
+    Route::post('/momo/callback', [PaymentController::class, 'callbackMomo'])->name('payment.momo.callback');
+    Route::post('/checkout-momo', [PaymentController::class, 'handleOrder']);
 
 
     //Coupon_user
