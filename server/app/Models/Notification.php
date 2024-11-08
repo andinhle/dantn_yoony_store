@@ -5,17 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class OrderCoupon extends Model
+class Notification extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'order_id',
-        'discount_amount',
-        'coupon_id'
+        'content',
+        'is_read'
     ];
-    public function coupon()
-    {
-        return $this->belongsTo(Coupon::class);
-    }
 }

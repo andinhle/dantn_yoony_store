@@ -13,7 +13,7 @@ const SidebarUserDetails = () => {
               sx={{ width: 50, height: 50 }}
             />
         <div className="ml-3">
-          <h4 className="font-medium">{userInfor?.name}</h4>
+          <h4 className="font-medium line-clamp-2">{userInfor?.name}</h4>
           <p className="text-sm text-primary italic">( Member )</p>
         </div>
       </div>

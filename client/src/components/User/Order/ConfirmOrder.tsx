@@ -23,16 +23,13 @@ const ConfirmOrder = ({ current }: Prop) => {
     undefined
   );
   const callbackProcessedRef = useRef(false);
-  const parsed = queryString.parse(location.search);
   const navigate = useNavigate();
-
   useEffect(() => {
     (async () => {
       try {
+        const parsed = queryString.parse(location.search);
         const vnp_ResponseCode = parsed?.vnp_ResponseCode;
         const vnp_TransactionStatus = parsed?.vnp_TransactionStatus;
-
-        // Kiểm tra xem callback đã được xử lý chưa
         const isCallbackProcessed = localStorage.getItem("vnpay_callback_processed");
         const savedVoucher = JSON.parse(localStorage.getItem('selected_voucher') || 'null');
         const finalPaymentAmountVnpay = savedVoucher
@@ -46,11 +43,8 @@ const ConfirmOrder = ({ current }: Prop) => {
           const parsedOrderData = JSON.parse(orderDataRaw!);
 
           const { data } = await instance.post("vnpay/callback", {
-            coupon_id: savedVoucher?.id,
-            discount_amount: savedVoucher?.discount,
             ...parsed,
           });
-          console.log(data)
           if (
             vnp_ResponseCode === "00" &&
             vnp_TransactionStatus === "00" &&
@@ -73,7 +67,6 @@ const ConfirmOrder = ({ current }: Prop) => {
                 payload: id_carts,
               });
               toast.success(checkoutData.data.message);
-
               navigate("/user-manager/user-orders");
               ["id_cart", "orderData", "final_total","vnpay_callback_processed","selected_voucher"].forEach((key) =>
                 localStorage.removeItem(key)

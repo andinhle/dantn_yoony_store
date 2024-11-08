@@ -10,15 +10,17 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ReviewController extends Controller
-{
+{   
+    //đánh giá
     public function review(Request $request)
     {
+        
         try {
             // Xác thực dữ liệu đầu vào
             $validatedData = $request->validate([
                 'order_id' => 'required|exists:orders,id',
                 'review.*.product_id' => 'required|exists:products,id',
-                'review.*.rating' => 'required|integer|min:1|max:5',
+                'review.*.rating' => 'integer|min:1|max:5',
                 'review.*.content' => 'nullable|string',
             ]);
 
@@ -93,7 +95,7 @@ class ReviewController extends Controller
         }
     }
 
-
+    //lấy sản phẩm đã giao và chưa đánh giá
     public function getPendingReviews(Request $request)
     {
         $userId = auth()->id();
@@ -105,35 +107,33 @@ class ReviewController extends Controller
         try {
             $orders = Order::where('user_id', $userId)
                 ->where('status_order', Order::STATUS_ORDER_DELIVERED)
-                ->with(['items.variant.product', 'rates'])
+                ->with(['items.variant.product', 'rates','items.variant.attributeValues'])
                 ->get();
             
-            // Giải mã images cho từng sản phẩm trong đơn hàng
             $pendingReviews = $orders->filter(function ($order) {
                 foreach ($order->items as $item) {
                     $hasRated = $order->rates->contains('product_id', $item->variant->product_id);
                     
                     if (!$hasRated) {
-                        // Kiểm tra và giải mã hình ảnh một cách an toàn
+
                         if ($item->variant->product->images) {
-                            // Nếu đã là mảng thì giữ nguyên, nếu là chuỗi JSON thì giải mã
                             $item->variant->product->images = is_string($item->variant->product->images) 
                                 ? json_decode($item->variant->product->images, true) 
                                 : $item->variant->product->images;
                         }
-                        return true;
+                        return true; 
                     }
                 }
-                return false;
-            });
+                return false; 
+            })->values();
             
             return response()->json($pendingReviews);
         } catch (\Exception $e) {
-            // Trả về lỗi nếu có ngoại lệ
             return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
         }
     }
 
+    //lấy chi tiết đánh giá
     public function detailReview(string $code)
     {
         $userId = auth()->id();
@@ -170,29 +170,27 @@ class ReviewController extends Controller
             foreach ($order->items as $item) {
                 $productId = $item->variant->product_id;
     
-                $review = isset($reviews[$productId]) ? $reviews[$productId] : null;
-                if ($review === null) {
-                    continue;
-                }
-    
-                if (!isset($groupedItems[$productId])) {
+                // Chỉ thêm sản phẩm nếu review là null (chưa có đánh giá)
+                if (!isset($groupedItems[$productId]) && !isset($reviews[$productId])) {
                     $groupedItems[$productId] = [
                         'product' => $item->variant->product,
                         'variant_lists' => [],
-                        'review' => $review,
+                        'review' => null,
                     ];
                 }
     
-                // Thêm item vào mảng items của sản phẩm
-                $groupedItems[$productId]['variant_lists'][] = [
-                    'id' => $item->id,
-                    'order_id' => $item->order_id,
-                    'variant_id' => $item->variant_id,
-                    'quantity' => $item->quantity,
-                    'unit_price' => $item->unit_price,
-                    'total_price' => $item->total_price,
-                    'variant' => $item->variant,
-                ];
+                // Chỉ thêm các items nếu sản phẩm chưa có đánh giá
+                if (!isset($reviews[$productId])) {
+                    $groupedItems[$productId]['variant_lists'][] = [
+                        'id' => $item->id,
+                        'order_id' => $item->order_id,
+                        'variant_id' => $item->variant_id,
+                        'quantity' => $item->quantity,
+                        'unit_price' => $item->unit_price,
+                        'total_price' => $item->total_price,
+                        'variant' => $item->variant,
+                    ];
+                }
             }
     
             // Tạo cấu trúc JSON cần thiết
@@ -208,51 +206,101 @@ class ReviewController extends Controller
                 'name' => $order->name,
                 'tel' => $order->tel,
                 'address' => $order->address,
-                'items' => array_values($groupedItems), // Chuyển đổi mảng liên kết thành mảng số
+                'items' => array_values($groupedItems),
             ];
     
             return response()->json($response, 200);
     
         } catch (\Exception $e) {
-            // Trả về lỗi nếu có ngoại lệ
             return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
         }
     }
-    
+
+    //lấy những sản phẩm đã đánh giá
     public function getReviewedOrders(Request $request)
     {
         $userId = auth()->id();
-    
+        
         if (!$userId) {
             return response()->json(['message' => 'Người dùng chưa đăng nhập.'], 401);
         }
-    
+        
         try {
             // Lấy các đơn hàng đã giao và có đánh giá từ người dùng
-            $orders = Order::where('user_id', $userId)
-                ->where('status_order', Order::STATUS_ORDER_DELIVERED)
-                ->with(['items.variant.product', 'rates'])
-                ->get();
-    
-            // Giải mã hình ảnh cho từng sản phẩm trong các đơn hàng đã đánh giá và lọc các đơn hàng đã được đánh giá
+            $orders = Order::with([
+                'rates.product.category',
+                'rates.user',
+                'items.variant.attributeValues.attribute'
+            ])
+            ->where('user_id', $userId)
+            ->where('status_order', Order::STATUS_ORDER_DELIVERED)
+            ->get();
+            
+            // Lập danh sách đánh giá cho mỗi đơn hàng
             $reviewedOrders = $orders->filter(function ($order) {
                 return $order->rates->isNotEmpty(); // Kiểm tra nếu có đánh giá
             })->map(function ($order) {
-                foreach ($order->items as $item) {
-                    // Chỉ giải mã nếu là chuỗi
-                    if (is_string($item->variant->product->images)) {
-                        $item->variant->product->images = json_decode($item->variant->product->images, true);
-                    }
-                }
-                return $order;
-            });
-    
+                return [
+                    'order_id' => $order->id,
+                    'items' => $order->items ? $order->items->map(function ($item) {
+                        return [
+                            'id' => $item->id,
+                            'variant_id' => $item->variant_id,
+                            'quantity' => $item->quantity,
+                            'unit_price' => $item->unit_price,
+                            'total_price' => $item->total_price,
+                            'attribute_values' => $item->variant ? $item->variant->attributeValues->map(function ($attrValue) {
+                                return [
+                                    'id' => $attrValue->id,
+                                    'value' => $attrValue->value,
+                                    'attribute' => [
+                                        'id' => $attrValue->attribute->id,
+                                        'name' => $attrValue->attribute->name,
+                                    ]
+                                ];
+                            }) : [],
+                        ];
+                    }) : [],
+                    'rates' => $order->rates->map(function ($rate) {
+                        if (is_string($rate->product->images)) {
+                            $rate->product->images = json_decode($rate->product->images, true);
+                        }
+                        
+                        return [
+                            'id' => $rate->id,
+                            'content' => $rate->content,
+                            'rating' => $rate->rating,
+                            'product' => [
+                                'id' => $rate->product->id,
+                                'name' => $rate->product->name,
+                                'slug' => $rate->product->slug,
+                                'images' => $rate->product->images,
+                                'category' => [  // Thêm thông tin category
+                                    'id' => $rate->product->category->id,
+                                    'name' => $rate->product->category->name,
+                                    'slug' => $rate->product->category->slug,
+                                ]
+                            ],
+                            'user' => [
+                                'id' => $rate->user->id,
+                                'name' => $rate->user->name,
+                                'email' => $rate->user->email,
+                                'avatar' => $rate->user->avatar,
+                            ],
+                            'order_id' => $rate->order_id,
+                            'created_at' => $rate->created_at,
+                            'updated_at' => $rate->updated_at,
+                        ];
+                    })->values()
+                ];
+            })->values();
+            
             return response()->json($reviewedOrders);
-    
+            
         } catch (\Exception $e) {
             return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
         }
     }
     
-
+    
 }

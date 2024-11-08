@@ -50,16 +50,26 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 40482b07b9f0b53fcca8be1214454b9938db5ded
     public function coupons()
     {
         return $this->hasMany(OrderCoupon::class);
     }
+<<<<<<< HEAD
 
      // Thêm mối quan hệ với Rate
+=======
+  
+>>>>>>> 40482b07b9f0b53fcca8be1214454b9938db5ded
      public function rates()
      {
          return $this->hasMany(Rate::class);
      }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 40482b07b9f0b53fcca8be1214454b9938db5ded
 }

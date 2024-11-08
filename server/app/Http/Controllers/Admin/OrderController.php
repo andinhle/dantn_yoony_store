@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\OrderStatusUpdated;
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderCancellation;
 use Illuminate\Http\Request;
@@ -22,41 +24,48 @@ class OrderController extends Controller
                 $orders = Order::query()
                 ->where('status_order', '=', Order::STATUS_ORDER_PENDING)
                 ->with(['items.variant'])
+                ->orderBy('created_at', 'desc')
                 ->paginate($perPage);
                 break;
             case Order::STATUS_ORDER_CONFIRMED:
                 $orders = Order::query()
                 ->where('status_order', '=', Order::STATUS_ORDER_CONFIRMED)
                 ->with(['items.variant'])
+                ->orderBy('created_at', 'desc')
                 ->paginate($perPage);                
                 break;
             case Order::STATUS_ORDER_PREPARING_GOODS:
                 $orders = Order::query()
                 ->where('status_order', '=', Order::STATUS_ORDER_PREPARING_GOODS)
                 ->with(['items.variant'])
+                ->orderBy('created_at', 'desc')
                 ->paginate($perPage);                
                 break;
             case Order::STATUS_ORDER_SHIPPING:
                 $orders = Order::query()
                 ->where('status_order', '=', Order::STATUS_ORDER_SHIPPING)
                 ->with(['items.variant'])
+                ->orderBy('created_at', 'desc')
                 ->paginate($perPage);                
                 break;
             case Order::STATUS_ORDER_DELIVERED:
                 $orders = Order::query()
                 ->where('status_order', '=', Order::STATUS_ORDER_DELIVERED)
                 ->with(['items.variant'])
+                ->orderBy('created_at', 'desc')
                 ->paginate($perPage);               
                  break;
             case Order::STATUS_ORDER_CANCELED:
                 $orders = Order::query()
                 ->where('status_order', '=', Order::STATUS_ORDER_CANCELED)
                 ->with(['items.variant'])
+                ->orderBy('created_at', 'desc')
                 ->paginate($perPage);                
                 break;    
             default:
                 $orders = Order::query()
                 ->with(['items.variant'])
+                ->orderBy('created_at', 'desc')
                 ->paginate($perPage);        
             }
 
@@ -83,6 +92,7 @@ class OrderController extends Controller
 
     public function orderDetail($code)
     {
+<<<<<<< HEAD
        try {
 
         $orders = Order::query()
@@ -107,7 +117,60 @@ class OrderController extends Controller
 
         ], Response::HTTP_INTERNAL_SERVER_ERROR);
        }
+=======
+        try {
+            $orders = Order::query()
+                ->with([
+                    'items.variant.attributeValues.attribute',
+                    'items.variant.product',
+                    'items.variant.product.category',
+                    'coupons.coupon',
+                    'user'
+                ])
+                ->where('code', $code)
+                ->firstOrFail();
+    
+            $data = $orders->toArray();
+    
+            foreach ($data['items'] as &$item) {
+                if (isset($item['variant']['product'])) {
+                    $product = &$item['variant']['product'];
+                    if (isset($product['images'])) {
+                        $images = json_decode($product['images'], true);
+                        if (is_array($images)) {
+                            foreach ($images as &$imageUrl) {
+                                $imageUrl = htmlspecialchars(stripslashes($imageUrl));
+                            }
+                        } else {
+                            $product['images'] = []; 
+                        }
+                        $product['images'] = $images; 
+                    }
+                }
+            }
+    
+            return response()->json(
+                [
+                    'data' => $data, // Use the processed data instead of orders directly
+                    'status' => 'success'
+                ],
+                Response::HTTP_OK
+            );
+        } catch (\Throwable $th) {
+            Log::error(__CLASS__ . '@' . __FUNCTION__, [
+                'line' => $th->getLine(),
+                'message' => $th->getMessage()
+            ]);
+    
+            return response()->json([
+                'message' => 'Lỗi tải trang',
+                'status' => 'error',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+>>>>>>> 40482b07b9f0b53fcca8be1214454b9938db5ded
     }
+    
+    
 
     public function updateOrderDetail(Request $request, $code)
     {
@@ -131,10 +194,19 @@ class OrderController extends Controller
                 $order->status_order = $status;
                 $order->save();
 
+                $notification = Notification::create([
+                    'user_id' => $order->user_id,
+                    'order_id' => $order->id,
+                    'content' => 'Đơn hàng '. $order->code .' đã được cập nhật trạng thái thành ' . Order::STATUS_ORDER[$order->status_order],
+                ]);
+
+                event(new OrderStatusUpdated($notification, $order->user_id));
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Trạng thái đơn hàng đã được cập nhật.',
-                    'order' => $order
+                    'order' => $order,
+                    'notification' => $notification
                 ]);
             default:
                 return response()->json([

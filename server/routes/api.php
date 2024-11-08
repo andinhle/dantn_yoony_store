@@ -13,6 +13,7 @@ use App\Http\Controllers\admin\EventController;
 use App\Http\Controllers\Admin\InventoryImportController;
 use App\Http\Controllers\Admin\InventoryStockController;
 use App\Http\Controllers\Admin\ModelController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\RatingController;
@@ -29,6 +30,7 @@ use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\client\ChatbotController;
 use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\client\SpinController;
+use App\Http\Controllers\GoogleAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
@@ -55,9 +57,20 @@ Route::get('/auth/{provider}/callback', [ProviderController::class, 'callback'])
 
 // Sản phẩm
 Route::get('home/product/{slug}', [HomeController::class, 'getOneProductBySlug']);
+Route::get('home/products/{slug}/ratings', [HomeController::class, 'ratingListAllbyProductToSlug']);
+
 Route::get('home/products/featured', [HomeController::class, 'getFeaturedProducts']);
 Route::get('home/products/good-deal', [HomeController::class, 'getGoodDealProducts']);
 Route::get('home/product/category/{id}', [HomeController::class, 'getProductsByCategory']);
+
+
+
+Route::get('auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
+Route::get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
+
+Route::get('auth/facebook', [GoogleAuthController::class, 'redirectToFacebook']);
+Route::get('auth/facebook/callback', [GoogleAuthController::class, 'handleFacebookCallback']);
+
 
 //filter
 Route::get('products/filter', [FilterController::class, 'getFilter']);
@@ -77,6 +90,10 @@ Route::get('/coupon-home', [HomeController::class, 'getCouponHome']);
 Route::get('/first-question', [HomeController::class, 'getListFirstQuestion']);
 Route::get('/question-by-answer/{id}', [HomeController::class, 'getQuestionByAnswer']);
 Route::get('/answer-by-question/{id}', [HomeController::class, 'getAnswerByQuestion']);
+
+// Thông báo
+Route::get('/notification/{id}', [NotificationController::class, 'getUserNotifications']);
+Route::patch('/notification/{id}/read', [NotificationController::class, 'markAsRead']);
 
 // Quyền khi đăng nhập
 Route::group(['middleware' => ['auth:sanctum']], function () {
@@ -126,7 +143,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::patch('product/{id}/is_active', [ProductController::class, 'updateIsActive'])->name('category.updateIsActive');
         Route::patch('product/restore/{id}', [ProductController::class, 'restore'])->name('product.restore');
         Route::delete('product/hard-delete/{id}', [ProductController::class, 'hardDelete'])->name('product.hardDelete');
-      
+
         //QL Event
         Route::get('/admin/events/coupons', [EventController::class, 'getEventCoupons']);
 
@@ -137,7 +154,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::delete('/admin/events/{id}', [EventController::class, 'destroy']);
         //list danh sách các coupon type event
         Route::get('/admin/coupons/events', [EventController::class, 'getAllEventCoupons']);
-      
+
         // Quản lý đơn hàng
         Route::get('admin/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index']);
         Route::get('admin/order-detail/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'orderDetail']);
@@ -169,7 +186,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::apiResource('blogs', BlogController::class);
         Route::patch('blogs/{id}/is-active', [BlogController::class, 'updateIsActive'])->name('blogs.updateIsActive');
 
-        // QL Rating 
+        // QL Rating
         Route::get('ratings', [RatingController::class, 'getAllRating']);
         Route::get('ratings/limit10', [RatingController::class, 'getLimitRating10']);
         Route::get('ratings/by-user', [RatingController::class, 'getRatingByUser']);
@@ -188,8 +205,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/insert-wishlists', [HomeController::class, 'insertWishlists']);
     Route::delete('/delete-wishlists/{product_id}', [HomeController::class, 'deleteWishlist']);
 
-    
-    // Order 
+
+    // Order
     Route::get('/order-detail/{code}', [OrderController::class, 'getOrderDetail'])->name('order.getOrderDetail');
     Route::get('/order/{status?}', [OrderController::class, 'getOrder'])->name('order.getOrder');
     Route::patch('/order-cancelation/{id}', [OrderController::class, 'canceledOrder']);
@@ -199,10 +216,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     // checkout
     Route::post('/checkout', [PaymentController::class, 'processPayment']);
+    // vnpay
     Route::post('/vnpay/callback', [PaymentController::class, 'callback'])->name('callback');
     Route::post('/checkout-vnpay', [PaymentController::class, 'handleOrder']);
-    
-    
+
+    //momo
+    Route::post('/momo/callback', [PaymentController::class, 'callbackMomo'])->name('payment.momo.callback');
+    Route::post('/checkout-momo', [PaymentController::class, 'handleOrder']);
+
 
     //Coupon_user
     Route::apiResource('coupon-user', CouponUserController::class);

@@ -4,7 +4,7 @@ import { Table } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { IOrderUserClient } from "../../../../interfaces/IOrderUserClient";
 import instance from "../../../../instance/instance";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import dayjs from "dayjs";
 const ManagerOrdersUser = () => { 
   const [orderUsers, setListOrderUsers] = useState<IOrderUserClient[]>([]);
@@ -304,7 +304,7 @@ const ManagerOrdersUser = () => {
     }
   };
 
-  const checkIsCancelOrder = (statusOrder: string) => {
+  const checkIsCancelOrder = (statusOrder: string,code_order:string) => {
     switch (statusOrder) {
       case "pending":
       case "confirmed":
@@ -372,8 +372,7 @@ const ManagerOrdersUser = () => {
         );
       case "delivered":
         return (
-          <button
-            type="button"
+          <Link to={`/user-manager/user-ratings/rating-detail/${code_order}`}
             className="text-primary border border-[#f5f5f5] bg-util py-1.5 px-2 flex items-center flex-nowrap gap-1 rounded-sm"
           >
             <svg
@@ -411,7 +410,7 @@ const ManagerOrdersUser = () => {
               />
             </svg>
             <span>Đánh giá</span>
-          </button>
+          </Link>
         );
       default:
         break;
@@ -703,7 +702,7 @@ const ManagerOrdersUser = () => {
                             </svg>
                             <span>Chi tiết</span>
                           </NavLink>
-                          {checkIsCancelOrder(orderUser.status_order)}
+                          {checkIsCancelOrder(orderUser.status_order,orderUser.code)}
                           <button>
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
