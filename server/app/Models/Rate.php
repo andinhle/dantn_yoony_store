@@ -9,7 +9,7 @@ class Rate extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['content', 'rating', 'product_id', 'user_id'];
+    protected $fillable = ['content', 'rating', 'product_id', 'user_id','order_id'];
 
      // Liên kết với người dùng
      public function user()
@@ -22,4 +22,10 @@ class Rate extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+     // Liên kết với đơn hàng
+     public function order()
+     {
+         return $this->belongsTo(Order::class);
+     }
 }

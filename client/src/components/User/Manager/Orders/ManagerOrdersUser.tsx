@@ -2,12 +2,13 @@ import { Dropdown, Input } from "antd";
 import type { MenuProps } from "antd";
 import { Table } from "flowbite-react";
 import { useEffect, useState } from "react";
-import { IOrderUserClient } from "../../../interfaces/IOrderUserClient";
-import instance from "../../../instance/instance";
-import { NavLink } from "react-router-dom";
+import { IOrderUserClient } from "../../../../interfaces/IOrderUserClient";
+import instance from "../../../../instance/instance";
+import { Link, NavLink } from "react-router-dom";
 import dayjs from "dayjs";
-const ManagerOrdersUser = () => {
+const ManagerOrdersUser = () => { 
   const [orderUsers, setListOrderUsers] = useState<IOrderUserClient[]>([]);
+  const [valueSearch, setValueSearch] = useState<string>('');
   //Get danh sách đơn hàng của người dùng
   useEffect(() => {
     (async () => {
@@ -24,12 +25,6 @@ const ManagerOrdersUser = () => {
       }
     })();
   }, []);
-  //Get detail đơn hàng của người dùng
-  // useEffect(() => {
-  //   return () => {
-  //     effect
-  //   };
-  // }, [])
   const items: MenuProps["items"] = [
     {
       label: <a href="https://www.antgroup.com">1st menu item</a>,
@@ -309,7 +304,7 @@ const ManagerOrdersUser = () => {
     }
   };
 
-  const checkIsCancelOrder = (statusOrder: string) => {
+  const checkIsCancelOrder = (statusOrder: string,code_order:string) => {
     switch (statusOrder) {
       case "pending":
       case "confirmed":
@@ -375,11 +370,9 @@ const ManagerOrdersUser = () => {
             <span>Huỷ đơn</span>
           </button>
         );
-
       case "delivered":
         return (
-          <button
-            type="button"
+          <Link to={`/user-manager/user-ratings/rating-detail/${code_order}`}
             className="text-primary border border-[#f5f5f5] bg-util py-1.5 px-2 flex items-center flex-nowrap gap-1 rounded-sm"
           >
             <svg
@@ -417,7 +410,7 @@ const ManagerOrdersUser = () => {
               />
             </svg>
             <span>Đánh giá</span>
-          </button>
+          </Link>
         );
       default:
         break;
@@ -428,7 +421,21 @@ const ManagerOrdersUser = () => {
     switch (method) {
       case "COD":
         return (
-          <span className="font-medium text-[#256fb0]">COD</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            id="Layer_1"
+            data-name="Layer 1"
+            viewBox="0 0 122.88 103.86"
+            className="size-7"
+            fill="#ff9900"
+          >
+            <path d="M33.8 51.87a29.8 29.8 0 0 1 8.94 1.32L40.06 61l-.64.39a12.6 12.6 0 0 0-2.93-1.1 13 13 0 0 0-3.08-.41 5.06 5.06 0 0 0-4.3 1.73c-.86 1.15-1.31 3.08-1.31 5.78 0 3.16.51 5.46 1.51 6.91a5.4 5.4 0 0 0 4.74 2.17 18.3 18.3 0 0 0 3.05-.27 15 15 0 0 0 3-.75l.77.48-.77 7.72a22.9 22.9 0 0 1-6.79.92c-5.25 0-9.18-1.37-11.84-4.1s-4-6.72-4-12 1.41-9.35 4.26-12.24 6.88-4.35 12.08-4.35Zm24.93 0c4.58 0 8.14 1.37 10.64 4.06s3.76 6.55 3.76 11.51c0 5.46-1.38 9.7-4.13 12.68s-6.65 4.49-11.69 4.49c-4.59 0-8.15-1.38-10.64-4.12s-3.76-6.64-3.76-11.69c0-5.4 1.39-9.59 4.13-12.52s6.64-4.41 11.69-4.41m-.88 7.8a5.17 5.17 0 0 0-2.88.66 3.7 3.7 0 0 0-1.39 2.32 21.6 21.6 0 0 0-.41 4.83 33.4 33.4 0 0 0 .43 6.15 4.9 4.9 0 0 0 1.49 2.93 4.92 4.92 0 0 0 3.1.82 5.2 5.2 0 0 0 2.88-.65 3.72 3.72 0 0 0 1.39-2.35 22.4 22.4 0 0 0 .42-4.85 32 32 0 0 0-.45-6.1 4.84 4.84 0 0 0-1.49-2.93 4.93 4.93 0 0 0-3.09-.83M91 52.21c4.66-.07 8.25 1.29 10.72 3.79s3.74 6.15 3.74 10.9c0 5.63-1.46 10-4.35 13s-7 4.53-12.45 4.53q-5.07 0-11.91-.43l.5-9.28-.5-22.3zm-.48 24.95A4 4 0 0 0 94 75.33c.77-1.21 1.2-3.24 1.2-6a25 25 0 0 0-.5-5.61 5.37 5.37 0 0 0-1.55-3 4.5 4.5 0 0 0-3-.9 34 34 0 0 0-3.67.19l-.34 13.72.1 3a35 35 0 0 0 4.25.4Z"></path>
+            <path d="M10.89 7.83a3 3 0 0 0-3 3V93a3.23 3.23 0 0 0 3 3h101.16a3 3 0 0 0 3-3V10.86a3 3 0 0 0-3-3H10.89ZM114.68 0a8.26 8.26 0 0 1 5.8 2.41 8.44 8.44 0 0 1 2.4 5.79v87.45c0 2.17-.53 4.7-2.4 5.79a8.23 8.23 0 0 1-5.79 2.42H8.19a8.23 8.23 0 0 1-5.79-2.42C.53 100.35 0 97.82 0 95.65V8.2a8.2 8.2 0 0 1 2.4-5.79A8.26 8.26 0 0 1 8.2 0Z"></path>
+            <path
+              fillRule="evenodd"
+              d="M78.8 7.68H44.09v32.71l17.33-8.68 17.38 8.68z"
+            ></path>
+          </svg>
         );
       case "VNPAY":
         return (
@@ -468,6 +475,10 @@ const ManagerOrdersUser = () => {
     }
   };
 
+  const handleChangeValueSearch=(e:any)=>{
+    setValueSearch(e.target.value)
+  }
+
   return (
     <div className="border border-[#f1f1f1] rounded-md p-4">
       <div className="space-y-5">
@@ -475,6 +486,7 @@ const ManagerOrdersUser = () => {
           <Input
             className="w-full rounded-full border border-[#f1f1f1]"
             placeholder="Mã đơn hàng"
+            onChange={handleChangeValueSearch}
             suffix={
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -627,9 +639,13 @@ const ManagerOrdersUser = () => {
             </Table.Head>
             <Table.Body className="divide-y">
               {orderUsers &&
-                orderUsers.map((orderUser) => {
+                orderUsers
+                .filter((items)=>{
+                  return `#${items.code.toLowerCase()}`.toLowerCase().includes(valueSearch.toLowerCase())||items.code.toLowerCase().includes(valueSearch.toLowerCase())
+                })
+                .map((orderUser) => {
                   return (
-                    <Table.Row className="bg-white border-b border-[#EBEDF0] border-dashed">
+                    <Table.Row className="bg-white border-b border-[#EBEDF0] border-dashed" key={orderUser.id}>
                       <Table.Cell className="whitespace-nowrap text-primary">
                         <span className="border border-primary border-dashed py-1 px-2 rounded-sm bg-primary/10">
                           {`#${orderUser.code}`}
@@ -686,7 +702,7 @@ const ManagerOrdersUser = () => {
                             </svg>
                             <span>Chi tiết</span>
                           </NavLink>
-                          {checkIsCancelOrder(orderUser.status_order)}
+                          {checkIsCancelOrder(orderUser.status_order,orderUser.code)}
                           <button>
                             <svg
                               xmlns="http://www.w3.org/2000/svg"

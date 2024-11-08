@@ -723,7 +723,7 @@ const FormAddOrUpdateProduct = () => {
                 appendVariant({
                   price: null!,
                   sale_price: null!,
-                  quantity: null!,
+                  end_sale: null!,
                   image: null!,
                   attribute_values: [{}],
                 });

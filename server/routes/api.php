@@ -30,8 +30,13 @@ use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\client\ChatbotController;
 use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\client\SpinController;
+use App\Http\Controllers\GoogleAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -52,9 +57,20 @@ Route::get('/auth/{provider}/callback', [ProviderController::class, 'callback'])
 
 // Sản phẩm
 Route::get('home/product/{slug}', [HomeController::class, 'getOneProductBySlug']);
+Route::get('home/products/{slug}/ratings', [HomeController::class, 'ratingListAllbyProductToSlug']);
+
 Route::get('home/products/featured', [HomeController::class, 'getFeaturedProducts']);
 Route::get('home/products/good-deal', [HomeController::class, 'getGoodDealProducts']);
 Route::get('home/product/category/{id}', [HomeController::class, 'getProductsByCategory']);
+
+
+
+Route::get('auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
+Route::get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
+
+Route::get('auth/facebook', [GoogleAuthController::class, 'redirectToFacebook']);
+Route::get('auth/facebook/callback', [GoogleAuthController::class, 'handleFacebookCallback']);
+
 
 //filter
 Route::get('products/filter', [FilterController::class, 'getFilter']);
@@ -127,7 +143,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::patch('product/{id}/is_active', [ProductController::class, 'updateIsActive'])->name('category.updateIsActive');
         Route::patch('product/restore/{id}', [ProductController::class, 'restore'])->name('product.restore');
         Route::delete('product/hard-delete/{id}', [ProductController::class, 'hardDelete'])->name('product.hardDelete');
-      
+
         //QL Event
         Route::get('/admin/events/coupons', [EventController::class, 'getEventCoupons']);
 
@@ -138,7 +154,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::delete('/admin/events/{id}', [EventController::class, 'destroy']);
         //list danh sách các coupon type event
         Route::get('/admin/coupons/events', [EventController::class, 'getAllEventCoupons']);
-      
+
         // Quản lý đơn hàng
         Route::get('admin/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index']);
         Route::get('admin/order-detail/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'orderDetail']);
@@ -170,7 +186,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::apiResource('blogs', BlogController::class);
         Route::patch('blogs/{id}/is-active', [BlogController::class, 'updateIsActive'])->name('blogs.updateIsActive');
 
-        // QL Rating 
+        // QL Rating
         Route::get('ratings', [RatingController::class, 'getAllRating']);
         Route::get('ratings/limit10', [RatingController::class, 'getLimitRating10']);
         Route::get('ratings/by-user', [RatingController::class, 'getRatingByUser']);
@@ -189,17 +205,20 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/insert-wishlists', [HomeController::class, 'insertWishlists']);
     Route::delete('/delete-wishlists/{product_id}', [HomeController::class, 'deleteWishlist']);
 
-    
-    // Order 
+
+    // Order
     Route::get('/order-detail/{code}', [OrderController::class, 'getOrderDetail'])->name('order.getOrderDetail');
     Route::get('/order/{status?}', [OrderController::class, 'getOrder'])->name('order.getOrder');
     Route::patch('/order-cancelation/{id}', [OrderController::class, 'canceledOrder']);
+    Route::post('/orders/filter', [FilterController::class, 'filterOrdersByDate'])->middleware('auth');
+    Route::get('/orders/filter-by-price', [FilterController::class, 'filterOrdersByPrice'])->name('orders.filterByPrice');
 
 
     // checkout
-    Route::post('/order', [OrderController::class, 'store'])->name('order.store');
     Route::post('/checkout', [PaymentController::class, 'processPayment']);
-    Route::get('/vnpay/callback', [PaymentController::class, 'callback']);
+    Route::post('/vnpay/callback', [PaymentController::class, 'callback'])->name('callback');
+    Route::post('/checkout-vnpay', [PaymentController::class, 'handleOrder']);
+
 
 
     //Coupon_user
@@ -215,7 +234,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/claim-coupon/{eventId}/{couponId}', [CouponUserController::class, 'claimCoupon']);
     Route::get('/event-coupons', [OderCheckController::class, 'getEventCoupons']);
 
-    //Review 
+    //Review client
     Route::post('ratings/review', [ReviewController::class, 'review'])->name('ratings.review');
+    Route::get('/orders/pending-reviews', [ReviewController::class, 'getPendingReviews'])->name('orders.pendingReviews');
+    Route::get('/orders/detail-reviews/{code}', [ReviewController::class, 'detailReview'])->name('orders.detailReview');
+    Route::get('reviews/reviewed-orders', [ReviewController::class, 'getReviewedOrders'])->name('reviews.getReviewedOrders');
 
 });

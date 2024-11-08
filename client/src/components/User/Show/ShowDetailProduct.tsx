@@ -1,4 +1,10 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Link, useParams } from "react-router-dom";
 import instance from "../../../instance/instance";
 import { IProduct } from "../../../interfaces/IProduct";
@@ -10,7 +16,8 @@ import ShowProductRelated from "./ShowProductRelated";
 import CartContext from "../../../contexts/CartContext";
 import axios from "axios";
 import { Tooltip } from "@mui/material";
-
+import isAuthenticated from '../../Middleware/isAuthenticated';
+import RatingProduct from "./RatingProduct";
 interface IVariant {
   id: number;
   price: number;
@@ -38,6 +45,7 @@ const ShowDetailProduct: React.FC = () => {
   const [related_products, setRelated_Products] = useState<IProduct[]>([]);
   const [imageProducts, setImageProducts] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string>("");
+  const [average_rating, setAverage_rating] = useState<number>();
   const [variants, setVariants] = useState<IVariant[]>([]);
   const [attributeGroups, setAttributeGroups] = useState<IAttributeGroup[]>([]);
   const [selectedAttributes, setSelectedAttributes] = useState<{
@@ -45,7 +53,7 @@ const ShowDetailProduct: React.FC = () => {
   }>({});
   const [selectedVariant, setSelectedVariant] = useState<IVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const {dispatch } = useContext(CartContext);
+  const { dispatch } = useContext(CartContext);
   const [isZoomEnabled, setIsZoomEnabled] = useState(false);
 
   useEffect(() => {
@@ -55,6 +63,7 @@ const ShowDetailProduct: React.FC = () => {
         setProduct(data.product);
         setRelated_Products(data.related_products);
         processProductData(data.product);
+        setAverage_rating(data.average_rating)
       } catch (error) {
         console.error("Error fetching product:", error);
       }
@@ -62,47 +71,49 @@ const ShowDetailProduct: React.FC = () => {
     fetchProduct();
   }, [slugproduct]);
 
-  const intervalId = useRef(null);
+  const intervalId = useRef<number | null>(null); 
   const callApiToUpdateData = useCallback(async () => {
     try {
       const { data } = await instance.get(`home/product/${slugproduct}`);
-      const { data: { data: response } } = await instance.get('cart');
-      dispatch({
-        type: "LIST",
-        payload: response
-      });
       setRelated_Products(data.related_products);
+      // if (isAuthenticated()) {
+      //   const {
+      //     data: { data: response },
+      //   } = await instance.get("cart");
+      //   dispatch({
+      //     type: "LIST",
+      //     payload: response,
+      //   });
+      // }
     } catch (error) {
-      console.error('Error fetching updated data:', error);
+      console.error("Error fetching updated data:", error);
     }
-  }, [slugproduct, setProduct, setRelated_Products]);
+  }, [slugproduct, setRelated_Products, dispatch]);
 
   useEffect(() => {
-    if (variants.length > 0) {
-      const checkVariantSale = variants.filter((item) => item.sale_price);
-      if (checkVariantSale.length > 0) {
-        const updateData = () => {
-          callApiToUpdateData();
-          intervalId.current = setTimeout(updateData, 1000);
-        };
-        updateData();
+    const updateData = async () => {
+      await callApiToUpdateData();
+      if (variants.some((item) => item.sale_price && isSaleActive(item.end_sale))) {
+        intervalId.current = setTimeout(updateData, 5000);
       }
-    }
-  
+    };
+
+    updateData();
+
     return () => {
       if (intervalId.current) {
         clearTimeout(intervalId.current);
+        intervalId.current = null;
       }
     };
-  }, [callApiToUpdateData, variants]);
-
+  }, [callApiToUpdateData, variants]); 
+  
+  
   const isSaleActive = (endSale: string | undefined): boolean => {
     if (!endSale) return false;
-    const endTime = new Date(endSale).getTime();
-    const now = new Date().getTime();
-    return endTime > now;
+    return new Date(endSale).getTime() > Date.now();
   };
-
+  
 
   const processProductData = (productData: IProduct) => {
     if (productData) {
@@ -227,7 +238,7 @@ const ShowDetailProduct: React.FC = () => {
           type: "ADD",
           payload: response,
         });
-        console.log(response)
+        console.log(response);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -387,8 +398,8 @@ const ShowDetailProduct: React.FC = () => {
           <h2 className="font-medium text-xl line-clamp-2">{product.name}</h2>
           <div className="flex gap-7 items-center mt-2">
             <div>
-              <span className="text-primary">4.5 </span>
-              <Rate disabled allowHalf defaultValue={4.5} />
+              <span className="text-primary">{average_rating} </span>
+              <Rate disabled allowHalf value={average_rating} />
             </div>
             {selectedVariant ? (
               <div className="py-1 px-3 bg-[#3CD139]/10 text-[#3CD139] rounded-full flex gap-1 w-fit text-sm">
@@ -444,59 +455,64 @@ const ShowDetailProduct: React.FC = () => {
           </div>
           {selectedVariant && (
             <div className="my-5 overflow-hidden rounded-md">
-              <div className="py-2 px-4 bg-primary flex items-center justify-between">
-                <img
-                  src="../../../../src/assets/images/flash_sale.svg"
-                  alt="flash_sale_img"
-                />
-                <div className="flex gap-3 items-center">
-                  {isSaleActive(selectedVariant.end_sale) ? (
-                    <>
-                      <span className="flex gap-1 items-center text-util uppercase text-sm">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          className="size-4"
-                          color={"currentColor"}
-                          fill={"none"}
-                        >
-                          <path
-                            d="M5.04798 8.60657L2.53784 8.45376C4.33712 3.70477 9.503 0.999914 14.5396 2.34474C19.904 3.77711 23.0904 9.26107 21.6565 14.5935C20.2227 19.926 14.7116 23.0876 9.3472 21.6553C5.36419 20.5917 2.58192 17.2946 2 13.4844"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M12 8V12L14 14"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>{" "}
-                        Kết thúc trong
+              {selectedVariant.end_sale && selectedVariant.sale_price && (
+                <div className="py-2 px-4 bg-primary flex items-center justify-between">
+                  <img
+                    src="../../../../src/assets/images/flash_sale.svg"
+                    alt="flash_sale_img"
+                  />
+                  <div className="flex gap-3 items-center">
+                    {isSaleActive(selectedVariant.end_sale) ? (
+                      <>
+                        <span className="flex gap-1 items-center text-util uppercase text-sm">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            className="size-4"
+                            color={"currentColor"}
+                            fill={"none"}
+                          >
+                            <path
+                              d="M5.04798 8.60657L2.53784 8.45376C4.33712 3.70477 9.503 0.999914 14.5396 2.34474C19.904 3.77711 23.0904 9.26107 21.6565 14.5935C20.2227 19.926 14.7116 23.0876 9.3472 21.6553C5.36419 20.5917 2.58192 17.2946 2 13.4844"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                            <path
+                              d="M12 8V12L14 14"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>{" "}
+                          Kết thúc trong
+                        </span>
+                        <Countdown
+                          value={new Date(selectedVariant.end_sale)}
+                          format="H:mm:ss"
+                          className="countdowm-sale"
+                          valueStyle={{
+                            fontSize: 18,
+                            backgroundColor: "#000",
+                            padding: "2px 10px",
+                            borderRadius: 5,
+                            color: "#fff",
+                          }}
+                        />
+                      </>
+                    ) : (
+                      <span className="font-medium py-1 text-util">
+                        ĐÃ KẾT THÚC
                       </span>
-                      <Countdown
-                        value={selectedVariant.end_sale}
-                        format="H:mm:ss"
-                        className="countdowm-sale"
-                        valueStyle={{
-                          fontSize: 18,
-                          backgroundColor: "#000",
-                          padding: "2px 10px",
-                          borderRadius: 5,
-                          color: "#fff",
-                        }}
-                      />
-                    </>
-                  ) : (
-                    <span className="font-medium py-1 text-util">KẾT THÚC</span>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-3 bg-gradient-to-r from-primary/5 to-primary/10  px-4 py-5 items-center">
-                {isSaleActive(selectedVariant.end_sale) ? (
+              )}
+              <div className="flex gap-3 bg-gradient-to-r from-primary/5 to-primary/10 px-4 py-5 items-center">
+                {isSaleActive(selectedVariant.end_sale) &&
+                selectedVariant.sale_price ? (
                   <>
                     <span className="text-primary font-medium text-[28px]">
                       {selectedVariant.sale_price
@@ -504,7 +520,7 @@ const ShowDetailProduct: React.FC = () => {
                           useGrouping: true,
                           maximumFractionDigits: 0,
                         })
-                        .replace(/,/g, ".") + 'đ'}
+                        .replace(/,/g, ".") + "đ"}
                     </span>
                     <span className="line-through text-base text-[#929292]">
                       {selectedVariant.price
@@ -512,19 +528,17 @@ const ShowDetailProduct: React.FC = () => {
                           useGrouping: true,
                           maximumFractionDigits: 0,
                         })
-                        .replace(/,/g, ".") + 'đ'}
+                        .replace(/,/g, ".") + "đ"}
                     </span>
                     <span className="text-xs text-red-500 font-medium bg-primary/15 px-1.5 py-0.5 rounded-sm">
-                      {selectedVariant.sale_price
-                        ? "-" +
-                          (
-                            ((selectedVariant.price -
-                              selectedVariant.sale_price) /
-                              selectedVariant.price) *
-                            100
-                          ).toFixed(0) +
-                          "%"
-                        : ""}
+                      {"-" +
+                        (
+                          ((selectedVariant.price -
+                            selectedVariant.sale_price) /
+                            selectedVariant.price) *
+                          100
+                        ).toFixed(0) +
+                        "%"}
                     </span>
                   </>
                 ) : (
@@ -538,23 +552,6 @@ const ShowDetailProduct: React.FC = () => {
                     đ
                   </span>
                 )}
-                {/* <span className="text-primary font-medium text-[28px] ">
-                  {selectedVariant.sale_price
-                    ?.toLocaleString("vi-VN", {
-                      useGrouping: true,
-                      maximumFractionDigits: 0,
-                    })
-                    .replace(/,/g, ".")}
-                  đ
-                </span>
-                <span className="line-through text-base text-[#929292]">
-                  {selectedVariant.price
-                    ?.toLocaleString("vi-VN", {
-                      useGrouping: true,
-                      maximumFractionDigits: 0,
-                    })
-                    .replace(/,/g, ".") + "đ"}
-                </span> */}
               </div>
             </div>
           )}
@@ -750,6 +747,7 @@ const ShowDetailProduct: React.FC = () => {
           </form>
         </div>
       </div>
+      <RatingProduct slugProd={slugproduct} />
       <ShowProductRelated related_products={related_products} />
     </section>
   );
