@@ -3,7 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Orders } from "../../../interfaces/IOrders";
 import instance from "../../../instance/instance";
 import { toast } from "react-toastify";
-import { notification } from "antd";
+import { IoArrowBackCircleSharp } from "react-icons/io5";
+import { AiOutlineArrowLeft } from "react-icons/ai";
 import { Steps } from 'antd';
 import { GiftOutlined, LockOutlined } from '@ant-design/icons';
 import { TiDelete } from "react-icons/ti";
@@ -87,7 +88,7 @@ const OrderDetails = () => {
     };
     const handleCancelClick = () => {
         if (selectedStatus === "shipping" || selectedStatus === "delivered") {
-            notification.warning({ message: "Không thể hủy đơn hàng khi đang ở trạng thái này" }); // Thông báo cho người dùng
+            toast.warning("Không thể hủy đơn hàng trong trạng thái này") // Thông báo cho người dùng
         } else {
             handleCancelOrder(); // Thực hiện hủy đơn hàng nếu trạng thái không phải đang giao
         }
@@ -129,8 +130,11 @@ const OrderDetails = () => {
         };
         return statusTranslations[status] || "Trạng thái không xác định";
     };
+    const nav = useNavigate();
 
-
+    const handleBackClick = () => {
+        nav("/admin/orders"); // Quay lại trang trước
+    };
     return (
         <div className="flex">
             <div className=" shadow-md rounded-lg overflow-hidden w-full h-max lg:w-2/3 mr-4">
@@ -176,9 +180,7 @@ const OrderDetails = () => {
                                                     <img
                                                         src={
                                                             item?.variant?.image ||
-                                                            (item?.variant?.product?.images
-                                                                ? JSON.parse(item.variant.product.images)[0]
-                                                                : '/default-image.png')
+                                                            item?.variant?.product?.images[0]
                                                         }
                                                         alt={item?.variant?.product?.name || 'Product Image'}
                                                         className="w-16 h-16 object-cover rounded-md border border-gray-300"
@@ -231,7 +233,7 @@ const OrderDetails = () => {
                                     <td className="px-4 py-4 whitespace-nowrap  text-sm font-semibold text-secondary-900">500,000 VND</td>
                                 </tr> */}
                                 <tr className="border-none">
-                                    <td colSpan="4" className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
+                                    <td colSpan={4} className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
                                         Tổng phụ:
                                     </td>
                                     <td className="px-4  whitespace-nowrap text-gray-500 text-sm font-semibold text-secondary-900">
@@ -243,7 +245,7 @@ const OrderDetails = () => {
                                     {orderDetail?.coupons?.map((value) => {
                                         return (
                                             <>
-                                                <td colSpan="4" className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
+                                                <td colSpan={4} className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
                                                     Giảm giá (
                                                     <span className="text-primary">{value.coupon?.code}</span>
                                                     ):
@@ -258,7 +260,7 @@ const OrderDetails = () => {
 
                                 </tr>
                                 <tr className="border-none">
-                                    <td colSpan="4" className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
+                                    <td colSpan={4} className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
                                         Thuế:
                                     </td>
                                     <td className="px-4  whitespace-nowrap text-gray-400 text-sm font-semibold text-secondary-900">
@@ -267,7 +269,7 @@ const OrderDetails = () => {
                                 </tr>
 
                                 <tr className="border-none">
-                                    <td colSpan="4" className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
+                                    <td colSpan={4} className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
                                         Tổng thanh toán:
                                     </td>
                                     <td className="px-4 whitespace-nowrap text-green-500 text-sm font-semibold text-secondary-900">
@@ -275,7 +277,7 @@ const OrderDetails = () => {
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td colSpan="4"></td>
+                                    <td colSpan={4}></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -309,7 +311,7 @@ const OrderDetails = () => {
                                 <button
                                     onClick={handleUpdateStatus}
                                     type="submit"
-                                    className="cursor-pointer focus:outline-none mx-10 my-12 w-full text-white bg-primary hover:bg-primary focus:ring-4 focus:ring-primary font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-primary dark:hover:bg-primary dark:focus:ring-primary flex items-center justify-center"
+                                    className="cursor-pointer focus:outline-none my-12 w-full text-white bg-primary hover:bg-primary focus:ring-4 focus:ring-primary font-medium rounded-lg text-sm py-2.5 me-8 mb-2 dark:bg-primary dark:hover:bg-primary dark:focus:ring-primary flex items-center justify-center"
                                 >
                                     <MdUpdate className="mr-2 w-5 h-5" /> {/* Biểu tượng update với khoảng cách bên phải */}
                                     Cập nhật
@@ -319,7 +321,7 @@ const OrderDetails = () => {
                                 <button
                                     onClick={handleCancelClick}
                                     type="submit"
-                                    className="cursor-pointer focus:outline-none my-12 mx-12 text-orange-500 bg-orange-300 hover:bg-orange-200  font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-primary dark:hover:bg-primary dark:focus:ring-primary flex items-center justify-center"
+                                    className="cursor-pointer focus:outline-none my-12 mx-4 text-orange-500 bg-orange-300 hover:bg-orange-200  font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-primary dark:hover:bg-primary dark:focus:ring-primary flex items-center justify-center"
                                 >
                                     <MdCancel className="mr-2 w-5 h-5" /> {/* Thêm biểu tượng cancel */}
                                     Hủy
@@ -443,11 +445,6 @@ const OrderDetails = () => {
                                 </div>
                             </div>
                         </div>
-
-
-
-
-
                     )}
                 </div>
                 <div className="bg-white p-8 mt-4">
@@ -463,7 +460,7 @@ const OrderDetails = () => {
                                                     'text-black'
                                 }`}
                         >
-                            {translateStatus(orderDetail?.status_order)}
+                            {translateStatus(orderDetail?.status_order as string)}
                         </span>
                     </h3>
                     <Steps
@@ -560,7 +557,7 @@ const OrderDetails = () => {
                         <div className="flex space-x-2">
                             <p className="font-bold text-sm">Ngày đặt hàng :</p>
                             <span className="text-sm">
-                                {new Date(orderDetail?.created_at).toLocaleDateString("vi-VN", {
+                                {new Date(orderDetail?.created_at as string).toLocaleDateString("vi-VN", {
                                     year: "numeric",
                                     month: "numeric",
                                     day: "numeric",
@@ -644,6 +641,14 @@ const OrderDetails = () => {
                             </span>
                         </div>
                     </div>
+                </div>
+                <div className="w-full flex justify-center items-center">
+                    <button
+                    onClick={handleBackClick}
+                     className="bg-primary w-1/3 text-white rounded-lg flex justify-center items-center space-x-4 p-2">
+                        <IoArrowBackCircleSharp className="mr-2" />
+                        Quay lại
+                    </button>
                 </div>
 
             </div>
