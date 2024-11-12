@@ -71,7 +71,7 @@ createRoot(document.getElementById("root")!).render(
                 </Route>
                 <Route path="reset-password" element={<CheckPermission />}>
                   <Route
-                    path="reset-password"
+                    path=""
                     element={<LayoutResetPassword />}
                   >
                     <Route index element={<ResetPassRequest />} />
@@ -86,7 +86,7 @@ createRoot(document.getElementById("root")!).render(
                   path=":category/:slugproduct"
                   element={<ShowDetailProduct />}
                 />
-                <Route path='search' element={<FilterProducts />}/>
+                <Route path="search" element={<FilterProducts />} />
                 <Route path="gio-hang" element={<CartListClient />} />
                 <Route path="check-out" element={<CheckOutOrder />} />
                 <Route path="blogs" element={<BlogPage />} />

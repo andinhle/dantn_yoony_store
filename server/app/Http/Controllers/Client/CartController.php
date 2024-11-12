@@ -149,7 +149,7 @@ class CartController extends Controller
             if ($idExist) {
 
                 if($request->quantity>1){
-                    $idExist->quantity += $request->quantity;
+                    $idExist->quantity = $request->quantity;
                     $idExist->save();
                 }else{
                     if($operation){

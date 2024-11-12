@@ -92,32 +92,6 @@ class OrderController extends Controller
 
     public function orderDetail($code)
     {
-<<<<<<< HEAD
-       try {
-
-        $orders = Order::query()
-        ->with(['items.variant.attributeValues.attribute', 'items.variant.product', 'coupons', 'user'])
-        ->where('code', $code)
-        ->firstOrFail();
-       
-        return response()->json(
-            [
-                'data' => $orders,
-                'status' => 'success'
-            ],Response::HTTP_OK);
-       } catch (\Throwable $th) {
-        Log::error(__CLASS__ . '@' . __FUNCTION__, [
-            'line' => $th->getLine(),
-            'message' => $th->getMessage()
-        ]);
-
-        return response()->json([
-            'message' => 'Lỗi tải trang',
-            'status' => 'error',
-
-        ], Response::HTTP_INTERNAL_SERVER_ERROR);
-       }
-=======
         try {
             $orders = Order::query()
                 ->with([
@@ -151,7 +125,7 @@ class OrderController extends Controller
     
             return response()->json(
                 [
-                    'data' => $data, // Use the processed data instead of orders directly
+                    'data' => $data, 
                     'status' => 'success'
                 ],
                 Response::HTTP_OK
@@ -167,7 +141,6 @@ class OrderController extends Controller
                 'status' => 'error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
->>>>>>> 40482b07b9f0b53fcca8be1214454b9938db5ded
     }
     
     
