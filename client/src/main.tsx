@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
@@ -53,9 +52,10 @@ import UserRatings from "./components/User/Manager/Ratings/UserRatings.tsx";
 import RatingDetailOrder from "./components/User/Manager/Ratings/RatingDetailOrder.tsx";
 import CallBackLoginGoogle from "./components/User/Auth/CallBackLoginGoogle.tsx";
 import FilterProducts from "./components/User/Filter/FilterProducts.tsx";
+import React from "react";
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+  <React.Fragment>
     <BrowserRouter>
       <BlogProvider>
         <FiledsProvider>
@@ -71,7 +71,7 @@ createRoot(document.getElementById("root")!).render(
                 </Route>
                 <Route path="reset-password" element={<CheckPermission />}>
                   <Route
-                    path="reset-password"
+                    path=""
                     element={<LayoutResetPassword />}
                   >
                     <Route index element={<ResetPassRequest />} />
@@ -86,7 +86,7 @@ createRoot(document.getElementById("root")!).render(
                   path=":category/:slugproduct"
                   element={<ShowDetailProduct />}
                 />
-                <Route path='search' element={<FilterProducts />}/>
+                <Route path="search" element={<FilterProducts />} />
                 <Route path="gio-hang" element={<CartListClient />} />
                 <Route path="check-out" element={<CheckOutOrder />} />
                 <Route path="blogs" element={<BlogPage />} />
@@ -140,5 +140,5 @@ createRoot(document.getElementById("root")!).render(
         </FiledsProvider>
       </BlogProvider>
     </BrowserRouter>
-  </StrictMode>
+  </React.Fragment>
 );

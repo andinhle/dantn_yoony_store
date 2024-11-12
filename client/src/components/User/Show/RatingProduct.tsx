@@ -73,39 +73,45 @@ const RatingProduct = ({ slugProd }: Prop) => {
   const [isLoading, setLoading] = useState<boolean>(false);
   useEffect(() => {
     (async () => {
-      setLoading(true)
-      const { data } = await instance.get(
-        `home/products/${slugProd}/ratings/?page=${currentPage}`
-      );
-      setRatingDatas(data.ratings);
-      setLoading(false)
+      try {
+        setLoading(false);
+        const { data } = await instance.get(
+          `home/products/${slugProd}/ratings/?page=${currentPage}`
+        );
+
+        console.log(data);
+
+        setRatingDatas(data.ratings);
+        setLoading(false);
+      } catch (error) {
+        console.log(error)
+      }
     })();
   }, [slugProd, currentPage]);
   if (!ratingDatas)
     return (
       <div>
-            <LoadingOverlay
-                active={isLoading}
-                spinner
-                text="Đang đăng nhập ..."
-                styles={{
-                overlay: (base) => ({
-                    ...base,
-                    background: "rgba(255, 255, 255, 0.75)",
-                    backdropFilter: "blur(4px)",
-                }),
-                spinner: (base) => ({
-                    ...base,
-                    width: "40px",
-                    "& svg circle": {
-                    stroke: "rgba(255, 153, 0,5)",
-                    strokeWidth: "3px",
-                    },
-                }),
-            }}
-            >
-            </LoadingOverlay>
-    </div>
+        <LoadingOverlay
+          active={isLoading}
+          spinner
+          text="Đang đăng nhập ..."
+          styles={{
+            overlay: (base) => ({
+              ...base,
+              background: "rgba(255, 255, 255, 0.75)",
+              backdropFilter: "blur(4px)",
+            }),
+            spinner: (base) => ({
+              ...base,
+              width: "40px",
+              "& svg circle": {
+                stroke: "rgba(255, 153, 0,5)",
+                strokeWidth: "3px",
+              },
+            }),
+          }}
+        ></LoadingOverlay>
+      </div>
     );
   return (
     <section className="bg-util border border-[#f1f1f1] rounded-md p-5 space-y-5">
