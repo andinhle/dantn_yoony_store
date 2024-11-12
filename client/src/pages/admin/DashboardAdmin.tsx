@@ -105,7 +105,7 @@ const DashboardAdmin = () => {
           </div>
           <div>
             <h5 className="font-medium">
-              Đơn Hàng Mới <span className="text-primary">*</span>
+              Đơn Hàng Chờ Xác Nhận <span className="text-primary">*</span>
             </h5>
             <span className="text-sm text-primary tracking-[0.75px]">50</span>
           </div>

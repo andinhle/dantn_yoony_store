@@ -23,7 +23,7 @@ class CartController extends Controller
     {
         try {
             $data = Cart::query()
-                ->with(['variant.product', 'variant.attributeValues.attribute'])
+                ->with(['variant.product', 'variant.attributeValues.attribute','variant.inventoryStock' ])
                 ->where('user_id', Auth::id())
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -149,7 +149,7 @@ class CartController extends Controller
             if ($idExist) {
 
                 if($request->quantity>1){
-                    $idExist->quantity += $request->quantity;
+                    $idExist->quantity = $request->quantity;
                     $idExist->save();
                 }else{
                     if($operation){

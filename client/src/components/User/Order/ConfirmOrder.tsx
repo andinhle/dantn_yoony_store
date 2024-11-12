@@ -23,34 +23,36 @@ const ConfirmOrder = ({ current }: Prop) => {
     undefined
   );
   const callbackProcessedRef = useRef(false);
-  const parsed = queryString.parse(location.search);
   const navigate = useNavigate();
-
   useEffect(() => {
     (async () => {
       try {
+        const parsed = queryString.parse(location.search);
         const vnp_ResponseCode = parsed?.vnp_ResponseCode;
+        const resultCode = parsed?.resultCode;
         const vnp_TransactionStatus = parsed?.vnp_TransactionStatus;
-
-        // Kiểm tra xem callback đã được xử lý chưa
-        const isCallbackProcessed = localStorage.getItem("vnpay_callback_processed");
-        const savedVoucher = JSON.parse(localStorage.getItem('selected_voucher') || 'null');
+        const isCallbackProcessed = localStorage.getItem("callback_processed");
+        const savedVoucher = JSON.parse(
+          localStorage.getItem("selected_voucher") || "null"
+        );
         const finalPaymentAmountVnpay = savedVoucher
-        ? final_total - savedVoucher.discount
-        : final_total;
-        if (vnp_ResponseCode && !isCallbackProcessed && !callbackProcessedRef.current) {
-          localStorage.setItem("vnpay_callback_processed", "true");
+          ? final_total - savedVoucher.discount
+          : final_total;
+
+        if (
+          vnp_ResponseCode &&
+          !isCallbackProcessed &&
+          !callbackProcessedRef.current
+        ) {
+          localStorage.setItem("callback_processed", "true");
           callbackProcessedRef.current = true;
 
           const orderDataRaw = localStorage.getItem("orderData");
           const parsedOrderData = JSON.parse(orderDataRaw!);
 
           const { data } = await instance.post("vnpay/callback", {
-            coupon_id: savedVoucher?.id,
-            discount_amount: savedVoucher?.discount,
             ...parsed,
           });
-          console.log(data)
           if (
             vnp_ResponseCode === "00" &&
             vnp_TransactionStatus === "00" &&
@@ -67,16 +69,66 @@ const ConfirmOrder = ({ current }: Prop) => {
             });
 
             if (checkoutData) {
-              const id_carts = JSON.parse(localStorage.getItem("id_cart") || "[]");
+              const id_carts = JSON.parse(
+                localStorage.getItem("id_cart") || "[]"
+              );
               dispatch({
                 type: "REMOVE_SELECTED",
                 payload: id_carts,
               });
               toast.success(checkoutData.data.message);
               navigate("/user-manager/user-orders");
-              ["id_cart", "orderData", "final_total","vnpay_callback_processed","selected_voucher"].forEach((key) =>
-                localStorage.removeItem(key)
+              [
+                "id_cart",
+                "orderData",
+                "final_total",
+                "callback_processed",
+                "selected_voucher",
+              ].forEach((key) => localStorage.removeItem(key));
+            }
+          }
+        }
+        if (
+          resultCode &&
+          !isCallbackProcessed &&
+          !callbackProcessedRef.current
+        ) {
+          localStorage.setItem("callback_processed", "true");
+          callbackProcessedRef.current = true;
+          const orderDataRaw = localStorage.getItem("orderData");
+          const parsedOrderData = JSON.parse(orderDataRaw!);
+
+          const { data } = await instance.post("momo/callback", {
+            ...parsed,
+          });
+          if (resultCode === "0" && String(data.status) === "success") {
+            message.success("Thanh toán thành công!");
+            const checkoutData = await instance.post("checkout-momo", {
+              name: parsedOrderData.fullName,
+              tel: parsedOrderData.phone,
+              coupon_id: savedVoucher?.id,
+              discount_amount: savedVoucher?.discount,
+              final_total: finalPaymentAmountVnpay,
+              ...parsedOrderData,
+            });
+
+            if (checkoutData) {
+              const id_carts = JSON.parse(
+                localStorage.getItem("id_cart") || "[]"
               );
+              dispatch({
+                type: "REMOVE_SELECTED",
+                payload: id_carts,
+              });
+              toast.success(checkoutData.data.message);
+              navigate("/user-manager/user-orders");
+              [
+                "id_cart",
+                "orderData",
+                "final_total",
+                "callback_processed",
+                "selected_voucher",
+              ].forEach((key) => localStorage.removeItem(key));
             }
           }
         }
@@ -87,6 +139,7 @@ const ConfirmOrder = ({ current }: Prop) => {
 
     return () => {
       callbackProcessedRef.current = false;
+      localStorage.removeItem("callback_processed");
     };
   }, []);
 
@@ -130,12 +183,26 @@ const ConfirmOrder = ({ current }: Prop) => {
           });
           toast.success(data.message);
           navigate("/user-manager/user-orders");
-          ["id_cart", "orderData", "final_total","selected_voucher"].forEach((key) =>
-            localStorage.removeItem(key)
+          ["id_cart", "orderData", "final_total", "selected_voucher"].forEach(
+            (key) => localStorage.removeItem(key)
           );
         }
       }
       if (parsedOrderData?.payment_method === "VNPAY") {
+        const { data } = await instance.post("checkout", {
+          name: parsedOrderData.fullName,
+          tel: parsedOrderData.phone,
+          coupon_id: voucherCheck?.id,
+          discount_amount: voucherCheck?.discount,
+          final_total: finalPaymentAmount,
+          ...parsedOrderData,
+        });
+
+        if (data) {
+          window.location.assign(data.paymentUrl);
+        }
+      }
+      if (parsedOrderData?.payment_method === "MOMO") {
         const { data } = await instance.post("checkout", {
           name: parsedOrderData.fullName,
           tel: parsedOrderData.phone,
@@ -200,7 +267,7 @@ const ConfirmOrder = ({ current }: Prop) => {
     );
     if (validVoucher) {
       setCheckVoucher(validVoucher);
-      localStorage.setItem('selected_voucher', JSON.stringify(validVoucher));
+      localStorage.setItem("selected_voucher", JSON.stringify(validVoucher));
       message.success("Mã giảm giá đã được áp dụng");
     } else {
       message.warning("Mã voucher không hợp lệ!");

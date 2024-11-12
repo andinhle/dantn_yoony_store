@@ -17,6 +17,7 @@ import CartContext from "../../../contexts/CartContext";
 import axios from "axios";
 import { Tooltip } from "@mui/material";
 import isAuthenticated from '../../Middleware/isAuthenticated';
+import RatingProduct from "./RatingProduct";
 interface IVariant {
   id: number;
   price: number;
@@ -44,6 +45,7 @@ const ShowDetailProduct: React.FC = () => {
   const [related_products, setRelated_Products] = useState<IProduct[]>([]);
   const [imageProducts, setImageProducts] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string>("");
+  const [average_rating, setAverage_rating] = useState<number>();
   const [variants, setVariants] = useState<IVariant[]>([]);
   const [attributeGroups, setAttributeGroups] = useState<IAttributeGroup[]>([]);
   const [selectedAttributes, setSelectedAttributes] = useState<{
@@ -51,7 +53,7 @@ const ShowDetailProduct: React.FC = () => {
   }>({});
   const [selectedVariant, setSelectedVariant] = useState<IVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const { dispatch } = useContext(CartContext);
+  const { dispatch,carts } = useContext(CartContext);
   const [isZoomEnabled, setIsZoomEnabled] = useState(false);
 
   useEffect(() => {
@@ -61,6 +63,7 @@ const ShowDetailProduct: React.FC = () => {
         setProduct(data.product);
         setRelated_Products(data.related_products);
         processProductData(data.product);
+        setAverage_rating(data.average_rating)
       } catch (error) {
         console.error("Error fetching product:", error);
       }
@@ -216,9 +219,43 @@ const ShowDetailProduct: React.FC = () => {
     setQuantity(value);
   };
 
-  const addCart = async () => {
+  const validateCartQuantity = (requestedQuantity, selectedVariant, carts) => {
     if (!selectedVariant) {
       message.error("Vui lòng chọn đầy đủ thuộc tính sản phẩm");
+      return false;
+    }
+  
+    const existingCartItems = carts.filter(
+      cart => cart.variant.id === selectedVariant.id
+    );
+  
+    const quantityInCart = existingCartItems.reduce(
+      (total, cart) => total + cart.quantity,
+      0
+    );
+  
+
+    const availableQuantity = selectedVariant.quantity - quantityInCart;
+  
+    if (requestedQuantity > availableQuantity) {
+      message.warning(
+        `Số lượng không được vượt quá ${selectedVariant.quantity}`
+      );
+      return false;
+    }
+  
+    if (requestedQuantity > selectedVariant.quantity) {
+      message.warning(
+        `Số lượng không được vượt quá ${selectedVariant.quantity}`
+      );
+      return false;
+    }
+  
+    return true;
+  };
+
+  const addCart = async () => {
+    if (!validateCartQuantity(quantity, selectedVariant, carts)) {
       return;
     }
     try {
@@ -226,7 +263,7 @@ const ShowDetailProduct: React.FC = () => {
         data: { data: response },
       } = await instance.post("cart", {
         quantity,
-        variant_id: selectedVariant.id,
+        variant_id: selectedVariant?.id,
         user_id: 1,
       });
       if (response) {
@@ -330,7 +367,7 @@ const ShowDetailProduct: React.FC = () => {
     );
   };
 
-  // console.log(attributeGroups);
+  console.log(product);
   // console.log(selectedAttributes);
 
   return (
@@ -395,8 +432,8 @@ const ShowDetailProduct: React.FC = () => {
           <h2 className="font-medium text-xl line-clamp-2">{product.name}</h2>
           <div className="flex gap-7 items-center mt-2">
             <div>
-              <span className="text-primary">4.5 </span>
-              <Rate disabled allowHalf defaultValue={4.5} />
+              <span className="text-primary">{average_rating} </span>
+              <Rate disabled allowHalf value={average_rating} />
             </div>
             {selectedVariant ? (
               <div className="py-1 px-3 bg-[#3CD139]/10 text-[#3CD139] rounded-full flex gap-1 w-fit text-sm">
@@ -604,6 +641,7 @@ const ShowDetailProduct: React.FC = () => {
                 <input
                   id="quantity-product"
                   min={1}
+                  max={selectedVariant?.quantity}
                   value={quantity}
                   onChange={handleChangeQuantity}
                   className="w-10 p-1.5 border border-input outline-none text-center"
@@ -744,6 +782,7 @@ const ShowDetailProduct: React.FC = () => {
           </form>
         </div>
       </div>
+      <RatingProduct slugProd={slugproduct} />
       <ShowProductRelated related_products={related_products} />
     </section>
   );

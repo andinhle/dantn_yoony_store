@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\OrderStatusUpdated;
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderCancellation;
 use Illuminate\Http\Request;
@@ -123,7 +125,7 @@ class OrderController extends Controller
     
             return response()->json(
                 [
-                    'data' => $data, // Use the processed data instead of orders directly
+                    'data' => $data, 
                     'status' => 'success'
                 ],
                 Response::HTTP_OK
@@ -165,10 +167,19 @@ class OrderController extends Controller
                 $order->status_order = $status;
                 $order->save();
 
+                $notification = Notification::create([
+                    'user_id' => $order->user_id,
+                    'order_id' => $order->id,
+                    'content' => 'Đơn hàng '. $order->code .' đã được cập nhật trạng thái thành ' . Order::STATUS_ORDER[$order->status_order],
+                ]);
+
+                event(new OrderStatusUpdated($notification, $order->user_id));
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Trạng thái đơn hàng đã được cập nhật.',
-                    'order' => $order
+                    'order' => $order,
+                    'notification' => $notification
                 ]);
             default:
                 return response()->json([

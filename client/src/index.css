@@ -116,7 +116,7 @@ a:hover .number-cart{
   --tw-ring-shadow:none !important;
 }
 
-.product-clothes::before,.product-feature::before,.product-uniform::before{
+.product-clothes::before,.product-feature::before,.product-uniform::before,.product-related::before{
   content:"";
   width: 5px;
   height: 30px;
@@ -134,9 +134,9 @@ a:hover .number-cart{
 .rc-anchor-light.rc-anchor-normal,.rc-anchor-light.rc-anchor-compact {
   border: 1px solid #f6f6f6 !important;
 }
-.ant-tooltip-content{
+/* .ant-tooltip-content{
   display: none !important;
-}
+} */
 
 :where(.css-dev-only-do-not-override-14i19y2).ant-btn-primary,:where(.css-dev-only-do-not-override-14i19y2).ant-btn-primary:not(:disabled):not(.ant-btn-disabled):hover{
   background-color: #ff9900;
@@ -360,6 +360,19 @@ a:hover .number-cart{
 .rating-done .anticon-star svg{
   height: 12px !important;
   width: 12px !important;
+}
+.rating-product-detail .anticon-star svg{
+  height: 24px !important;
+  width: 24px !important;
+}
+
+.rating-filter .anticon-star svg{
+  height: 20px !important;
+  width: 20px !important;
+}
+
+.rating-product-detail.ant-rate,.rating-filter.ant-rate{
+  color: #ff9900 !important;
 }
 
 .rating-scroll-done::-webkit-scrollbar-thumb{

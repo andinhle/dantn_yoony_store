@@ -2,15 +2,13 @@
 
 namespace App\Listeners;
 
-use App\Events\OrderShipped;
-use App\Models\Cart;
+use App\Events\OrderCanceled;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-class SendNotification implements ShouldQueue
+class SendCancel implements ShouldQueue
 {
     /**
      * Create the event listener.
@@ -23,22 +21,21 @@ class SendNotification implements ShouldQueue
     /**
      * Handle the event.
      */
-    public function handle(OrderShipped $event): void
+    public function handle(OrderCanceled $event): void
     {
-        $orderData = $event->order; // Nếu đã dispatch là đối tượng
+        $orderData = json_decode($event->order); // Nếu đã dispatch là đối tượng
 
-
+        Log::info('order', (array) $event->order->items);
         $user = $event->order->user;
-       
-        Mail::send('orderShipperdMail', [
-            'name' => $user->name,
+        $user['order_code'] = $orderData->code;
+        Mail::send('orderCanceled', [
             'order' =>  $event->order,
             'variant' =>  $event->order->items
         ], function($message) use ($user) 
         {
             $message->to($user->email, $user->name)
                 ->from('yoony_store@gmail.com', 'Yoony Store')
-                ->subject('Yoony Store');
+                ->subject('Xác nhận hủy đơn hàng '. $user->order_code .' từ CÔNG TY Yoony Store');
         });
     }
 }

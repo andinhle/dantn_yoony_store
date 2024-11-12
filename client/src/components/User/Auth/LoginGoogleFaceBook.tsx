@@ -24,7 +24,7 @@ const LoginGoogleFaceBook = () => {
 };
   return (
     <div className="flex items-center justify-center gap-3">
-      <button
+      {/* <button
         type="button"
         onClick={handleLoginFacebook}
         className="flex items-center gap-2 py-2 px-3 rounded-full border border-[#f1f1f1]"
@@ -41,7 +41,7 @@ const LoginGoogleFaceBook = () => {
           />
         </svg>
         Facebook
-      </button>
+      </button> */}
       <button
         type="button"
         onClick={handleLoginGoogle}
