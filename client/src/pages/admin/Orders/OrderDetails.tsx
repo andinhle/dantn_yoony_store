@@ -175,10 +175,7 @@ const OrderDetails = () => {
                                                 <div>
                                                     <img
                                                         src={
-                                                            item?.variant?.image ||
-                                                            (item?.variant?.product?.images
-                                                                ? JSON.parse(item.variant.product.images)[0]
-                                                                : '/default-image.png')
+                                                            item?.variant?.image || item?.variant?.product?.images[0]
                                                         }
                                                         alt={item?.variant?.product?.name || 'Product Image'}
                                                         className="w-16 h-16 object-cover rounded-md border border-gray-300"
@@ -231,7 +228,7 @@ const OrderDetails = () => {
                                     <td className="px-4 py-4 whitespace-nowrap  text-sm font-semibold text-secondary-900">500,000 VND</td>
                                 </tr> */}
                                 <tr className="border-none">
-                                    <td colSpan="4" className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
+                                    <td colSpan={4} className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
                                         Tổng phụ:
                                     </td>
                                     <td className="px-4  whitespace-nowrap text-gray-500 text-sm font-semibold text-secondary-900">
@@ -243,7 +240,7 @@ const OrderDetails = () => {
                                     {orderDetail?.coupons?.map((value) => {
                                         return (
                                             <>
-                                                <td colSpan="4" className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
+                                                <td colSpan={4} className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
                                                     Giảm giá (
                                                     <span className="text-primary">{value.coupon?.code}</span>
                                                     ):
@@ -258,7 +255,7 @@ const OrderDetails = () => {
 
                                 </tr>
                                 <tr className="border-none">
-                                    <td colSpan="4" className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
+                                    <td colSpan={4} className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
                                         Thuế:
                                     </td>
                                     <td className="px-4  whitespace-nowrap text-gray-400 text-sm font-semibold text-secondary-900">
@@ -267,7 +264,7 @@ const OrderDetails = () => {
                                 </tr>
 
                                 <tr className="border-none">
-                                    <td colSpan="4" className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
+                                    <td colSpan={4} className="px-4 py-2 text-black text-right text-sm font-semibold text-secondary-900">
                                         Tổng thanh toán:
                                     </td>
                                     <td className="px-4 whitespace-nowrap text-green-500 text-sm font-semibold text-secondary-900">
@@ -275,7 +272,7 @@ const OrderDetails = () => {
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td colSpan="4"></td>
+                                    <td colSpan={4}></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -463,7 +460,7 @@ const OrderDetails = () => {
                                                     'text-black'
                                 }`}
                         >
-                            {translateStatus(orderDetail?.status_order)}
+                            {translateStatus(orderDetail?.status_order as string)}
                         </span>
                     </h3>
                     <Steps
@@ -560,7 +557,7 @@ const OrderDetails = () => {
                         <div className="flex space-x-2">
                             <p className="font-bold text-sm">Ngày đặt hàng :</p>
                             <span className="text-sm">
-                                {new Date(orderDetail?.created_at).toLocaleDateString("vi-VN", {
+                                {new Date(orderDetail?.created_at as string).toLocaleDateString("vi-VN", {
                                     year: "numeric",
                                     month: "numeric",
                                     day: "numeric",

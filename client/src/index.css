@@ -366,7 +366,12 @@ a:hover .number-cart{
   width: 24px !important;
 }
 
-.rating-product-detail.ant-rate{
+.rating-filter .anticon-star svg{
+  height: 20px !important;
+  width: 20px !important;
+}
+
+.rating-product-detail.ant-rate,.rating-filter.ant-rate{
   color: #ff9900 !important;
 }
 
