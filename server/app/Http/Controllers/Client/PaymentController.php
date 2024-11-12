@@ -123,7 +123,10 @@ class PaymentController extends Controller
                 foreach ($cartItems as $value) {
                     $data['grand_total'] += $value->quantity * ($value->variant->sale_price ?: $value->variant->price);
                 }
-
+               
+                if($request->payment_method === "VNPAY"){
+                $data['paid_at'] = now();
+                }
                 $order = Order::query()->create($data);
 
                 if ($request->coupon_id && $request->discount_amount) {
@@ -145,6 +148,11 @@ class PaymentController extends Controller
                     ]);
                 }
 
+<<<<<<< HEAD
+
+                
+=======
+>>>>>>> 40482b07b9f0b53fcca8be1214454b9938db5ded
                 if (!$order) {
                     return response()->json(['error' => 'Đặt hàng không thành công.']);
                 }
@@ -203,6 +211,23 @@ class PaymentController extends Controller
             }
         }
 
+<<<<<<< HEAD
+            
+            if ($secureHash == $vnp_SecureHash) {
+                
+                if ($request->vnp_ResponseCode == '00') {
+                        return response()->json([
+                            'status' => 'success',
+                            'message' => 'Giao dịch thành công',
+                        ]);
+                        }else {
+                        
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Giao dịch không thành công',
+                        ]);
+                    }
+=======
         $secureHash = hash_hmac('sha512', $hashData, $this->secretKey);
 
         if ($secureHash == $vnp_SecureHash) {
@@ -212,6 +237,7 @@ class PaymentController extends Controller
                     'status' => 'success',
                     'message' => 'Giao dịch thành công',
                 ]);
+>>>>>>> 40482b07b9f0b53fcca8be1214454b9938db5ded
             } else {
                 return response()->json([
                     'status' => 'error',

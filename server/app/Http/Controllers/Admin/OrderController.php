@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\OrderStatusUpdated;
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderCancellation;
 use Illuminate\Http\Request;
@@ -90,6 +92,32 @@ class OrderController extends Controller
 
     public function orderDetail($code)
     {
+<<<<<<< HEAD
+       try {
+
+        $orders = Order::query()
+        ->with(['items.variant.attributeValues.attribute', 'items.variant.product', 'coupons', 'user'])
+        ->where('code', $code)
+        ->firstOrFail();
+       
+        return response()->json(
+            [
+                'data' => $orders,
+                'status' => 'success'
+            ],Response::HTTP_OK);
+       } catch (\Throwable $th) {
+        Log::error(__CLASS__ . '@' . __FUNCTION__, [
+            'line' => $th->getLine(),
+            'message' => $th->getMessage()
+        ]);
+
+        return response()->json([
+            'message' => 'Lỗi tải trang',
+            'status' => 'error',
+
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
+       }
+=======
         try {
             $orders = Order::query()
                 ->with([
@@ -139,6 +167,7 @@ class OrderController extends Controller
                 'status' => 'error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+>>>>>>> 40482b07b9f0b53fcca8be1214454b9938db5ded
     }
     
     
@@ -165,10 +194,19 @@ class OrderController extends Controller
                 $order->status_order = $status;
                 $order->save();
 
+                $notification = Notification::create([
+                    'user_id' => $order->user_id,
+                    'order_id' => $order->id,
+                    'content' => 'Đơn hàng '. $order->code .' đã được cập nhật trạng thái thành ' . Order::STATUS_ORDER[$order->status_order],
+                ]);
+
+                event(new OrderStatusUpdated($notification, $order->user_id));
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Trạng thái đơn hàng đã được cập nhật.',
-                    'order' => $order
+                    'order' => $order,
+                    'notification' => $notification
                 ]);
             default:
                 return response()->json([
