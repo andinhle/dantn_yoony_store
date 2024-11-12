@@ -41,7 +41,7 @@ class OderCheckController extends Controller
                 }
             }
 
-            $orders = Order::where('tel', $search)->get();
+            $orders = Order::where('tel', $search)->orderByDesc('created_at')->get();
 
             if ($orders->count() > 0) {
                 foreach ($orders as $order) {
@@ -87,8 +87,8 @@ class OderCheckController extends Controller
      // validate * địa chỉ
     private function maskAddress($address)
     {
-        $visiblePart = substr($address, -5);  
-        $maskedPart = str_repeat('*', strlen($address) - 5);  
+        $visiblePart = substr($address, -8);  
+        $maskedPart = str_repeat('*', strlen($address) - 8);  
 
         return $maskedPart . $visiblePart;
     }
