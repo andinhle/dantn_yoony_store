@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
@@ -53,9 +52,10 @@ import UserRatings from "./components/User/Manager/Ratings/UserRatings.tsx";
 import RatingDetailOrder from "./components/User/Manager/Ratings/RatingDetailOrder.tsx";
 import CallBackLoginGoogle from "./components/User/Auth/CallBackLoginGoogle.tsx";
 import FilterProducts from "./components/User/Filter/FilterProducts.tsx";
+import React from "react";
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+  <React.Fragment>
     <BrowserRouter>
       <BlogProvider>
         <FiledsProvider>
@@ -140,5 +140,5 @@ createRoot(document.getElementById("root")!).render(
         </FiledsProvider>
       </BlogProvider>
     </BrowserRouter>
-  </StrictMode>
+  </React.Fragment>
 );

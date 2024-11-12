@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\Variant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class FilterController extends Controller
@@ -65,11 +66,15 @@ class FilterController extends Controller
         if ($request->has('newest') && $request->input(key: 'newest')) {
             $query->orderBy('created_at', 'desc');
         }
+        
+        //lọc giá tăng dần, giảm dần
+        if ($request->has('sort_price')) { $sortOrder = $request->input('sort_price') == 'asc' ? 'asc' : 'desc'; $query->addSelect([ 'min_variant_price' => Variant::selectRaw('MIN(price)') ->whereColumn('product_id', 'products.id') ])->orderBy('min_variant_price', $sortOrder); }
+        
 
         Log::info('Thông số truy vấn sql:', [$query->toSql(), $query->getBindings()]);
 
         // Lấy kết quả
-        $products = $query->with(['category', 'variants.attributeValues.attribute', 'rates'])->paginate(8);
+        $products = $query->with(['category', 'variants.attributeValues.attribute'])->paginate(8);
 
         $products->each(function ($product) {
             if (!empty($product->images)) {
