@@ -165,6 +165,14 @@ const ConfirmOrder = ({ current }: Prop) => {
     try {
       const orderDataRaw = localStorage.getItem("orderData");
       const parsedOrderData = JSON.parse(orderDataRaw!);
+
+      const formattedAddress = [
+        parsedOrderData.addressDetail,
+        parsedOrderData.ward,
+        parsedOrderData.district,
+        parsedOrderData.province
+      ].filter(Boolean).join(", ");
+
       if (parsedOrderData?.payment_method === "COD") {
         const { data } = await instance.post("checkout", {
           name: parsedOrderData.fullName,
@@ -172,6 +180,7 @@ const ConfirmOrder = ({ current }: Prop) => {
           coupon_id: voucherCheck?.id,
           discount_amount: voucherCheck?.discount,
           final_total: finalPaymentAmount,
+          address: formattedAddress,
           ...parsedOrderData,
         });
 
