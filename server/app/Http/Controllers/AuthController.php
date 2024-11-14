@@ -46,11 +46,34 @@ class AuthController extends Controller
         }
     }
 
+
     public function register(RegisterRequest $request)
     {
         try {
             $request->validated($request->all());
 
+            $existingUser = User::where('email', $request->email)->first();
+
+            if ($existingUser) {
+                if (is_null($existingUser->password)) {
+                    $existingUser->update([
+                        'name' => $request->name,
+                        'password' => bcrypt($request->password)
+                    ]);
+
+                    return response()->json([
+                        'message' => 'Đăng ký thành công!',
+                        'user' => $existingUser,
+                        'token' => $existingUser->createToken('API Token')->plainTextToken
+                    ], 200);
+                } else {
+                    return response()->json([
+                        'message' => 'Email này đã được sử dụng, không thể đăng ký.'
+                    ], 400);
+                }
+            }
+
+            // Nếu email chưa tồn tại, tạo người dùng mới
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -62,6 +85,7 @@ class AuthController extends Controller
                 'user' => $user,
                 'token' => $user->createToken('API Token')->plainTextToken
             ], 200);
+
         } catch (\Exception $e) {
             Log::error('Có lỗi xảy ra: ' . $e->getMessage());
             return response()->json([
@@ -69,6 +93,7 @@ class AuthController extends Controller
             ], 500);
         }
     }
+
 
     public function logout()
     {
@@ -178,7 +203,8 @@ class AuthController extends Controller
     {
         try {
             $request->validate([
-                'name' => 'required|string|max:255',
+                'name' => 'nullable|string|max:255',
+                'avatar' => 'nullable|string|max:255',
                 'tel' => 'nullable|string|max:20',
                 'address' => 'nullable|string|max:255',
             ]);
@@ -186,6 +212,7 @@ class AuthController extends Controller
             $user = $request->user();
 
             $user->name = $request->input('name');
+            $user->avatar = $request->input('avatar');
             $user->tel = $request->input('tel');
             $user->address = $request->input('address');
             $user->save();
