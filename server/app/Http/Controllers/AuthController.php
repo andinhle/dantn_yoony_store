@@ -92,14 +92,13 @@ class AuthController extends Controller
 
             $token = app('auth.password.broker')->createToken($user);
 
-            $user->notify(new ResetPasswordNotification($token,$request->email));
+            $user->notify(new ResetPasswordNotification($token, $request->email));
 
             return response()->json([
                 'message' => 'Link đổi mật khẩu đã được gửi đến email của bạn.',
                 'token' => $token,
                 'email' => $request->email
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
@@ -135,28 +134,64 @@ class AuthController extends Controller
         }
     }
 
-// đổi mật khẩu
+    // đổi mật khẩu
 
 
 
-public function changePassword(Request $request)
-{
-    $request->validate([
-        'current_password' => 'required',
-        'new_password' => 'required|min:8|confirmed',
-    ]);
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:8|confirmed',
+        ]);
 
-    $user = $request->user();
+        $user = $request->user();
 
-    if (!Hash::check($request->current_password, $user->password)) {
-        return response()->json(['message' => 'Mật khẩu hiện tại không chính xác'], 400);
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json(['message' => 'Mật khẩu hiện tại không chính xác'], 400);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json(['message' => 'Đổi mật khẩu thành công'], 200);
     }
 
-    $user->password = Hash::make($request->new_password);
-    $user->save();
-
-    return response()->json(['message' => 'Đổi mật khẩu thành công'], 200);
-}
 
 
+
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'tel' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+        ]);
+
+        $user = $request->user();
+
+        $user->name = $request->input('name');
+        $user->tel = $request->input('tel');
+        $user->address = $request->input('address');
+        $user->save();
+
+        return response()->json([
+            'message' => 'Cập nhật thông tin thành công',
+            'user' => $user,
+        ], 200);
+    }
+
+    public function getProfile(Request $request)
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'message' => 'Lấy thông tin người dùng thành công',
+            'user' => [
+                'name' => $user->name,
+                'tel' => $user->tel,
+                'address' => $user->address,
+            ],
+        ], 200);
+    }
 }
