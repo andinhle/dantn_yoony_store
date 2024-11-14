@@ -69,7 +69,7 @@
                 @endforeach    
             </tbody>
         </table>
-
+        <p><span style="color:red;">Lý do huỷ:</span></p>
         <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi. Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi.</p>
 
         <div class="footer">
