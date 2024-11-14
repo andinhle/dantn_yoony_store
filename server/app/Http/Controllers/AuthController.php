@@ -138,23 +138,37 @@ class AuthController extends Controller
 
 
 
+
+
     public function changePassword(Request $request)
     {
-        $request->validate([
-            'current_password' => 'required',
-            'new_password' => 'required|min:8|confirmed',
-        ]);
+        try {
+            $request->validate([
+                'current_password' => 'required',
+                'new_password' => 'required|min:8|confirmed',
+            ]);
 
-        $user = $request->user();
+            $user = $request->user();
 
-        if (!Hash::check($request->current_password, $user->password)) {
-            return response()->json(['message' => 'Mật khẩu hiện tại không chính xác'], 400);
+            if ($request->current_password === $request->new_password) {
+                return response()->json(['message' => 'Mật khẩu mới không thể trùng với mật khẩu hiện tại'], 400);
+            }
+
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json(['message' => 'Mật khẩu hiện tại không chính xác'], 400);
+            }
+
+            $user->password = Hash::make($request->new_password);
+            $user->save();
+
+            return response()->json(['message' => 'Đổi mật khẩu thành công'], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Có lỗi xảy ra trong quá trình đổi mật khẩu',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $user->password = Hash::make($request->new_password);
-        $user->save();
-
-        return response()->json(['message' => 'Đổi mật khẩu thành công'], 200);
     }
 
 
@@ -162,36 +176,51 @@ class AuthController extends Controller
 
     public function updateProfile(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'tel' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:255',
-        ]);
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'tel' => 'nullable|string|max:20',
+                'address' => 'nullable|string|max:255',
+            ]);
 
-        $user = $request->user();
+            $user = $request->user();
 
-        $user->name = $request->input('name');
-        $user->tel = $request->input('tel');
-        $user->address = $request->input('address');
-        $user->save();
+            $user->name = $request->input('name');
+            $user->tel = $request->input('tel');
+            $user->address = $request->input('address');
+            $user->save();
 
-        return response()->json([
-            'message' => 'Cập nhật thông tin thành công',
-            'user' => $user,
-        ], 200);
+            return response()->json([
+                'message' => 'Cập nhật thông tin thành công',
+                'user' => $user,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Có lỗi xảy ra trong quá trình cập nhật thông tin',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
+
 
     public function getProfile(Request $request)
     {
-        $user = $request->user();
+        try {
+            $user = $request->user();
 
-        return response()->json([
-            'message' => 'Lấy thông tin người dùng thành công',
-            'user' => [
-                'name' => $user->name,
-                'tel' => $user->tel,
-                'address' => $user->address,
-            ],
-        ], 200);
+            return response()->json([
+                'message' => 'Lấy thông tin người dùng thành công',
+                'user' => [
+                    'name' => $user->name,
+                    'tel' => $user->tel,
+                    'address' => $user->address,
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Có lỗi xảy ra khi lấy thông tin người dùng',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
