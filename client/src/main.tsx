@@ -41,7 +41,7 @@ import CheckPermission from "./components/Middleware/CheckPermission.tsx";
 import UserDetails from "./components/componentUserDetails/UserDetails.tsx";
 import WishList from "./components/componentUserDetails/WishList.tsx";
 import LayoutUserDetails from "./layouts/User/LayoutUserDetails.tsx";
-import { CheckOrder } from "./components/User/Header/CheckOrder.tsx";
+import { CheckOrder } from "./components/User/Order/CheckOrder.tsx";
 import EventUser from "./components/User/Event/EventUser.tsx";
 import BlogDetail from "./components/User/Blogs/BlogDetail.tsx";
 import FiledsProvider from "./contexts/FiledsContext.tsx";
