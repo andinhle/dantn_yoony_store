@@ -46,11 +46,34 @@ class AuthController extends Controller
         }
     }
 
+
     public function register(RegisterRequest $request)
     {
         try {
             $request->validated($request->all());
 
+            $existingUser = User::where('email', $request->email)->first();
+
+            if ($existingUser) {
+                if (is_null($existingUser->password)) {
+                    $existingUser->update([
+                        'name' => $request->name,
+                        'password' => bcrypt($request->password)
+                    ]);
+
+                    return response()->json([
+                        'message' => 'Đăng ký thành công!',
+                        'user' => $existingUser,
+                        'token' => $existingUser->createToken('API Token')->plainTextToken
+                    ], 200);
+                } else {
+                    return response()->json([
+                        'message' => 'Email này đã được sử dụng, không thể đăng ký.'
+                    ], 400);
+                }
+            }
+
+            // Nếu email chưa tồn tại, tạo người dùng mới
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -62,6 +85,7 @@ class AuthController extends Controller
                 'user' => $user,
                 'token' => $user->createToken('API Token')->plainTextToken
             ], 200);
+
         } catch (\Exception $e) {
             Log::error('Có lỗi xảy ra: ' . $e->getMessage());
             return response()->json([
@@ -69,6 +93,7 @@ class AuthController extends Controller
             ], 500);
         }
     }
+
 
     public function logout()
     {
@@ -92,14 +117,13 @@ class AuthController extends Controller
 
             $token = app('auth.password.broker')->createToken($user);
 
-            $user->notify(new ResetPasswordNotification($token,$request->email));
+            $user->notify(new ResetPasswordNotification($token, $request->email));
 
             return response()->json([
                 'message' => 'Link đổi mật khẩu đã được gửi đến email của bạn.',
                 'token' => $token,
                 'email' => $request->email
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
@@ -131,6 +155,98 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // đổi mật khẩu
+
+
+
+
+
+    public function changePassword(Request $request)
+    {
+        try {
+            $request->validate([
+                'current_password' => 'required',
+                'new_password' => 'required|min:8|confirmed',
+            ]);
+
+            $user = $request->user();
+
+            if ($request->current_password === $request->new_password) {
+                return response()->json(['message' => 'Mật khẩu mới không thể trùng với mật khẩu hiện tại'], 400);
+            }
+
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json(['message' => 'Mật khẩu hiện tại không chính xác'], 400);
+            }
+
+            $user->password = Hash::make($request->new_password);
+            $user->save();
+
+            return response()->json(['message' => 'Đổi mật khẩu thành công'], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Có lỗi xảy ra trong quá trình đổi mật khẩu',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+
+    public function updateProfile(Request $request)
+    {
+        try {
+            $request->validate([
+                'name' => 'nullable|string|max:255',
+                'avatar' => 'nullable|string|max:255',
+                'tel' => 'nullable|string|max:20',
+                'address' => 'nullable|string|max:255',
+            ]);
+
+            $user = $request->user();
+
+            $user->name = $request->input('name');
+            $user->avatar = $request->input('avatar');
+            $user->tel = $request->input('tel');
+            $user->address = $request->input('address');
+            $user->save();
+
+            return response()->json([
+                'message' => 'Cập nhật thông tin thành công',
+                'user' => $user,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Có lỗi xảy ra trong quá trình cập nhật thông tin',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function getProfile(Request $request)
+    {
+        try {
+            $user = $request->user();
+
+            return response()->json([
+                'message' => 'Lấy thông tin người dùng thành công',
+                'user' => [
+                    'name' => $user->name,
+                    'tel' => $user->tel,
+                    'address' => $user->address,
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Có lỗi xảy ra khi lấy thông tin người dùng',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

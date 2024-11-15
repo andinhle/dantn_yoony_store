@@ -53,7 +53,7 @@ const ShowDetailProduct: React.FC = () => {
   }>({});
   const [selectedVariant, setSelectedVariant] = useState<IVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const { dispatch } = useContext(CartContext);
+  const { dispatch,carts } = useContext(CartContext);
   const [isZoomEnabled, setIsZoomEnabled] = useState(false);
 
   useEffect(() => {
@@ -219,9 +219,43 @@ const ShowDetailProduct: React.FC = () => {
     setQuantity(value);
   };
 
-  const addCart = async () => {
+  const validateCartQuantity = (requestedQuantity, selectedVariant, carts) => {
     if (!selectedVariant) {
       message.error("Vui lòng chọn đầy đủ thuộc tính sản phẩm");
+      return false;
+    }
+  
+    const existingCartItems = carts.filter(
+      cart => cart.variant.id === selectedVariant.id
+    );
+  
+    const quantityInCart = existingCartItems.reduce(
+      (total, cart) => total + cart.quantity,
+      0
+    );
+  
+
+    const availableQuantity = selectedVariant.quantity - quantityInCart;
+  
+    if (requestedQuantity > availableQuantity) {
+      message.warning(
+        `Số lượng không được vượt quá ${selectedVariant.quantity}`
+      );
+      return false;
+    }
+  
+    if (requestedQuantity > selectedVariant.quantity) {
+      message.warning(
+        `Số lượng không được vượt quá ${selectedVariant.quantity}`
+      );
+      return false;
+    }
+  
+    return true;
+  };
+
+  const addCart = async () => {
+    if (!validateCartQuantity(quantity, selectedVariant, carts)) {
       return;
     }
     try {
@@ -229,7 +263,7 @@ const ShowDetailProduct: React.FC = () => {
         data: { data: response },
       } = await instance.post("cart", {
         quantity,
-        variant_id: selectedVariant.id,
+        variant_id: selectedVariant?.id,
         user_id: 1,
       });
       if (response) {
@@ -333,7 +367,7 @@ const ShowDetailProduct: React.FC = () => {
     );
   };
 
-  // console.log(attributeGroups);
+  console.log(product);
   // console.log(selectedAttributes);
 
   return (
@@ -607,6 +641,7 @@ const ShowDetailProduct: React.FC = () => {
                 <input
                   id="quantity-product"
                   min={1}
+                  max={selectedVariant?.quantity}
                   value={quantity}
                   onChange={handleChangeQuantity}
                   className="w-10 p-1.5 border border-input outline-none text-center"

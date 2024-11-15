@@ -1,4 +1,4 @@
-import { Checkbox, ConfigProvider, Slider, Tag } from "antd";
+import { Checkbox, ConfigProvider, Rate, Slider, Tag } from "antd";
 import type { GetProp } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import instance from "../../../instance/instance";
@@ -31,6 +31,7 @@ interface IFilterParams {
   category_id?: number[];
   attributes?: IAttributeFilters;
   price?: [number, number];
+  rate: number;
 }
 
 const FilterProducts = () => {
@@ -38,6 +39,7 @@ const FilterProducts = () => {
     [number, number] | undefined
   >();
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [selectedRating, setSelectedRating] = useState<number>();
   const [selectedAttributes, setSelectedAttributes] =
     useState<IAttributeFilters>({});
   const [dataFilter, setDataFilter] = useState<IFilterResponse>();
@@ -50,14 +52,20 @@ const FilterProducts = () => {
     async (params: IFilterParams) => {
       try {
         setIsLoading(true);
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
         const cleanParams = {
           ...params,
           name: params.name || undefined,
-          category_id: params.category_id?.length ? params.category_id : undefined,
-          attributes: Object.keys(params.attributes || {}).length ? params.attributes : undefined,
-          price: params.price?.every((val) => val !== undefined) ? params.price : undefined,
+          category_id: params.category_id?.length
+            ? params.category_id
+            : undefined,
+          attributes: Object.keys(params.attributes || {}).length
+            ? params.attributes
+            : undefined,
+          price: params.price?.every((val) => val !== undefined)
+            ? params.price
+            : undefined,
         };
 
         const {
@@ -73,13 +81,13 @@ const FilterProducts = () => {
     [setDataResponse, setIsLoading]
   );
 
-  const debouncedFetchProducts = useCallback(
-    debounce(fetchProducts, 500),
-    [fetchProducts]
-  );
+  const debouncedFetchProducts = useCallback(debounce(fetchProducts, 500), [
+    fetchProducts,
+  ]);
 
   const handleFiltersChange = useCallback(() => {
     const params: IFilterParams = {
+      rate: selectedRating!,
       name: parsedSearch?.q,
       category_id: selectedCategories,
       attributes: selectedAttributes,
@@ -91,6 +99,7 @@ const FilterProducts = () => {
     parsedSearch?.q,
     selectedCategories,
     selectedAttributes,
+    selectedRating,
     sliderValue,
     debouncedFetchProducts,
   ]);
@@ -117,7 +126,14 @@ const FilterProducts = () => {
 
   useEffect(() => {
     handleFiltersChange();
-  }, [parsedSearch, selectedCategories, selectedAttributes, sliderValue, handleFiltersChange]);
+  }, [
+    parsedSearch,
+    selectedCategories,
+    selectedAttributes,
+    selectedRating,
+    sliderValue,
+    handleFiltersChange,
+  ]);
 
   const onChangeCategories: GetProp<typeof Checkbox.Group, "onChange"> = (
     checkedValueCategories
@@ -148,6 +164,7 @@ const FilterProducts = () => {
   const handleResetFilters = () => {
     setSelectedCategories([]);
     setSelectedAttributes({});
+    setSelectedRating(0)
     // setSliderValue([dataFilter.price.min, dataFilter.price.max]);
     setSliderValue(undefined);
     handleFiltersChange();
@@ -208,6 +225,10 @@ const FilterProducts = () => {
     value: categorie.id,
   }));
 
+  const handleRatingChange = (e: number) => {
+    setSelectedRating(e);
+  };
+
   return (
     <div className="my-5">
       <div>
@@ -217,7 +238,7 @@ const FilterProducts = () => {
         </h2>
       </div>
       <div className="my-5 bg-white grid grid-cols-9 gap-5">
-        <div className="col-span-2 min-h-screen bg-util border border-[#f1f1f1] rounded-md p-4 space-y-5">
+        <div className="col-span-2 min-h-screen bg-util border border-[#f1f1f1] rounded-md p-4 space-y-5 sticky top-20">
           {/* Filter header */}
           <div className="space-y-3">
             <h3 className="font-medium text-[15px] flex items-center gap-1.5 justify-between">
@@ -338,7 +359,6 @@ const FilterProducts = () => {
               </ConfigProvider>
             </div>
           </div>
-
           {/* Attributes */}
           {dataFilter?.attributes?.map((attribute) => {
             const attributeOptions = attribute?.attribute_values?.map(
@@ -361,34 +381,46 @@ const FilterProducts = () => {
               })
             );
             return (
-              <div className="space-y-2" key={attribute.id}>
-                <h3 className="font-medium text-[15px]">{attribute.name}</h3>
-                <div className="text-sm text-secondary/75">
-                  <ConfigProvider
-                    theme={{ token: { colorPrimary: "#ff9900" } }}
-                  >
-                    <Checkbox.Group
-                      options={attributeOptions}
-                      value={selectedAttributes[attribute.name] || []}
-                      onChange={(values) =>
-                        handleAttributeChange(
-                          attribute.name,
-                          values as string[]
-                        )
-                      }
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 5,
-                      }}
-                    />
-                  </ConfigProvider>
+              attribute.attribute_values?.length !== 0 && (
+                <div className="space-y-2" key={attribute.id}>
+                  <h3 className="font-medium text-[15px]">{attribute.name}</h3>
+                  <div className="text-sm text-secondary/75">
+                    <ConfigProvider
+                      theme={{ token: { colorPrimary: "#ff9900" } }}
+                    >
+                      <Checkbox.Group
+                        options={attributeOptions}
+                        value={selectedAttributes[attribute.name] || []}
+                        onChange={(values) =>
+                          handleAttributeChange(
+                            attribute.name,
+                            values as string[]
+                          )
+                        }
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 5,
+                        }}
+                      />
+                    </ConfigProvider>
+                  </div>
                 </div>
-              </div>
+              )
             );
           })}
+          {/* Rate */}
+          <div className="space-y-3">
+            <h3 className="font-medium">Đánh giá số sao trở lên</h3>
+            <Rate
+              allowHalf
+              className="rating-filter"
+              onChange={handleRatingChange}
+              value={selectedRating}
+            />
+          </div>
         </div>
-        <div className="col-span-7 min-h-[200px] bg-util rounded-md">
+        <div className="col-span-7 min-h-screen bg-util rounded-md">
           <LoadingOverlay
             active={isLoading}
             spinner

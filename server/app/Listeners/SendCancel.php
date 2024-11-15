@@ -35,7 +35,7 @@ class SendCancel implements ShouldQueue
         {
             $message->to($user->email, $user->name)
                 ->from('yoony_store@gmail.com', 'Yoony Store')
-                ->subject('Xác nhận hủy đơn hàng '. $user->order_code .' từ CÔNG TY Yoony Store');
+                ->subject('Xác nhận hủy đơn hàng '. $user->order_code .' từ CTY CP YOONY STORE VIỆT NAM');
         });
     }
 }
