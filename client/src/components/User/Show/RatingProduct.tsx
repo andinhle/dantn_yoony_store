@@ -78,9 +78,6 @@ const RatingProduct = ({ slugProd }: Prop) => {
         const { data } = await instance.get(
           `home/products/${slugProd}/ratings/?page=${currentPage}`
         );
-
-        console.log(data);
-
         setRatingDatas(data.ratings);
         setLoading(false);
       } catch (error) {

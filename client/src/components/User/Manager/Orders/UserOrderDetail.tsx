@@ -20,10 +20,10 @@ const UserOrderDetail = () => {
       const {
         data: { data: response },
       } = await instance.get(`order-detail/${code_order}`);
-      console.log(response);
       setOrderDetails(response);
     })();
   }, [valueReason]);
+
   const status = (statusOrder: string) => {
     switch (statusOrder) {
       case "pending":

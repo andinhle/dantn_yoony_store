@@ -15,82 +15,98 @@ class OderCheckController extends Controller
         $request->validate([
             'search' => 'required|string',
         ]);
-
-        $search = $request->input('search');
-
+    
         try {
+            $search = trim($request->input('search'));
+    
             // Check if 'search' is an order code
             if (preg_match('/[A-Za-z]/', $search)) {
                 $order = Order::where('code', $search)->first();
-
-                // If order found, mask data and return order info
-                if ($order) {
-                    $order->name = $this->maskName($order->name);
-                    $order->tel = $this->maskTel($order->tel);
-                    $order->address = $this->maskAddress($order->address);
-
-                    return response()->json([
-                        'status' => 'success',
-                        'order' => $order,
-                    ]);
-                } else {
+    
+                if (!$order) {
                     return response()->json([
                         'status' => 'error',
                         'message' => 'Không tìm thấy đơn hàng với mã đã cung cấp',
                     ], 404);
                 }
-            }
-
-            $orders = Order::where('tel', $search)->orderByDesc('created_at')->get();
-
-            if ($orders->count() > 0) {
-                foreach ($orders as $order) {
-                    $order->name = $this->maskName($order->name);
-                    $order->tel = $this->maskTel($order->tel);
-                    $order->address = $this->maskAddress($order->address);
-                }
-
+    
+                // Mask sensitive data
+                $order->name = $this->maskName($order->name);
+                $order->tel = $this->maskTel($order->tel);
+                $order->address = $this->maskAddress($order->address);
+    
                 return response()->json([
                     'status' => 'success',
-                    'orders' => $orders,
+                    'orders' => [$order],
                 ]);
-            } else {
+            }
+    
+            $orders = Order::where('tel', $search)
+                ->orderByDesc('created_at')
+                ->get();
+    
+            if ($orders->isEmpty()) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Không tìm thấy đơn hàng với số điện thoại đã cung cấp',
                 ], 404);
             }
-        } catch (\Throwable $th) {
-            Log::error($th->getMessage());
-
+    
+            // Mask sensitive data for each order
+            foreach ($orders as $order) {
+                $order->name = $this->maskName($order->name);
+                $order->tel = $this->maskTel($order->tel);
+                $order->address = $this->maskAddress($order->address);
+            }
+    
+            return response()->json([
+                'status' => 'success',
+                'orders' => $orders,
+            ]);
+    
+        } catch (\Exception $e) {
+            
             return response()->json([
                 'status' => 'error',
                 'message' => 'Có lỗi xảy ra khi kiểm tra đơn hàng',
             ], 500);
         }
     }
-
-    // validate * name
+    
     private function maskName($name)
     {
-        return preg_replace('/\S/', '*', substr($name, 0, -4)) . substr($name, -4);
+        if (empty($name)) return '';
+        
+        $length = mb_strlen($name);
+        if ($length <= 4) {
+            return str_repeat('*', $length);
+        }
+        
+        return str_repeat('*', $length - 4) . mb_substr($name, -4);
     }
-
-
-    // validate * số đinej thoại
+    
     private function maskTel($tel)
     {
-        return str_repeat('*', strlen($tel) - 3) . substr($tel, -3);
+        if (empty($tel)) return '';
+        
+        $length = strlen($tel);
+        if ($length <= 3) {
+            return str_repeat('*', $length);
+        }
+        
+        return str_repeat('*', $length - 3) . substr($tel, -3);
     }
-
-
-     // validate * địa chỉ
+    
     private function maskAddress($address)
     {
-        $visiblePart = substr($address, -8);  
-        $maskedPart = str_repeat('*', strlen($address) - 8);  
-
-        return $maskedPart . $visiblePart;
+       if (empty($address)) return '';
+       
+       $length = mb_strlen($address);
+       if ($length <= 15) {
+           return str_repeat('*', $length);
+       }
+       
+       return str_repeat('*', $length - 15) . mb_substr($address, -15);
     }
 
 
