@@ -17,7 +17,7 @@ type Props = {
   variants: IVariants[];
   is_featured: boolean;
   is_good_deal: boolean;
-  id_Product: number; // Dùng id_Product cho yêu cầu xóa
+  id_Product: number;
   category: string;
 };
 
@@ -28,37 +28,52 @@ const CardProductAll = ({
   variants = [],
   is_featured,
   is_good_deal,
-  id_Product, // Thêm id_Product vào destructuring từ props
+  id_Product,
   category,
 }: Props) => {
+  // Quản lý trạng thái đăng nhập bằng authToken
   const [authToken, setAuthToken] = useState<string | null>(() => {
-    // Lấy authToken từ localStorage nếu có
-    return localStorage.getItem("authToken");
+    return localStorage.getItem("userInfor");
   });
-  useEffect(() => {
-    if (!authToken) {
-      setIsFavorite(false);
-    }
-  }, [authToken]);
+
+  // Quản lý trạng thái yêu thích của sản phẩm
   const [isFavorite, setIsFavorite] = useState<boolean>(() => {
-    // Chỉ lấy trạng thái yêu thích từ localStorage nếu có authToken
-    return !!authToken && localStorage.getItem(`favorite-${id_Product}`) === "true";
+    return localStorage.getItem(`favorite-${id_Product}`) === "true";
   });
 
-
-  // Hàm toggleFavorite với API call
+  // Cập nhật trạng thái yêu thích khi đăng nhập/đăng xuất
+  useEffect(() => {
+    const storedToken = localStorage.getItem("userInfor");
+    setAuthToken(storedToken);
+    if (!storedToken) {
+      // Khi đăng xuất, đặt tất cả trạng thái yêu thích thành false
+      setIsFavorite(false);
+      localStorage.setItem(`favorite-${id_Product}`, "false");
+    } else {
+      // Khi đăng nhập, khôi phục trạng thái yêu thích từ localStorage
+      setIsFavorite(localStorage.getItem(`favorite-${id_Product}`) === "true");
+    }
+  }, [authToken, id_Product]);
+  // Hàm để thêm hoặc xóa sản phẩm khỏi danh sách yêu thích
   const toggleFavorite = async () => {
     try {
+      if (!authToken) {
+        toast.error("Vui lòng đăng nhập để thêm vào danh sách yêu thích");
+        return;
+      }
+
       if (!isFavorite) {
+        // Thêm vào danh sách yêu thích
         const response = await instance.post("insert-wishlists", { product_id: id_Product });
         console.log("Đã thêm sản phẩm vào yêu thích:", response.data);
         setIsFavorite(true);
         localStorage.setItem(`favorite-${id_Product}`, "true");
         toast.success("Đã thêm sản phẩm vào danh sách yêu thích");
       } else {
+        // Xóa khỏi danh sách yêu thích
         const response = await instance.delete(`delete-wishlists/${id_Product}`);
         console.log("Đã xóa sản phẩm yêu thích:", response.data);
-        setIsFavorite(false);  
+        setIsFavorite(false);
         localStorage.setItem(`favorite-${id_Product}`, "false");
         toast.warning("Đã xóa sản phẩm yêu thích !");
       }
@@ -67,8 +82,6 @@ const CardProductAll = ({
       toast.error("Đã có lỗi xảy ra khi cập nhật danh sách yêu thích");
     }
   };
-
-
 
   const saleVariant = variants.find((variant) => variant.sale_price);
 
@@ -83,7 +96,6 @@ const CardProductAll = ({
           />
         </Link>
         {/* Biểu tượng trái tim */}
-        {/* Biểu tượng trái tim */}
         <div
           className={`absolute top-2 right-2 z-30 cursor-pointer 
               ${isFavorite ? 'fill-primary text-primary' : 'bg-transparent text-primary/70'}
@@ -93,7 +105,7 @@ const CardProductAll = ({
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
-            className={`size-6 hover:fill-primary/75 ${authToken && isFavorite ? 'fill-primary' : 'fill-none'}`}
+            className={`size-6 hover:fill-primary/75 ${isFavorite ? 'fill-primary' : 'fill-none'}`}
             color="currentColor"
           >
             <path
@@ -103,10 +115,7 @@ const CardProductAll = ({
               strokeLinecap="round"
             />
           </svg>
-
         </div>
-
-
       </div>
       <Link to={`/${category}/${slugify(nameProduct)}`}>
         <div className="px-3.5 space-y-3 py-3">
@@ -149,19 +158,17 @@ const CardProductAll = ({
             modules={[FreeMode]}
             className="mySwiper px-5 z-50"
           >
-            {colorVariantsImages.map((colorVariantImage, index: number) => {
-              return (
-                <SwiperSlide
-                  key={index + 1}
-                  className="!w-7 !h-7 rounded-full border border-input overflow-hidden"
-                >
-                  <img
-                    src={colorVariantImage?.representativeImage}
-                    alt={`Image ${colorVariantImage}`}
-                  />
-                </SwiperSlide>
-              );
-            })}
+            {colorVariantsImages.map((colorVariantImage, index: number) => (
+              <SwiperSlide
+                key={index + 1}
+                className="!w-7 !h-7 rounded-full border border-input overflow-hidden"
+              >
+                <img
+                  src={colorVariantImage?.representativeImage}
+                  alt={`Image ${colorVariantImage}`}
+                />
+              </SwiperSlide>
+            ))}
           </Swiper>
         </div>
       </Link>
