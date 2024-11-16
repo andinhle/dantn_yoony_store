@@ -38,8 +38,7 @@ import LayoutUsersAdmin from "./layouts/Admin/LayoutUsersAdmin.tsx";
 import UserRoleManager from "./pages/admin/users/UserRoleManager.tsx";
 import CheckOutOrder from "./components/User/Order/CheckOutOrder.tsx";
 import CheckPermission from "./components/Middleware/CheckPermission.tsx";
-import UserDetails from "./components/componentUserDetails/UserDetails.tsx";
-import WishList from "./components/componentUserDetails/WishList.tsx";
+import UserDetails from "./components/User/Manager/Profile/UserDetails.tsx";
 import LayoutUserDetails from "./layouts/User/LayoutUserDetails.tsx";
 import { CheckOrder } from "./components/User/Order/CheckOrder.tsx";
 import EventUser from "./components/User/Event/EventUser.tsx";
@@ -92,7 +91,6 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="blogs" element={<BlogPage />} />
                 <Route path="user-manager" element={<LayoutUserDetails />}>
                   <Route index element={<UserDetails />} />
-                  <Route path="wishlist" element={<WishList />} />
                   <Route path="user-orders" element={<ManagerOrdersUser />} />
                   <Route
                     path="user-orders/order-detail/:code_order"
