@@ -173,7 +173,7 @@ const OrderSummary = () => {
           </div>
         </div>
         <div className="space-y-3">
-          <h3 className="font-medium">Địa chỉ nhận hàng</h3>
+          <h3 className="font-medium">Phương thức thanh toán</h3>
           <div className="flex justify-between items-center gap-5 bg-[#f7f7f8] py-3 px-4 rounded-lg">
             <div className="space-y-1">
               <label htmlFor="" className="block text-sm font-medium">
