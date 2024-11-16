@@ -26,7 +26,7 @@ class StoreCouponRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => 'required|max:255|unique:coupons', 
+            'code' => 'required|max:255|unique:coupons',
             'name' => 'required|max:255|unique:coupons',
             'description' => 'required|max:255',
             'discount' => 'required',
@@ -37,8 +37,6 @@ class StoreCouponRequest extends FormRequest
             'status' => 'boolean',
             'min_order_value' => 'required|min:0|numeric',
             'max_order_value'   => 'required|numeric|gt:min_order_value',
-            'winning_probability' => 'required|numeric|min:0|max:1',
-            'type' => 'required|in:coupon,event',
         ];
     }
 
@@ -50,9 +48,9 @@ class StoreCouponRequest extends FormRequest
             'end_date.after_or_equal' => 'Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.',
             'start_date.date' => 'Ngày bắt đầu phải là một ngày hợp lệ.',
             'start_date.date_format' => 'Ngày bắt đầu phải có định dạng YYYY-MM-DD.',
-            'code.required' => 'Yêu cầu nhập', 
-            'code.max' => 'Không nhập quá 255 ký tự', 
-            'code.unique' => 'Mã này đã tồn tại', 
+            'code.required' => 'Yêu cầu nhập',
+            'code.max' => 'Không nhập quá 255 ký tự',
+            'code.unique' => 'Mã này đã tồn tại',
             'discount.required' => 'Yêu cầu nhập',
             'discount_type.required' => 'Yêu cầu nhập',
             'usage_limit.required' => 'Yêu cầu nhập',
@@ -63,13 +61,8 @@ class StoreCouponRequest extends FormRequest
             'max_order_value.numeric' => 'Vui lòng nhập số',
             'max_order_value.gt:min_order_value' => 'Giá trị phải lớn hơn giá trị đơn hàng thấp nhất',
             'status.in' => 'Trạng thái đã chọn không hợp lệ',
-            'is_featured.in' => 'Trạng thái đã chọn không hợp lệ',
-            'winning_probability.required' => 'Trường xác suất thắng là bắt buộc.',
-            'winning_probability.numeric' => 'Trường xác suất thắng phải là số.',
-            'winning_probability.min' => 'Trường xác suất thắng phải lớn hơn hoặc bằng 0.',
-            'winning_probability.max' => 'Trường xác suất thắng phải nhỏ hơn hoặc bằng 1.',
-            'type.required' => 'Trường loại là bắt buộc.',
-            'type.in' => 'Giá trị trường loại phải là coupon hoặc event.',
+
+
         ];
     }
 

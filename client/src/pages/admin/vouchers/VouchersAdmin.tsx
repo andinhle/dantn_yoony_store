@@ -15,7 +15,6 @@ import { Input } from "antd";
 const VouchersAdmin = () => {
   const [openModal, setOpenModal] = useState(false);
   const [status, setStatus] = useState(false);
-  const [is_featured, setFeatured] = useState(false);
   const [vouchers, setVoucher] = useState<IVoucher[]>([]);
   const [codeVoucher, setCodeVoucher] = useState("");
   const { dispatch } = useContext(VoucherContext);
@@ -61,7 +60,6 @@ const VouchersAdmin = () => {
       reset();
       setCodeVoucher("");
       setStatus(true);
-      setFeatured(false);
     } catch (error) {
       console.log(error)
       if (axios.isAxiosError(error)) {
@@ -78,7 +76,6 @@ const VouchersAdmin = () => {
     reset({});
     setCodeVoucher("");
     setStatus(true);
-    setFeatured(false);
     setAddOrUpdate("ADD");
   }, [openModal === false]);
 
@@ -178,6 +175,39 @@ const VouchersAdmin = () => {
                     </span>
                   </div>
                   <div className="flex gap-2">
+                    
+                    <div className="space-y-1.5">
+                      <label htmlFor="name" className="font-medium text-sm">
+                        Name
+                      </label>
+                      <input
+                        type="text"
+                        className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
+                        placeholder="Name voucher"
+                        {...register("name")}
+                      />
+                      <span className="text-sm text-red-400">
+                        {errors.name?.message}
+                      </span>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label
+                        htmlFor="description"
+                        className="font-medium text-sm"
+                      >
+                        Description
+                      </label>
+                      <textarea className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm" id="" 
+                      placeholder="Description"                        
+                       {...register("description")}>
+                      </textarea>
+                      <span className="text-sm text-red-400"> 
+                        {errors.description?.message}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    
                     <div className="space-y-1.5">
                       <label htmlFor="discount" className="font-medium text-sm">
                         Discount
@@ -317,19 +347,7 @@ const VouchersAdmin = () => {
                         className="my-8"
                       />
                     </div>
-                    <div className="space-y-1.5">
-                      <ToggleSwitch
-                        label="Nổi bật"
-                        {...register("is_featured")}
-                        checked={is_featured}
-                        onChange={() => {
-                          setFeatured(!is_featured);
-                          setValue("is_featured", !is_featured);
-                        }}
-                        sizing={"sm"}
-                        className="my-8"
-                      />
-                    </div>
+                   
                   </div>
                 </div>
                 <ButtonSubmit
@@ -348,7 +366,6 @@ const VouchersAdmin = () => {
         setCodeVoucher={setCodeVoucher}
         setIdVoucher={setIdVoucher}
         setAddOrUpdate={setAddOrUpdate}
-        setFeatured={setFeatured}
         valueSearch={valueSearch}
       />
     </>
