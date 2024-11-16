@@ -206,7 +206,6 @@ class AuthController extends Controller
                 'name' => 'nullable|string|max:255',
                 'avatar' => 'nullable|string|max:255',
                 'tel' => 'nullable|string|max:20',
-                'email' => 'required|string|max:255',
             ]);
 
             $user = $request->user();
@@ -214,7 +213,6 @@ class AuthController extends Controller
             $user->name = $request->input('name');
             $user->avatar = $request->input('avatar');
             $user->tel = $request->input('tel');
-            $user->email = $request->input('email');
             $user->save();
 
             return response()->json([
@@ -241,7 +239,6 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'avatar' =>$user->avatar,
                     'tel' => $user->tel,
-                    'email' => $user->email,
                 ],
             ], 200);
         } catch (\Exception $e) {
