@@ -124,8 +124,8 @@ class PaymentController extends Controller
                     $data['grand_total'] += $value->quantity * ($value->variant->sale_price ?: $value->variant->price);
                 }
                
-                if($request->payment_method === "VNPAY"){
-                $data['paid_at'] = now();
+                if($request->payment_method === "VNPAY" || $request->payment_method === "MOMO"){
+                    $data['paid_at'] = now();
                 }
                 $order = Order::query()->create($data);
 
@@ -181,6 +181,7 @@ class PaymentController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
     public function callback(Request $request)
     {
         Log::info("Callback request data: " . json_encode($request->all()));

@@ -27,13 +27,14 @@ class StoreCouponRequest extends FormRequest
     {
         return [
             'code' => 'required|max:255|unique:coupons', 
+            'name' => 'required|max:255|unique:coupons',
+            'description' => 'required|max:255',
             'discount' => 'required',
             'discount_type' => 'required',
             'usage_limit' => 'required',
             'start_date' => 'date|date_format:Y-m-d',
             'end_date' => 'date|date_format:Y-m-d|after_or_equal:start_date',
             'status' => 'boolean',
-            'is_featured' => 'boolean',
             'min_order_value' => 'required|min:0|numeric',
             'max_order_value'   => 'required|numeric|gt:min_order_value',
             'winning_probability' => 'required|numeric|min:0|max:1',

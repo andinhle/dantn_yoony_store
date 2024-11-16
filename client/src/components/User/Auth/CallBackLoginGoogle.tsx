@@ -21,7 +21,6 @@ const CallBackLoginGoogle = () => {
             const { data: responseLoginInfor } = await instance.get(
               `auth/google/callback?code=${code}`
             );
-            console.log(responseLoginInfor);
             if (responseLoginInfor && responseLoginInfor.token) {
                 setLoading(false)
                 Cookies.set("authToken", responseLoginInfor.token, {

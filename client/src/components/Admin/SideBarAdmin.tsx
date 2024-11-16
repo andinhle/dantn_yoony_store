@@ -35,7 +35,7 @@ const SideBarAdmin = () => {
               <NavLink
                 to={"/admin"}
                 className={
-                  " rounded-md flex items-center gap-2 py-[10px] px-2 hover:bg-[#f2f2f7] border border-[#f5f5f5] hover:text-hover transition-all"
+                  " rounded-md flex items-center gap-2 py-[10px] px-2 hover:bg-[#f2f2f7] border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
                 }
                 end
                 onClick={() => {
@@ -46,11 +46,9 @@ const SideBarAdmin = () => {
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
-                  width={24}
-                  height={24}
                   color={"currentColor"}
                   fill={"none"}
-                  className="size-6"
+                  className="size-5"
                 >
                   <path
                     d="M2.5 12C2.5 7.52167 2.5 5.2825 3.89124 3.89126C5.28249 2.50002 7.52166 2.50002 12 2.50002C16.4783 2.50002 18.7175 2.50002 20.1088 3.89126C21.5 5.2825 21.5 7.52167 21.5 12C21.5 16.4784 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4784 2.5 12Z"
@@ -98,7 +96,7 @@ const SideBarAdmin = () => {
               <NavLink
                 to={"categorys"}
                 className={
-                  " rounded-md flex items-center gap-2 py-[10px] px-2 hover:bg-[#f2f2f7] border border-[#f5f5f5] hover:text-hover transition-all"
+                  " rounded-md flex items-center gap-2 py-[10px] px-2 hover:bg-[#f2f2f7] border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
                 }
                 end
                 onClick={() => {
@@ -112,7 +110,7 @@ const SideBarAdmin = () => {
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="size-6"
+                  className="size-5"
                 >
                   <path
                     strokeLinecap="round"
@@ -133,7 +131,7 @@ const SideBarAdmin = () => {
                   setOpenUser(false);
                 }}
               >
-                <div className="flex gap-2">
+                <div className="flex gap-2 text-[15px]">
                   {" "}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -141,7 +139,7 @@ const SideBarAdmin = () => {
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"
-                    className="size-6"
+                    className="size-5"
                   >
                     <path
                       strokeLinecap="round"
@@ -176,13 +174,13 @@ const SideBarAdmin = () => {
                       to={"products/add"}
                       end
                       className={
-                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] text-[15px] transition-all"
                       }
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
-                        className="size-6"
+                        className="size-5"
                         color={"currentColor"}
                         fill={"none"}
                       >
@@ -209,13 +207,13 @@ const SideBarAdmin = () => {
                       to={"products"}
                       end
                       className={
-                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] text-[15px] transition-all"
                       }
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
-                        className="size-6"
+                        className="size-5"
                         color={"currentColor"}
                         fill={"none"}
                       >
@@ -255,13 +253,13 @@ const SideBarAdmin = () => {
                       to={"variants"}
                       end
                       className={
-                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] text-[15px] transition-all"
                       }
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
-                        className="size-6"
+                        className="size-5"
                         color={"currentColor"}
                         fill={"none"}
                       >
@@ -315,13 +313,13 @@ const SideBarAdmin = () => {
                       to={"nhap-hang"}
                       end
                       className={
-                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] text-[15px] transition-all"
                       }
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
-                        className="size-6"
+                        className="size-5"
                         color={"currentColor"}
                         fill={"none"}
                       >
@@ -368,13 +366,13 @@ const SideBarAdmin = () => {
                       to={"ton-kho"}
                       end
                       className={
-                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] text-[15px] transition-all"
                       }
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
-                        className="size-6"
+                        className="size-5"
                         color={"currentColor"}
                         fill={"none"}
                       >
@@ -424,7 +422,7 @@ const SideBarAdmin = () => {
               <NavLink
                 to={"orders"}
                 className={
-                  "flex items-center gap-2 py-[10px] px-2 hover:bg-[#f2f2f7] border border-[#f5f5f5] hover:text-hover  rounded-md transition-all"
+                  "flex items-center gap-2 py-[10px] px-2 hover:bg-[#f2f2f7] border border-[#f5f5f5] text-[15px] hover:text-hover  rounded-md transition-all"
                 }
                 onClick={() => {
                   setOpenProduct(false);
@@ -437,7 +435,7 @@ const SideBarAdmin = () => {
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="size-6"
+                  className="size-5"
                 >
                   <path
                     strokeLinecap="round"
@@ -457,7 +455,7 @@ const SideBarAdmin = () => {
                   setOpenUser(false);
                 }}
                 className={
-                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] hover:text-hover transition-all"
+                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
                 }
               >
                 <svg
@@ -466,7 +464,7 @@ const SideBarAdmin = () => {
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="size-6"
+                  className="size-5"
                 >
                   <path
                     strokeLinecap="round"
@@ -487,12 +485,12 @@ const SideBarAdmin = () => {
                   setOpenProduct(false);
                 }}
               >
-                <div className="flex gap-2">
+                <div className="flex gap-2 text-[15px]">
                   {" "}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
-                    className="size-6"
+                    className="size-5"
                     color={"currentColor"}
                     fill={"none"}
                   >
@@ -542,13 +540,13 @@ const SideBarAdmin = () => {
                       to={"users/role-manager"}
                       end
                       className={
-                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
+                        "flex text-[15px] p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
                       }
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
-                        className="size-6"
+                        className="size-5"
                         color={"currentColor"}
                         fill={"none"}
                       >
@@ -591,7 +589,7 @@ const SideBarAdmin = () => {
                       to={"users"}
                       end
                       className={
-                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
+                        "flex text-[15px] p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
                       }
                     >
                       <svg
@@ -600,7 +598,7 @@ const SideBarAdmin = () => {
                         viewBox="0 0 24 24"
                         strokeWidth={1.5}
                         stroke="currentColor"
-                        className="size-6"
+                        className="size-5"
                       >
                         <path
                           strokeLinecap="round"
@@ -623,7 +621,7 @@ const SideBarAdmin = () => {
                   setOpenUser(false);
                 }}
                 className={
-                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] hover:text-hover transition-all"
+                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
                 }
               >
                 <svg
@@ -663,7 +661,7 @@ const SideBarAdmin = () => {
                   setOpenUser(false);
                 }}
                 className={
-                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] hover:text-hover transition-all"
+                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
                 }
               >
                 <svg
@@ -692,7 +690,7 @@ const SideBarAdmin = () => {
                   setOpenUser(false);
                 }}
                 className={
-                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] hover:text-hover transition-all"
+                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
                 }
               >
                 <svg
@@ -757,7 +755,7 @@ const SideBarAdmin = () => {
                   setOpenUser(false);
                 }}
                 className={
-                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] hover:text-hover transition-all"
+                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
                 }
               >
                 <svg
@@ -786,7 +784,7 @@ const SideBarAdmin = () => {
                   setOpenUser(false);
                 }}
                 className={
-                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] hover:text-hover transition-all"
+                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
                 }
               >
                 <svg

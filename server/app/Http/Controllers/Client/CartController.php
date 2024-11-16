@@ -145,7 +145,7 @@ class CartController extends Controller
         try {
         
             $idExist = Cart::query()
-            ->with(['variant.attributeValues.attribute', "user"])
+            ->with(['variant.attributeValues.attribute', "user", 'variant.inventoryStock'])
             ->find($id);
 
 

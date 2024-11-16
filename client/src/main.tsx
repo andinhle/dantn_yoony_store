@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
@@ -42,7 +41,7 @@ import CheckPermission from "./components/Middleware/CheckPermission.tsx";
 import UserDetails from "./components/componentUserDetails/UserDetails.tsx";
 import WishList from "./components/componentUserDetails/WishList.tsx";
 import LayoutUserDetails from "./layouts/User/LayoutUserDetails.tsx";
-import { CheckOrder } from "./components/User/Header/CheckOrder.tsx";
+import { CheckOrder } from "./components/User/Order/CheckOrder.tsx";
 import EventUser from "./components/User/Event/EventUser.tsx";
 import BlogDetail from "./components/User/Blogs/BlogDetail.tsx";
 import FiledsProvider from "./contexts/FiledsContext.tsx";
@@ -53,6 +52,7 @@ import UserRatings from "./components/User/Manager/Ratings/UserRatings.tsx";
 import RatingDetailOrder from "./components/User/Manager/Ratings/RatingDetailOrder.tsx";
 import CallBackLoginGoogle from "./components/User/Auth/CallBackLoginGoogle.tsx";
 import FilterProducts from "./components/User/Filter/FilterProducts.tsx";
+import  { StrictMode } from "react";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -71,7 +71,7 @@ createRoot(document.getElementById("root")!).render(
                 </Route>
                 <Route path="reset-password" element={<CheckPermission />}>
                   <Route
-                    path="reset-password"
+                    path=""
                     element={<LayoutResetPassword />}
                   >
                     <Route index element={<ResetPassRequest />} />
@@ -86,7 +86,7 @@ createRoot(document.getElementById("root")!).render(
                   path=":category/:slugproduct"
                   element={<ShowDetailProduct />}
                 />
-                <Route path='search' element={<FilterProducts />}/>
+                <Route path="search" element={<FilterProducts />} />
                 <Route path="gio-hang" element={<CartListClient />} />
                 <Route path="check-out" element={<CheckOutOrder />} />
                 <Route path="blogs" element={<BlogPage />} />

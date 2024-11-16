@@ -366,7 +366,12 @@ a:hover .number-cart{
   width: 24px !important;
 }
 
-.rating-product-detail.ant-rate{
+.rating-filter .anticon-star svg{
+  height: 20px !important;
+  width: 20px !important;
+}
+
+.rating-product-detail.ant-rate,.rating-filter.ant-rate{
   color: #ff9900 !important;
 }
 
@@ -376,4 +381,8 @@ a:hover .number-cart{
 
 .ant-steps-item-description{
   font-size: 12px !important;
+}
+
+.steps-order .ant-steps{
+  background-color: rgba(255, 153, 0,0.1) !important;
 }
