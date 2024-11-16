@@ -206,7 +206,6 @@ class AuthController extends Controller
                 'name' => 'nullable|string|max:255',
                 'avatar' => 'nullable|string|max:255',
                 'tel' => 'nullable|string|max:20',
-                'address' => 'nullable|string|max:255',
             ]);
 
             $user = $request->user();
@@ -214,7 +213,6 @@ class AuthController extends Controller
             $user->name = $request->input('name');
             $user->avatar = $request->input('avatar');
             $user->tel = $request->input('tel');
-            $user->address = $request->input('address');
             $user->save();
 
             return response()->json([
@@ -239,8 +237,8 @@ class AuthController extends Controller
                 'message' => 'Lấy thông tin người dùng thành công',
                 'user' => [
                     'name' => $user->name,
+                    'avatar' =>$user->avatar,
                     'tel' => $user->tel,
-                    'address' => $user->address,
                 ],
             ], 200);
         } catch (\Exception $e) {
