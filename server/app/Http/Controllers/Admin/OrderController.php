@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderCancellation;
+use Http;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -92,6 +93,7 @@ class OrderController extends Controller
 
     public function orderDetail($code)
     {
+
         try {
             $orders = Order::query()
                 ->with([
@@ -125,7 +127,7 @@ class OrderController extends Controller
     
             return response()->json(
                 [
-                    'data' => $data, 
+                    'data' => $data, // Use the processed data instead of orders directly
                     'status' => 'success'
                 ],
                 Response::HTTP_OK
@@ -141,6 +143,7 @@ class OrderController extends Controller
                 'status' => 'error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
     }
     
     
@@ -244,5 +247,52 @@ class OrderController extends Controller
 
 
 
+    }
+
+    public function updateMuch(Request $request)
+    {
+        try {
+            Log::info($request->ids);
+            $ids = $request->ids;
+
+          
+           // Xóa nhiều theo id
+           switch ($request->status) {
+                case Order::STATUS_ORDER_PENDING:
+                    Order::query()->whereIn('id', $ids)->update([
+                        'status_order' => Order::STATUS_ORDER_CONFIRMED
+                    ]);
+                    return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);
+                case Order::STATUS_ORDER_CONFIRMED:
+                    Order::query()->whereIn('id', $ids)->update([
+                        'status_order' => Order::STATUS_ORDER_PREPARING_GOODS
+                    ]);
+                    return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);
+                case Order::STATUS_ORDER_PREPARING_GOODS:
+                    Order::query()->whereIn('id', $ids)->update([
+                        'status_order' => Order::STATUS_ORDER_SHIPPING
+                    ]);
+                    return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);
+                case Order::STATUS_ORDER_SHIPPING:
+                    Order::query()->whereIn('id', $ids)->update([
+                        'status_order' => Order::STATUS_ORDER_DELIVERED
+                    ]);
+                    return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);               
+                default:
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Trạng thái không hợp lệ.'
+                    ], 400);
+            }
+        } catch (\Throwable $th) {
+            Log::error(__CLASS__ . '@' . __FUNCTION__, [
+                'line' => $th->getLine(),
+                'message' => $th->getMessage()
+            ]);
+            return response()->json([
+                'messages' => 'Lỗi',
+                'status' => 'error'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

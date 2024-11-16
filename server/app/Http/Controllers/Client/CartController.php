@@ -23,7 +23,7 @@ class CartController extends Controller
     {
         try {
             $data = Cart::query()
-                ->with(['variant.product', 'variant.attributeValues.attribute','variant.inventoryStock' ])
+                ->with(['variant.product', 'variant.attributeValues.attribute', 'variant.inventoryStock'])
                 ->where('user_id', Auth::id())
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -88,10 +88,13 @@ class CartController extends Controller
 
             }else{
                 if ($idExist) {
-
-
-
                     if($request->quantity>1){
+                        if($idExist->quantity > $variant->inventoryStock->quantity){
+                            return response()->json([
+                                'message' => 'Số lượng trong kho không đủ!'
+                            ]);
+            
+                        }
                         $idExist->quantity += $request->quantity;
                         $idExist->save();
                     }else{
@@ -142,13 +145,19 @@ class CartController extends Controller
         try {
         
             $idExist = Cart::query()
-            ->with(['variant.attributeValues.attribute', "user"])
+            ->with(['variant.attributeValues.attribute', "user", 'variant.inventoryStock'])
             ->find($id);
 
 
             if ($idExist) {
 
                 if($request->quantity>1){
+                    if($idExist->quantity > $idExist->variant->inventoryStock->quantity){
+                        return response()->json([
+                            'message' => 'Số lượng trong kho không đủ!'
+                        ]);
+        
+                    }
                     $idExist->quantity = $request->quantity;
                     $idExist->save();
                 }else{

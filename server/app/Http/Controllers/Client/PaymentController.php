@@ -148,6 +148,7 @@ class PaymentController extends Controller
                     ]);
                 }
 
+
                 if (!$order) {
                     return response()->json(['error' => 'Đặt hàng không thành công.']);
                 }
@@ -207,6 +208,7 @@ class PaymentController extends Controller
             }
         }
 
+
         $secureHash = hash_hmac('sha512', $hashData, $this->secretKey);
 
         if ($secureHash == $vnp_SecureHash) {
@@ -216,6 +218,7 @@ class PaymentController extends Controller
                     'status' => 'success',
                     'message' => 'Giao dịch thành công',
                 ]);
+
             } else {
                 return response()->json([
                     'status' => 'error',
