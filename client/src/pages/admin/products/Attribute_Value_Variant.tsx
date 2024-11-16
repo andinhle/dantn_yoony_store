@@ -110,7 +110,6 @@ const Attribute_Value_Variant = ({ index }: Prop) => {
       return data.data.attribute_values;
     } catch (error) {
       if (retries > 0) {
-        console.log(`Retrying... Attempts left: ${retries - 1}`);
         await new Promise(resolve => setTimeout(resolve, delay));
         return getAttributeValue(attribute_id, retries - 1, delay * 2);
       }
