@@ -100,7 +100,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
-    Route::post('/change-password', [AuthController::class, 'changePassword']);
+
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -171,7 +171,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Admin & Manage
     Route::middleware(['manage'])->group(function () {
         // QL FAQ
-        Route::controller(FaqController::class)->prefix('faq/')->group(function (){
+        Route::controller(FaqController::class)->prefix('faq/')->group(function () {
             Route::get('list-question', [FaqController::class, 'listQuestions']);
             Route::post('store-question', [FaqController::class, 'storeQuestions']);
             Route::delete('delete-question/{id}', [FaqController::class, 'deleteQuestion']);
@@ -246,4 +246,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/orders/detail-reviews/{code}', [ReviewController::class, 'detailReview'])->name('orders.detailReview');
     Route::get('reviews/reviewed-orders', [ReviewController::class, 'getReviewedOrders'])->name('reviews.getReviewedOrders');
 
+    //changePassword
+    Route::post('/change-password', [AuthController::class, 'changePassword']);
+    //update user information
+    Route::put('/user/update', [AuthController::class, 'updateProfile']);
+    //user_profile
+    Route::get('/user/profile', [AuthController::class, 'getProfile']);
 });
