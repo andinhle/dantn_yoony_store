@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('inventory_imports', function (Blueprint $table) {
             $table->id();
             $table->integer('quantity');
+            $table->decimal('purchase_price', 8, 2);
+            $table->date('import_date');
             $table->integer('import_price');
             $table->text('note');
             $table->foreignId('variant_id')->constrained('variants')->cascadeOnDelete();
