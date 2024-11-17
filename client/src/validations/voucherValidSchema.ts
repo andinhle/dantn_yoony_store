@@ -6,11 +6,20 @@ const VoucherSchemaValid = z.object({
       required_error: "Không được để trống !",
     })
     .min(3, "Tối thiểu 3 kí tự !"),
+
+  name: z.string({
+    required_error: "Không được để trống !",
+  }).min(10, "Tối thiểu 10 kí tự !"),
+
+  description: z.string({
+    required_error: "Không được để trống !",
+  }).min(10, "Tối thiểu 10 kí tự !"),
+
   discount: z.number({
     required_error: "Bắt buộc !",
     invalid_type_error: "Phải là số !",
   }),
-  discount_type: z.string().nonempty("Discount type is required"), 
+  discount_type: z.string().nonempty("Discount type is required"),
   usage_limit: z.number({
     required_error: "Giới hạn sử dụng",
     invalid_type_error: "Tối đa 3",
@@ -32,7 +41,6 @@ const VoucherSchemaValid = z.object({
     invalid_type_error: "Nhập đúng ngày",
   }),
   status: z.boolean().optional(),
-  is_featured: z.boolean().optional(),
 
 });
 
