@@ -4,7 +4,7 @@ import "./index.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import LayoutUser from "./layouts/LayoutUser.tsx";
 import LayoutAdmin from "./layouts/LayoutAdmin.tsx";
-import DashboardAdmin from "./pages/admin/DashboardAdmin.tsx";
+import DashboardAdmin from "./pages/admin/dashboard/DashboardAdmin.tsx";
 import UsersAdmin from "./pages/admin/users/UserAdmin.tsx";
 import CategorysAdmin from "./pages/admin/CategorysAdmin.tsx";
 import Register from "./components/User/Auth/Register.tsx";
@@ -51,7 +51,8 @@ import UserRatings from "./components/User/Manager/Ratings/UserRatings.tsx";
 import RatingDetailOrder from "./components/User/Manager/Ratings/RatingDetailOrder.tsx";
 import CallBackLoginGoogle from "./components/User/Auth/CallBackLoginGoogle.tsx";
 import FilterProducts from "./components/User/Filter/FilterProducts.tsx";
-import  { StrictMode } from "react";
+import { StrictMode } from "react";
+import Whistlist from "./components/User/Manager/Wishlist/Wishlist.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -69,10 +70,7 @@ createRoot(document.getElementById("root")!).render(
                   <Route path="login" element={<Login />} />
                 </Route>
                 <Route path="reset-password" element={<CheckPermission />}>
-                  <Route
-                    path=""
-                    element={<LayoutResetPassword />}
-                  >
+                  <Route path="" element={<LayoutResetPassword />}>
                     <Route index element={<ResetPassRequest />} />
                     <Route path=":token/:email" element={<FormResetPass />} />
                   </Route>
@@ -97,6 +95,7 @@ createRoot(document.getElementById("root")!).render(
                     element={<UserOrderDetail />}
                   />
                   <Route path="user-ratings" element={<UserRatings />} />
+                  <Route path="wishlist" element={<Whistlist />} />
                   <Route
                     path="user-ratings/rating-detail/:code_order"
                     element={<RatingDetailOrder />}

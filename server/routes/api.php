@@ -212,8 +212,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     //Wishlist_user
     Route::get('/list-wishlists', [HomeController::class, 'getWishlists']);
-    Route::post('/insert-wishlists', [HomeController::class, 'insertWishlists']);
-    Route::delete('/delete-wishlists/{product_id}', [HomeController::class, 'deleteWishlist']);
+    Route::post('/toogle-wishlists', [HomeController::class, 'toggleWishlist']);
+
 
 
     // Order
