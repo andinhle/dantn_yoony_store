@@ -84,7 +84,7 @@ class CartController extends Controller
                 
                 return response()->json([
                     'message' => 'Số lượng trong kho không đủ. Vui lòng giảm số lượng!'
-                ]);
+                ], Response::HTTP_BAD_REQUEST);
 
             }else{
                 if ($idExist) {
@@ -92,7 +92,7 @@ class CartController extends Controller
                         if($idExist->quantity > $variant->inventoryStock->quantity){
                             return response()->json([
                                 'message' => 'Số lượng trong kho không đủ!'
-                            ]);
+                            ], Response::HTTP_BAD_REQUEST);
             
                         }
                         $idExist->quantity += $request->quantity;
@@ -155,8 +155,8 @@ class CartController extends Controller
                     if($idExist->quantity > $idExist->variant->inventoryStock->quantity){
                         return response()->json([
                             'message' => 'Số lượng trong kho không đủ!'
-                        ]);
-        
+                        ], Response::HTTP_BAD_REQUEST);
+     
                     }
                     $idExist->quantity = $request->quantity;
                     $idExist->save();
@@ -166,6 +166,13 @@ class CartController extends Controller
                         if ($operation === 'increase') {
 
                             $idExist->quantity += 1; // Tăng số lượng
+                            if($idExist->quantity > $idExist->variant->inventoryStock->quantity){
+                                $idExist->quantity = $idExist->variant->inventoryStock->quantity;
+                                return response()->json([
+                                    'message' => 'Số lượng trong kho không đủ!'
+                                ], Response::HTTP_BAD_REQUEST);
+             
+                            }
 
                         } elseif ($operation === 'decrease') {
 
