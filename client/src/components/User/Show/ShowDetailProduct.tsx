@@ -295,7 +295,8 @@ const ShowDetailProduct: React.FC = () => {
     const isAvailable = isAttributeAvailable(group.name, value);
     const isSelected = selectedAttributes[group.name] === value;
     const isColorAttribute = group.name.toLowerCase() === "color";
-
+    const isButtonAttribute = group.name.toLowerCase() === "radio";
+    
     return (
       <Tooltip
         key={value}

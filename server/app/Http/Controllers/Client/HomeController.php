@@ -79,7 +79,7 @@ class HomeController extends Controller
             $user = auth()->user();
     
             // Lấy danh sách wishlists và sản phẩm kèm theo
-            $wishlists = $user->wishlists()->with('product.variants')->get();
+            $wishlists = $user->wishlists()->with('product.variants.attributeValues.attribute',)->get();
     
             // Giải mã trường 'images' cho mỗi sản phẩm trong wishlist
             foreach ($wishlists as $wishlist) {
