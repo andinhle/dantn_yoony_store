@@ -47,12 +47,7 @@ class HomeController extends Controller
                 ->limit(5)
                 ->get();
 
-            // // Lấy 10 đánh giá gần nhất
-            // $rates = Rate::with('user', 'product.variants.attributeValues.attribute')
-            //     ->where('product_id', $product->id)
-            //     ->latest('created_at')
-            //     ->limit(10)
-            //     ->get();
+
 
             // Tính trung bình số sao
             $averageRating = Rate::where('product_id', $product->id)

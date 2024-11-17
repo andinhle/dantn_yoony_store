@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\RatingController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\RoleHasModelController;
+use App\Http\Controllers\Admin\StatisticalController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\CouponUserController;
 use App\Http\Controllers\Client\FilterController;
@@ -111,6 +112,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('/users', [UserController::class, 'index']);
         // Cập nhật role của user
         Route::patch('/users/{id}/role', [UserController::class, 'updateRole']);
+
+        //Thống kê
+        Route::get('thong-ke/doanh-thu', [StatisticalController::class, 'doanhThu']);
+        Route::get('thong-ke/san-pham', [StatisticalController::class, 'thongKeSanPham']);
+        Route::get('thong-ke/don-hang', [StatisticalController::class, 'thongKeDonHang']);
+
 
         // QL danh mục
         Route::apiResource('category', CategoryController::class);

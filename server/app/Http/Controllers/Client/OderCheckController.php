@@ -11,67 +11,78 @@ use Illuminate\Support\Facades\Log;
 class OderCheckController extends Controller
 {
     public function checkOrder(Request $request)
-    {
-        $request->validate([
-            'search' => 'required|string',
-        ]);
-    
-        try {
-            $search = trim($request->input('search'));
-    
-            // Check if 'search' is an order code
-            if (preg_match('/[A-Za-z]/', $search)) {
-                $order = Order::where('code', $search)->first();
-    
-                if (!$order) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Không tìm thấy đơn hàng với mã đã cung cấp',
-                    ], 404);
-                }
-    
-                // Mask sensitive data
-                $order->name = $this->maskName($order->name);
-                $order->tel = $this->maskTel($order->tel);
-                $order->address = $this->maskAddress($order->address);
-    
-                return response()->json([
-                    'status' => 'success',
-                    'orders' => [$order],
-                ]);
-            }
-    
-            $orders = Order::where('tel', $search)
-                ->orderByDesc('created_at')
-                ->get();
-    
-            if ($orders->isEmpty()) {
+{
+    $request->validate([
+        'search' => 'required|string',
+    ]);
+
+    try {
+        $search = trim($request->input('search'));
+
+        if (preg_match('/[A-Za-z]/', $search)) {
+            $order = Order::where('code', $search)
+                ->with(['items.variant.product', 'items.variant.attributeValues'])
+                ->first();
+
+            if (!$order) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Không tìm thấy đơn hàng với số điện thoại đã cung cấp',
+                    'message' => 'Không tìm thấy đơn hàng với mã đã cung cấp',
                 ], 404);
             }
-    
-            // Mask sensitive data for each order
-            foreach ($orders as $order) {
-                $order->name = $this->maskName($order->name);
-                $order->tel = $this->maskTel($order->tel);
-                $order->address = $this->maskAddress($order->address);
+
+            foreach ($order->items as $item) {
+                if (is_string($item->variant->product->images)) {
+                    $item->variant->product->images = json_decode($item->variant->product->images, true);
+                }
             }
-    
+
+            $order->name = $this->maskName($order->name);
+            $order->tel = $this->maskTel($order->tel);
+            $order->address = $this->maskAddress($order->address);
+
             return response()->json([
                 'status' => 'success',
-                'orders' => $orders,
+                'orders' => [$order],
             ]);
-    
-        } catch (\Exception $e) {
-            
+        }
+
+        $orders = Order::where('tel', $search)
+            ->with(['items.variant.product', 'items.variant.attributeValues'])
+            ->orderByDesc('created_at')
+            ->get();
+
+        if ($orders->isEmpty()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Có lỗi xảy ra khi kiểm tra đơn hàng',
-            ], 500);
+                'message' => 'Không tìm thấy đơn hàng với số điện thoại đã cung cấp',
+            ], 404);
         }
+
+        foreach ($orders as $order) {
+            foreach ($order->items as $item) {
+                if (is_string($item->variant->product->images)) {
+                    $item->variant->product->images = json_decode($item->variant->product->images, true);
+                }
+            }
+            $order->name = $this->maskName($order->name);
+            $order->tel = $this->maskTel($order->tel);
+            $order->address = $this->maskAddress($order->address);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'orders' => $orders,
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Có lỗi xảy ra khi kiểm tra đơn hàng',
+        ], 500);
     }
+}
+
     
     private function maskName($name)
     {
