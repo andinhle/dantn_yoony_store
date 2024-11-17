@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
@@ -13,16 +14,17 @@ class StatisticalController extends Controller
     public function doanhThu(Request $request)
     {
         $type = $request->type;
-
+    
         $query = Order::query()->where('status_order', 'delivered');
-
+    
+        // Xử lý theo kiểu phân loại thời gian
         switch ($type) {
             case 'day':
                 $query->whereDate('created_at', today());
                 break;
             case 'month':
                 $query->whereMonth('created_at', now()->month)
-                    ->whereYear('created_at', now()->year);
+                      ->whereYear('created_at', now()->year);
                 break;
             case '6months':
                 $query->whereBetween('created_at', [
@@ -35,16 +37,31 @@ class StatisticalController extends Controller
                 break;
             case 'last_month':
                 $query->whereMonth('created_at', now()->subMonth()->month)
-                    ->whereYear('created_at', now()->year);
+                      ->whereYear('created_at', now()->year);
                 break;
             case 'all':
             default:
                 break;
         }
-
+    
+        // Tính tổng doanh thu
         $totalRevenue = $query->sum('final_total');
 
-        return response()->json(['total_revenue' => $totalRevenue]);
+        // Lấy tất cả các đơn hàng thỏa mãn điều kiện
+        $orders = $query->get(['created_at', 'final_total']);
+    
+        // Tạo mảng kết quả với định dạng [epoch_time, total_revenue]
+        $result = $orders->map(function ($order) {
+            return [
+                Carbon::parse($order->created_at)->timestamp * 1000,
+                (float)$order->final_total
+            ];
+        });
+    
+        return response()->json([
+            'data' => $result,
+            'total_revenue' => (float)$totalRevenue
+        ]);
     }
 
     public function thongKeSanPham(Request $request)

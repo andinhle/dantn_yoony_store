@@ -8,16 +8,19 @@ import {
 import { IUser } from "../interfaces/IUser";
 import Cookies from "js-cookie";
 import { message } from "antd";
+import { IWishlist } from "../interfaces/IWishlist";
 
 interface AuthContextType {
   user: IUser | null;
   login: (userData: IUser) => void;
   logout: () => void;
   checkAuthStatus: () => void;
+  wishlists:IWishlist[]
 }
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const AUTH_COOKIE_NAME = "authToken"; 
 const USER_INFO_KEY = "userInfor";
+const WISHLIST_KEY="wishlists"
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
