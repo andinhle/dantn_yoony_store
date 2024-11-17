@@ -67,7 +67,7 @@ public function index()
             }
         }
 
-        return new ProductResource($product->load('category', 'variants.attributeValues', 'variants.inventoryStock'));
+        return new ProductResource($product->load('category', 'variants.attributeValues.attribute', 'variants.inventoryStock',));
     } catch (\Exception $e) {
         return response()->json(['message' => 'Thêm Product thất bại', 'error' => $e->getMessage()], 500);
     }
@@ -78,7 +78,7 @@ public function index()
      */
     public function show(string $id)
     {
-        $product = Product::with('category','variants.attributeValues.attribute')->findOrFail($id);
+        $product = Product::with('category','variants.attributeValues.attribute', 'variants.inventoryStock')->findOrFail($id);
         return new ProductResource($product);
     }
 
@@ -137,7 +137,7 @@ public function index()
     public function findBySlug(string $slug): JsonResponse
     {
         try {
-            $product = Product::with('variants.attributeValues.attribute')
+            $product = Product::with('category','variants.attributeValues.attribute', 'variants.inventoryStock')
                 ->where('slug', $slug)
                 ->firstOrFail();
 
