@@ -77,10 +77,17 @@ class CategoryController extends Controller
     public function updateIsActive(Request $request, string $id)
     {
         $category = Category::findOrFail($id);
-
+    
+        // Cập nhật trạng thái của danh mục
         $category->update([
             'is_active' => $request->is_active,
         ]);
+    
+        //nếu tắt is_active của danh mục thì mất cả sản phẩm thuộc danh mục đó
+        $category->product()->update([
+            'is_active' => $request->is_active,
+        ]);
+    
         return response()->json([
             'message' => 'Cập nhật trạng thái hoạt động thành công!',
             'data' => new CategoryResource($category),
