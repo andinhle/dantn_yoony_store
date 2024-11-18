@@ -4,9 +4,11 @@ import { FreeMode } from "swiper/modules";
 import { Link } from "react-router-dom";
 import slugify from "react-slugify";
 import instance from "../../../instance/instance";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { WishlistResponse } from "../../../interfaces/IWishlist";
 import { message } from "antd";
+import { useAuth } from "../../../providers/AuthProvider";
+
 type Props = {
   imageProduct: string;
   nameProduct: string;
@@ -31,20 +33,50 @@ const CardProductAll = ({
   category,
 }: Props) => {
   const saleVariant = variants.find((variant) => variant.sale_price);
+  const [isWishlisted, setIsWishlisted] = useState(false);
   const [selectWishlist, setSelectWishlist] = useState<WishlistResponse>();
+
+  // Check wishlist status on component mount
+  useEffect(() => {
+    const wishlists = JSON.parse(localStorage.getItem('wishlists') || '[]');
+    const isProductWishlisted = wishlists.some(
+      (wishlist: any) => wishlist.product_id === id_Product
+    );
+    setIsWishlisted(isProductWishlisted);
+  }, [id_Product]);
+
   const addWishlist = async (product_id: number) => {
     try {
       const { data } = await instance.post(`toogle-wishlists`, {
         product_id: product_id,
       });
+      
       if (data) {
-        message.success(data.message)
+        message.success(data.message);
         setSelectWishlist(data);
+        const wishlists = JSON.parse(localStorage.getItem('wishlists') || '[]');
+        
+        if (data.wishlist) {
+          if (!wishlists.some((w: any) => w.product_id === product_id)) {
+            wishlists.push(data.wishlist);
+          }
+        } else {
+          const index = wishlists.findIndex((w: any) => w.product_id === product_id);
+          if (index > -1) {
+            wishlists.splice(index, 1);
+          }
+        }
+        localStorage.setItem('wishlists', JSON.stringify(wishlists));
+        setIsWishlisted(!isWishlisted);
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error.response?.data?.message === "Unauthenticated.") {
+        message.error('Vui lòng đăng nhập !');
+      }
       console.log(error);
     }
   };
+
   return (
     <div className="min-h-[355px] group max-w-[220px] w-full bg-util rounded-lg overflow-hidden shadow-[0px_1px_4px_0px_rgba(255,_138,_0,_0.25)] cursor-pointer">
       <div className="relative z-40 overflow-hidden">
@@ -55,7 +87,7 @@ const CardProductAll = ({
             className="max-h-[260px] object-cover w-full group-hover:scale-110 group-hover:shadow-lg transition-transform duration-500 ease-in-out"
           />
         </Link>
-        {/* Whistlist */}
+        {/* Wishlist */}
         <button
           type="button"
           onClick={() => addWishlist(id_Product)}
@@ -64,11 +96,7 @@ const CardProductAll = ({
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
-            className={`size-6 ${
-              selectWishlist?.wishlist?.product_id === id_Product
-                ? "fill-primary/75"
-                : ""
-            }`}
+            className={`size-6 ${isWishlisted ? "fill-primary/75" : ""}`}
             color={"currentColor"}
             fill={"none"}
           >
@@ -132,19 +160,17 @@ const CardProductAll = ({
             modules={[FreeMode]}
             className="mySwiper px-5 z-50"
           >
-            {colorVariantsImages.map((colorVariantImage, index: number) => {
-              return (
-                <SwiperSlide
-                  key={index + 1}
-                  className="!w-7 !h-7 rounded-full border border-input overflow-hidden"
-                >
-                  <img
-                    src={colorVariantImage?.representativeImage}
-                    alt={`Image ${colorVariantImage}`}
-                  />
-                </SwiperSlide>
-              );
-            })}
+            {colorVariantsImages.map((colorVariantImage, index: number) => (
+              <SwiperSlide
+                key={index + 1}
+                className="!w-7 !h-7 rounded-full border border-input overflow-hidden"
+              >
+                <img
+                  src={colorVariantImage?.representativeImage}
+                  alt={`Image ${index + 1}`}
+                />
+              </SwiperSlide>
+            ))}
           </Swiper>
         </div>
       </Link>

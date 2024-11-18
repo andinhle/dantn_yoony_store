@@ -4,7 +4,7 @@ import { IProduct } from "../../../../interfaces/IProduct";
 import CardProductAll from "../../Products/CardProductAll";
 import GroupVariantsByColor from "../../Show/GroupVariantsByColor";
 
-type ProductWishlist = {
+export type ProductWishlist = {
   product: IProduct;
 };
 
@@ -17,7 +17,7 @@ const Wishlist = () => {
         const { data } = await instance.get("list-wishlists");
         setWishlists(data.wishlists);
       } catch (error) {
-        console.log(error);
+        console.log(error)
       }
     })();
   }, []);
