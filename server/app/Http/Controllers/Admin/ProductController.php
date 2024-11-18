@@ -40,7 +40,6 @@ public function index()
             'images' => json_encode($request->images),
             'category_id' => $request->category_id,
             'is_featured' => $request->is_featured ?? false,
-            'is_good_deal' => $request->is_good_deal ?? false,
             'is_active' => $request->is_active ?? true,
         ]);
 
@@ -67,7 +66,7 @@ public function index()
             }
         }
 
-        return new ProductResource($product->load('category', 'variants.attributeValues', 'variants.inventoryStock'));
+        return new ProductResource($product->load('category', 'variants.attributeValues.attribute', 'variants.inventoryStock',));
     } catch (\Exception $e) {
         return response()->json(['message' => 'Thêm Product thất bại', 'error' => $e->getMessage()], 500);
     }
@@ -78,7 +77,7 @@ public function index()
      */
     public function show(string $id)
     {
-        $product = Product::with('category','variants.attributeValues.attribute')->findOrFail($id);
+        $product = Product::with('category','variants.attributeValues.attribute', 'variants.inventoryStock')->findOrFail($id);
         return new ProductResource($product);
     }
 
@@ -95,7 +94,6 @@ public function index()
             'images' => json_encode($request->images),
             'category_id' => $request->category_id,
             'is_featured' => $request->is_featured ?? false,
-            'is_good_deal' => $request->is_good_deal ?? false,
             'is_active' => $request->is_active ?? true,
         ]);
 
@@ -137,7 +135,7 @@ public function index()
     public function findBySlug(string $slug): JsonResponse
     {
         try {
-            $product = Product::with('variants.attributeValues.attribute')
+            $product = Product::with('category','variants.attributeValues.attribute', 'variants.inventoryStock')
                 ->where('slug', $slug)
                 ->firstOrFail();
 
@@ -173,16 +171,16 @@ public function index()
         ], 200);
     }
 
-    //updateIsGoodDeal
-    public function updateIsGoodDeal(Request $request, string $id){
-        $product = Product::findOrFail($id);
-        $product->update(['is_good_deal'=>$request->is_good_deal]);
+    // //updateIsGoodDeal
+    // public function updateIsGoodDeal(Request $request, string $id){
+    //     $product = Product::findOrFail($id);
+    //     $product->update(['is_good_deal'=>$request->is_good_deal]);
 
-        return response()->json([
-            'message' => 'Cập nhật is_good_deal thành công!',
-            'data' => new ProductResource($product),
-        ], 200);
-    }
+    //     return response()->json([
+    //         'message' => 'Cập nhật is_good_deal thành công!',
+    //         'data' => new ProductResource($product),
+    //     ], 200);
+    // }
 
     //updateIsActive
     public function updateIsActive(Request $request, string $id){
