@@ -16,7 +16,7 @@ import MainContentUser from "./pages/user/MainContentUser.tsx";
 import Login from "./components/User/Auth/Login.tsx";
 import ProductList from "./pages/admin/products/ProductsList.tsx";
 import Orders from "./pages/admin/Orders/Order.tsx";
-import Rates from "./pages/admin/Evaluate.tsx";
+import Rates from "./pages/admin/rates/Evaluate.tsx";
 import OrderDetails from "./pages/admin/Orders/OrderDetails.tsx";
 import ScrollToTop from "./utils/ScrollToTop.tsx";
 import "react-toastify/dist/ReactToastify.css";

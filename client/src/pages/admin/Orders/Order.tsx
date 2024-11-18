@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom"
 import type { Orders } from "../../../interfaces/IOrders";
 import instance from "../../../instance/instance";
 import { toast } from "react-toastify";
-import { Input, Select, Space } from 'antd';
+import { Checkbox, Input, Select, Space } from 'antd';
 import { DatePicker } from 'antd';
 import isBetween from 'dayjs/plugin/isBetween';
 import dayjs from "dayjs";
 dayjs.extend(isBetween);
 const Orders = () => {
-
+  const [selectedOrders, setSelectedOrders] = useState<string[]>([]); // Mảng lưu các mã đơn hàng được chọn
   const [orders, setOrders] = useState<Orders[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchDateRange, setSearchDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
@@ -17,27 +17,50 @@ const Orders = () => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const filteredOptions = OPTIONS.filter((o) => !selectedItems.includes(o));
   // Hàm xử lý tìm kiếm
+
   const handleSearch = (value: string) => {
     setSearchTerm(value);
   };
   const handleDateSearch = (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null, dateStrings: [string, string]) => {
     if (dates) {
-        // Kiểm tra nếu dates không null
-        setSearchDateRange([dates[0]!, dates[1]!]); // Chỉ lưu giá trị không null
+      // Kiểm tra nếu dates không null
+      setSearchDateRange([dates[0]!, dates[1]!]); // Chỉ lưu giá trị không null
     } else {
-        setSearchDateRange(null); // Nếu không chọn khoảng ngày, đặt là null
+      setSearchDateRange(null); // Nếu không chọn khoảng ngày, đặt là null
     }
-};
+  };
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allOrderIds = filteredOrders
+        .map((order) => order.id)
+        .filter((id): id is number => id !== undefined) // Loại bỏ undefined
+        .map((id) => id.toString()); // Chuyển sang string[]
+      setSelectedOrders(allOrderIds); // Gán mảng string[]
+    } else {
+      setSelectedOrders([]); // Reset
+    }
+  };
+
+
+  const handleSelectOrder = (checked: boolean, id: string | number) => {
+    const normalizedId = typeof id === 'number' ? id.toString() : id; // Hoặc đảm bảo id là string
+    if (checked) {
+      setSelectedOrders([...selectedOrders, normalizedId]);
+    } else {
+      setSelectedOrders(selectedOrders.filter((order) => order !== normalizedId));
+    }
+  };
+
   // Lọc danh sách đơn hàng theo mã sản phẩm
   const filteredOrders = orders.filter((item) => {
     const matchesCode = item.code.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = selectedItems.length === 0 || selectedItems.includes(item.status_order);
     const matchesDate = searchDateRange
-        ? dayjs(item.created_at).isBetween(searchDateRange[0], searchDateRange[1], null, '[]')
-        : true;
+      ? dayjs(item.created_at).isBetween(searchDateRange[0], searchDateRange[1], null, '[]')
+      : true;
 
     return matchesCode && matchesStatus && matchesDate;
-});
+  });
 
   const navigate = useNavigate();
   const { Search } = Input;
@@ -88,6 +111,7 @@ const Orders = () => {
     };
     return statusTranslations[status] || "Trạng thái không xác định";
   };
+
   const fetchOrders = async () => {
     try {
       const { data: { data: { data: respone } } } = await instance.get("admin/orders");
@@ -111,6 +135,7 @@ const Orders = () => {
   useEffect(() => {
     fetchOrders();
   }, []);
+
   const { RangePicker } = DatePicker;
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
@@ -125,25 +150,51 @@ const Orders = () => {
           />
         </Space>
         <Space direction="vertical" size={12}>
-          <RangePicker size="large"  onChange={handleDateSearch}/>
+          <RangePicker size="large" onChange={handleDateSearch} />
         </Space>
         <Select
           className="w-2/4"
           mode="multiple"
           placeholder="Trạng thái"
           value={selectedItems}
-          onChange={setSelectedItems}
+          onChange={(value: string[]) => setSelectedItems(value)} // Đảm bảo kiểu dữ liệu là string[]
           onSelect={() => (document.activeElement as HTMLElement)?.blur()} // Tự động thu gọn khi chọn xong
-          style={{ width: '40%' }}
+          style={{ width: '20%' }}
           options={filteredOptions.map((item) => ({
             value: item,
             label: item,
           }))}
         />
+        <Space className="">
+          <Select
+            showSearch
+            placeholder="Chọn trạng thái"
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            options={[
+              { value: "pending", label: "Chờ xác nhận" },
+              { value: "confirmed", label: "Đã xác nhận" },
+              { value: "preparing_goods", label: "Chuẩn bị hàng" },
+              { value: "shipping", label: "Đang giao hàng" },
+              { value: "delivered", label: "Đã giao hàng" },
+
+            ]}
+          />
+
+        </Space>
+        <button className="bg-primary p-2 text-xs rounded-lg text-white">Đồng bộ</button>
       </div>
       <table className="min-w-full bg-white">
         <thead className="bg-primary">
           <tr>
+            <th className="py-3 px-4 text-left text-xs text-white font-bold uppercase tracking-wider">
+              <Checkbox
+                checked={selectedOrders.length === filteredOrders.length}
+                indeterminate={selectedOrders.length > 0 && selectedOrders.length < filteredOrders.length}
+                onChange={(e) => handleSelectAll(e.target.checked)}
+              />
+            </th>
             <th className="py-3 px-4 text-left text-xs text-white font-bold uppercase tracking-wider">STT</th>
             <th className="py-3 px-4 text-left text-xs text-white font-bold uppercase tracking-wider">Mã đơn hàng</th>
             <th className="py-3 px-4 text-left text-xs text-white font-bold uppercase tracking-wider">Tổng tiền</th>
@@ -154,7 +205,15 @@ const Orders = () => {
         </thead>
         <tbody className="divide-y divide-secondary-200">
           {filteredOrders.map((item, index) => (
+
             <tr key={item.id}>
+              <td className="px-4 py-3">
+                <Checkbox
+                  checked={selectedOrders.includes(item.id?.toString() || '')}
+                  onChange={(e) => handleSelectOrder(e.target.checked, item.id?.toString() || '')}
+                />
+
+              </td>
               <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-secondary-900 text-primary">
                 {index + 1}
               </td>

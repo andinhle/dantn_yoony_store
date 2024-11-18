@@ -51,7 +51,7 @@ class HomeController extends Controller
 
             // Tính trung bình số sao
             $averageRating = Rate::where('product_id', $product->id)
-            ->average('rating');
+                ->average('rating');
 
             return response()->json([
                 'product' => new ProductResource($product),
@@ -59,7 +59,6 @@ class HomeController extends Controller
                 // 'ratingslide10' => RateResource::collection($rates)
                 'average_rating' => round($averageRating * 2) / 2,
             ], 200);
-
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Không tìm thấy sản phẩm.'], 404);
         } catch (\Throwable $e) {
@@ -77,17 +76,17 @@ class HomeController extends Controller
     {
         if (auth()->check()) {
             $user = auth()->user();
-    
+
             // Lấy danh sách wishlists và sản phẩm kèm theo
             $wishlists = $user->wishlists()->with('product.variants.attributeValues.attribute',)->get();
-    
+
             // Giải mã trường 'images' cho mỗi sản phẩm trong wishlist
             foreach ($wishlists as $wishlist) {
                 if ($wishlist->product && $wishlist->product->images) {
                     $wishlist->product->images = json_decode($wishlist->product->images);
                 }
             }
-    
+
             return response()->json([
                 'wishlists' => $wishlists
             ], 200);
@@ -224,29 +223,29 @@ class HomeController extends Controller
     }
 
     // Lọc sản phẩm đang sale
-    public function getGoodDealProducts(): JsonResponse
-    {
-        try {
-            $goodDealProducts = Product::with('category', 'variants.attributeValues.attribute')
-                ->where('is_good_deal', true)
-                ->where('is_active', true) // Điều kiện kiểm tra sản phẩm phải active
-                ->limit(10)
-                ->get();
+    // public function getGoodDealProducts(): JsonResponse
+    // {
+    //     try {
+    //         $goodDealProducts = Product::with('category', 'variants.attributeValues.attribute')
+    //             ->where('is_good_deal', true)
+    //             ->where('is_active', true) // Điều kiện kiểm tra sản phẩm phải active
+    //             ->limit(10)
+    //             ->get();
 
-            if ($goodDealProducts->isEmpty()) {
-                return response()->json([
-                    'message' => 'Không có sản phẩm đang sale nào.',
-                ], 404);
-            }
+    //         if ($goodDealProducts->isEmpty()) {
+    //             return response()->json([
+    //                 'message' => 'Không có sản phẩm đang sale nào.',
+    //             ], 404);
+    //         }
 
-            return response()->json(ProductResource::collection($goodDealProducts), 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Có lỗi xảy ra khi truy xuất sản phẩm sale.',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
+    //         return response()->json(ProductResource::collection($goodDealProducts), 200);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'message' => 'Có lỗi xảy ra khi truy xuất sản phẩm sale.',
+    //             'error' => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
 
 
 
@@ -303,7 +302,6 @@ class HomeController extends Controller
 
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
     }
 
     public function getCouponCart(Request $request)
@@ -365,7 +363,6 @@ class HomeController extends Controller
                 'status' => 'success',
                 'data' => $data,
             ]);
-
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
@@ -406,17 +403,17 @@ class HomeController extends Controller
     {
         // Lấy thông tin sản phẩm từ slug
         $product = Product::where('slug', $slug)->firstOrFail();
-    
+
         // Tính trung bình số sao
         $averageRating = Rate::where('product_id', $product->id)
             ->average('rating');
-    
+
         // Đếm số lượng đánh giá theo từng mức sao
         $ratingCounts = $this->getRatingCounts($product->id);
-    
+
         // Lấy danh sách đánh giá có phân trang
         $formattedPagedRates = $this->getPagedRatings($request, $product);
-    
+
         return [
             'ratings' => [
                 'average_rating' => round($averageRating * 2) / 2,
@@ -432,10 +429,10 @@ class HomeController extends Controller
             ]
         ];
     }
-    
-    
-    
-    
+
+
+
+
 
     // Hàm phụ để lấy số lượng đánh giá theo từng sao
     private function getRatingCounts($productId)
@@ -460,7 +457,7 @@ class HomeController extends Controller
     private function getPagedRatings(Request $request, Product $product)
     {
         $ratingFilter = $request->input('ratingFilter');
-    
+
         $rateQuery = Rate::with([
             'user:id,name,avatar',
             'product:id,name,slug',
@@ -471,14 +468,14 @@ class HomeController extends Controller
             },
             'order.items.variant.attributeValues.attribute'
         ])
-        ->where('product_id', $product->id);
-    
+            ->where('product_id', $product->id);
+
         if (in_array($ratingFilter, [1, 2, 3, 4, 5])) {
             $rateQuery->where('rating', $ratingFilter);
         }
-    
+
         $pagedRates = $rateQuery->orderByDesc('created_at')->paginate(8);
-    
+
         return $pagedRates->through(function ($rate) {
             // Lấy tất cả các items có variant thuộc sản phẩm được đánh giá
             $attributeValuesList = collect($rate->order?->items)
@@ -505,7 +502,7 @@ class HomeController extends Controller
                 })
                 ->values()
                 ->all();
-    
+
             return [
                 'id' => $rate->id,
                 'content' => $rate->content,
