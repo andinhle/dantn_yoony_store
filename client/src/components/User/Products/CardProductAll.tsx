@@ -3,11 +3,10 @@ import { IVariants } from "../../../interfaces/IVariants";
 import { FreeMode } from "swiper/modules";
 import { Link } from "react-router-dom";
 import slugify from "react-slugify";
-import { useEffect, useState } from "react";
-
 import instance from "../../../instance/instance";
-import { toast } from "react-toastify";
-
+import { useState } from "react";
+import { WishlistResponse } from "../../../interfaces/IWishlist";
+import { message } from "antd";
 type Props = {
   imageProduct: string;
   nameProduct: string;
@@ -31,60 +30,21 @@ const CardProductAll = ({
   id_Product,
   category,
 }: Props) => {
-  // Quản lý trạng thái đăng nhập bằng authToken
-  const [authToken, setAuthToken] = useState<string | null>(() => {
-    return localStorage.getItem("userInfor");
-  });
-
-  // Quản lý trạng thái yêu thích của sản phẩm
-  const [isFavorite, setIsFavorite] = useState<boolean>(() => {
-    return localStorage.getItem(`favorite-${id_Product}`) === "true";
-  });
-
-  // Cập nhật trạng thái yêu thích khi đăng nhập/đăng xuất
-  useEffect(() => {
-    const storedToken = localStorage.getItem("userInfor");
-    setAuthToken(storedToken);
-    if (!storedToken) {
-      // Khi đăng xuất, đặt tất cả trạng thái yêu thích thành false
-      setIsFavorite(false);
-      localStorage.setItem(`favorite-${id_Product}`, "false");
-    } else {
-      // Khi đăng nhập, khôi phục trạng thái yêu thích từ localStorage
-      setIsFavorite(localStorage.getItem(`favorite-${id_Product}`) === "true");
-    }
-  }, [authToken, id_Product]);
-  // Hàm để thêm hoặc xóa sản phẩm khỏi danh sách yêu thích
-  const toggleFavorite = async () => {
+  const saleVariant = variants.find((variant) => variant.sale_price);
+  const [selectWishlist, setSelectWishlist] = useState<WishlistResponse>();
+  const addWishlist = async (product_id: number) => {
     try {
-      if (!authToken) {
-        toast.error("Vui lòng đăng nhập để thêm vào danh sách yêu thích");
-        return;
-      }
-
-      if (!isFavorite) {
-        // Thêm vào danh sách yêu thích
-        const response = await instance.post("insert-wishlists", { product_id: id_Product });
-        console.log("Đã thêm sản phẩm vào yêu thích:", response.data);
-        setIsFavorite(true);
-        localStorage.setItem(`favorite-${id_Product}`, "true");
-        toast.success("Đã thêm sản phẩm vào danh sách yêu thích");
-      } else {
-        // Xóa khỏi danh sách yêu thích
-        const response = await instance.delete(`delete-wishlists/${id_Product}`);
-        console.log("Đã xóa sản phẩm yêu thích:", response.data);
-        setIsFavorite(false);
-        localStorage.setItem(`favorite-${id_Product}`, "false");
-        toast.warning("Đã xóa sản phẩm yêu thích !");
+      const { data } = await instance.post(`toogle-wishlists`, {
+        product_id: product_id,
+      });
+      if (data) {
+        message.success(data.message)
+        setSelectWishlist(data);
       }
     } catch (error) {
-      console.error("Error updating favorite:", error);
-      toast.error("Đã có lỗi xảy ra khi cập nhật danh sách yêu thích");
+      console.log(error);
     }
   };
-
-  const saleVariant = variants.find((variant) => variant.sale_price);
-
   return (
     <div className="min-h-[355px] group max-w-[220px] w-full bg-util rounded-lg overflow-hidden shadow-[0px_1px_4px_0px_rgba(255,_138,_0,_0.25)] cursor-pointer">
       <div className="relative z-40 overflow-hidden">
@@ -95,18 +55,22 @@ const CardProductAll = ({
             className="max-h-[260px] object-cover w-full group-hover:scale-110 group-hover:shadow-lg transition-transform duration-500 ease-in-out"
           />
         </Link>
-        {/* Biểu tượng trái tim */}
-        <div
-          className={`absolute top-2 right-2 z-30 cursor-pointer 
-              ${isFavorite ? 'fill-primary text-primary' : 'bg-transparent text-primary/70'}
-              rounded-full p-1 transition-colors duration-300`}
-          onClick={toggleFavorite}
+        {/* Whistlist */}
+        <button
+          type="button"
+          onClick={() => addWishlist(id_Product)}
+          className="absolute top-2 right-2 z-30 text-primary/70 cursor-pointer"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
-            className={`size-6 hover:fill-primary/75 ${isFavorite ? 'fill-primary' : 'fill-none'}`}
-            color="currentColor"
+            className={`size-6 ${
+              selectWishlist?.wishlist?.product_id === id_Product
+                ? "fill-primary/75"
+                : ""
+            }`}
+            color={"currentColor"}
+            fill={"none"}
           >
             <path
               d="M19.4626 3.99415C16.7809 2.34923 14.4404 3.01211 13.0344 4.06801C12.4578 4.50096 12.1696 4.71743 12 4.71743C11.8304 4.71743 11.5422 4.50096 10.9656 4.06801C9.55962 3.01211 7.21909 2.34923 4.53744 3.99415C1.01807 6.15294 0.221721 13.2749 8.33953 19.2834C9.88572 20.4278 10.6588 21 12 21C13.3412 21 14.1143 20.4278 15.6605 19.2834C23.7783 13.2749 22.9819 6.15294 19.4626 3.99415Z"
@@ -115,6 +79,16 @@ const CardProductAll = ({
               strokeLinecap="round"
             />
           </svg>
+        </button>
+        <div className="absolute top-2 left-2 z-30 text-primary cursor-pointer bg-primary/10 p-1 rounded-full">
+          {is_featured && <span className="text-xs">HOT</span>}
+        </div>
+        <div className="absolute top-2 left-2 z-30 text-primary cursor-pointer bg-primary/10 p-1.5 rounded-full">
+          {is_good_deal && (
+            <span className="text-xs">
+              {100 - (variants[0]?.sale_price / variants[0]?.price) * 100}%
+            </span>
+          )}
         </div>
       </div>
       <Link to={`/${category}/${slugify(nameProduct)}`}>
@@ -158,17 +132,19 @@ const CardProductAll = ({
             modules={[FreeMode]}
             className="mySwiper px-5 z-50"
           >
-            {colorVariantsImages.map((colorVariantImage, index: number) => (
-              <SwiperSlide
-                key={index + 1}
-                className="!w-7 !h-7 rounded-full border border-input overflow-hidden"
-              >
-                <img
-                  src={colorVariantImage?.representativeImage}
-                  alt={`Image ${colorVariantImage}`}
-                />
-              </SwiperSlide>
-            ))}
+            {colorVariantsImages.map((colorVariantImage, index: number) => {
+              return (
+                <SwiperSlide
+                  key={index + 1}
+                  className="!w-7 !h-7 rounded-full border border-input overflow-hidden"
+                >
+                  <img
+                    src={colorVariantImage?.representativeImage}
+                    alt={`Image ${colorVariantImage}`}
+                  />
+                </SwiperSlide>
+              );
+            })}
           </Swiper>
         </div>
       </Link>

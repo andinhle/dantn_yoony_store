@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderCancellation;
+use DB;
 use Http;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -252,15 +253,16 @@ class OrderController extends Controller
     public function updateMuch(Request $request)
     {
         try {
-            Log::info($request->ids);
             $ids = $request->ids;
 
-          
-           // Xóa nhiều theo id
-           switch ($request->status) {
+            if (!is_array($ids) || empty($ids)) {
+                return response()->json(['message' => 'Danh sách không hợp lệ!'], 400);
+            }
+            Log::info($ids);
+            switch ($request->status) {
                 case Order::STATUS_ORDER_PENDING:
-                    Order::query()->whereIn('id', $ids)->update([
-                        'status_order' => Order::STATUS_ORDER_CONFIRMED
+                    Order::query()->whereIn('id',  $ids)->update([
+                        'status_order' => Order::STATUS_ORDER_CONFIRMED,
                     ]);
                     return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);
                 case Order::STATUS_ORDER_CONFIRMED:
