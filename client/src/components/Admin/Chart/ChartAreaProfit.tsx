@@ -13,31 +13,31 @@ interface TimelineButton {
 
 const TIMELINE_BUTTONS: TimelineButton[] = [
   {
-    label: "1M",
+    label: "1 Tháng",
     value: "one_month",
     startDate: "31 Oct 2024",
     endDate: "16 Nov 2024",
   },
   {
-    label: "6M",
+    label: "6 Tháng",
     value: "six_months",
     startDate: "27 Sep 2012",
     endDate: "27 Feb 2013",
   },
   {
-    label: "1Y",
+    label: "1 Năm",
     value: "one_year",
     startDate: "27 Feb 2012",
     endDate: "27 Feb 2013",
   },
   {
-    label: "YTD",
+    label: "Năm trước",
     value: "ytd",
     startDate: "01 Jan 2013",
     endDate: "27 Feb 2013",
   },
   {
-    label: "ALL",
+    label: "Tất cả",
     value: "all",
     startDate: "23 Jan 2012",
     endDate: "27 Feb 2013",
@@ -50,6 +50,7 @@ const formatNumber = (num) => {
 
 const chartSeries: ChartSeries[] = [
   {
+    name: "Đơn hàng",
     data: [
       [1730443426000, 665000],
       [1730444081000, 1100000],
@@ -75,7 +76,7 @@ const chartSeries: ChartSeries[] = [
 ];
 
 const ChartAreaProfit: React.FC = () => {
-  const [selection, setSelection] = useState<TimelinePeriod>("one_year");
+  const [selection, setSelection] = useState<TimelinePeriod>("one_month");
 
   const chartOptions: ChartOptions = useMemo(() => {
     const selectedTimeline = TIMELINE_BUTTONS.find(
@@ -90,6 +91,22 @@ const ChartAreaProfit: React.FC = () => {
         zoom: {
           autoScaleYaxis: true,
         },
+        toolbar: {
+          export: {
+            csv: {
+              filename: "bieu_do_doanh_thu",
+              columnDelimiter: ',',
+              headerCategory: 'Ngày',
+              headerValue: 'value'
+            },
+            svg: {
+              filename: undefined,
+            },
+            png: {
+              filename: undefined,
+            }
+          }
+        }
       },
       title: {
         text: "BIỂU ĐỒ THỐNG KÊ DOANH THU",
@@ -114,7 +131,7 @@ const ChartAreaProfit: React.FC = () => {
       },
       yaxis: {
         labels: {
-          formatter: (value) => formatNumber(value),
+          formatter: (value: number) => `${formatNumber(value)}`,
         },
       },
       tooltip: {
@@ -122,7 +139,7 @@ const ChartAreaProfit: React.FC = () => {
           format: "dd MMM yyyy",
         },
         y: {
-          formatter: (value) => formatNumber(value),
+          formatter: (value: number) => `${formatNumber(value)} VNĐ`,
         },
       },
       fill: {
@@ -158,7 +175,6 @@ const ChartAreaProfit: React.FC = () => {
           </button>
         ))}
       </div>
-
       <Chart
         options={chartOptions}
         series={chartSeries}
