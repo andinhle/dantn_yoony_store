@@ -12,7 +12,7 @@ class Product extends Model
 
     protected $fillable = [
         'name', 'slug', 'images', 'description', 'category_id',
-        'is_featured', 'is_good_deal', 'is_active'
+        'is_featured', 'is_active'
     ];
 
     public function variants()
