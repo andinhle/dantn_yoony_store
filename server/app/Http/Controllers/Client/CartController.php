@@ -151,8 +151,8 @@ class CartController extends Controller
 
             if ($idExist) {
 
-                if($request->quantity>1){
-                    if($idExist->quantity > $idExist->variant->inventoryStock->quantity){
+                if($request->quantity>=1){
+                    if($request->quantity > $idExist->variant->inventoryStock->quantity){
                         return response()->json([
                             'message' => 'Số lượng trong kho không đủ!'
                         ], Response::HTTP_BAD_REQUEST);
