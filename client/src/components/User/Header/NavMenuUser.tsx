@@ -102,7 +102,7 @@ const NavMenuUser = () => {
                 className="fill-icon-check-order transition-all"
               ></path>
             </svg>
-            Check Order
+            Tra cứu đơn hàng
           </Link>
         </li>
         <li>

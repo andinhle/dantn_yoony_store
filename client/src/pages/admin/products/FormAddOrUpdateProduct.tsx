@@ -113,7 +113,7 @@ const FormAddOrUpdateProduct = () => {
           attribute_values: [{}],
         },
       ],
-      is_variant: false,
+      // is_variant: false,
     },
     // resolver: zodResolver(productValidSchema),
     mode: "onChange",
@@ -588,7 +588,7 @@ const FormAddOrUpdateProduct = () => {
                 />
               </div>
             </div>
-            <div className="flex gap-3 items-center">
+            {/* <div className="flex gap-3 items-center">
               <div className="block">
                 <Label htmlFor="is_variant-product" value="Có biến thể" />
               </div>
@@ -603,7 +603,7 @@ const FormAddOrUpdateProduct = () => {
                   }}
                 />
               </div>
-            </div>
+            </div> */}
           </div>
           <div className="space-y-3">
             {variantFields.map((field, index) => {

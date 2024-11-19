@@ -179,8 +179,7 @@ const OrderDetails = () => {
                                                 <div>
                                                     <img
                                                         src={
-                                                            item?.variant?.image ||
-                                                            item?.variant?.product?.images[0]
+                                                            item?.variant?.image || item?.variant?.product?.images[0]
                                                         }
                                                         alt={item?.variant?.product?.name || 'Product Image'}
                                                         className="w-16 h-16 object-cover rounded-md border border-gray-300"
