@@ -9,6 +9,7 @@ use App\Models\Attribute;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 
 class AttributeController extends Controller
 {
@@ -60,7 +61,7 @@ class AttributeController extends Controller
                 return response()->json([
                     'message' => 'Slug đã tồn tại, vui lòng thử lại',
                     'status' => 'error',
-                ], Response::HTTP_INTERNAL_SERVER_ERROR);          
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             $attribute = Attribute::query()->create($data);
@@ -95,14 +96,14 @@ class AttributeController extends Controller
             return response()->json([
                 'message' => 'Lấy chi tiết attribute thành công',
                 'status' => 'success',
-                'data' => $data 
+                'data' => $data
             ], Response::HTTP_OK);
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
                 'message' => $th->getMessage()
             ]);
-    
+
             return response()->json([
                 'message' => 'Không tìm thấy attribute',
                 'status' => 'error'
@@ -172,4 +173,75 @@ class AttributeController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+
+
+    public function getAttributeDetail($id)
+    {
+        try {
+            $attribute = Attribute::with('attributeValues')->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'data' => $attribute,
+            ], Response::HTTP_OK);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Attribute không tồn tại.',
+            ], Response::HTTP_NOT_FOUND);
+        } catch (\Exception $e) {
+            Log::error("không tìm thấy id $id: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch attribute.',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+    public function updateType(Request $request, $id)
+    {
+        // Xác thực yêu cầu (type phải nằm trong danh sách hợp lệ)
+        $validated = $request->validate([
+            'type' => 'required|in:select,color,button,radio', // Kiểm tra type hợp lệ
+        ]);
+
+        try {
+            $attribute = Attribute::findOrFail($id);
+
+            $attribute->type = $validated['type'];
+            $attribute->save();
+            return response()->json([
+                'success' => true,
+                'message' => 'Attribute type updated successfully.',
+                'data' => $attribute,
+            ], Response::HTTP_OK);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Attribute not found.',
+            ], Response::HTTP_NOT_FOUND);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid type value.',
+                'errors' => $e->errors(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY); 
+        } catch (\Exception $e) {
+            Log::error("Error updating attribute type with id $id: " . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update attribute type.',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR); // Mã lỗi 500
+        }
+    }
+
+
+
+
+
+
 }
