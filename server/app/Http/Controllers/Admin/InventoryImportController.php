@@ -25,7 +25,8 @@ class InventoryImportController extends Controller
         $data = [
             'quantity' => $request->quantity,
             'import_price' => $request->import_price,
-            'variant_id' => $request->variant_id
+            'variant_id' => $request->variant_id,
+            'supplier_id' => $request->supplier_id
         ];
 
         try {
