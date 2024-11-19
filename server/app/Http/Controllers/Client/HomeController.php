@@ -37,6 +37,7 @@ class HomeController extends Controller
             // Lấy thông tin sản phẩm
             $product = Product::with('category', 'variants.attributeValues.attribute', 'variants.inventoryStock')
                 ->where('slug', $slug)
+                ->where('is_active', 1)
                 ->firstOrFail();
 
             // Lấy sản phẩm liên quan

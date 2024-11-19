@@ -125,6 +125,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::post('category/delete-much', [CategoryController::class, 'deleteMuch'])->name('category.deleteMuch');
         Route::patch('category/restore/{id}', [CategoryController::class, 'restore'])->name('category.restore');
         Route::delete('category/hard-delete/{id}', [CategoryController::class, 'hardDelete'])->name('category.hardDelete');
+        Route::get('category/{id}/product-count', [CategoryController::class, 'countProducts']);
+
 
         // QL mã giảm giá
         Route::apiResource('coupon', CouponController::class);
