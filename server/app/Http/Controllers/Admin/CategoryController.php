@@ -132,7 +132,9 @@ class CategoryController extends Controller
     public function hardDelete(string $id)
     {
         $category = Category::withTrashed()->findOrFail($id);
-
+        if ($category->product()->exists()) {
+            return response()->json(['message' => 'Không thể xóa danh mục vì vẫn còn sản phẩm!'], 400);
+        }
         $category->forceDelete();
 
         return response()->json(['message' => 'Xóa vĩnh viễn danh mục thành công!'], 200);
