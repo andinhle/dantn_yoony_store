@@ -30,4 +30,9 @@ class Product extends Model
     {
         return $this->hasMany(Rate::class);
     }
+    protected $casts = [
+        'is_featured' => 'boolean',
+        'is_good_deal' => 'boolean',
+        'is_active' => 'boolean',
+    ];
 }
