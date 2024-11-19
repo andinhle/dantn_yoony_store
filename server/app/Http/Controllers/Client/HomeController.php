@@ -519,10 +519,17 @@ class HomeController extends Controller
         });
     }
     // Lấy ra các địa chỉ user thêm
-    public function getAddress(string $id)
+    public function getAllAddress()
     {
         $user = Auth::id();
-        $address = Address::where('user_id', $user);
+        $address = Address::where('user_id', $user)->get();
+        return response()->json([
+            'address' => $address
+        ]);
+    }
+    public function getAddress(string $id)
+    {
+        $address = Address::where('id', $id)->get();
         return response()->json([
             'address' => $address
         ]);
