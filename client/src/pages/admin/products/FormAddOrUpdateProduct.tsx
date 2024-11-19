@@ -159,7 +159,7 @@ const FormAddOrUpdateProduct = () => {
         const {
           data: { data: response },
         } = await instance.get(`products/${id}`);
-        // console.log(response);
+        console.log(response);
         reset({
           ...response,
           variants: response.variants.map((variant) => ({
@@ -167,7 +167,7 @@ const FormAddOrUpdateProduct = () => {
             end_sale: variant.end_sale ? variant.end_sale : null,
             attribute_values: variant.attribute_values.map((av) => ({
               attribute_id: av.attribute_id,
-              attribute_value_id: av.pivot.attribute_value_id,
+              attribute_value_id: av.id,
               type: av.attribute.type,
             })),
           })),

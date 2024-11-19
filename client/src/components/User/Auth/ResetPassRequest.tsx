@@ -88,7 +88,7 @@ const ResetPassRequest = () => {
                     message: "Email sai định dạng !",
                   },
                 })}
-                className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none"
+                className="block focus:!border-primary/50 h-10 border-input px-3 rounded-md w-full focus:!shadow-none"
               />
               <span className="text-red-500 block text-sm mt-2">
                 {errors.email?.message}

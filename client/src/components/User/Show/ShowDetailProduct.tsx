@@ -775,7 +775,6 @@ const ShowDetailProduct: React.FC = () => {
                 </button>
                 <input
                   id="quantity-product"
-                  type="number"
                   min={1}
                   max={selectedVariant?.quantity}
                   value={quantity}

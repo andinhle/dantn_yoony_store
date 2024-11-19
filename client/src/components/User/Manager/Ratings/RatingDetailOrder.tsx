@@ -68,7 +68,7 @@ const ProductRatingItem = ({
           >
             {name}
           </Link>
-          <p className="text-sm text-secondary/50">
+          <p className="text-[13px] line-clamp-1 text-secondary/50">
             {attribute_values.length > 0 &&
               Object.entries(
                 attribute_values.reduce<Record<string, string[]>>(
