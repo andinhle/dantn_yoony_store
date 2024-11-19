@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import CartContext from "../../../contexts/CartContext";
-import { Table, Pagination, Popconfirm, message } from "antd";
+import { Table, Pagination, Popconfirm, message, ConfigProvider } from "antd";
 import type {
   PopconfirmProps,
   TableColumnsType,
@@ -361,15 +361,25 @@ const CartListClient = () => {
       </h2>
       <div className="grid grid-cols-12 gap-5">
         <div className="col-span-9">
-          <Table
-            dataSource={paginatedData}
-            rowSelection={rowSelection}
-            columns={columns}
-            rowKey="id"
-            className="z-40 table-cart"
-            pagination={false}
-            onChange={handleTableChange}
-          />
+          <ConfigProvider
+            theme={{
+              token: {
+                colorPrimary: "#ff9900",
+                colorInfoHover:"#fff5e5",
+                controlItemBgActiveHover:"#fff5e5",
+              },
+            }}
+          >
+            <Table
+              dataSource={paginatedData}
+              rowSelection={rowSelection}
+              columns={columns}
+              rowKey="id"
+              className="z-40 table-cart"
+              pagination={false}
+              onChange={handleTableChange}
+            />
+          </ConfigProvider>
           <div className="flex justify-between items-center mt-5">
             <Popconfirm
               title="Xoá các sản phẩm đã chọn"
@@ -404,7 +414,7 @@ const CartListClient = () => {
                   <path
                     d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z"
                     stroke="currentColor"
-                    strokeWidth="1.5"  
+                    strokeWidth="1.5"
                   />
                 </svg>
                 Xoá mục đã chọn

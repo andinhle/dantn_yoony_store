@@ -86,8 +86,6 @@ public function index()
     {
         try {
             $product = Product::findOrFail($id);
-
-<<<<<<< HEAD
             $product->update([
                 'name' => $request->name,
                 'slug' => $request->slug,
@@ -95,20 +93,8 @@ public function index()
                 'images' => json_encode($request->images),
                 'category_id' => $request->category_id,
                 'is_featured' => $request->is_featured ?? false,
-                'is_good_deal' => $request->is_good_deal ?? false,
                 'is_active' => $request->is_active ?? true,
             ]);
-=======
-        $product->update([
-            'name' => $request->name,
-            'slug' => $request->slug,
-            'description' => $request->description,
-            'images' => json_encode($request->images),
-            'category_id' => $request->category_id,
-            'is_featured' => $request->is_featured ?? false,
-            'is_active' => $request->is_active ?? true,
-        ]);
->>>>>>> 5a351da8d52c1c396615ceaafc41fda395bbbf44
 
             $variantIds = [];
 
