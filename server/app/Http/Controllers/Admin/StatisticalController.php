@@ -115,7 +115,8 @@ class StatisticalController extends Controller
 
             // Thống kê sản phẩm theo đánh giá cao nhất
             $topRatedProductsQuery = Product::query()
-                ->withAvg('rates', 'rating')
+                ->withAvg('rates', 'rating')  // Lấy điểm trung bình
+                ->withCount('rates')  // Lấy số lượng đánh giá
                 ->having('rates_avg_rating', '>', 0);
 
             if ($dateCondition) {
@@ -129,13 +130,15 @@ class StatisticalController extends Controller
                 ->take(10)
                 ->get()
                 ->map(function ($product) {
+                    // Làm tròn giá trị của 'rates_avg_rating' tới 0.5
                     $product->rates_avg_rating = round($product->rates_avg_rating * 2) / 2;
                     return $product;
                 });
 
             // Thống kê sản phẩm theo đánh giá thấp nhất
             $lowestRatedProductsQuery = Product::query()
-                ->withAvg('rates', 'rating')
+                ->withAvg('rates', 'rating')  // Lấy điểm trung bình
+                ->withCount('rates')  // Lấy số lượng đánh giá
                 ->having('rates_avg_rating', '>', 0);
 
             if ($dateCondition) {
@@ -149,9 +152,11 @@ class StatisticalController extends Controller
                 ->take(10)
                 ->get()
                 ->map(function ($product) {
+                    // Làm tròn giá trị của 'rates_avg_rating' tới 0.5
                     $product->rates_avg_rating = round($product->rates_avg_rating * 2) / 2;
                     return $product;
                 });
+
 
             // Trả về kết quả thống kê
             return response()->json([
