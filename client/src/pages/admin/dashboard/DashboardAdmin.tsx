@@ -1,6 +1,8 @@
+import ChartAdmin from "./ChartAdmin";
+
 const DashboardAdmin = () => {
   return (
-    <>
+    <div className="space-y-5">
       <div
         className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5"
         id="dashboard-admin"
@@ -105,7 +107,7 @@ const DashboardAdmin = () => {
           </div>
           <div>
             <h5 className="font-medium">
-              Đơn Hàng Chờ Xác Nhận <span className="text-primary">*</span>
+              Đơn chờ xác nhận <span className="text-primary">*</span>
             </h5>
             <span className="text-sm text-primary tracking-[0.75px]">50</span>
           </div>
@@ -133,11 +135,8 @@ const DashboardAdmin = () => {
           </div>
         </div>
       </div>
-      <div>
-        <div></div>
-        <div></div>
-      </div>
-    </>
+      <ChartAdmin />
+    </div>
   );
 };
 

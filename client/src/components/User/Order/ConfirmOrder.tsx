@@ -32,32 +32,33 @@ const ConfirmOrder = ({ current }: Prop) => {
         const resultCode = parsed?.resultCode;
         const vnp_TransactionStatus = parsed?.vnp_TransactionStatus;
         const isCallbackProcessed = localStorage.getItem("callback_processed");
-        const savedVoucher = JSON.parse(
-          localStorage.getItem("selected_voucher") || "null"
-        );
+        const savedVoucher = JSON.parse(localStorage.getItem("selected_voucher") || "null");
         const finalPaymentAmountVnpay = savedVoucher
           ? final_total - savedVoucher.discount
           : final_total;
-
-        if (
-          vnp_ResponseCode &&
-          !isCallbackProcessed &&
-          !callbackProcessedRef.current
-        ) {
-          localStorage.setItem("callback_processed", "true");
-          callbackProcessedRef.current = true;
-
-          const orderDataRaw = localStorage.getItem("orderData");
-          const parsedOrderData = JSON.parse(orderDataRaw!);
-
+          
+        if (isCallbackProcessed || callbackProcessedRef.current) {
+          return;
+        }
+  
+        localStorage.setItem("callback_processed", "true");
+        callbackProcessedRef.current = true;
+  
+        const orderDataRaw = localStorage.getItem("orderData");
+        const parsedOrderData = JSON.parse(orderDataRaw!);
+  
+        const formattedAddress = [
+          parsedOrderData?.addressDetail,
+          parsedOrderData?.ward,
+          parsedOrderData?.district,
+          parsedOrderData?.province
+        ].filter(Boolean).join(", ");
+  
+        if (vnp_ResponseCode && vnp_TransactionStatus === "00") {
           const { data } = await instance.post("vnpay/callback", {
             ...parsed,
           });
-          if (
-            vnp_ResponseCode === "00" &&
-            vnp_TransactionStatus === "00" &&
-            String(data.status) === "success"
-          ) {
+          if (vnp_ResponseCode === "00" && vnp_TransactionStatus === "00" && String(data.status) === "success") {
             message.success("Thanh toán thành công!");
             const checkoutData = await instance.post("checkout-vnpay", {
               name: parsedOrderData.fullName,
@@ -65,42 +66,28 @@ const ConfirmOrder = ({ current }: Prop) => {
               coupon_id: savedVoucher?.id,
               discount_amount: savedVoucher?.discount,
               final_total: finalPaymentAmountVnpay,
+              address: formattedAddress,
               ...parsedOrderData,
             });
-
+  
             if (checkoutData) {
-              const id_carts = JSON.parse(
-                localStorage.getItem("id_cart") || "[]"
-              );
+              const id_carts = JSON.parse(localStorage.getItem("id_cart") || "[]");
               dispatch({
                 type: "REMOVE_SELECTED",
                 payload: id_carts,
               });
               toast.success(checkoutData.data.message);
               navigate("/user-manager/user-orders");
-              [
-                "id_cart",
-                "orderData",
-                "final_total",
-                "callback_processed",
-                "selected_voucher",
-              ].forEach((key) => localStorage.removeItem(key));
+              ["id_cart", "orderData", "final_total", "callback_processed", "selected_voucher"].forEach((key) => localStorage.removeItem(key));
             }
           }
         }
-        if (
-          resultCode &&
-          !isCallbackProcessed &&
-          !callbackProcessedRef.current
-        ) {
-          localStorage.setItem("callback_processed", "true");
-          callbackProcessedRef.current = true;
-          const orderDataRaw = localStorage.getItem("orderData");
-          const parsedOrderData = JSON.parse(orderDataRaw!);
-
+  
+        if (resultCode && String(data.status) === "success") {
           const { data } = await instance.post("momo/callback", {
             ...parsed,
           });
+  
           if (resultCode === "0" && String(data.status) === "success") {
             message.success("Thanh toán thành công!");
             const checkoutData = await instance.post("checkout-momo", {
@@ -109,39 +96,34 @@ const ConfirmOrder = ({ current }: Prop) => {
               coupon_id: savedVoucher?.id,
               discount_amount: savedVoucher?.discount,
               final_total: finalPaymentAmountVnpay,
+              address: formattedAddress,
               ...parsedOrderData,
             });
-
+  
             if (checkoutData) {
-              const id_carts = JSON.parse(
-                localStorage.getItem("id_cart") || "[]"
-              );
+              const id_carts = JSON.parse(localStorage.getItem("id_cart") || "[]");
               dispatch({
                 type: "REMOVE_SELECTED",
                 payload: id_carts,
               });
               toast.success(checkoutData.data.message);
               navigate("/user-manager/user-orders");
-              [
-                "id_cart",
-                "orderData",
-                "final_total",
-                "callback_processed",
-                "selected_voucher",
-              ].forEach((key) => localStorage.removeItem(key));
+              ["id_cart", "orderData", "final_total", "callback_processed", "selected_voucher"].forEach((key) => localStorage.removeItem(key));
             }
           }
         }
+  
       } catch (error) {
         console.log(error);
       }
     })();
-
+  
     return () => {
       callbackProcessedRef.current = false;
       localStorage.removeItem("callback_processed");
     };
-  }, []);
+  }, [dispatch, final_total, navigate]);
+  
 
   const finalPaymentAmount = voucherCheck
     ? final_total - voucherCheck.discount
@@ -167,10 +149,10 @@ const ConfirmOrder = ({ current }: Prop) => {
       const parsedOrderData = JSON.parse(orderDataRaw!);
 
       const formattedAddress = [
-        parsedOrderData.addressDetail,
-        parsedOrderData.ward,
-        parsedOrderData.district,
-        parsedOrderData.province
+        parsedOrderData?.addressDetail,
+        parsedOrderData?.ward,
+        parsedOrderData?.district,
+        parsedOrderData?.province
       ].filter(Boolean).join(", ");
 
       if (parsedOrderData?.payment_method === "COD") {
@@ -204,6 +186,7 @@ const ConfirmOrder = ({ current }: Prop) => {
           coupon_id: voucherCheck?.id,
           discount_amount: voucherCheck?.discount,
           final_total: finalPaymentAmount,
+          address: formattedAddress,
           ...parsedOrderData,
         });
 
@@ -218,6 +201,7 @@ const ConfirmOrder = ({ current }: Prop) => {
           coupon_id: voucherCheck?.id,
           discount_amount: voucherCheck?.discount,
           final_total: finalPaymentAmount,
+          address: formattedAddress,
           ...parsedOrderData,
         });
 
@@ -247,6 +231,7 @@ const ConfirmOrder = ({ current }: Prop) => {
         });
 
         if (response) {
+          console.log(response)
           setVoucherCarts(response);
         }
         setCheckVoucher(undefined);

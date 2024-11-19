@@ -50,6 +50,7 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
+
     public function coupons()
     {
         return $this->hasMany(OrderCoupon::class);
@@ -57,8 +58,10 @@ class Order extends Model
 
 
      // Thêm mối quan hệ với Rate
+
      public function rates()
      {
          return $this->hasMany(Rate::class);
      }
+
 }

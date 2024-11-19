@@ -9,17 +9,18 @@ class Coupon extends Model
 {
     use HasFactory;
 
-    protected $table = 'coupons'; 
+    protected $table = 'coupons';
 
     protected $fillable = [
         'code',
+        'name',
+        'description',
         'discount',
         'discount_type',
         'usage_limit',
         'start_date',
         'end_date',
         'status',
-        'is_featured',
         'min_order_value',
         'max_order_value',
         'winning_probability',
@@ -28,7 +29,6 @@ class Coupon extends Model
 
     protected $casts = [
         'status' => 'boolean',
-        'is_featured' => 'boolean',
     ];
     public function users() {
         return $this->belongsToMany(User::class, 'coupon_user');

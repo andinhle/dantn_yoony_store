@@ -28,7 +28,6 @@ class StoreProductRequest extends FormRequest
             'images' => 'required|array',
             'category_id' => 'required|exists:categories,id',
             'is_featured' => 'boolean',
-            'is_good_deal' => 'boolean',
             'is_active' => 'boolean',
             'variants' => 'required|array',
             'variants.*.price' => 'required|numeric|min:0',

@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\RatingController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\RoleHasModelController;
+use App\Http\Controllers\Admin\StatisticalController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\CouponUserController;
 use App\Http\Controllers\Client\FilterController;
@@ -100,7 +101,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
-
     Route::get('/get-address/{id}', [HomeController::class, 'getAddress']);
     Route::post('/add-address', [HomeController::class, 'addAddress']);
     Route::put('/edit-address/{id}', [HomeController::class, 'editAddress']);
@@ -117,6 +117,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('/users', [UserController::class, 'index']);
         // Cập nhật role của user
         Route::patch('/users/{id}/role', [UserController::class, 'updateRole']);
+
+        //Thống kê
+        Route::get('thong-ke/doanh-thu', [StatisticalController::class, 'doanhThu']);
+        Route::get('thong-ke/san-pham', [StatisticalController::class, 'thongKeSanPham']);
+        Route::get('thong-ke/don-hang', [StatisticalController::class, 'thongKeDonHang']);
+
 
         // QL danh mục
         Route::apiResource('category', CategoryController::class);
@@ -147,7 +153,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('/product/{slug}', [ProductController::class, 'findBySlug']);
         Route::apiResource('products', ProductController::class);
         Route::patch('product/{id}/is_featured', [ProductController::class, 'updateIsFeatured'])->name('category.updateIsFeatured');
-        Route::patch('product/{id}/is_good_deal', [ProductController::class, 'updateIsGoodDeal'])->name('category.updateIsGoodDeal');
+        // Route::patch('product/{id}/is_good_deal', [ProductController::class, 'updateIsGoodDeal'])->name('category.updateIsGoodDeal');
         Route::patch('product/{id}/is_active', [ProductController::class, 'updateIsActive'])->name('category.updateIsActive');
         Route::patch('product/restore/{id}', [ProductController::class, 'restore'])->name('product.restore');
         Route::delete('product/hard-delete/{id}', [ProductController::class, 'hardDelete'])->name('product.hardDelete');
@@ -168,6 +174,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('admin/order-detail/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'orderDetail']);
         Route::patch('admin/order-detail/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'updateOrderDetail']);
         Route::patch('admin/order-cancelation/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'canceledOrder']);
+        Route::post('admin/order-update_much', [\App\Http\Controllers\Admin\OrderController::class, 'updateMuch']);
 
         // Nhập hàng
         Route::post('/import-orders', [InventoryImportController::class, 'import']);
@@ -177,7 +184,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Admin & Manage
     Route::middleware(['manage'])->group(function () {
         // QL FAQ
-        Route::controller(FaqController::class)->prefix('faq/')->group(function (){
+        Route::controller(FaqController::class)->prefix('faq/')->group(function () {
             Route::get('list-question', [FaqController::class, 'listQuestions']);
             Route::post('store-question', [FaqController::class, 'storeQuestions']);
             Route::delete('delete-question/{id}', [FaqController::class, 'deleteQuestion']);
@@ -210,8 +217,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     //Wishlist_user
     Route::get('/list-wishlists', [HomeController::class, 'getWishlists']);
-    Route::post('/insert-wishlists', [HomeController::class, 'insertWishlists']);
-    Route::delete('/delete-wishlists/{product_id}', [HomeController::class, 'deleteWishlist']);
+    Route::get('/list-wishlists-check', [HomeController::class, 'getWishlistsCheck']);
+    Route::post('/toogle-wishlists', [HomeController::class, 'toggleWishlist']);
+
 
 
     // Order
@@ -252,4 +260,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/orders/detail-reviews/{code}', [ReviewController::class, 'detailReview'])->name('orders.detailReview');
     Route::get('reviews/reviewed-orders', [ReviewController::class, 'getReviewedOrders'])->name('reviews.getReviewedOrders');
 
+    //changePassword
+    Route::post('/change-password', [AuthController::class, 'changePassword']);
+    //update user information
+    Route::put('/user/update', [AuthController::class, 'updateProfile']);
+    //user_profile
+    Route::get('/user/profile', [AuthController::class, 'getProfile']);
 });

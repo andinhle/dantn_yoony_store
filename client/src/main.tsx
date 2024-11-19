@@ -4,7 +4,7 @@ import "./index.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import LayoutUser from "./layouts/LayoutUser.tsx";
 import LayoutAdmin from "./layouts/LayoutAdmin.tsx";
-import DashboardAdmin from "./pages/admin/DashboardAdmin.tsx";
+import DashboardAdmin from "./pages/admin/dashboard/DashboardAdmin.tsx";
 import UsersAdmin from "./pages/admin/users/UserAdmin.tsx";
 import CategorysAdmin from "./pages/admin/CategorysAdmin.tsx";
 import Register from "./components/User/Auth/Register.tsx";
@@ -16,7 +16,7 @@ import MainContentUser from "./pages/user/MainContentUser.tsx";
 import Login from "./components/User/Auth/Login.tsx";
 import ProductList from "./pages/admin/products/ProductsList.tsx";
 import Orders from "./pages/admin/Orders/Order.tsx";
-import Rates from "./pages/admin/Evaluate.tsx";
+import Rates from "./pages/admin/rates/Evaluate.tsx";
 import OrderDetails from "./pages/admin/Orders/OrderDetails.tsx";
 import ScrollToTop from "./utils/ScrollToTop.tsx";
 import "react-toastify/dist/ReactToastify.css";
@@ -38,10 +38,9 @@ import LayoutUsersAdmin from "./layouts/Admin/LayoutUsersAdmin.tsx";
 import UserRoleManager from "./pages/admin/users/UserRoleManager.tsx";
 import CheckOutOrder from "./components/User/Order/CheckOutOrder.tsx";
 import CheckPermission from "./components/Middleware/CheckPermission.tsx";
-import UserDetails from "./components/componentUserDetails/UserDetails.tsx";
-import WishList from "./components/componentUserDetails/WishList.tsx";
+import UserDetails from "./components/User/Manager/Profile/UserDetails.tsx";
 import LayoutUserDetails from "./layouts/User/LayoutUserDetails.tsx";
-import { CheckOrder } from "./components/User/Header/CheckOrder.tsx";
+import { CheckOrder } from "./components/User/Order/CheckOrder.tsx";
 import EventUser from "./components/User/Event/EventUser.tsx";
 import BlogDetail from "./components/User/Blogs/BlogDetail.tsx";
 import FiledsProvider from "./contexts/FiledsContext.tsx";
@@ -52,10 +51,11 @@ import UserRatings from "./components/User/Manager/Ratings/UserRatings.tsx";
 import RatingDetailOrder from "./components/User/Manager/Ratings/RatingDetailOrder.tsx";
 import CallBackLoginGoogle from "./components/User/Auth/CallBackLoginGoogle.tsx";
 import FilterProducts from "./components/User/Filter/FilterProducts.tsx";
-import React from "react";
+import { StrictMode } from "react";
+import Whistlist from "./components/User/Manager/Wishlist/Wishlist.tsx";
 
 createRoot(document.getElementById("root")!).render(
-  <React.Fragment>
+  <StrictMode>
     <BrowserRouter>
       <BlogProvider>
         <FiledsProvider>
@@ -70,10 +70,7 @@ createRoot(document.getElementById("root")!).render(
                   <Route path="login" element={<Login />} />
                 </Route>
                 <Route path="reset-password" element={<CheckPermission />}>
-                  <Route
-                    path=""
-                    element={<LayoutResetPassword />}
-                  >
+                  <Route path="" element={<LayoutResetPassword />}>
                     <Route index element={<ResetPassRequest />} />
                     <Route path=":token/:email" element={<FormResetPass />} />
                   </Route>
@@ -92,13 +89,13 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="blogs" element={<BlogPage />} />
                 <Route path="user-manager" element={<LayoutUserDetails />}>
                   <Route index element={<UserDetails />} />
-                  <Route path="wishlist" element={<WishList />} />
                   <Route path="user-orders" element={<ManagerOrdersUser />} />
                   <Route
                     path="user-orders/order-detail/:code_order"
                     element={<UserOrderDetail />}
                   />
                   <Route path="user-ratings" element={<UserRatings />} />
+                  <Route path="wishlist" element={<Whistlist />} />
                   <Route
                     path="user-ratings/rating-detail/:code_order"
                     element={<RatingDetailOrder />}
@@ -140,5 +137,5 @@ createRoot(document.getElementById("root")!).render(
         </FiledsProvider>
       </BlogProvider>
     </BrowserRouter>
-  </React.Fragment>
+  </StrictMode>
 );
