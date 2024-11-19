@@ -140,6 +140,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
         // QL thuộc tính
         Route::apiResource('attribute', AttributeController::class);
+        Route::get('admin/attribute/{id}', [AttributeController::class, 'getAttributeDetail']);
+        Route::put('attributes/{id}/type', [AttributeController::class, 'updateType']);
+
         Route::apiResource('attribute-value', AttributeValueController::class);
         Route::get('/attribute-values/{id}', [AttributeValueController::class, 'getByAttributeId']);
 
