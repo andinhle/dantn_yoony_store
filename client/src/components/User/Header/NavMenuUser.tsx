@@ -172,7 +172,7 @@ const NavMenuUser = () => {
             </Popover>
           </li>
         )}
-        <li>
+        {/* <li>
           <button
             onClick={toggleChat}
             className="flex gap-2 items-center py-2 px-4 rounded-full hover:bg-primary hover:text-white transition-all"
@@ -193,7 +193,7 @@ const NavMenuUser = () => {
             </svg>
             Hỗ trợ
           </button>
-        </li>
+        </li> */}
         <li>
           {userButton}
           <Menu

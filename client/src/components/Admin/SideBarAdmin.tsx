@@ -358,7 +358,7 @@ const SideBarAdmin = () => {
                           strokeLinejoin="round"
                         />
                       </svg>
-                      Nhập đơn hàng
+                      Nhập hàng
                     </NavLink>
                   </li>
                   <li className="">

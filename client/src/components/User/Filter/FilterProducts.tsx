@@ -4,12 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import instance from "../../../instance/instance";
 import { ICategory } from "../../../interfaces/ICategory";
 import { IAttribute } from "../../../interfaces/IAttribute";
-import RenderProductFilter from "./renderProductFilter";
 import queryString from "query-string";
 import { useLocation } from "react-router-dom";
 import { IProduct } from "../../../interfaces/IProduct";
 import { debounce } from "lodash";
 import { LoadingOverlay } from "@achmadk/react-loading-overlay";
+import RenderProductFilter from "./RenderProductFilter";
 
 interface IPrice {
   min: number;

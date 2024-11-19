@@ -234,6 +234,7 @@ class ReviewController extends Controller
             ])
             ->where('user_id', $userId)
             ->where('status_order', Order::STATUS_ORDER_DELIVERED)
+            ->orderBy('created_at', 'desc')
             ->get();
             
             // Lập danh sách đánh giá cho mỗi đơn hàng

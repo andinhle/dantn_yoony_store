@@ -249,7 +249,7 @@ a:hover .number-cart{
   color:#ff9900
 }
 
-:where(.css-dev-only-do-not-override-vryruh).ant-table-wrapper .ant-table-thead >tr>th{
+.ant-table-wrapper .ant-table-thead >tr>th{
   background-color: #ff9900;
   color: white;
 }
