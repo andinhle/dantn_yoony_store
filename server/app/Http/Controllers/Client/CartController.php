@@ -23,12 +23,12 @@ class CartController extends Controller
     {
         try {
             $data = Cart::query()
-                ->with(['variant.product', 'variant.attributeValues.attribute', 'variant.inventoryStock'])
+                ->with(['variant.product.category', 'variant.attributeValues.attribute', 'variant.inventoryStock'])
                 ->where('user_id', Auth::id())
                 ->orderBy('created_at', 'desc')
                 ->get();
     
-
+               
             foreach ($data as $item) {
 
                 $this->totalAmount += $item['variant']['sale_price'] * $item['quantity'];
@@ -37,7 +37,13 @@ class CartController extends Controller
                 if (is_string($images)) {
                     $item['variant']['product']['images'] = json_decode($images, true);
                 }
+
+                Log::info($item->variant->product->is_active);
+                if($item->variant->product->category->is_active === false || $item->variant->product->is_active === false){
+                    Cart::query()->where('variant_id',$item->variant_id)->delete();
+                }
             }
+            
 
             return response()->json([
                 'status' => 'success',
@@ -75,11 +81,18 @@ class CartController extends Controller
                 ->with(['variant.product.category','variant.attributeValues.attribute', "user"])
                 ->where('variant_id', $request->variant_id)
                 ->where('user_id', Auth::id())
-                ->first();
+                ->first();  
     
 
-            $variant = Variant::query()->with(['inventoryStock'])->find($request->variant_id);
+            $variant = Variant::query()->with(['product.category','inventoryStock'])->find($request->variant_id);
 
+            if($variant->product->category->is_active === false || $variant->product->is_active === false){
+                return response()->json([
+                    'message' => 'Sản phẩm không tồn tại'
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            
             if($request->quantity > $variant->inventoryStock->quantity){
                 
                 return response()->json([
@@ -88,6 +101,7 @@ class CartController extends Controller
 
             }else{
                 if ($idExist) {
+                    if($idExist->where(''))
                     if($request->quantity>1){
                         if($idExist->quantity > $variant->inventoryStock->quantity){
                             return response()->json([
