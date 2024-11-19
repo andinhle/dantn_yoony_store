@@ -106,6 +106,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/add-address', [HomeController::class, 'addAddress']);
     Route::put('/edit-address/{id}', [HomeController::class, 'editAddress']);
     Route::delete('/delete-address/{id}', [HomeController::class, 'deleteAddress']);
+    Route::patch('/update-default-address/{id}', [HomeController::class, 'updateDefaultAddress']);
 
     Route::post('/change-password', [AuthController::class, 'changePassword']);
 
