@@ -44,8 +44,13 @@ class User extends Authenticatable
     }
 
     // một người dùng có thể tạo nhiều đánh giá
-     public function rates()
-     {
-         return $this->hasMany(Rate::class);
-     }
+    public function rates()
+    {
+        return $this->hasMany(Rate::class);
+    }
+
+    public function addresses()
+    {
+        return $this->belongsToMany(Address::class);
+    }
 }
