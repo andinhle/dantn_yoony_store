@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { ICategory } from "../../interfaces/ICategory";
-import instance from "../../instance/instance";
 import { toast } from "react-toastify";
 import swal from "sweetalert";
 import { Table, Modal } from "flowbite-react";
 import { Upload } from "antd";
 import type { UploadFile, UploadProps } from "antd";
-import ImgCrop from "antd-img-crop";
 import axios from "axios";
 import { LoadingOverlay } from "@achmadk/react-loading-overlay";
-import { IBanner } from "../../interfaces/IBanners";
 import { ToggleSwitch } from "flowbite-react";
+import { ICategory } from "../../../interfaces/ICategory";
+import { IBanner } from "../../../interfaces/IBanners";
+import instance from "../../../instance/instance";
 
 const BannerList: React.FC = () => {
     const [openModal, setOpenModal] = useState(false);

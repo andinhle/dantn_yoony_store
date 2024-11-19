@@ -48,10 +48,10 @@ const ConfirmOrder = ({ current }: Prop) => {
         const parsedOrderData = JSON.parse(orderDataRaw!);
   
         const formattedAddress = [
-          parsedOrderData.addressDetail,
-          parsedOrderData.ward,
-          parsedOrderData.district,
-          parsedOrderData.province
+          parsedOrderData?.addressDetail,
+          parsedOrderData?.ward,
+          parsedOrderData?.district,
+          parsedOrderData?.province
         ].filter(Boolean).join(", ");
   
         if (vnp_ResponseCode && vnp_TransactionStatus === "00") {
@@ -149,10 +149,10 @@ const ConfirmOrder = ({ current }: Prop) => {
       const parsedOrderData = JSON.parse(orderDataRaw!);
 
       const formattedAddress = [
-        parsedOrderData.addressDetail,
-        parsedOrderData.ward,
-        parsedOrderData.district,
-        parsedOrderData.province
+        parsedOrderData?.addressDetail,
+        parsedOrderData?.ward,
+        parsedOrderData?.district,
+        parsedOrderData?.province
       ].filter(Boolean).join(", ");
 
       if (parsedOrderData?.payment_method === "COD") {
@@ -231,6 +231,7 @@ const ConfirmOrder = ({ current }: Prop) => {
         });
 
         if (response) {
+          console.log(response)
           setVoucherCarts(response);
         }
         setCheckVoucher(undefined);

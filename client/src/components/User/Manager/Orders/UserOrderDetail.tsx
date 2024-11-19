@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import instance from "../../../../instance/instance";
 import { IOrderUserClient } from "../../../../interfaces/IOrderUserClient";
-import { Steps, Popover, Input, Radio, Space, message } from "antd";
+import { Steps, Popover, Input, Radio, Space, message, ConfigProvider } from "antd";
 import type { RadioChangeEvent } from "antd";
 import { useForm } from "react-hook-form";
 const UserOrderDetail = () => {
@@ -327,6 +327,13 @@ const UserOrderDetail = () => {
   const content = () => {
     return (
       <div className="space-y-3">
+        <ConfigProvider
+            theme={{
+              token: {
+                colorPrimary: "#ff9900",
+              },
+            }}
+          >
         <Radio.Group onChange={onChange} value={valueReason}>
           <Space direction="vertical">
             <Radio value={"Đổi ý không muốn mua nữa"}>
@@ -358,6 +365,7 @@ const UserOrderDetail = () => {
             </Radio>
           </Space>
         </Radio.Group>
+        </ConfigProvider>
         <button
           className="block py-1.5 px-2.5 bg-primary text-util rounded-sm"
           onClick={handleCancelOrder}

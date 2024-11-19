@@ -1,30 +1,35 @@
-import { Dropdown, Input } from "antd";
+import { Dropdown, Input, Pagination } from "antd";
 import type { MenuProps } from "antd";
 import { Table } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { IOrderUserClient } from "../../../../interfaces/IOrderUserClient";
 import instance from "../../../../instance/instance";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
+import { IMeta } from "../../../../interfaces/IMeta";
 const ManagerOrdersUser = () => {
   const [orderUsers, setListOrderUsers] = useState<IOrderUserClient[]>([]);
   const [valueSearch, setValueSearch] = useState<string>("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = parseInt(searchParams.get("page") || "1");
+  const [meta, setMeta] = useState<IMeta>();
   //Get danh sách đơn hàng của người dùng
   useEffect(() => {
     (async () => {
       try {
+        setSearchParams({ page: String(page) });
         const {
-          data: { data: response },
-        } = await instance.get("order");
-        if (response) {
-          setListOrderUsers(response);
+          data,
+        } = await instance.get(`order?page=${page}`);
+        if (data) {
+          setListOrderUsers(data.data);
+          setMeta(data.meta)
         }
-        console.log(response);
       } catch (error) {
         console.log(error);
       }
     })();
-  }, []);
+  }, [page]);
   const items: MenuProps["items"] = [
     {
       label: <a href="https://www.antgroup.com">1st menu item</a>,
@@ -514,7 +519,7 @@ const ManagerOrdersUser = () => {
   };
 
   return (
-    <div className="border border-[#f1f1f1] rounded-md p-4">
+    <div className="border border-[#f1f1f1] rounded-md p-4 space-y-3">
       <div className="space-y-5">
         <div className="flex justify-end gap-2 w-fit ml-auto">
           <Input
@@ -791,6 +796,18 @@ const ManagerOrdersUser = () => {
           </Table>
         </div>
       </div>
+      <Pagination
+        current={page}
+        onChange={(page) => {
+          setSearchParams({ page: String(page) });
+        }}
+        total={meta?.total || 0}
+        pageSize={meta?.per_page || 10}
+        showSizeChanger={false}
+        showTotal={(total, range) => `${range[0]}-${range[1]} của ${total} mục`}
+        align="end"
+      />
+
     </div>
   );
 };

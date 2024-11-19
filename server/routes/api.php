@@ -101,7 +101,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+    Route::get('/get-address/{id}', [HomeController::class, 'getAddress']);
+    Route::post('/add-address', [HomeController::class, 'addAddress']);
+    Route::put('/edit-address/{id}', [HomeController::class, 'editAddress']);
+    Route::delete('/delete-address/{id}', [HomeController::class, 'deleteAddress']);
 
+    Route::post('/change-password', [AuthController::class, 'changePassword']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -125,6 +130,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::post('category/delete-much', [CategoryController::class, 'deleteMuch'])->name('category.deleteMuch');
         Route::patch('category/restore/{id}', [CategoryController::class, 'restore'])->name('category.restore');
         Route::delete('category/hard-delete/{id}', [CategoryController::class, 'hardDelete'])->name('category.hardDelete');
+        Route::get('category/{id}/product-count', [CategoryController::class, 'countProducts']);
+
 
         // QL mã giảm giá
         Route::apiResource('coupon', CouponController::class);
@@ -215,6 +222,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     //Wishlist_user
     Route::get('/list-wishlists', [HomeController::class, 'getWishlists']);
+    Route::get('/list-wishlists-check', [HomeController::class, 'getWishlistsCheck']);
     Route::post('/toogle-wishlists', [HomeController::class, 'toggleWishlist']);
 
 

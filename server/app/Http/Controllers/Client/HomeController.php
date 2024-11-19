@@ -9,6 +9,7 @@ use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\RateAllByProductResource;
 use App\Http\Resources\RateResource;
+use App\Models\Address;
 use App\Models\Answer;
 use App\Models\Blog;
 use App\Models\Category;
@@ -37,6 +38,7 @@ class HomeController extends Controller
             // Lấy thông tin sản phẩm
             $product = Product::with('category', 'variants.attributeValues.attribute', 'variants.inventoryStock')
                 ->where('slug', $slug)
+                ->where('is_active', 1)
                 ->firstOrFail();
 
             // Lấy sản phẩm liên quan
@@ -95,38 +97,59 @@ class HomeController extends Controller
         }
     }
 
-    //insert wishlists by user
-    public function insertWishlists(Request $request)
-    {
-        if (auth()->check()) {
-            $user = auth()->user();
-
-            // Validate request input
-            $validatedData = $request->validate([
-                'product_id' => 'required|exists:products,id',
-            ]);
-
-            // Check if product already exists in the wishlist
-            $exists = $user->wishlists()->where('product_id', $request->product_id)->exists();
-
-            if ($exists) {
-                return response()->json(['error' => 'Sản phẩm đã tồn tại trong danh sách yêu thích.'], 400);
+        //get wishlists by check
+        public function getWishlistsCheck()
+        {
+            if (auth()->check()) {
+                $user = auth()->user();
+                
+                // Chỉ lấy danh sách wishlists không kèm product
+                $wishlists = $user->wishlists()->select(['id', 'user_id', 'product_id'])->get();
+                
+                return response()->json([
+                    'wishlists' => $wishlists
+                ], 200);
+            } else {
+                return response()->json(['error' => 'Tài khoản chưa đăng nhập.'], 401);
             }
-
-            // Create a new wishlist entry
-            $wishlist = $user->wishlists()->create([
-                'product_id' => $request->product_id,
-            ]);
-
-
-
-            return response()->json([
-                'message' => 'Sản phẩm đã được thêm vào danh sách yêu thích.',
-                'wishlist' => $wishlist
-            ], 201);
-        } else {
+        }
+    
+    //insert wishlists by user
+    public function toggleWishlist(Request $request)
+    {
+        if (!auth()->check()) {
             return response()->json(['error' => 'Tài khoản chưa đăng nhập.'], 401);
         }
+    
+        $user = auth()->user();
+    
+        // Validate request input
+        $validatedData = $request->validate([
+            'product_id' => 'required|exists:products,id',
+        ]);
+    
+        // Check if product exists in the wishlist
+        $wishlist = $user->wishlists()->where('product_id', $request->product_id)->first();
+    
+        if ($wishlist) {
+            // If exists, remove it
+            $wishlist->delete();
+            return response()->json([
+                'message' => 'Sản phẩm đã được xóa khỏi danh sách yêu thích.',
+                'status' => 'removed'
+            ], 200);
+        }
+    
+        // If not exists, create new wishlist entry
+        $wishlist = $user->wishlists()->create([
+            'product_id' => $request->product_id,
+        ]);
+    
+        return response()->json([
+            'message' => 'Sản phẩm đã được thêm vào danh sách yêu thích.',
+            'status' => 'added',
+            'wishlist' => $wishlist
+        ], 201);
     }
 
 
@@ -494,5 +517,83 @@ class HomeController extends Controller
                 'attribute_values' => $attributeValuesList
             ];
         });
+    }
+    // Lấy ra các địa chỉ user thêm
+    public function getAddress(string $id)
+    {
+        $user = Auth::id();
+        $address = Address::where('user_id', $user);
+        return response()->json([
+            'address' => $address
+        ]);
+    }
+
+    // Thêm địa chỉ
+    public function addAddress(Request $request)
+    {
+        try {
+            // Đếm số địa chỉ hiện tại của user
+            $addressCount = Address::where('user_id', Auth::id())->count();
+            
+            // Kiểm tra nếu đã có 5 địa chỉ
+            if ($addressCount >= 5) {
+                return response()->json([
+                    'error' => 'Bạn chỉ được thêm tối đa 5 địa chỉ'
+                ], 400);
+            }
+    
+            // Nếu chưa đủ 5 địa chỉ thì tạo mới
+            $address = Address::create([
+                'fullname' => $request->fullname,
+                'phone' => $request->phone,
+                'province' => $request->province, 
+                'district' => $request->district,
+                'ward' => $request->ward,
+                'address' => $request->address,
+                'user_id' => Auth::id()
+            ]);
+    
+            return response()->json([
+                'address' => $address
+            ]);
+    
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
+        }
+    }
+    // Sửa địa chỉ
+    public function editAddress(Request $request, string $id)
+    {
+        try {
+            $address = Address::findOrFail($id);
+            
+            $updateAddress = $address->update([
+                'fullname' => $request->fullname,
+                'phone' => $request->phone,
+                'province' => $request->province,
+                'district' => $request->district,
+                'ward' => $request->ward,
+                'address' => $request->address,
+                'user_id' => Auth::id()
+            ]);
+
+            return response()->json([
+                'address' => $address
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
+        }
+    }
+    // Xóa địa chỉ
+    public function deleteAddress(string $id)
+    {
+        try {
+            $address = Address::findOrFail($id);
+            $address->delete();
+            return response()->json(['message' => 'Địa chỉ đã được xóa thành công']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
+        }
+
     }
 }
