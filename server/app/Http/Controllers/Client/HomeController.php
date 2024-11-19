@@ -532,17 +532,31 @@ class HomeController extends Controller
     public function addAddress(Request $request)
     {
         try {
+            // Đếm số địa chỉ hiện tại của user
+            $addressCount = Address::where('user_id', Auth::id())->count();
+            
+            // Kiểm tra nếu đã có 5 địa chỉ
+            if ($addressCount >= 5) {
+                return response()->json([
+                    'error' => 'Bạn chỉ được thêm tối đa 5 địa chỉ'
+                ], 400);
+            }
+    
+            // Nếu chưa đủ 5 địa chỉ thì tạo mới
             $address = Address::create([
-                'province' => $request->province,
+                'fullname' => $request->fullname,
+                'phone' => $request->phone,
+                'province' => $request->province, 
                 'district' => $request->district,
                 'ward' => $request->ward,
                 'address' => $request->address,
                 'user_id' => Auth::id()
             ]);
-
+    
             return response()->json([
                 'address' => $address
             ]);
+    
         } catch (\Exception $e) {
             return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
         }
@@ -554,6 +568,8 @@ class HomeController extends Controller
             $address = Address::findOrFail($id);
             
             $updateAddress = $address->update([
+                'fullname' => $request->fullname,
+                'phone' => $request->phone,
                 'province' => $request->province,
                 'district' => $request->district,
                 'ward' => $request->ward,
