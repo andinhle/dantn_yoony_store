@@ -128,6 +128,7 @@ class AttributeController extends Controller
             $model = Attribute::findOrFail($attribute);
 
             $data =$request->all();
+            $data['slug'] = Str::slug($request->name);
 
             $model->update($data);
 
@@ -154,12 +155,25 @@ class AttributeController extends Controller
     public function destroy(Attribute $attribute)
     {
         try {
-            $model = Attribute::findOrFail($attribute->id);
+            $model = Attribute::with(['attributeValues.variants'])->findOrFail($attribute->id);
+            // Log::info($model->attributeValues);
+            foreach ($model->attributeValues as  $value) {
+                
+                if($value->variants){
+                    return response()->json([
+                        'messages' => 'Không thể xóa biến thể sản phẩm vì vẫn đang tồn tại trong hệ thống. Vui lòng kiểm tra và đảm bảo không có liên kết nào trước khi thực hiện thao tác này.',
+                        'status' => 'error',
+                    ], Response::HTTP_BAD_REQUEST);
+                }
+            }
+
+
             $model->delete();
 
             return response()->json([
                 'messages' => 'Xóa attribute thành công',
-                'status' => 'success'
+                'status' => 'success',
+                'data' => $model
             ], Response::HTTP_OK);
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
