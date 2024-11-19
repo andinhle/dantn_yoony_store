@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->integer('quantity');
             $table->integer('import_price');
-            $table->text('note');
             $table->foreignId('variant_id')->constrained('variants')->cascadeOnDelete();
             $table->timestamps();
         });
