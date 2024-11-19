@@ -9,6 +9,7 @@ use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\RateAllByProductResource;
 use App\Http\Resources\RateResource;
+use App\Models\Address;
 use App\Models\Answer;
 use App\Models\Blog;
 use App\Models\Category;
@@ -516,5 +517,67 @@ class HomeController extends Controller
                 'attribute_values' => $attributeValuesList
             ];
         });
+    }
+    // Lấy ra các địa chỉ user thêm
+    public function getAddress(string $id)
+    {
+        $user = Auth::id();
+        $address = Address::where('user_id', $user);
+        return response()->json([
+            'address' => $address
+        ]);
+    }
+
+    // Thêm địa chỉ
+    public function addAddress(Request $request)
+    {
+        try {
+            $address = Address::create([
+                'province' => $request->province,
+                'district' => $request->district,
+                'ward' => $request->ward,
+                'address' => $request->address,
+                'user_id' => Auth::id()
+            ]);
+
+            return response()->json([
+                'address' => $address
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
+        }
+    }
+    // Sửa địa chỉ
+    public function editAddress(Request $request, string $id)
+    {
+        try {
+            $address = Address::findOrFail($id);
+            
+            $updateAddress = $address->update([
+                'province' => $request->province,
+                'district' => $request->district,
+                'ward' => $request->ward,
+                'address' => $request->address,
+                'user_id' => Auth::id()
+            ]);
+
+            return response()->json([
+                'address' => $address
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
+        }
+    }
+    // Xóa địa chỉ
+    public function deleteAddress(string $id)
+    {
+        try {
+            $address = Address::findOrFail($id);
+            $address->delete();
+            return response()->json(['message' => 'Địa chỉ đã được xóa thành công']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
+        }
+
     }
 }

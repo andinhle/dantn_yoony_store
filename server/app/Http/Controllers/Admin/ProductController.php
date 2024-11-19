@@ -83,10 +83,22 @@ public function index()
 
 
     public function update(UpdateProductRequest $request, string $id): JsonResponse
-{
-    try {
-        $product = Product::findOrFail($id);
+    {
+        try {
+            $product = Product::findOrFail($id);
 
+<<<<<<< HEAD
+            $product->update([
+                'name' => $request->name,
+                'slug' => $request->slug,
+                'description' => $request->description,
+                'images' => json_encode($request->images),
+                'category_id' => $request->category_id,
+                'is_featured' => $request->is_featured ?? false,
+                'is_good_deal' => $request->is_good_deal ?? false,
+                'is_active' => $request->is_active ?? true,
+            ]);
+=======
         $product->update([
             'name' => $request->name,
             'slug' => $request->slug,
@@ -96,36 +108,37 @@ public function index()
             'is_featured' => $request->is_featured ?? false,
             'is_active' => $request->is_active ?? true,
         ]);
+>>>>>>> 5a351da8d52c1c396615ceaafc41fda395bbbf44
 
-        $variantIds = [];
+            $variantIds = [];
 
-        foreach ($request->variants as $variantData) {
-            $variant = Variant::updateOrCreate(
-                ['id' => $variantData['id'] ?? null, 'product_id' => $product->id],
-                [
-                    'price' => $variantData['price'],
-                    'sale_price' => $variantData['sale_price'],
-                    'end_sale' => $variantData['end_sale']?? null,
-                    'image' => $variantData['image'] ?? null,
-                ]
-            );
+            foreach ($request->variants as $variantData) {
+                $variant = Variant::updateOrCreate(
+                    ['id' => $variantData['id'] ?? null, 'product_id' => $product->id],
+                    [
+                        'price' => $variantData['price'],
+                        'sale_price' => $variantData['sale_price'],
+                        'end_sale' => $variantData['end_sale']?? null,
+                        'image' => $variantData['image'] ?? null,
+                    ]
+                );
 
-            if (isset($variantData['attribute_values'])) {
-                $variant->attributeValues()->sync($variantData['attribute_values']);
+                if (isset($variantData['attribute_values'])) {
+                    $variant->attributeValues()->sync($variantData['attribute_values']);
+                }
+
+                $variantIds[] = $variant->id;
             }
 
-            $variantIds[] = $variant->id;
+            $product->variants()->whereNotIn('id', $variantIds)->delete();
+
+            return response()->json(new ProductResource(
+                $product->load(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock'])
+            ), 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
         }
-
-        $product->variants()->whereNotIn('id', $variantIds)->delete();
-
-        return response()->json(new ProductResource(
-            $product->load(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock'])
-        ), 200);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
     }
-}
 
 
 
