@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('provider_token',512)->change()->nullable();
             $table->string('avatar')->nullable();
             $table->string('tel')->nullable();
-            $table->string('address')->nullable();
+            $table->foreignId('address_id')->constrained('addresses')->nullable();
             $table->enum('role', ['admin', 'manage'])->nullable()->default(null);
             $table->timestamps();
         });

@@ -100,6 +100,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+
+    Route::get('/get-address/{id}', [HomeController::class, 'getAddress']);
+    Route::post('/add-address', [HomeController::class, 'addAddress']);
+    Route::put('/edit-address/{id}', [HomeController::class, 'editAddress']);
+    Route::delete('/delete-address/{id}', [HomeController::class, 'deleteAddress']);
+
     Route::post('/change-password', [AuthController::class, 'changePassword']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
