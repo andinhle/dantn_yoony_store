@@ -519,10 +519,17 @@ class HomeController extends Controller
         });
     }
     // Lấy ra các địa chỉ user thêm
-    public function getAddress(string $id)
+    public function getAllAddress()
     {
         $user = Auth::id();
-        $address = Address::where('user_id', $user);
+        $address = Address::where('user_id', $user)->get();
+        return response()->json([
+            'address' => $address
+        ]);
+    }
+    public function getAddress(string $id)
+    {
+        $address = Address::where('id', $id)->get();
         return response()->json([
             'address' => $address
         ]);
@@ -552,6 +559,16 @@ class HomeController extends Controller
                 'address' => $request->address,
                 'user_id' => Auth::id()
             ]);
+
+            // Kiểm tra xem có phải địa chỉ đầu tiên của thằng này không
+            $userAddressCount = Address::where('user_id', Auth::id())->count();
+            
+            // Nếu đúng thì đặt nó làm mặc định
+            if ($userAddressCount === 1) {
+                $user = Auth::user();
+                $user->address_id = $address->id;
+                $user->save();
+            }
     
             return response()->json([
                 'address' => $address
@@ -595,5 +612,29 @@ class HomeController extends Controller
             return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
         }
 
+    }
+    // Thiết lập 
+    public function updateDefaultAddress(string $id)
+    {
+        try {
+            $address = Address::where('id', $id)
+                ->where('user_id', Auth::id())
+                ->firstOrFail();
+
+            $user = Auth::user();
+
+            $user->address_id = $id;
+            $user->save();
+
+            return response()->json([
+                'message' => 'Địa chỉ mặc định đã được cập nhật',
+                'default_address_id' => $id
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Không thể cập nhật địa chỉ mặc định: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
