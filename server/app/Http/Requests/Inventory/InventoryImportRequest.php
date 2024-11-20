@@ -23,7 +23,8 @@ class InventoryImportRequest extends FormRequest
     {
         return [
             'quantity' => 'required|integer|min:1',
-            'import_price' => 'required|integer'
+            'import_price' => 'required|integer',
+            'supplier' => 'required',
         ];
     }
 
@@ -35,6 +36,7 @@ class InventoryImportRequest extends FormRequest
             'quantity.min' => 'Số lượng phải >= 1',
             'import_price.required' => 'Giá nhập là bắt buộc',
             'import_price.integer' => 'Giá nhập phải là số.',
+            'supplier.required' => 'Nhà cung cấp là bắt buộc.',
         ];
     }
 }
