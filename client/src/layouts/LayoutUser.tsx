@@ -11,9 +11,9 @@ const LayoutUser = () => {
       <CartProvider>
         <div id="layout-user">
           <HeaderUser />
-          <main className="container-main min-h-[100vh]">
-            <Outlet />
-          </main>
+            <main className="container-main min-h-[100vh]">
+              <Outlet />
+            </main>
           <Footer />
         </div>
       </CartProvider>

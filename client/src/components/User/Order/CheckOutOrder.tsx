@@ -1,9 +1,10 @@
 import { Button, message, Steps, theme } from "antd";
 import React, { useRef, useState } from "react";
 import ConfirmOrder from "./ConfirmOrder";
-import AddressOrder from "./AddressOrder";
 import SelectMethodPayment from "./SelectMethodPayment";
 import OrderSummary from "./OrderSummary";
+import AddressSelect from "./AddressSelect";
+import AddressProvider from "../../../providers/AddressProvider";
 const CustomIcon = ({ icon, isCompleted }) => (
   <div
     className={`custom-icon-wrapper p-2 rounded-md ${
@@ -17,7 +18,7 @@ const CustomIcon = ({ icon, isCompleted }) => (
 const steps = [
   {
     title: "Địa chỉ",
-    content: <AddressOrder />,
+    content: <AddressSelect />,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -64,7 +65,7 @@ const steps = [
   },
   {
     title: "Thanh toán",
-    content: <OrderSummary />,
+    content: <OrderSummary/>,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -99,7 +100,7 @@ const CheckOutOrder = () => {
   const validateCurrentStep = () => {
     switch (current) {
       case 0:
-        return addressOrderRef.current.validate();
+        return true;
       case 1:
         return true;
       case 2:
@@ -139,6 +140,7 @@ const CheckOutOrder = () => {
 
   return (
     <React.Fragment>
+      <AddressProvider>
         <section className="my-7 space-y-7">
           <h2 className="flex gap-1.5 text-2xl text-primary font-medium">
             ĐẶT HÀNG
@@ -152,9 +154,9 @@ const CheckOutOrder = () => {
               />
               <div style={contentStyle}>
                 {/* {steps[current].content} */}
-                {current === 0 && <AddressOrder ref={addressOrderRef} />}
+                {current === 0 && <AddressSelect />}
                 {current === 1 && <SelectMethodPayment />}
-                {current === 2 && <OrderSummary />}
+                {current === 2 && <OrderSummary setCurrent={setCurrent} />}
               </div>
               <div style={{ marginTop: 24 }}>
                 {current < steps.length - 1 && (
@@ -179,9 +181,10 @@ const CheckOutOrder = () => {
                 )}
               </div>
             </div>
-            <ConfirmOrder current={current}  />
+            <ConfirmOrder current={current} />
           </div>
         </section>
+      </AddressProvider>
     </React.Fragment>
   );
 };

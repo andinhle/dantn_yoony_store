@@ -80,7 +80,7 @@ class HomeController extends Controller
             $user = auth()->user();
 
             // Lấy danh sách wishlists và sản phẩm kèm theo
-            $wishlists = $user->wishlists()->with('product.variants.attributeValues.attribute',)->get();
+            $wishlists = $user->wishlists()->with('product.variants.attributeValues.attribute')->paginate(10);
 
             // Giải mã trường 'images' cho mỗi sản phẩm trong wishlist
             foreach ($wishlists as $wishlist) {
@@ -524,14 +524,14 @@ class HomeController extends Controller
         $user = Auth::id();
         $address = Address::where('user_id', $user)->get();
         return response()->json([
-            'address' => $address
+            'data' => $address
         ]);
     }
     public function getAddress(string $id)
     {
         $address = Address::where('id', $id)->get();
         return response()->json([
-            'address' => $address
+            'data' => $address
         ]);
     }
 
@@ -571,7 +571,7 @@ class HomeController extends Controller
             }
     
             return response()->json([
-                'address' => $address
+                'data' => $address
             ]);
     
         } catch (\Exception $e) {
@@ -595,7 +595,7 @@ class HomeController extends Controller
             ]);
 
             return response()->json([
-                'address' => $address
+                'data' => $address
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
@@ -614,7 +614,7 @@ class HomeController extends Controller
 
     }
     // Thiết lập 
-    public function updateDefaultAddress(string $id)
+    public function updateDefaultAddress(int $id)
     {
         try {
             $address = Address::where('id', $id)
