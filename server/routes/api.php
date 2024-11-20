@@ -157,6 +157,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         // QL sản phẩm
         Route::get('/product/{slug}', [ProductController::class, 'findBySlug']);
         Route::apiResource('products', ProductController::class);
+        Route::get('/listDelete', [ProductController::class, 'listDelete']);
+
         Route::patch('product/{id}/is_featured', [ProductController::class, 'updateIsFeatured'])->name('category.updateIsFeatured');
         // Route::patch('product/{id}/is_good_deal', [ProductController::class, 'updateIsGoodDeal'])->name('category.updateIsGoodDeal');
         Route::patch('product/{id}/is_active', [ProductController::class, 'updateIsActive'])->name('category.updateIsActive');

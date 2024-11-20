@@ -211,4 +211,15 @@ public function index()
 
          return response()->json(['message' => 'Xóa vĩnh viễn Sản Phẩm thành công!'], 200);
      }
+
+
+     public function listDelete()
+{
+    $products = Product::onlyTrashed()
+        ->with(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock'])
+        ->paginate(5);
+
+    return ProductResource::collection($products);
+}
+
 }
