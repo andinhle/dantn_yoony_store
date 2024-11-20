@@ -13,62 +13,51 @@ class StatisticalController extends Controller
 {
     public function doanhThu(Request $request)
     {
-        try {
-            $type = $request->type;
-
-            $query = Order::query()->where('status_order', 'delivered');
-
-            switch ($type) {
-                case 'day':
-                    $query->whereDate('created_at', today());
-                    break;
-                case 'month':
-                    $query->whereMonth('created_at', now()->month)
-                        ->whereYear('created_at', now()->year);
-                    break;
-                case '6months':
-                    $query->whereBetween('created_at', [
-                        now()->subMonths(6)->startOfMonth(),
-                        now()->endOfMonth()
-                    ]);
-                    break;
-                case 'year':
-                    $query->whereYear('created_at', now()->year);
-                    break;
-                case 'last_month':
-                    $query->whereMonth('created_at', now()->subMonth()->month)
-                        ->whereYear('created_at', now()->year);
-                    break;
-                case 'all':
-                default:
-                    break;
-            }
-
-            $totalRevenue = $query->sum('final_total');
-
-            $orders = $query->get(['created_at', 'final_total']);
-
-            $result = $orders->groupBy(function ($order) {
-                return Carbon::parse($order->created_at)->startOfDay()->timestamp * 1000;
-            })->map(function ($group, $timestamp) {
-                return [
-                    $timestamp,
-                    $group->sum('final_total')
-                ];
-            })->values();
-
-            return response()->json([
-                'data' => $result,
-                'total_revenue' => (float) $totalRevenue
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => true,
-                'message' => 'Đã xảy ra lỗi trong quá trình xử lý.',
-                'details' => $e->getMessage(),
-            ], 500);
-        }
+       try {
+           $type = $request->type;
+           
+           $query = Order::where('status_order', 'delivered');
+           
+           match ($type) {
+               'day' => $query->whereDate('created_at', today()),
+               'month' => $query->whereMonth('created_at', now()->month)
+                                ->whereYear('created_at', now()->year),
+               '6months' => $query->whereBetween('created_at', [
+                   now()->subMonths(6)->startOfMonth(),
+                   now()->endOfMonth()
+               ]),
+               'year' => $query->whereYear('created_at', now()->year),
+               'last_month' => $query->whereMonth('created_at', now()->subMonth()->month)
+                                     ->whereYear('created_at', now()->year),
+               default => $query,
+           };
+           
+           $totalRevenue = $query->sum('final_total');
+           
+           $result = $query->get(['created_at', 'final_total'])
+               ->groupBy(function ($order) {
+                   return Carbon::parse($order->created_at)
+                       ->timezone('Asia/Ho_Chi_Minh')
+                       ->startOfDay()
+                       ->timestamp * 1000;
+               })
+               ->sortKeys()
+               ->map(function ($group, $timestamp) {
+                   return [$timestamp, $group->sum('final_total')];
+               })
+               ->values();
+           
+           return response()->json([
+               'data' => $result,
+               'total_revenue' => (float) $totalRevenue
+           ]);
+       } catch (\Exception $e) {
+           return response()->json([
+               'error' => true,
+               'message' => 'Đã xảy ra lỗi trong quá trình xử lý.',
+               'details' => $e->getMessage(),
+           ], 500);
+       }
     }
 
 

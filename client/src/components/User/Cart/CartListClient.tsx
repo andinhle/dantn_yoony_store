@@ -11,6 +11,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import instance from "../../../instance/instance";
 import { Link } from "react-router-dom";
+import { ICart } from "../../../interfaces/ICart";
 interface CartItem {
   id: string;
   variant: {
@@ -52,7 +53,7 @@ const CartListClient = () => {
   }, [currentPage, selectedRowKeys]);
 
   const handleQuantityChange = async (
-    item: any,
+    item: ICart,
     newQuantity: number,
     operation: string
   ) => {
@@ -61,9 +62,23 @@ const CartListClient = () => {
     dispatch({ type: "UPDATE", payload: updatedItem });
     try {
       if (operation === "increase") {
+        if (newQuantity>item.variant.inventory_stock.quantity) {
+          message.warning(
+            `Số lượng không được vượt quá ${item.variant.inventory_stock.quantity}`
+          );
+          return false;
+        }
         await instance.patch(`cart/${item.id}/increase`);
       } else if (operation === "decrease") {
         await instance.patch(`cart/${item.id}/decrease`);
+      }else{
+        if (newQuantity>item.variant.inventory_stock.quantity) {
+          message.warning(
+            `Số lượng không được vượt quá ${item.variant.inventory_stock.quantity}`
+          );
+          return false;
+        }
+        await instance.patch(`cart/${item.id}`,{quantity:newQuantity});
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -236,9 +251,10 @@ const CartListClient = () => {
           </button>
           <input
             min={1}
+            max={record.variant?.inventory_stock?.quantity}
             value={quantity}
             onChange={(e) =>
-              handleQuantityChange(record, Number(e.target.value))
+              handleQuantityChange(record, Number(e.target.value),'null')
             }
             className="w-10 p-[7px] border border-input outline-none text-center"
           />

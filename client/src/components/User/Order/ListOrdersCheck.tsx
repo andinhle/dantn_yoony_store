@@ -400,8 +400,6 @@ const ListOrdersCheck = ({ datas }: Prop) => {
     setExpandedRows(newExpandedRows);
   };
 
-
-
   return (
     <div className="overflow-x-auto mx-auto table-order-users min-h-screen bg-white">
       <Table className="text-center">
