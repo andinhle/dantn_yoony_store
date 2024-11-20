@@ -11,6 +11,61 @@ use Illuminate\Http\Request;
 
 class StatisticalController extends Controller
 {
+
+    public function NgayThongKe()
+    {
+        try {
+            $ranges = [
+                [
+                    'label' => '1 Ngày',
+                    'value' => 'one_day',
+                    'startDate' => now()->startOfDay()->format('d M Y'),
+                    'endDate' => now()->endOfDay()->format('d M Y'),
+                ],
+                [
+                    'label' => '1 Tháng',
+                    'value' => 'one_month',
+                    'startDate' => now()->startOfMonth()->format('d M Y'),
+                    'endDate' => now()->endOfMonth()->format('d M Y'),
+                ],
+                [
+                    'label' => '6 Tháng',
+                    'value' => 'six_months',
+                    'startDate' => now()->subMonths(6)->startOfMonth()->format('d M Y'),
+                    'endDate' => now()->format('d M Y'),
+                ],
+                [
+                    'label' => '1 Năm',
+                    'value' => 'one_year',
+                    'startDate' => Carbon::createFromDate(2024, 1, 1)->startOfDay()->format('d M Y'),
+                    'endDate' => now()->format('d M Y'),
+                ],
+                [
+                    'label' => 'Năm trước',
+                    'value' => 'last_year',
+                    'startDate' => now()->subYear()->startOfYear()->format('d M Y'),
+                    'endDate' => now()->subYear()->endOfYear()->format('d M Y'),
+                ],
+                [
+                    'label' => 'Tất cả',
+                    'value' => 'all',
+                    'startDate' => Order::min('created_at')
+                        ? Carbon::parse(Order::min('created_at'))->format('d M Y')
+                        : now()->format('d M Y'),
+                    'endDate' => now()->addDay()->format('d M Y'),
+                ],
+            ];
+
+            return response()->json($ranges);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Đã xảy ra lỗi trong quá trình xử lý.',
+                'details' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function doanhThu(Request $request)
     {
        try {
