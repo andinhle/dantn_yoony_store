@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\RatingController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\RoleHasModelController;
 use App\Http\Controllers\Admin\StatisticalController;
+use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\CouponUserController;
 use App\Http\Controllers\Client\FilterController;
@@ -189,6 +190,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::post('/import-orders', [InventoryImportController::class, 'import']);
         Route::get('/list-import', [InventoryImportController::class, 'index']);
         Route::get('/list-stock', [InventoryStockController::class, 'index']);
+
+        // Nhà cung cấp
+        Route::get('/suppliers', [SupplierController::class, 'index']);
+        Route::get('/supplier/{id}', [SupplierController::class, 'show']);
+        Route::post('/store-supplier', [SupplierController::class, 'store']);
+        Route::put('/update-supplier/{id}', [SupplierController::class, 'update']);
+        Route::delete('/delete-supplier/{id}', [SupplierController::class, 'delete']);
     });
     // Admin & Manage
     Route::middleware(['manage'])->group(function () {
