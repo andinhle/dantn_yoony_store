@@ -12,37 +12,40 @@ class UserController extends Controller
     // Lấy tất cả thông tin user
     public function index()
     {
-        $users = User::with('role')->paginate(5);
+        $users = User::query()->paginate(5);
+
         return response()->json($users, 200);
     }
-
     public function updateRole(Request $request, $id)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'role_id' => 'required|exists:roles,id'
+            // Xác thực đầu vào
+            $validatedData = $request->validate([
+                'role' => 'required|in:admin,user', 
             ]);
 
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
-            }
-
+            // Tìm người dùng theo ID
             $user = User::find($id);
+
             if (!$user) {
-                return response()->json(['message' => 'không có người dùng'], 404);
+                return response()->json(['message' => 'Người dùng không tồn tại.'], 404);
             }
 
-            $user->role_id = $request->input('role_id');
+            // Cập nhật quyền
+            $user->role = $validatedData['role'];
             $user->save();
 
-            return response()->json(['message' => 'Role update thành công'], 200);
-
+            return response()->json([
+                'message' => 'Cập nhật quyền thành công.',
+                'user' => $user,
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Có lỗi xảy ra trong quá trình cập nhật role.',
-                'message' => $e->getMessage()
+                'message' => 'Có lỗi xảy ra khi cập nhật quyền.',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
+
 
 }
