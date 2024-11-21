@@ -153,6 +153,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         // QL banner
         Route::apiResource('banners', BannerController::class);
         Route::patch('banners/{id}/is-active', [BannerController::class, 'updateIsActive'])->name('blogs.updateIsActive');
+        // Route::put('createBannerMultiple', [BannerController::class, 'createBannerMultiple']);
+        // Route::post('updateBannerMultiple', [BannerController::class, 'updateBannerMultiple']);
 
         // QL blog
         Route::apiResource('blogs', BlogController::class);
