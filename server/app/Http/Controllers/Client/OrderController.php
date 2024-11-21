@@ -14,6 +14,7 @@ use App\Models\Order;
 use App\Models\OrderCancellation;
 use App\Models\OrderCoupon;
 use App\Models\OrderItem;
+use App\Models\User;
 use App\Models\Variant;
 use App\Services\VNPAYService;
 use Illuminate\Http\Request;
@@ -47,7 +48,7 @@ class OrderController extends Controller
     {
         try {
             $query = Order::query()
-                ->with(['items.variant'])
+                ->with(['items.variant.product'])
                 ->where('user_id', Auth::id())
                 ->orderBy('created_at', 'desc');
     
@@ -88,9 +89,9 @@ class OrderController extends Controller
         try {
             
             $data = Order::query()
-            ->with(['items.variant.attributeValues.attribute', 'items.variant.product','items.variant.product.category', 'coupons.coupon', 'user'])
+            ->with(['items.variant.attributeValues.attribute', 'items.variant.product','items.variant.product.category', 'coupons.coupon'])
             ->where('user_id', Auth::id())
-            ->where('code', $code)
+            ->where('code', $code) 
             ->firstOrFail();
 
             $data = $data->toArray();
@@ -108,6 +109,9 @@ class OrderController extends Controller
                 }
             
             }}
+
+            $data['email'] = Auth::user()->email;
+
             
             return response()->json([
                 'data' => $data,
