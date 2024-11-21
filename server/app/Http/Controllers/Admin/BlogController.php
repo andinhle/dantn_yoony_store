@@ -50,6 +50,8 @@ class BlogController extends Controller
             $blog = Blog::findOrFail($id);
 
             $data = [
+                'title' =>  $request->title,
+                'thambnail' =>  $request->thambnail,
                 'content' => $request->content,
                 'slug' => $request->slug,
                 'user_id' => $request->user_id,
