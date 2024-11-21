@@ -34,7 +34,9 @@
     "html-react-parser": "^5.1.18",
     "jodit-react": "^4.1.2",
     "js-cookie": "^3.0.5",
+    "laravel-echo": "^1.17.0",
     "primereact": "^10.8.2",
+    "pusher-js": "^8.4.0-rc2",
     "query-string": "^9.1.1",
     "random-string-generator": "^1.0.1",
     "rc-tween-one": "^3.0.6",
@@ -52,7 +54,7 @@
     "react-transition-group": "^4.4.5",
     "react-zoom-image-hover": "^1.0.0",
     "sweetalert": "^2.1.2",
-    "swiper": "^11.1.10",
+    "swiper": "^11.1.14",
     "tailwind-merge": "^2.5.3",
     "zod": "^3.23.8"
   },

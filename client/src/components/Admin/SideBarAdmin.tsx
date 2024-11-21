@@ -35,7 +35,7 @@ const SideBarAdmin = () => {
               <NavLink
                 to={"/admin"}
                 className={
-                  " rounded-md flex items-center gap-2 py-[10px] px-2 hover:bg-[#f2f2f7] border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
+                  " rounded-md flex items-center gap-2 py-[10px] px-2 hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
                 }
                 end
                 onClick={() => {
@@ -96,7 +96,7 @@ const SideBarAdmin = () => {
               <NavLink
                 to={"categorys"}
                 className={
-                  " rounded-md flex items-center gap-2 py-[10px] px-2 hover:bg-[#f2f2f7] border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
+                  " rounded-md flex items-center gap-2 py-[10px] px-2 hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
                 }
                 end
                 onClick={() => {
@@ -125,7 +125,7 @@ const SideBarAdmin = () => {
               <div
                 className={`${
                   is_openProduct && "bg-secondary text-util hover:bg-secondary"
-                } flex items-center justify-between px-2 py-[10px] rounded-md hover:cursor-pointer border border-[#f5f5f5] hover:bg-[#f2f2f7]`}
+                } flex items-center justify-between px-2 py-[10px] rounded-md hover:cursor-pointer border border-[#f5f5f5] hover:bg-primary hover:text-util`}
                 onClick={() => {
                   setOpenProduct(!is_openProduct);
                   setOpenUser(false);
@@ -174,7 +174,7 @@ const SideBarAdmin = () => {
                       to={"products/add"}
                       end
                       className={
-                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] text-[15px] transition-all"
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-primary hover:text-util text-[15px] transition-all"
                       }
                     >
                       <svg
@@ -207,7 +207,7 @@ const SideBarAdmin = () => {
                       to={"products"}
                       end
                       className={
-                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] text-[15px] transition-all"
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-primary hover:text-util text-[15px] transition-all"
                       }
                     >
                       <svg
@@ -253,7 +253,7 @@ const SideBarAdmin = () => {
                       to={"variants"}
                       end
                       className={
-                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] text-[15px] transition-all"
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-primary hover:text-util text-[15px] transition-all"
                       }
                     >
                       <svg
@@ -313,7 +313,7 @@ const SideBarAdmin = () => {
                       to={"nhap-hang"}
                       end
                       className={
-                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] text-[15px] transition-all"
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-primary hover:text-util text-[15px] transition-all"
                       }
                     >
                       <svg
@@ -366,7 +366,7 @@ const SideBarAdmin = () => {
                       to={"ton-kho"}
                       end
                       className={
-                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] text-[15px] transition-all"
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-primary hover:text-util text-[15px] transition-all"
                       }
                     >
                       <svg
@@ -422,7 +422,7 @@ const SideBarAdmin = () => {
               <NavLink
                 to={"orders"}
                 className={
-                  "flex items-center gap-2 py-[10px] px-2 hover:bg-[#f2f2f7] border border-[#f5f5f5] text-[15px] hover:text-hover  rounded-md transition-all"
+                  "flex items-center gap-2 py-[10px] px-2 hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] hover:text-hover  rounded-md transition-all"
                 }
                 onClick={() => {
                   setOpenProduct(false);
@@ -455,7 +455,7 @@ const SideBarAdmin = () => {
                   setOpenUser(false);
                 }}
                 className={
-                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
+                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
                 }
               >
                 <svg
@@ -479,7 +479,7 @@ const SideBarAdmin = () => {
               <div
                 className={`${
                   is_openUser && "bg-secondary text-util hover:bg-secondary"
-                } flex items-center justify-between px-2 py-[10px] rounded-md hover:cursor-pointer border border-[#f5f5f5] hover:bg-[#f2f2f7]`}
+                } flex items-center justify-between px-2 py-[10px] rounded-md hover:cursor-pointer border border-[#f5f5f5] hover:bg-primary hover:text-util`}
                 onClick={() => {
                   setOpenUser(!is_openUser);
                   setOpenProduct(false);
@@ -540,7 +540,7 @@ const SideBarAdmin = () => {
                       to={"users/role-manager"}
                       end
                       className={
-                        "flex text-[15px] p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
+                        "flex text-[15px] p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-primary hover:text-util transition-all"
                       }
                     >
                       <svg
@@ -589,7 +589,7 @@ const SideBarAdmin = () => {
                       to={"users"}
                       end
                       className={
-                        "flex text-[15px] p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-[#f2f2f7] transition-all"
+                        "flex text-[15px] p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-primary hover:text-util transition-all"
                       }
                     >
                       <svg
@@ -621,7 +621,7 @@ const SideBarAdmin = () => {
                   setOpenUser(false);
                 }}
                 className={
-                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
+                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
                 }
               >
                 <svg
@@ -661,7 +661,7 @@ const SideBarAdmin = () => {
                   setOpenUser(false);
                 }}
                 className={
-                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
+                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
                 }
               >
                 <svg
@@ -690,7 +690,7 @@ const SideBarAdmin = () => {
                   setOpenUser(false);
                 }}
                 className={
-                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
+                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
                 }
               >
                 <svg
@@ -755,7 +755,7 @@ const SideBarAdmin = () => {
                   setOpenUser(false);
                 }}
                 className={
-                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
+                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
                 }
               >
                 <svg
@@ -784,7 +784,7 @@ const SideBarAdmin = () => {
                   setOpenUser(false);
                 }}
                 className={
-                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-[#f2f2f7] border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
+                  "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] hover:text-hover transition-all"
                 }
               >
                 <svg

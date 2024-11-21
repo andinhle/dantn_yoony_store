@@ -23,7 +23,6 @@ class ProductResource extends JsonResource
             'category_id' => $this->category_id,
             'category' => new CategoryResource($this->whenLoaded('category')),
             'is_featured' => $this->is_featured,
-            'is_good_deal' => $this->is_good_deal,
             'is_active' => $this->is_active,
             'variants' => VariantResource::collection($this->whenLoaded('variants'))
         ];

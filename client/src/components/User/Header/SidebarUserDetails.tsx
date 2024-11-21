@@ -119,7 +119,7 @@ const SidebarUserDetails = () => {
           </li>
           <li className="mb-2">
             <NavLink
-              to="address"
+              to="addresses"
               className={`flex items-center px-3 py-2.5 cursor-pointer border m-4 rounded-sm hover:bg-[#fafafe] hover:text-hover transition-all border-[#f1f1f1] 
               }`}
             >
@@ -145,7 +145,7 @@ const SidebarUserDetails = () => {
               <span>Địa chỉ</span>
             </NavLink>
           </li>
-          <li className="mb-2">
+          {/* <li className="mb-2">
             <NavLink
               to="setting"
               className={`flex items-center px-3 py-2.5 cursor-pointer border m-4 rounded-sm hover:bg-[#fafafe] hover:text-hover transition-all border-[#f1f1f1]`}
@@ -171,7 +171,7 @@ const SidebarUserDetails = () => {
               </svg>
               <span>Cài đặt</span>
             </NavLink>
-          </li>
+          </li> */}
         </ul>
       </nav>
     </div>

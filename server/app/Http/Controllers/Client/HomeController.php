@@ -9,6 +9,7 @@ use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\RateAllByProductResource;
 use App\Http\Resources\RateResource;
+use App\Models\Address;
 use App\Models\Answer;
 use App\Models\Blog;
 use App\Models\Category;
@@ -52,7 +53,7 @@ class HomeController extends Controller
 
             // Tính trung bình số sao
             $averageRating = Rate::where('product_id', $product->id)
-            ->average('rating');
+                ->average('rating');
 
             return response()->json([
                 'product' => new ProductResource($product),
@@ -60,7 +61,6 @@ class HomeController extends Controller
                 // 'ratingslide10' => RateResource::collection($rates)
                 'average_rating' => round($averageRating * 2) / 2,
             ], 200);
-
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Không tìm thấy sản phẩm.'], 404);
         } catch (\Throwable $e) {
@@ -78,17 +78,17 @@ class HomeController extends Controller
     {
         if (auth()->check()) {
             $user = auth()->user();
-    
+
             // Lấy danh sách wishlists và sản phẩm kèm theo
-            $wishlists = $user->wishlists()->with('product.variants.attributeValues.attribute',)->get();
-    
+            $wishlists = $user->wishlists()->with('product.variants.attributeValues.attribute')->paginate(10);
+
             // Giải mã trường 'images' cho mỗi sản phẩm trong wishlist
             foreach ($wishlists as $wishlist) {
                 if ($wishlist->product && $wishlist->product->images) {
                     $wishlist->product->images = json_decode($wishlist->product->images);
                 }
             }
-    
+
             return response()->json([
                 'wishlists' => $wishlists
             ], 200);
@@ -96,40 +96,61 @@ class HomeController extends Controller
             return response()->json(['error' => 'Tài khoản chưa đăng nhập.'], 401);
         }
     }
+
+        //get wishlists by check
+        public function getWishlistsCheck()
+        {
+            if (auth()->check()) {
+                $user = auth()->user();
+                
+                // Chỉ lấy danh sách wishlists không kèm product
+                $wishlists = $user->wishlists()->select(['id', 'user_id', 'product_id'])->get();
+                
+                return response()->json([
+                    'wishlists' => $wishlists
+                ], 200);
+            } else {
+                return response()->json(['error' => 'Tài khoản chưa đăng nhập.'], 401);
+            }
+        }
     
     //insert wishlists by user
-    public function insertWishlists(Request $request)
-{
-    if (auth()->check()) {
+    public function toggleWishlist(Request $request)
+    {
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Tài khoản chưa đăng nhập.'], 401);
+        }
+    
         $user = auth()->user();
-
+    
         // Validate request input
         $validatedData = $request->validate([
             'product_id' => 'required|exists:products,id',
         ]);
-
-        // Check if product already exists in the wishlist
-        $exists = $user->wishlists()->where('product_id', $request->product_id)->exists();
-
-        if ($exists) {
-            return response()->json(['error' => 'Sản phẩm đã tồn tại trong danh sách yêu thích.'], 400);
+    
+        // Check if product exists in the wishlist
+        $wishlist = $user->wishlists()->where('product_id', $request->product_id)->first();
+    
+        if ($wishlist) {
+            // If exists, remove it
+            $wishlist->delete();
+            return response()->json([
+                'message' => 'Sản phẩm đã được xóa khỏi danh sách yêu thích.',
+                'status' => 'removed'
+            ], 200);
         }
-
-        // Create a new wishlist entry
+    
+        // If not exists, create new wishlist entry
         $wishlist = $user->wishlists()->create([
             'product_id' => $request->product_id,
         ]);
-
-        
-
+    
         return response()->json([
             'message' => 'Sản phẩm đã được thêm vào danh sách yêu thích.',
+            'status' => 'added',
             'wishlist' => $wishlist
         ], 201);
-    } else {
-        return response()->json(['error' => 'Tài khoản chưa đăng nhập.'], 401);
     }
-}
 
 
 
@@ -204,29 +225,29 @@ class HomeController extends Controller
     }
 
     // Lọc sản phẩm đang sale
-    public function getGoodDealProducts(): JsonResponse
-    {
-        try {
-            $goodDealProducts = Product::with('category', 'variants.attributeValues.attribute')
-                ->where('is_good_deal', true)
-                ->where('is_active', true) // Điều kiện kiểm tra sản phẩm phải active
-                ->limit(10)
-                ->get();
+    // public function getGoodDealProducts(): JsonResponse
+    // {
+    //     try {
+    //         $goodDealProducts = Product::with('category', 'variants.attributeValues.attribute')
+    //             ->where('is_good_deal', true)
+    //             ->where('is_active', true) // Điều kiện kiểm tra sản phẩm phải active
+    //             ->limit(10)
+    //             ->get();
 
-            if ($goodDealProducts->isEmpty()) {
-                return response()->json([
-                    'message' => 'Không có sản phẩm đang sale nào.',
-                ], 404);
-            }
+    //         if ($goodDealProducts->isEmpty()) {
+    //             return response()->json([
+    //                 'message' => 'Không có sản phẩm đang sale nào.',
+    //             ], 404);
+    //         }
 
-            return response()->json(ProductResource::collection($goodDealProducts), 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Có lỗi xảy ra khi truy xuất sản phẩm sale.',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
+    //         return response()->json(ProductResource::collection($goodDealProducts), 200);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'message' => 'Có lỗi xảy ra khi truy xuất sản phẩm sale.',
+    //             'error' => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
 
 
 
@@ -283,7 +304,6 @@ class HomeController extends Controller
 
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
     }
 
     public function getCouponCart(Request $request)
@@ -345,7 +365,6 @@ class HomeController extends Controller
                 'status' => 'success',
                 'data' => $data,
             ]);
-
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
@@ -386,17 +405,17 @@ class HomeController extends Controller
     {
         // Lấy thông tin sản phẩm từ slug
         $product = Product::where('slug', $slug)->firstOrFail();
-    
+
         // Tính trung bình số sao
         $averageRating = Rate::where('product_id', $product->id)
             ->average('rating');
-    
+
         // Đếm số lượng đánh giá theo từng mức sao
         $ratingCounts = $this->getRatingCounts($product->id);
-    
+
         // Lấy danh sách đánh giá có phân trang
         $formattedPagedRates = $this->getPagedRatings($request, $product);
-    
+
         return [
             'ratings' => [
                 'average_rating' => round($averageRating * 2) / 2,
@@ -412,10 +431,10 @@ class HomeController extends Controller
             ]
         ];
     }
-    
-    
-    
-    
+
+
+
+
 
     // Hàm phụ để lấy số lượng đánh giá theo từng sao
     private function getRatingCounts($productId)
@@ -440,7 +459,7 @@ class HomeController extends Controller
     private function getPagedRatings(Request $request, Product $product)
     {
         $ratingFilter = $request->input('ratingFilter');
-    
+
         $rateQuery = Rate::with([
             'user:id,name,avatar',
             'product:id,name,slug',
@@ -451,14 +470,14 @@ class HomeController extends Controller
             },
             'order.items.variant.attributeValues.attribute'
         ])
-        ->where('product_id', $product->id);
-    
+            ->where('product_id', $product->id);
+
         if (in_array($ratingFilter, [1, 2, 3, 4, 5])) {
             $rateQuery->where('rating', $ratingFilter);
         }
-    
+
         $pagedRates = $rateQuery->orderByDesc('created_at')->paginate(8);
-    
+
         return $pagedRates->through(function ($rate) {
             // Lấy tất cả các items có variant thuộc sản phẩm được đánh giá
             $attributeValuesList = collect($rate->order?->items)
@@ -485,7 +504,7 @@ class HomeController extends Controller
                 })
                 ->values()
                 ->all();
-    
+
             return [
                 'id' => $rate->id,
                 'content' => $rate->content,
@@ -498,5 +517,124 @@ class HomeController extends Controller
                 'attribute_values' => $attributeValuesList
             ];
         });
+    }
+    // Lấy ra các địa chỉ user thêm
+    public function getAllAddress()
+    {
+        $user = Auth::id();
+        $address = Address::where('user_id', $user)->get();
+        return response()->json([
+            'data' => $address
+        ]);
+    }
+    public function getAddress(string $id)
+    {
+        $address = Address::where('id', $id)->get();
+        return response()->json([
+            'data' => $address
+        ]);
+    }
+
+    // Thêm địa chỉ
+    public function addAddress(Request $request)
+    {
+        try {
+            // Đếm số địa chỉ hiện tại của user
+            $addressCount = Address::where('user_id', Auth::id())->count();
+            
+            // Kiểm tra nếu đã có 5 địa chỉ
+            if ($addressCount >= 5) {
+                return response()->json([
+                    'error' => 'Bạn chỉ được thêm tối đa 5 địa chỉ'
+                ], 400);
+            }
+    
+            // Nếu chưa đủ 5 địa chỉ thì tạo mới
+            $address = Address::create([
+                'fullname' => $request->fullname,
+                'phone' => $request->phone,
+                'province' => $request->province, 
+                'district' => $request->district,
+                'ward' => $request->ward,
+                'address' => $request->address,
+                'user_id' => Auth::id()
+            ]);
+
+            // Kiểm tra xem có phải địa chỉ đầu tiên của thằng này không
+            $userAddressCount = Address::where('user_id', Auth::id())->count();
+            
+            // Nếu đúng thì đặt nó làm mặc định
+            if ($userAddressCount === 1) {
+                $user = Auth::user();
+                $user->address_id = $address->id;
+                $user->save();
+            }
+    
+            return response()->json([
+                'data' => $address
+            ]);
+    
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
+        }
+    }
+    // Sửa địa chỉ
+    public function editAddress(Request $request, string $id)
+    {
+        try {
+            $address = Address::findOrFail($id);
+            
+            $updateAddress = $address->update([
+                'fullname' => $request->fullname,
+                'phone' => $request->phone,
+                'province' => $request->province,
+                'district' => $request->district,
+                'ward' => $request->ward,
+                'address' => $request->address,
+                'user_id' => Auth::id()
+            ]);
+
+            return response()->json([
+                'data' => $address
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
+        }
+    }
+    // Xóa địa chỉ
+    public function deleteAddress(string $id)
+    {
+        try {
+            $address = Address::findOrFail($id);
+            $address->delete();
+            return response()->json(['message' => 'Địa chỉ đã được xóa thành công']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
+        }
+
+    }
+    // Thiết lập 
+    public function updateDefaultAddress(int $id)
+    {
+        try {
+            $address = Address::where('id', $id)
+                ->where('user_id', Auth::id())
+                ->firstOrFail();
+
+            $user = Auth::user();
+
+            $user->address_id = $id;
+            $user->save();
+
+            return response()->json([
+                'message' => 'Địa chỉ mặc định đã được cập nhật',
+                'default_address_id' => $id
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Không thể cập nhật địa chỉ mặc định: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

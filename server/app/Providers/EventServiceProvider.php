@@ -31,13 +31,14 @@ class EventServiceProvider extends ServiceProvider
                 DeleteCart::class,
                 InsertOrderItems::class
         ],
-        CheckExpiredSalePrices::class => [
-            CheckExpiredSalePricesListener::class,
+        \App\Events\CheckExpiredSalePrices::class => [
+            \App\Listeners\HandleExpiredSales::class,
         ],
         OrderCanceled::class => [
             SendCancel::class
         ]
     ];
+   
 
     /**
      * Register any events for your application.
@@ -54,4 +55,7 @@ class EventServiceProvider extends ServiceProvider
     {
         return false;
     }
+
+
+
 }

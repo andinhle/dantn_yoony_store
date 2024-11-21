@@ -7,6 +7,7 @@ export interface IUser{
     avatar:string,
     status?: boolean,
     password?: string;
+    address_id?:number;
     confirmPass?: string;
     role?: "member" | "admin"
 }

@@ -11,14 +11,8 @@ class Product extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name',
-        'slug',
-        'images',
-        'description',
-        'category_id',
-        'is_featured',
-        'is_good_deal',
-        'is_active'
+        'name', 'slug', 'images', 'description', 'category_id',
+        'is_featured', 'is_active',
     ];
 
     public function variants()
@@ -36,4 +30,9 @@ class Product extends Model
     {
         return $this->hasMany(Rate::class);
     }
+    protected $casts = [
+        'is_featured' => 'boolean',
+        'is_good_deal' => 'boolean',
+        'is_active' => 'boolean',
+    ];
 }

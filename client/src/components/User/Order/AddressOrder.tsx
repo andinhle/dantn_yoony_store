@@ -224,7 +224,6 @@ const AddressOrder = forwardRef((props, ref) => {
     });
     setErrors(newErrors);
     if (Object.keys(newErrors).length === 0) {
-      // Xử lý gửi form ở đây
       console.log("Form is valid. Submitting...", formData);
     } else {
       console.log("Form has errors. Please correct them.");
@@ -365,7 +364,7 @@ const AddressOrder = forwardRef((props, ref) => {
             type="text"
             placeholder="Địa chỉ chi tiết"
             id="addressDetail"
-            value={formData.addressDetail}
+            value={formData?.addressDetail}
             onChange={handleInputChange}
             className={`block focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-input rounded-[5px] w-full focus:!shadow-none ${
               errors.addressDetail ? "border-primary/75" : ""

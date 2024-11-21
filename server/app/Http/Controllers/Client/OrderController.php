@@ -46,91 +46,57 @@ class OrderController extends Controller
     public function getOrder(Request $request) 
     {
         try {
-            switch ($request->status) {
-                case Order::STATUS_ORDER_PENDING:
-                    $orders = Order::query()
-                        ->where('status_order', '=', Order::STATUS_ORDER_PENDING)
-                        ->with(['items.variant'])
-                        ->where('user_id', Auth::id())
-                        ->orderBy('created_at', 'desc')
-                        ->get();
-                    break;
-
-                case Order::STATUS_ORDER_CONFIRMED:
-                    $orders = Order::query()
-                        ->where('status_order', '=', Order::STATUS_ORDER_CONFIRMED)
-                        ->with(['items.variant'])
-                        ->where('user_id', Auth::id())
-                        ->orderBy('created_at', 'desc')
-                        ->get();
-                    break;
-
-                case Order::STATUS_ORDER_PREPARING_GOODS:
-                    $orders = Order::query()
-                        ->where('status_order', '=', Order::STATUS_ORDER_PREPARING_GOODS)
-                        ->with(['items.variant'])
-                        ->where('user_id', Auth::id())
-                        ->orderBy('created_at', 'desc')
-                        ->get();
-                    break;
-
-                case Order::STATUS_ORDER_SHIPPING:
-                    $orders = Order::query()
-                        ->where('status_order', '=', Order::STATUS_ORDER_SHIPPING)
-                        ->with(['items.variant'])
-                        ->where('user_id', Auth::id())
-                        ->orderBy('created_at', 'desc')
-                        ->get();
-                    break;
-
-                case Order::STATUS_ORDER_DELIVERED:
-                    $orders = Order::query()
-                        ->where('status_order', '=', Order::STATUS_ORDER_DELIVERED)
-                        ->with(['items.variant'])
-                        ->where('user_id', Auth::id())
-                        ->orderBy('created_at', 'desc')
-                        ->get();
-                    break;
-
-                case Order::STATUS_ORDER_CANCELED:
-                    $orders = Order::query()
-                        ->where('status_order', '=', Order::STATUS_ORDER_CANCELED)
-                        ->with(['items.variant'])
-                        ->where('user_id', Auth::id())
-                        ->orderBy('created_at', 'desc')
-                        ->get();
-                    break;
-
-                default:
-                    $orders = Order::query()
-                        ->with(['items.variant'])
-                        ->where('user_id', Auth::id())
-                        ->orderBy('created_at', 'desc')
-                        ->get();
+            $query = Order::query()
+                ->with(['items.variant'])
+                ->where('user_id', Auth::id())
+                ->orderBy('created_at', 'desc');
+    
+            // Thêm điều kiện status nếu được chọn
+            if (isset($request->status)) {
+                $query->where('status_order', '=', $request->status);
             }
-
+    
+            // Phân trang với 10 items mỗi trang
+            $orders = $query->paginate(10);
+    
             return response()->json([
-                'data' => $orders,
+                'data' => $orders->items(),
+                'meta' => [
+                    'current_page' => $orders->currentPage(),
+                    'per_page' => $orders->perPage(),
+                    'last_page' => $orders->lastPage(),
+                    'total' => $orders->total()
+                ],
                 'status' => 'success'
             ]);
+    
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
                 'message' => $th->getMessage()
             ]);
-
+    
             return response()->json([
                 'message' => 'Lỗi tải trang',
                 'status' => 'error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    
     public function getOrderDetail($code)
     {
         try {
             
             $data = Order::query()
-            ->with(['items.variant.attributeValues.attribute', 'items.variant.product','items.variant.product.category', 'coupons.coupon', 'user'])
+            ->with([
+                'items.variant.attributeValues.attribute',
+                'items.variant.product' => function ($query) {
+                    $query->withTrashed(); 
+                },
+                'items.variant.product.category',
+                'coupons.coupon',
+                'user'
+            ])
             ->where('user_id', Auth::id())
             ->where('code', $code)
             ->firstOrFail();
