@@ -53,6 +53,7 @@ import FilterProducts from "./components/User/Filter/FilterProducts.tsx";
 import { StrictMode } from "react";
 import Whistlist from "./components/User/Manager/Wishlist/Wishlist.tsx";
 import BannerList from "./pages/admin/banner/BannerAdmin.tsx";
+import AddressesUser from "./components/User/Manager/Addresses/AddressesUser.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -100,6 +101,8 @@ createRoot(document.getElementById("root")!).render(
                     path="user-ratings/rating-detail/:code_order"
                     element={<RatingDetailOrder />}
                   />
+                  <Route path='addresses' element={<AddressesUser />}/>
+                  
                 </Route>
                 <Route path="checkorder" element={<CheckOrder />} />
                 <Route path="event" element={<EventUser />} />

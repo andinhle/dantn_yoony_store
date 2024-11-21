@@ -5,7 +5,6 @@ import { FreeMode, Navigation, HashNavigation } from "swiper/modules";
 import { IProduct } from "../../../interfaces/IProduct";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { toast } from "react-toastify";
 import instance from "../../../instance/instance";
 import GroupVariantsByColor from "../Show/GroupVariantsByColor";
 const ProductFeature = () => {
@@ -17,11 +16,11 @@ const ProductFeature = () => {
         setProductFeatures(data);
       } catch (error) {
         if (axios.isAxiosError(error)) {
-          toast.error(error.response?.data?.message);
+          console.log(error.response?.data?.message);
         } else if (error instanceof Error) {
-          toast.error(error.message);
+          console.log(error.message);
         } else {
-          toast.error("Đã xảy ra lỗi không mong muốn");
+          console.log("Đã xảy ra lỗi không mong muốn");
         }
       }
     })();

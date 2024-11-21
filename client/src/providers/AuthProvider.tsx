@@ -25,6 +25,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const AUTH_COOKIE_NAME = "authToken";
 const USER_INFO_KEY = "userInfor";
 const WISHLIST_KEY = "wishlists";
+const ADDRESS_KEY = "addressSelect";
+const FINAL_TOTAL_KEY = "final_total";
+const ID_CART_KEY = "id_cart";
+const METHOD_PAYMENT_KEY = "methodPayment";
+const ORDER_DATA_KEY = "orderData";
+const VOUCHER_KEY = "selected_voucher";
+const CALLBACK_KEY="callback_processed"
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -99,6 +106,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     Cookies.remove(AUTH_COOKIE_NAME);
     localStorage.removeItem(USER_INFO_KEY);
     localStorage.removeItem(WISHLIST_KEY);
+    localStorage.removeItem(ADDRESS_KEY);
+    localStorage.removeItem(METHOD_PAYMENT_KEY);
+    localStorage.removeItem(CALLBACK_KEY);
+    localStorage.removeItem(FINAL_TOTAL_KEY);
+    localStorage.removeItem(ID_CART_KEY);
+    localStorage.removeItem(ORDER_DATA_KEY);
+    localStorage.removeItem(VOUCHER_KEY);
     setUser(null);
     setWishlists([]);
     message.success("Đăng xuất thành công !");
