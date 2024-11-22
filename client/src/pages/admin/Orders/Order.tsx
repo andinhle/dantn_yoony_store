@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import type { Orders } from "../../../interfaces/IOrders";
 import instance from "../../../instance/instance";
 import { toast } from "react-toastify";
-import { Checkbox, Input, Select, Space } from 'antd';
+import { Button, Checkbox, Input, Select, Space } from 'antd';
 import { DatePicker } from 'antd';
 import isBetween from 'dayjs/plugin/isBetween';
 import dayjs from "dayjs";
@@ -16,6 +16,9 @@ const Orders = () => {
   const OPTIONS = ['pending', 'confirmed', 'preparing_goods', 'shipping', 'delivered', 'canceled'];
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const filteredOptions = OPTIONS.filter((o) => !selectedItems.includes(o));
+  const [loading, setLoading] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>(""); // Lưu trạng thái đã chọn
+  const [errorMessage, setErrorMessage] = useState<string>(""); // Lưu thông báo lỗi nếu có
   // Hàm xử lý tìm kiếm
 
   const handleSearch = (value: string) => {
@@ -113,23 +116,71 @@ const Orders = () => {
   };
 
   const fetchOrders = async () => {
+    setLoading(true);
     try {
-      const { data: { data: { data: respone } } } = await instance.get("admin/orders");
-      if (Array.isArray(respone)) {
-        setOrders(respone);
-      } else {
-        console.warn("Dữ liệu không phải là một mảng:", respone);
+      const response = await instance.get("admin/orders");
+
+      // Kiểm tra nếu phản hồi không hợp lệ
+      if (
+        !response ||
+        !response.data ||
+        !response.data.data ||
+        !Array.isArray(response.data.data.data)
+      ) {
+        throw new Error("Dữ liệu phản hồi không đúng cấu trúc.");
       }
+
+      // Nếu dữ liệu hợp lệ, cập nhật state
+      setOrders(response.data.data.data);
     } catch (error: any) {
+      // Ghi log lỗi để debug
+      console.error("Lỗi khi lấy đơn hàng:", error);
+
+      // Hiển thị thông báo lỗi cho người dùng
       if (error.response) {
-        console.error("Server responded with:", error.response.data);
-        console.error("Status code:", error.response.status);
+        // Lỗi từ phía server (4xx, 5xx)
+        toast.error(`Lỗi từ server: ${error.response.data.message || "Không xác định"}`);
       } else if (error.request) {
-        console.error("No response from server:", error.request);
+        // Lỗi mạng hoặc không nhận được phản hồi
+        toast.error("Không thể kết nối đến server. Vui lòng kiểm tra mạng.");
       } else {
-        console.error("Error in setting up request:", error.message);
+        // Lỗi không mong muốn
+        toast.error(`Lỗi: ${error.message}`);
       }
-      toast.error("Xảy ra lỗi");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleStatusChange = (value: string) => {
+    setSelectedStatus(value);
+  };
+  const handleUpdateStatus = async () => {
+    if (selectedOrders.length === 0 || !selectedStatus) {
+      // Nếu không có đơn hàng được chọn hoặc không có trạng thái, không thực hiện gì
+      alert("Vui lòng chọn đơn hàng và trạng thái.");
+      return;
+    }
+
+    setLoading(true);
+    setErrorMessage(""); // Reset error message
+
+    try {
+      // Gửi yêu cầu API để cập nhật trạng thái của các đơn hàng
+      const response = await instance.patch("admin/order-update-much", {
+        orderIds: selectedOrders, // Danh sách ID các đơn hàng cần cập nhật
+        status: selectedStatus, // Trạng thái mới
+      });
+
+      if (response.status === 200) {
+        // Cập nhật thành công
+        alert("Cập nhật trạng thái thành công!");
+        // Có thể gọi lại API để làm mới danh sách đơn hàng hoặc thực hiện các hành động khác
+      }
+    } catch (error) {
+      console.error("Đã có lỗi khi cập nhật trạng thái:", error);
+      setErrorMessage("Đã có lỗi xảy ra khi cập nhật trạng thái.");
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
@@ -139,52 +190,70 @@ const Orders = () => {
   const { RangePicker } = DatePicker;
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
-      <div className="m-4 flex space-x-4">
-        <Space direction="vertical" className="">
-          <Search
-            placeholder="Mã đơn hàng (code)"
-            allowClear
-            enterButton="Search"
-            size="large"
-            onSearch={handleSearch}
-          />
-        </Space>
-        <Space direction="vertical" size={12}>
-          <RangePicker size="large" onChange={handleDateSearch} />
-        </Space>
+      <div className="m-4 flex flex-wrap items-center gap-4">
+        {/* Tìm kiếm theo mã đơn hàng */}
+        <Search
+          placeholder="Mã đơn hàng (code)"
+          allowClear
+          enterButton="Search"
+          size="large"
+          onSearch={handleSearch}
+          className="flex-1 min-w-[200px]"
+        />
+
+        {/* Chọn khoảng thời gian */}
+        <RangePicker
+          size="large"
+          onChange={handleDateSearch}
+          className="flex-1 min-w-[200px]"
+        />
+
+        {/* Bộ lọc theo trạng thái */}
         <Select
-          className="w-2/4"
           mode="multiple"
           placeholder="Trạng thái"
           value={selectedItems}
-          onChange={(value: string[]) => setSelectedItems(value)} // Đảm bảo kiểu dữ liệu là string[]
-          onSelect={() => (document.activeElement as HTMLElement)?.blur()} // Tự động thu gọn khi chọn xong
-          style={{ width: '20%' }}
+          onChange={(value: string[]) => setSelectedItems(value)}
+          onSelect={() => (document.activeElement as HTMLElement)?.blur()}
+          className="flex-1 min-w-[200px]"
           options={filteredOptions.map((item) => ({
             value: item,
             label: item,
           }))}
         />
-        <Space className="">
-          <Select
-            showSearch
-            placeholder="Chọn trạng thái"
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-            options={[
-              { value: "pending", label: "Chờ xác nhận" },
-              { value: "confirmed", label: "Đã xác nhận" },
-              { value: "preparing_goods", label: "Chuẩn bị hàng" },
-              { value: "shipping", label: "Đang giao hàng" },
-              { value: "delivered", label: "Đã giao hàng" },
 
-            ]}
-          />
+        {/* Chọn trạng thái */}
+        <Select
+          showSearch
+          placeholder="Chọn trạng thái"
+          value={selectedStatus || undefined} // Đảm bảo placeholder hiển thị khi không có giá trị
+          onChange={handleStatusChange}
+          className="flex-1 min-w-[200px]"
+          filterOption={(input, option) =>
+            (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+          }
+          options={[
+            { value: "pending", label: "Chờ xác nhận" },
+            { value: "confirmed", label: "Đã xác nhận" },
+            { value: "preparing_goods", label: "Chuẩn bị hàng" },
+            { value: "shipping", label: "Đang giao hàng" },
+            { value: "delivered", label: "Đã giao hàng" },
+          ]}
+        />
 
-        </Space>
-        <button className="bg-primary p-2 text-xs rounded-lg text-white">Đồng bộ</button>
+
+        {/* Nút đồng bộ */}
+        <Button
+          type="primary"
+          className="p-2 text-xs rounded-lg flex-shrink-0"
+          onClick={handleUpdateStatus}
+          loading={loading}
+          disabled={selectedOrders.length === 0 || !selectedStatus}
+        >
+          Đồng bộ
+        </Button>
       </div>
+
       <table className="min-w-full bg-white">
         <thead className="bg-primary">
           <tr>
