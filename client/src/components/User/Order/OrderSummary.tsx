@@ -50,22 +50,26 @@ const OrderSummary = () => {
       <table className="table w-full text-left">
         <thead>
           <tr>
-            <th className="font-normal text-secondary/65">Sản phẩm</th>
-            <th className="font-normal text-secondary/65">Đơn giá</th>
-            <th className="font-normal text-secondary/65 text-center">
+            <th className="font-normal text-secondary/90">Sản phẩm</th>
+            <th className="font-normal text-secondary/90">Đơn giá</th>
+            <th className="font-normal text-secondary/90 text-center">
               Số lượng
             </th>
-            <th className="font-normal text-secondary/65 text-center">
+            <th className="font-normal text-secondary/90 text-center">
               Thành tiền
             </th>
           </tr>
         </thead>
         <tbody className="my-5">
-          {listSelectCartItem.map((itemCart) => {
+          {listSelectCartItem.map((itemCart,index) => {
             return (
-              <tr key={itemCart.id} className="border-b border-[#f2f2f2]">
+              <tr key={itemCart.id} className={`${
+                index !== listSelectCartItem.length - 1
+                  ? "border-b border-[#e9e9e9] border-dashed"
+                  : ""
+              }`}>
                 <td className="py-3 text-sm">
-                  <div className="flex gap-3 items-center w-fit ">
+                  <div className="flex gap-3 items-center w-fit">
                     <img
                       src={
                         itemCart.variant.image ||
@@ -173,7 +177,7 @@ const OrderSummary = () => {
           </div>
         </div>
         <div className="space-y-3">
-          <h3 className="font-medium">Địa chỉ nhận hàng</h3>
+          <h3 className="font-medium">Phương thức thanh toán</h3>
           <div className="flex justify-between items-center gap-5 bg-[#f7f7f8] py-3 px-4 rounded-lg">
             <div className="space-y-1">
               <label htmlFor="" className="block text-sm font-medium">

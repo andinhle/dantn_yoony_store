@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\OrderStatusUpdated;
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderCancellation;
+use DB;
+use Http;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -90,6 +94,7 @@ class OrderController extends Controller
 
     public function orderDetail($code)
     {
+
         try {
             $orders = Order::query()
                 ->with([
@@ -139,6 +144,7 @@ class OrderController extends Controller
                 'status' => 'error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
     }
     
     
@@ -165,10 +171,19 @@ class OrderController extends Controller
                 $order->status_order = $status;
                 $order->save();
 
+                $notification = Notification::create([
+                    'user_id' => $order->user_id,
+                    'order_id' => $order->id,
+                    'content' => 'Đơn hàng '. $order->code .' đã được cập nhật trạng thái thành ' . Order::STATUS_ORDER[$order->status_order],
+                ]);
+
+                event(new OrderStatusUpdated($notification, $order->user_id));
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Trạng thái đơn hàng đã được cập nhật.',
-                    'order' => $order
+                    'order' => $order,
+                    'notification' => $notification
                 ]);
             default:
                 return response()->json([
@@ -233,5 +248,53 @@ class OrderController extends Controller
 
 
 
+    }
+
+    public function updateMuch(Request $request)
+    {
+        try {
+            $ids = $request->ids;
+
+            if (!is_array($ids) || empty($ids)) {
+                return response()->json(['message' => 'Danh sách không hợp lệ!'], 400);
+            }
+            Log::info($ids);
+            switch ($request->status) {
+                case Order::STATUS_ORDER_PENDING:
+                    Order::query()->whereIn('id',  $ids)->update([
+                        'status_order' => Order::STATUS_ORDER_CONFIRMED,
+                    ]);
+                    return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);
+                case Order::STATUS_ORDER_CONFIRMED:
+                    Order::query()->whereIn('id', $ids)->update([
+                        'status_order' => Order::STATUS_ORDER_PREPARING_GOODS
+                    ]);
+                    return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);
+                case Order::STATUS_ORDER_PREPARING_GOODS:
+                    Order::query()->whereIn('id', $ids)->update([
+                        'status_order' => Order::STATUS_ORDER_SHIPPING
+                    ]);
+                    return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);
+                case Order::STATUS_ORDER_SHIPPING:
+                    Order::query()->whereIn('id', $ids)->update([
+                        'status_order' => Order::STATUS_ORDER_DELIVERED
+                    ]);
+                    return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);               
+                default:
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Trạng thái không hợp lệ.'
+                    ], 400);
+            }
+        } catch (\Throwable $th) {
+            Log::error(__CLASS__ . '@' . __FUNCTION__, [
+                'line' => $th->getLine(),
+                'message' => $th->getMessage()
+            ]);
+            return response()->json([
+                'messages' => 'Lỗi',
+                'status' => 'error'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

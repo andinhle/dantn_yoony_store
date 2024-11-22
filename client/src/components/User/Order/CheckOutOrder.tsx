@@ -1,5 +1,5 @@
 import { Button, message, Steps, theme } from "antd";
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import ConfirmOrder from "./ConfirmOrder";
 import AddressOrder from "./AddressOrder";
 import SelectMethodPayment from "./SelectMethodPayment";
@@ -138,13 +138,13 @@ const CheckOutOrder = () => {
   };
 
   return (
-    <>
+    <React.Fragment>
         <section className="my-7 space-y-7">
           <h2 className="flex gap-1.5 text-2xl text-primary font-medium">
             ĐẶT HÀNG
           </h2>
           <div className="grid grid-cols-12 gap-5">
-            <div className="col-span-9">
+            <div className="col-span-9 steps-order">
               <Steps
                 labelPlacement="vertical"
                 current={current}
@@ -182,7 +182,7 @@ const CheckOutOrder = () => {
             <ConfirmOrder current={current}  />
           </div>
         </section>
-    </>
+    </React.Fragment>
   );
 };
 

@@ -48,8 +48,6 @@ const UserRatingsDone = () => {
     })();
   }, []);
 
-  console.log(ratingDoneLists);
-
   return (
     <div className="grid grid-cols-1 gap-5 max-h-screen overflow-y-auto rating-scroll-done pr-1">
       {ratingDoneLists &&
@@ -79,11 +77,11 @@ const UserRatingsDone = () => {
                   </p>
                   <div className="bg-[#F6F6F6] p-2 rounded-sm">
                     {!rate.content ? (
-                      <p className="text-sm text-secondary/50 line-clamp-4">
+                      <p className="text-sm text-secondary/75 line-clamp-4">
                         Không có nội dung đánh giá
                       </p>
                     ) : (
-                      <p className="text-sm text-secondary/50 line-clamp-4">
+                      <p className="text-sm text-secondary/75 line-clamp-4">
                         {rate.content}
                       </p>
                     )}
@@ -97,7 +95,7 @@ const UserRatingsDone = () => {
                     />
                     <div className="flex flex-col justify-between">
                       <Link
-                        to=""
+                        to={`/${rate.product.category?.slug}/${rate.product.slug}`}
                         className="line-clamp-1 hover:text-primary text-secondary/75"
                       >
                         {rate.product.name}

@@ -16,6 +16,7 @@ const ResetPassRequest = () => {
   } = useForm();
   const [isActive, setActive] = useState(false);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
+
   const onSubmit = useCallback(
     async (formData: any) => {
       try {
@@ -106,7 +107,7 @@ const ResetPassRequest = () => {
           </div>
           <button
             className={`${
-              !capVal ? "bg-slate-400 cursor-not-allowed" : "bg-primary"
+              !capVal ? "bg-slate-300 cursor-not-allowed" : "bg-primary"
             } py-2 px-6 rounded-md text-util inline-block font-[400]`}
             disabled={!capVal}
           >

@@ -228,9 +228,9 @@ class ReviewController extends Controller
         try {
             // Lấy các đơn hàng đã giao và có đánh giá từ người dùng
             $orders = Order::with([
-                'rates.product',
+                'rates.product.category',
                 'rates.user',
-                'items.variant.attributeValues.attribute' // Load attribute values thông qua variant
+                'items.variant.attributeValues.attribute'
             ])
             ->where('user_id', $userId)
             ->where('status_order', Order::STATUS_ORDER_DELIVERED)
@@ -275,6 +275,11 @@ class ReviewController extends Controller
                                 'name' => $rate->product->name,
                                 'slug' => $rate->product->slug,
                                 'images' => $rate->product->images,
+                                'category' => [  // Thêm thông tin category
+                                    'id' => $rate->product->category->id,
+                                    'name' => $rate->product->category->name,
+                                    'slug' => $rate->product->category->slug,
+                                ]
                             ],
                             'user' => [
                                 'id' => $rate->user->id,
