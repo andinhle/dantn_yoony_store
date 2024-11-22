@@ -24,9 +24,8 @@ class UpdateBlogRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'thambnail' => 'nullable|string|max:255',
-            'content' => 'nullable|string',
-            'slug' => 'nullable|string|unique:blogs,slug,' . $this->route('blog'),
-            'user_id' => 'nullable|exists:users,id',
+            'content' => 'required|string',
+            'slug' => 'required|string|unique:blogs,slug,' . $this->route('blog'),
             'is_active' => 'boolean',
         ];
     }
@@ -38,7 +37,6 @@ class UpdateBlogRequest extends FormRequest
             'content.string' => 'Nội dung phải là chuỗi.',
             'slug.string' => 'Slug phải là chuỗi.',
             'slug.unique' => 'Slug đã tồn tại. Vui lòng chọn một slug khác.',
-            'user_id.exists' => 'Người dùng không tồn tại trong hệ thống.',
             'is_active.boolean' => 'Trạng thái phải là true hoặc false.',
         ];
     }

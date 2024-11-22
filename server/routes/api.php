@@ -30,6 +30,7 @@ use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\Client\OderCheckController;
 use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\client\ChatbotController;
+use App\Http\Controllers\Client\EventSpinController;
 use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\client\SpinController;
 use App\Http\Controllers\GoogleAuthController;
@@ -119,6 +120,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         // Lấy tất cả thông tin user
         Route::get('/users', [UserController::class, 'index']);
         // Cập nhật role của user
+
         Route::patch('/users/{id}/role', [UserController::class, 'updateRole']);
 
         //Thống kê
@@ -173,7 +175,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
         //QL Event
         Route::get('/admin/events/coupons', [EventController::class, 'getEventCoupons']);
-
         Route::post('/admin/events', [EventController::class, 'createEvent']);
         Route::get('/admin/showEvent/{id}', [EventController::class, 'showEvent']);
 
@@ -273,6 +274,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/reset-daily-spins', [SpinController::class, 'resetDailySpins']);
     Route::post('/claim-coupon/{eventId}/{couponId}', [CouponUserController::class, 'claimCoupon']);
     Route::get('/event-coupons', [OderCheckController::class, 'getEventCoupons']);
+    //quản lý lịch sử quay của người dùng
+    Route::get('spin-history', [EventSpinController::class, 'getSpinHistoryByEvent']);
+    //lịch sử quay của người dùng
+
+    Route::get('user-spin-history', [EventSpinController::class, 'getUserSpinHistoryByEvent']);
+    //lịch sử quay của người dùng
+
+    Route::post('spinEvent/events', [EventSpinController::class, 'spinEvent']);
 
     //Review client
     Route::post('ratings/review', [ReviewController::class, 'review'])->name('ratings.review');

@@ -22,7 +22,18 @@ class BlogController extends Controller
     public function store(StoreBlogRequest $request)
     {
         try {
-            $blog = Blog::create($request->validated());
+            $user = auth()->user();
+
+            if (!$user) {
+                return response()->json([
+                    'error' => 'Người dùng chưa đăng nhập.',
+                ], 401);
+            }
+
+            $blog = Blog::create(array_merge(
+                $request->validated(),
+                ['user_id' => $user->id]
+            ));
 
             return response()->json([
                 'message' => 'Blog đã được thêm thành công!',
@@ -50,11 +61,10 @@ class BlogController extends Controller
             $blog = Blog::findOrFail($id);
 
             $data = [
-                'title' =>  $request->title,
-                'thambnail' =>  $request->thambnail,
+                'title' => $request->title,
+                'thambnail' => $request->thambnail,
                 'content' => $request->content,
                 'slug' => $request->slug,
-                'user_id' => $request->user_id,
                 'is_active' => $request->has('is_active') ? $request->is_active : $blog->is_active,
             ];
 
@@ -64,7 +74,6 @@ class BlogController extends Controller
                 'message' => 'Blog đã được sửa thành công!',
                 'blog' => new BlogResource($blog)
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Có lỗi xảy ra trong quá trình cập nhật blog.',
@@ -75,12 +84,14 @@ class BlogController extends Controller
 
 
 
-    public function updateIsActive(UpdateBlogRequest $request, $id)
+
+
+    public function updateIsActive(Request $request, string $id)
 {
     try {
         $blog = Blog::findOrFail($id);
 
-        $blog->update(['is_active' => $request->validated()['is_active']]);
+        $blog->update(['is_active'=>$request->is_active]);
 
         return response()->json([
             'message' => 'Trạng thái blog đã được cập nhật thành công!',
