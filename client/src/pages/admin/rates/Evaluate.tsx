@@ -382,6 +382,7 @@ const Rates = () => {
                                             <p className="text-sm text-gray-500">
                                                 {new Date(review.created_at).toLocaleDateString("vi-VN")}
                                             </p>
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -404,7 +405,6 @@ const Rates = () => {
         </>
     );
 };
-
 export default Rates;
 
 
