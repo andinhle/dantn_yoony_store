@@ -2,7 +2,15 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import instance from "../../../../instance/instance";
 import { IOrderUserClient } from "../../../../interfaces/IOrderUserClient";
-import { Steps, Popover, Input, Radio, Space, message } from "antd";
+import {
+  Steps,
+  Popover,
+  Input,
+  Radio,
+  Space,
+  message,
+  ConfigProvider,
+} from "antd";
 import type { RadioChangeEvent } from "antd";
 import { useForm } from "react-hook-form";
 const UserOrderDetail = () => {
@@ -327,37 +335,45 @@ const UserOrderDetail = () => {
   const content = () => {
     return (
       <div className="space-y-3">
-        <Radio.Group onChange={onChange} value={valueReason}>
-          <Space direction="vertical">
-            <Radio value={"Đổi ý không muốn mua nữa"}>
-              Đổi ý không muốn mua nữa
-            </Radio>
-            <Radio value={"Muốn thay đổi địa chỉ/thông tin đơn hàng"}>
-              Muốn thay đổi địa chỉ/thông tin đơn hàng
-            </Radio>
-            <Radio value={"Tìm được sản phẩm rẻ hơn"}>
-              Tìm được sản phẩm rẻ hơn
-            </Radio>
-            <Radio value={"Khác"}>
-              Khác...
-              {valueReason === "Khác" ? (
-                <Input
-                  style={{
-                    width: 200,
-                    marginInlineStart: 10,
-                    height: 30,
-                    borderRadius: 5,
-                    fontSize: 14,
-                    borderColor: "#e6e6eb",
-                  }}
-                  onChange={(e) => {
-                    setValue("reason", e.target.value);
-                  }}
-                />
-              ) : null}
-            </Radio>
-          </Space>
-        </Radio.Group>
+        <ConfigProvider
+          theme={{
+            token: {
+              colorPrimary: "#ff9900",
+            },
+          }}
+        >
+          <Radio.Group onChange={onChange} value={valueReason}>
+            <Space direction="vertical">
+              <Radio value={"Đổi ý không muốn mua nữa"}>
+                Đổi ý không muốn mua nữa
+              </Radio>
+              <Radio value={"Muốn thay đổi địa chỉ/thông tin đơn hàng"}>
+                Muốn thay đổi địa chỉ/thông tin đơn hàng
+              </Radio>
+              <Radio value={"Tìm được sản phẩm rẻ hơn"}>
+                Tìm được sản phẩm rẻ hơn
+              </Radio>
+              <Radio value={"Khác"}>
+                Khác...
+                {valueReason === "Khác" ? (
+                  <Input
+                    style={{
+                      width: 200,
+                      marginInlineStart: 10,
+                      height: 30,
+                      borderRadius: 5,
+                      fontSize: 14,
+                      borderColor: "#e6e6eb",
+                    }}
+                    onChange={(e) => {
+                      setValue("reason", e.target.value);
+                    }}
+                  />
+                ) : null}
+              </Radio>
+            </Space>
+          </Radio.Group>
+        </ConfigProvider>
         <button
           className="block py-1.5 px-2.5 bg-primary text-util rounded-sm"
           onClick={handleCancelOrder}
@@ -540,9 +556,18 @@ const UserOrderDetail = () => {
     <div className="grid grid-cols-7 gap-5">
       <div className="col-span-5 w-full space-y-4">
         <div className="border border-[#f1f1f1] rounded-md bg-util p-3 space-y-4">
-          <h3 className="uppercase font-medium text-sm">
-            Đơn hàng <span className="text-primary">#{code_order}</span>
-          </h3>
+          <div className="flex justify-between items-center">
+            <h3 className="uppercase font-medium text-sm">
+              Đơn hàng <span className="text-primary">#{code_order}</span>
+            </h3>
+            {orderDetails?.payment_method === "VNPAY" ||
+              (orderDetails?.payment_method === "MOMO" &&
+                orderDetails.paid_at && (
+                  <p className="bg-[#DBF8F4] text-[#1f9e8d] px-2 py-1 rounded-sm text-xs flex items-center gap-1">
+                    Đã thanh toán
+                  </p>
+                ))}
+          </div>
           <table className="table w-full overflow-hidden rounded-sm">
             <thead>
               <tr className="text-sm font-[400] bg-[#F3F6F9] h-10 text-secondary/65">

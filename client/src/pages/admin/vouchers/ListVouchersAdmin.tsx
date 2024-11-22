@@ -95,34 +95,67 @@ const ListVouchersAdmin = ({
     }
   };
   return (
-    <div className="overflow-x-auto w-full mt-8">
-      <Table hoverable className="table w-full">
-        <Table.Head className="text-center ">
-          <Table.HeadCell className="!bg-primary text-util">STT</Table.HeadCell>
-          <Table.HeadCell className="!bg-primary text-util">
+    <div>
+      <Table>
+        <Table.Head className="text-center">
+          <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
             Mã voucher
           </Table.HeadCell>
-          <Table.HeadCell className="!bg-primary text-util">
+          <Table.HeadCell className="bg-[#F4F7FA] text-secondary/75 text-sm font-medium capitalize text-nowrap">
+            Tên mã giảm
+          </Table.HeadCell>
+          <Table.HeadCell className="bg-[#F4F7FA] text-secondary/75 text-sm font-medium capitalize text-nowrap">
             Giảm giá
           </Table.HeadCell>
-          <Table.HeadCell className="!bg-primary text-util">
+          <Table.HeadCell className="bg-[#F4F7FA] text-secondary/75 text-sm font-medium capitalize text-nowrap">
             Giới hạn sử dụng
           </Table.HeadCell>
-          <Table.HeadCell className="!bg-primary text-util">
+          <Table.HeadCell className="bg-[#F4F7FA] text-secondary/75 text-sm font-medium capitalize text-nowrap">
             Ngày kết thúc
           </Table.HeadCell>
-          <Table.HeadCell className="!bg-primary text-util">
-            Nổi bật
-          </Table.HeadCell>
-          <Table.HeadCell className="!bg-primary text-util">
+          <Table.HeadCell className="bg-[#F4F7FA] text-secondary/75 text-sm font-medium capitalize text-nowrap">
             Trạng thái
           </Table.HeadCell>
-          <Table.HeadCell className="!bg-primary text-util">
+          <Table.HeadCell className="bg-[#F4F7FA] text-secondary/75 text-sm font-medium capitalize text-nowrap">
             Hành động
           </Table.HeadCell>
         </Table.Head>
         <Table.Body className="divide-y">
-          {vouchers &&
+          {vouchers.length === 0 ? (
+              <Table.Row>
+              <Table.Cell colSpan={6}>
+                <div className="flex flex-col items-center text-secondary/20 space-y-2 justify-center min-h-[50vh]">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="size-16"
+                    viewBox="0 0 64 41"
+                  >
+                    <g
+                      fill="none"
+                      fillRule="evenodd"
+                      transform="translate(0 1)"
+                    >
+                      <ellipse
+                        cx="32"
+                        cy="33"
+                        fill="#f5f5f5"
+                        rx="32"
+                        ry="7"
+                      ></ellipse>
+                      <g fillRule="nonzero" stroke="#d9d9d9">
+                        <path d="M55 12.76L44.854 1.258C44.367.474 43.656 0 42.907 0H21.093c-.749 0-1.46.474-1.947 1.257L9 12.761V22h46v-9.24z"></path>
+                        <path
+                          fill="#fafafa"
+                          d="M41.613 15.931c0-1.605.994-2.93 2.227-2.931H55v18.137C55 33.26 53.68 35 52.05 35h-40.1C10.32 35 9 33.259 9 31.137V13h11.16c1.233 0 2.227 1.323 2.227 2.928v.022c0 1.605 1.005 2.901 2.237 2.901h14.752c1.232 0 2.237-1.308 2.237-2.913v-.007z"
+                        ></path>
+                      </g>
+                    </g>
+                  </svg>
+                  <p>Không có mã giảm giá nào</p>
+                </div>
+              </Table.Cell>
+            </Table.Row>
+          ):
             vouchers
               .filter((item) => {
                 return item.code
@@ -135,7 +168,6 @@ const ListVouchersAdmin = ({
                     className="bg-white  dark:border-gray-700 dark:bg-gray-800 text-center"
                     key={voucher.id}
                   >
-                    <Table.Cell>{index + 1}</Table.Cell>
                     <Table.Cell className="whitespace-nowrap font-medium text-primary dark:text-white">
                       <span className="border border-dotted border-primary p-2 rounded-md">
                         <Highlighter
@@ -188,6 +220,7 @@ const ListVouchersAdmin = ({
                               icon: "warning",
                               buttons: true,
                               dangerMode: true,
+                              className: "my-swal",
                             }).then((willDelete) => {
                               if (willDelete) {
                                 handleRemoveVoucher(voucher.id!);

@@ -1,3 +1,4 @@
+
 .truncate-content {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -6,3 +7,5 @@
     -webkit-box-orient: vertical;
  
 }
+
+

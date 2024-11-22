@@ -23,6 +23,13 @@ class FilterController extends Controller
         // Ghi lại các tiêu chí lọc vào log
         Log::info('Lọc sản phẩm theo tiêu chí:', $request->all());
 
+        // Chỉ lấy sản phẩm có is_active = 1
+        $query->where('is_active', 1);
+        // Lọc theo danh mục có is_active = 1
+        $query->whereHas('category', function ($q) {
+            $q->where('is_active', 1);
+        });
+
         // Lọc theo tên
         if ($request->has('name')) {
             $query->where('name', 'LIKE', '%' . $request->input('name') . '%');
@@ -66,10 +73,13 @@ class FilterController extends Controller
         if ($request->has('newest') && $request->input(key: 'newest')) {
             $query->orderBy('created_at', 'desc');
         }
-        
+
         //lọc giá tăng dần, giảm dần
-        if ($request->has('sort_price')) { $sortOrder = $request->input('sort_price') == 'asc' ? 'asc' : 'desc'; $query->addSelect([ 'min_variant_price' => Variant::selectRaw('MIN(price)') ->whereColumn('product_id', 'products.id') ])->orderBy('min_variant_price', $sortOrder); }
-        
+        if ($request->has('sort_price')) {
+            $sortOrder = $request->input('sort_price') == 'asc' ? 'asc' : 'desc';
+            $query->addSelect(['min_variant_price' => Variant::selectRaw('MIN(price)')->whereColumn('product_id', 'products.id')])->orderBy('min_variant_price', $sortOrder);
+        }
+
 
         Log::info('Thông số truy vấn sql:', [$query->toSql(), $query->getBindings()]);
 
@@ -94,7 +104,7 @@ class FilterController extends Controller
     {
         Log::info('Đang gọi hàm getFilter');
 
-        $categories = Category::all();
+        $categories = Category::where('is_active', 1)->get();
         $attributes = Attribute::with('attributeValues')->get();
 
         // Lấy giá min và max
@@ -110,6 +120,7 @@ class FilterController extends Controller
             ]
         ]);
     }
+
 
 
     public function filterOrdersByDate(Request $request)

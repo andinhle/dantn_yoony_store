@@ -26,7 +26,7 @@ const ChangePasswordUser = () => {
         new_password: dataForm.newPassword,
       });
       message.success(response.data.message);
-      reset()
+      reset();
     } catch (error) {
       message.error(error.response?.data?.message || "Đổi mật khẩu thất bại");
     }
@@ -36,7 +36,7 @@ const ChangePasswordUser = () => {
       className="flex-1 max-w-lg p-6 rounded-sm space-y-5"
       onSubmit={handleSubmit(handlePasswordChange)}
     >
-      <h2 className="text-lg font-medium">Đổi mật khẩu</h2>
+      <h2 className="uppercase font-medium text-base">Đổi mật khẩu</h2>
       <div className="space-y-3">
         <div>
           <div className="mb-2 block">

@@ -6,7 +6,7 @@ import LayoutUser from "./layouts/LayoutUser.tsx";
 import LayoutAdmin from "./layouts/LayoutAdmin.tsx";
 import DashboardAdmin from "./pages/admin/dashboard/DashboardAdmin.tsx";
 import UsersAdmin from "./pages/admin/users/UserAdmin.tsx";
-import CategorysAdmin from "./pages/admin/CategorysAdmin.tsx";
+import CategorysAdmin from "./pages/admin/category/CategorysAdmin.tsx";
 import Register from "./components/User/Auth/Register.tsx";
 import "swiper/css";
 import "swiper/css/pagination";
@@ -25,7 +25,6 @@ import LayoutResetPassword from "./layouts/User/LayoutResetPassword.tsx";
 import ResetPassRequest from "./components/User/Auth/ResetPassRequest.tsx";
 import FormResetPass from "./components/User/Auth/FormResetPass.tsx";
 import LayoutVoucherAdmin from "./layouts/Admin/LayoutVoucherAdmin.tsx";
-import BannerList from "./pages/admin/BannerAdmin.tsx";
 import LayoutBlogsAdmin from "./layouts/Admin/LayoutBlogsAdmin.tsx";
 import BlogProvider from "./contexts/BlogsContext.tsx";
 import UpdateBlogsAdmin from "./pages/admin/blogs/UpdateBlogAdmin.tsx";
@@ -53,6 +52,8 @@ import CallBackLoginGoogle from "./components/User/Auth/CallBackLoginGoogle.tsx"
 import FilterProducts from "./components/User/Filter/FilterProducts.tsx";
 import { StrictMode } from "react";
 import Whistlist from "./components/User/Manager/Wishlist/Wishlist.tsx";
+import BannerList from "./pages/admin/banner/BannerAdmin.tsx";
+import AddressesUser from "./components/User/Manager/Addresses/AddressesUser.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -100,6 +101,8 @@ createRoot(document.getElementById("root")!).render(
                     path="user-ratings/rating-detail/:code_order"
                     element={<RatingDetailOrder />}
                   />
+                  <Route path='addresses' element={<AddressesUser />}/>
+                  
                 </Route>
                 <Route path="checkorder" element={<CheckOrder />} />
                 <Route path="event" element={<EventUser />} />

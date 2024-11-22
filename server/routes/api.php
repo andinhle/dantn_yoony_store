@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\RatingController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\RoleHasModelController;
 use App\Http\Controllers\Admin\StatisticalController;
+use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\CouponUserController;
 use App\Http\Controllers\Client\FilterController;
@@ -101,7 +102,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+    Route::get('/get-all-address', [HomeController::class, 'getAllAddress']);
+    Route::get('/get-address/{id}', [HomeController::class, 'getAddress']);
+    Route::post('/add-address', [HomeController::class, 'addAddress']);
+    Route::put('/edit-address/{id}', [HomeController::class, 'editAddress']);
+    Route::delete('/delete-address/{id}', [HomeController::class, 'deleteAddress']);
+    Route::patch('/update-default-address/{id}', [HomeController::class, 'updateDefaultAddress']);
 
+    Route::post('/change-password', [AuthController::class, 'changePassword']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -117,6 +125,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('thong-ke/doanh-thu', [StatisticalController::class, 'doanhThu']);
         Route::get('thong-ke/san-pham', [StatisticalController::class, 'thongKeSanPham']);
         Route::get('thong-ke/don-hang', [StatisticalController::class, 'thongKeDonHang']);
+        Route::get('thong-ke/ngay-thong-ke', [StatisticalController::class, 'NgayThongKe']);
 
 
         // QL danh mục
@@ -125,6 +134,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::post('category/delete-much', [CategoryController::class, 'deleteMuch'])->name('category.deleteMuch');
         Route::patch('category/restore/{id}', [CategoryController::class, 'restore'])->name('category.restore');
         Route::delete('category/hard-delete/{id}', [CategoryController::class, 'hardDelete'])->name('category.hardDelete');
+        Route::get('category/{id}/product-count', [CategoryController::class, 'countProducts']);
+
 
         // QL mã giảm giá
         Route::apiResource('coupon', CouponController::class);
@@ -133,12 +144,17 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
         // QL thuộc tính
         Route::apiResource('attribute', AttributeController::class);
+        Route::get('admin/attribute/{id}', [AttributeController::class, 'getAttributeDetail']);
+        Route::put('attributes/{id}/type', [AttributeController::class, 'updateType']);
+
         Route::apiResource('attribute-value', AttributeValueController::class);
         Route::get('/attribute-values/{id}', [AttributeValueController::class, 'getByAttributeId']);
 
         // QL banner
         Route::apiResource('banners', BannerController::class);
         Route::patch('banners/{id}/is-active', [BannerController::class, 'updateIsActive'])->name('blogs.updateIsActive');
+        // Route::put('createBannerMultiple', [BannerController::class, 'createBannerMultiple']);
+        // Route::post('updateBannerMultiple', [BannerController::class, 'updateBannerMultiple']);
 
         // QL blog
         Route::apiResource('blogs', BlogController::class);
@@ -147,6 +163,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         // QL sản phẩm
         Route::get('/product/{slug}', [ProductController::class, 'findBySlug']);
         Route::apiResource('products', ProductController::class);
+        Route::get('/listDelete', [ProductController::class, 'listDelete']);
+
         Route::patch('product/{id}/is_featured', [ProductController::class, 'updateIsFeatured'])->name('category.updateIsFeatured');
         // Route::patch('product/{id}/is_good_deal', [ProductController::class, 'updateIsGoodDeal'])->name('category.updateIsGoodDeal');
         Route::patch('product/{id}/is_active', [ProductController::class, 'updateIsActive'])->name('category.updateIsActive');
@@ -175,6 +193,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::post('/import-orders', [InventoryImportController::class, 'import']);
         Route::get('/list-import', [InventoryImportController::class, 'index']);
         Route::get('/list-stock', [InventoryStockController::class, 'index']);
+
+        // Nhà cung cấp
+        Route::get('/suppliers', [SupplierController::class, 'index']);
+        Route::get('/supplier/{id}', [SupplierController::class, 'show']);
+        Route::post('/store-supplier', [SupplierController::class, 'store']);
+        Route::put('/update-supplier/{id}', [SupplierController::class, 'update']);
+        Route::delete('/delete-supplier/{id}', [SupplierController::class, 'delete']);
     });
     // Admin & Manage
     Route::middleware(['manage'])->group(function () {

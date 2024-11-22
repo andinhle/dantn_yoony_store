@@ -139,15 +139,33 @@ const ShowDetailProduct: React.FC = () => {
         }, {}),
       }));
       setVariants(processedVariants);
+
       const groups = generateAttributeGroups(processedVariants);
       setAttributeGroups(groups);
+
       setImageProducts([
         productData.images?.[0] || "",
         ...processedVariants.map((v) => v.image).filter(Boolean),
       ]);
+
       setSelectedImage(
         productData.images?.[0] || processedVariants[0]?.image || ""
       );
+
+      if (processedVariants.length > 0) {
+        const defaultVariant = processedVariants[0];
+        const defaultAttributes = Object.entries(
+          defaultVariant.attributes
+        ).reduce(
+          (acc, [key, attr]) => ({
+            ...acc,
+            [key]: attr.value,
+          }),
+          {}
+        );
+        setSelectedAttributes(defaultAttributes);
+        setSelectedVariant(defaultVariant);
+      }
     }
   };
 
@@ -190,15 +208,10 @@ const ShowDetailProduct: React.FC = () => {
   };
 
   const handleAttributeSelect = (attributeName: string, value: string) => {
-    setSelectedAttributes((prev) => {
-      const newAttributes = { ...prev };
-      if (newAttributes[attributeName] === value) {
-        delete newAttributes[attributeName];
-      } else {
-        newAttributes[attributeName] = value;
-      }
-      return newAttributes;
-    });
+    setSelectedAttributes((prev) => ({
+      ...prev,
+      [attributeName]: value,
+    }));
 
     const currentGroup = attributeGroups.find(
       (group) => group.name === attributeName
@@ -329,8 +342,10 @@ const ShowDetailProduct: React.FC = () => {
             placement="top"
           >
             <div
-              className={`relative overflow-hidden rounded-lg hover:cursor-pointer ${
-                !isAvailable ? "opacity-40" : ""
+              className={`relative overflow-hidden rounded-lg ${
+                !isAvailable
+                  ? "opacity-40 cursor-not-allowed"
+                  : "hover:cursor-pointer"
               }`}
               onClick={() => {
                 if (isAvailable) {
@@ -389,7 +404,7 @@ const ShowDetailProduct: React.FC = () => {
                 type="button"
                 className={`px-3.5 py-[9px] flex items-center justify-center border rounded-full transition-all ${
                   !isAvailable
-                    ? "opacity-40"
+                    ? "opacity-40 cursor-not-allowed"
                     : isSelected
                     ? "border-primary/80 bg-primary/10 text-primary"
                     : "border-input hover:border-primary/80"
@@ -399,6 +414,7 @@ const ShowDetailProduct: React.FC = () => {
                     handleAttributeSelect(group.name, value);
                   }
                 }}
+                disabled={!isAvailable}
               >
                 <p className="text-xs font-normal overflow-hidden text-ellipsis white-space">
                   {value}
@@ -426,8 +442,8 @@ const ShowDetailProduct: React.FC = () => {
             </div>
           </Tooltip>
         );
-        case 'select':
-          break;
+      case "select":
+        break;
       default:
         return (
           <Tooltip
@@ -440,7 +456,7 @@ const ShowDetailProduct: React.FC = () => {
                 type="button"
                 className={`px-4 py-2.5 flex items-center justify-center border rounded-lg transition-all ${
                   !isAvailable
-                    ? "opacity-40"
+                    ? "opacity-40 cursor-not-allowed"
                     : isSelected
                     ? "border-primary/80 bg-primary/10 text-primary"
                     : "border-input hover:border-primary/80"
@@ -450,6 +466,7 @@ const ShowDetailProduct: React.FC = () => {
                     handleAttributeSelect(group.name, value);
                   }
                 }}
+                disabled={!isAvailable}
               >
                 <p className="text-xs font-normal overflow-hidden text-ellipsis white-space">
                   {value}
@@ -485,24 +502,22 @@ const ShowDetailProduct: React.FC = () => {
       default:
         return (
           <div className="max-w-[150px] w-full">
-          <Select
-            key={`${group.name}-select`}
-            value={selectedAttributes[group.name]}
-            onChange={(value) => handleAttributeSelect(group.name, value)}
-            className="w-full h-[35px]"
-            placeholder={`Chọn ${group.name}`}
-            options={group.values.map((val) => ({
-              value: val,
-              label: val,
-              disabled: !isAttributeAvailable(group.name, val),
-            }))}
-          />
-        </div>
-        )
+            <Select
+              key={`${group.name}-select`}
+              value={selectedAttributes[group.name]}
+              onChange={(value) => handleAttributeSelect(group.name, value)}
+              className="w-full h-[35px]"
+              placeholder={`Chọn ${group.name}`}
+              options={group.values.map((val) => ({
+                value: val,
+                label: val,
+                disabled: !isAttributeAvailable(group.name, val),
+              }))}
+            />
+          </div>
+        );
     }
   };
-
-  console.log(product);
 
   return (
     <section className="space-y-8">
@@ -775,7 +790,6 @@ const ShowDetailProduct: React.FC = () => {
                 </button>
                 <input
                   id="quantity-product"
-                  type="number"
                   min={1}
                   max={selectedVariant?.quantity}
                   value={quantity}
