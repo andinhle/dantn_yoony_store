@@ -15,17 +15,15 @@ const Wishlist = () => {
     (async () => {
       try {
         const { data } = await instance.get("list-wishlists");
-        setWishlists(data.wishlists);
+        setWishlists(data.wishlists.data);
       } catch (error) {
         console.log(error)
       }
     })();
   }, []);
-  console.log(wishlists)
   return (
     <div className="grid grid-cols-4 gap-4">
-      {wishlists.map((data) => {
-        console.log(data?.product?.variants)
+      {wishlists?.map((data) => {
         const colorVariantsImages = GroupVariantsByColor(data?.product?.variants);
         return (
           <CardProductAll

@@ -26,32 +26,30 @@ class UpdateCouponRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => 'required|max:255|unique:coupons,code,' . $this->route('coupon'), 
+            'code' => 'required|max:255|unique:coupons,code,' . $this->route('coupon'),
             'discount' => 'required',
             'discount_type' => 'required',
             'usage_limit' => 'required',
-            'start_date' => 'required|date|date_format:Y-m-d',
-            'end_date' => 'required|date|date_format:Y-m-d|after_or_equal:start_date',
+            'start_date' => 'nullable|date|date_format:Y-m-d',
+            'end_date' => 'nullable|date|date_format:Y-m-d|after_or_equal:start_date',
             'status' => 'boolean',
             'is_featured' => 'boolean',
-            'min_order_value' => 'required|min:0|numeric',
-            'max_order_value'   => 'required|numeric|gt:min_order_value'
+            'min_order_value' => 'nullable|min:0|numeric',
+            'max_order_value'   => 'nullable|numeric|gt:min_order_value'
         ];
     }
 
     public function messages(): array
     {
         return [
-            'code.required' => 'Yêu cầu nhập', 
-            'code.max' => 'Không nhập quá 255 ký tự', 
-            'code.unique' => 'Mã này đã tồn tại', 
+            'code.required' => 'Yêu cầu nhập',
+            'code.max' => 'Không nhập quá 255 ký tự',
+            'code.unique' => 'Mã này đã tồn tại',
             'discount.required' => 'Yêu cầu nhập',
             'discount_type.required' => 'Yêu cầu nhập',
             'usage_limit.required' => 'Yêu cầu nhập',
-            'min_order_value.required' => 'Yêu cầu nhập',
             'min_order_value.min' => 'Giá trị phải là số ',
             'min_order_value.numeric' => 'Vui lòng nhập số',
-            'max_order_value.required' => 'Yêu cầu nhập',
             'max_order_value.numeric' => 'Vui lòng nhập số',
             'max_order_value.gt:min_order_value' => 'Giá trị phải lớn hơn giá trị đơn hàng thấp nhất',
             'status.in' => 'Trạng thái đã chọn không hợp lệ',

@@ -9,6 +9,7 @@ use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\RateAllByProductResource;
 use App\Http\Resources\RateResource;
+use App\Models\Address;
 use App\Models\Answer;
 use App\Models\Blog;
 use App\Models\Category;
@@ -37,6 +38,7 @@ class HomeController extends Controller
             // Lấy thông tin sản phẩm
             $product = Product::with('category', 'variants.attributeValues.attribute', 'variants.inventoryStock')
                 ->where('slug', $slug)
+                ->where('is_active', 1)
                 ->firstOrFail();
 
             // Lấy sản phẩm liên quan
@@ -78,7 +80,7 @@ class HomeController extends Controller
             $user = auth()->user();
 
             // Lấy danh sách wishlists và sản phẩm kèm theo
-            $wishlists = $user->wishlists()->with('product.variants.attributeValues.attribute',)->get();
+            $wishlists = $user->wishlists()->with('product.variants.attributeValues.attribute')->paginate(10);
 
             // Giải mã trường 'images' cho mỗi sản phẩm trong wishlist
             foreach ($wishlists as $wishlist) {
@@ -515,5 +517,124 @@ class HomeController extends Controller
                 'attribute_values' => $attributeValuesList
             ];
         });
+    }
+    // Lấy ra các địa chỉ user thêm
+    public function getAllAddress()
+    {
+        $user = Auth::id();
+        $address = Address::where('user_id', $user)->get();
+        return response()->json([
+            'data' => $address
+        ]);
+    }
+    public function getAddress(string $id)
+    {
+        $address = Address::where('id', $id)->get();
+        return response()->json([
+            'data' => $address
+        ]);
+    }
+
+    // Thêm địa chỉ
+    public function addAddress(Request $request)
+    {
+        try {
+            // Đếm số địa chỉ hiện tại của user
+            $addressCount = Address::where('user_id', Auth::id())->count();
+            
+            // Kiểm tra nếu đã có 5 địa chỉ
+            if ($addressCount >= 5) {
+                return response()->json([
+                    'error' => 'Bạn chỉ được thêm tối đa 5 địa chỉ'
+                ], 400);
+            }
+    
+            // Nếu chưa đủ 5 địa chỉ thì tạo mới
+            $address = Address::create([
+                'fullname' => $request->fullname,
+                'phone' => $request->phone,
+                'province' => $request->province, 
+                'district' => $request->district,
+                'ward' => $request->ward,
+                'address' => $request->address,
+                'user_id' => Auth::id()
+            ]);
+
+            // Kiểm tra xem có phải địa chỉ đầu tiên của thằng này không
+            $userAddressCount = Address::where('user_id', Auth::id())->count();
+            
+            // Nếu đúng thì đặt nó làm mặc định
+            if ($userAddressCount === 1) {
+                $user = Auth::user();
+                $user->address_id = $address->id;
+                $user->save();
+            }
+    
+            return response()->json([
+                'data' => $address
+            ]);
+    
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
+        }
+    }
+    // Sửa địa chỉ
+    public function editAddress(Request $request, string $id)
+    {
+        try {
+            $address = Address::findOrFail($id);
+            
+            $updateAddress = $address->update([
+                'fullname' => $request->fullname,
+                'phone' => $request->phone,
+                'province' => $request->province,
+                'district' => $request->district,
+                'ward' => $request->ward,
+                'address' => $request->address,
+                'user_id' => Auth::id()
+            ]);
+
+            return response()->json([
+                'data' => $address
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
+        }
+    }
+    // Xóa địa chỉ
+    public function deleteAddress(string $id)
+    {
+        try {
+            $address = Address::findOrFail($id);
+            $address->delete();
+            return response()->json(['message' => 'Địa chỉ đã được xóa thành công']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
+        }
+
+    }
+    // Thiết lập 
+    public function updateDefaultAddress(int $id)
+    {
+        try {
+            $address = Address::where('id', $id)
+                ->where('user_id', Auth::id())
+                ->firstOrFail();
+
+            $user = Auth::user();
+
+            $user->address_id = $id;
+            $user->save();
+
+            return response()->json([
+                'message' => 'Địa chỉ mặc định đã được cập nhật',
+                'default_address_id' => $id
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Không thể cập nhật địa chỉ mặc định: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

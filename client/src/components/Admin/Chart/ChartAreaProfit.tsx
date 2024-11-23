@@ -2,7 +2,14 @@ import React, { useState, useMemo } from "react";
 import Chart from "react-apexcharts";
 import type { ChartOptions, ChartSeries } from "./types";
 
-type TimelinePeriod = "one_month" | "six_months" | "one_year" | "ytd" | "all";
+type TimelinePeriod =
+  | "one_day"
+  | "one_month"
+  | "six_months"
+  | "one_year"
+  | "last_year"
+  | "ytd"
+  | "all";
 
 interface TimelineButton {
   label: string;
@@ -13,65 +20,63 @@ interface TimelineButton {
 
 const TIMELINE_BUTTONS: TimelineButton[] = [
   {
+    label: "1 Ngày",
+    value: "one_day",
+    startDate: "20 Nov 2024",
+    endDate: "20 Nov 2024",
+  },
+  {
     label: "1 Tháng",
     value: "one_month",
-    startDate: "31 Oct 2024",
-    endDate: "16 Nov 2024",
+    startDate: "01 Nov 2024",
+    endDate: "30 Nov 2024",
   },
   {
     label: "6 Tháng",
     value: "six_months",
-    startDate: "27 Sep 2012",
-    endDate: "27 Feb 2013",
+    startDate: "01 May 2024",
+    endDate: "20 Nov 2024",
   },
   {
     label: "1 Năm",
     value: "one_year",
-    startDate: "27 Feb 2012",
-    endDate: "27 Feb 2013",
+    startDate: "01 Jan 2024",
+    endDate: "20 Nov 2024",
   },
   {
     label: "Năm trước",
-    value: "ytd",
-    startDate: "01 Jan 2013",
-    endDate: "27 Feb 2013",
+    value: "last_year",
+    startDate: "01 Jan 2023",
+    endDate: "31 Dec 2023",
   },
   {
     label: "Tất cả",
     value: "all",
-    startDate: "23 Jan 2012",
-    endDate: "27 Feb 2013",
+    startDate: "10 Jan 2024",
+    endDate: "20 Nov 2024",
   },
 ];
 
 const formatNumber = (num) => {
   return new Intl.NumberFormat("vi-VN").format(num);
 };
+const result = [
+  [1722445200000, 250000],
+  [1725123600000, 300000],
+  [1729530000000, 250000],
+  [1731171600000, 500000],
+  [1732035600000, 280000],
+  [1732122000000, 800000],
+  [1732554000000, 1250000],
+];
 
 const chartSeries: ChartSeries[] = [
   {
     name: "Đơn hàng",
-    data: [
-      [1730443426000, 665000],
-      [1730444081000, 1100000],
-      [1730462316000, 725000],
-      [1730472691000, 1679998],
-      [1730472903000, 1350000],
-      [1730483440000, 300000],
-      [1730483843000, 200000],
-      [1730541954000, 200000],
-      [1730558556000, 500000],
-      [1730749737000, 550000],
-      [1730749830000, 750000],
-      [1730789259000, 500000],
-      [1730789276000, 250000],
-      [1730789290000, 250000],
-      [1730789323000, 250000],
-      [1730988931000, 500000],
-      [1730988937000, 600000],
-      [1731842272000, 500000],
-      [1731845377000, 550000],
-    ],
+    data: result.map(([timestamp, value]) => [
+      timestamp + 7 * 60 * 60 * 1000,
+      value,
+    ]),
   },
 ];
 
@@ -95,18 +100,18 @@ const ChartAreaProfit: React.FC = () => {
           export: {
             csv: {
               filename: "bieu_do_doanh_thu",
-              columnDelimiter: ',',
-              headerCategory: 'Ngày',
-              headerValue: 'value'
+              columnDelimiter: ",",
+              headerCategory: "Ngày",
+              headerValue: "value",
             },
             svg: {
               filename: undefined,
             },
             png: {
               filename: undefined,
-            }
-          }
-        }
+            },
+          },
+        },
       },
       title: {
         text: "BIỂU ĐỒ THỐNG KÊ DOANH THU",

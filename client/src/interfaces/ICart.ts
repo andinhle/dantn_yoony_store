@@ -3,12 +3,12 @@ import { IProduct } from "./IProduct";
 import { IUser } from "./IUser";
 import { IVariants } from "./IVariants";
 
-interface InventoryStock {
+export interface InventoryStock {
     id: number;
     quantity: number;
     variant_id: number;
     created_at: Date | null;
-    updated_at: string; // ISO 8601 date-time format
+    updated_at: string; 
 }
 
 
