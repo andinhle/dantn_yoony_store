@@ -85,6 +85,7 @@ export interface User {
     avatar: string;
     create_at: string;
     email: string;
+    name:string;
     email_verified_at: string;
     id: number;
     provider: string;
@@ -104,7 +105,7 @@ export interface Coupons {
 
 
 }
-interface Coupon {
+export interface Coupon {
     id: number;
     code: string;
     name: string;
@@ -124,3 +125,11 @@ interface Coupon {
 }
 
 
+export interface UserOrder {
+    id?:number;
+    address:string;
+    avatar:string;
+    created_at:string;
+    email:string;
+    name:string
+}
