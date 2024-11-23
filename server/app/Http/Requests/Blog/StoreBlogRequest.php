@@ -22,8 +22,10 @@ class StoreBlogRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'content' => 'required|string',
-            'slug' => 'required|string|max:255|unique:blogs',
+            'title' => 'required|string|max:255',
+            'thambnail' => 'nullable|string|max:255',
+            'content' => 'required',
+            'slug' => 'required|string|unique:blogs,slug',
             'user_id' => 'required|exists:users,id',
             'is_active' => 'boolean',
         ];
