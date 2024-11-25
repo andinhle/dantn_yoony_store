@@ -194,6 +194,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
         // Nhập hàng
         Route::post('/import-orders', [InventoryImportController::class, 'import']);
+        Route::post('/import-multiple-orders', [InventoryImportController::class, 'importMultiple']);
         Route::get('/list-import', [InventoryImportController::class, 'index']);
         Route::get('/list-stock', [InventoryStockController::class, 'index']);
 
