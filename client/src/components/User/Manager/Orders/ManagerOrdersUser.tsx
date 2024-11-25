@@ -1,5 +1,4 @@
-import { Dropdown, Input, Pagination } from "antd";
-import type { MenuProps } from "antd";
+import { ConfigProvider, Dropdown, Input, Pagination } from "antd";
 import { Table } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { IOrderUserClient } from "../../../../interfaces/IOrderUserClient";
@@ -7,43 +6,28 @@ import instance from "../../../../instance/instance";
 import { Link, NavLink, useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
 import { IMeta } from "../../../../interfaces/IMeta";
+import OrderStatusFilter from "./OrderStatusFilter";
 const ManagerOrdersUser = () => {
   const [orderUsers, setListOrderUsers] = useState<IOrderUserClient[]>([]);
   const [valueSearch, setValueSearch] = useState<string>("");
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parseInt(searchParams.get("page") || "1");
   const [meta, setMeta] = useState<IMeta>();
-  //Get danh sách đơn hàng của người dùng
+  const [filteredStatuses, setFilteredStatuses] = useState<string[]>([]);
   useEffect(() => {
     (async () => {
       try {
         setSearchParams({ page: String(page) });
-        const {
-          data,
-        } = await instance.get(`order?page=${page}`);
+        const { data } = await instance.get(`order?page=${page}`);
         if (data) {
           setListOrderUsers(data.data);
-          setMeta(data.meta)
+          setMeta(data.meta);
         }
       } catch (error) {
         console.log(error);
       }
     })();
   }, [page]);
-  const items: MenuProps["items"] = [
-    {
-      label: <a href="https://www.antgroup.com">1st menu item</a>,
-      key: "0",
-    },
-    {
-      label: <a href="https://www.aliyun.com">2nd menu item</a>,
-      key: "1",
-    },
-    {
-      label: "3rd menu item",
-      key: "3",
-    },
-  ];
 
   const status = (statusOrder: string) => {
     switch (statusOrder) {
@@ -573,89 +557,103 @@ const ManagerOrdersUser = () => {
               </svg>
             }
           />
-          <Dropdown
-            menu={{ items }}
-            trigger={["click"]}
-            placement="bottomRight"
+          <ConfigProvider
+            theme={{
+              components: {
+                Dropdown: {
+                  controlItemBgHover: "#fff",
+                },
+              },
+            }}
           >
-            <button className=" bg-primary hover:bg-primary text-white text-sm py-2 px-2 rounded-sm focus:ring-primary flex items-center ">
-              Fillter
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                color="currentColor"
-                fill="none"
-                className="ml-2 size-5"
-              >
-                <path
-                  d="M13 4L3 4"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M11 19L3 19"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M21 19L17 19"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M21 11.5L11 11.5"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M21 4L19 4"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M5 11.5L3 11.5"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M14.5 2C14.9659 2 15.1989 2 15.3827 2.07612C15.6277 2.17761 15.8224 2.37229 15.9239 2.61732C16 2.80109 16 3.03406 16 3.5L16 4.5C16 4.96594 16 5.19891 15.9239 5.38268C15.8224 5.62771 15.6277 5.82239 15.3827 5.92388C15.1989 6 14.9659 6 14.5 6C14.0341 6 13.8011 6 13.6173 5.92388C13.3723 5.82239 13.1776 5.62771 13.0761 5.38268C13 5.19891 13 4.96594 13 4.5L13 3.5C13 3.03406 13 2.80109 13.0761 2.61732C13.1776 2.37229 13.3723 2.17761 13.6173 2.07612C13.8011 2 14.0341 2 14.5 2Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M12.5 17C12.9659 17 13.1989 17 13.3827 17.0761C13.6277 17.1776 13.8224 17.3723 13.9239 17.6173C14 17.8011 14 18.0341 14 18.5L14 19.5C14 19.9659 14 20.1989 13.9239 20.3827C13.8224 20.6277 13.6277 20.8224 13.3827 20.9239C13.1989 21 12.9659 21 12.5 21C12.0341 21 11.8011 21 11.6173 20.9239C11.3723 20.8224 11.1776 20.6277 11.0761 20.3827C11 20.1989 11 19.9659 11 19.5L11 18.5C11 18.0341 11 17.8011 11.0761 17.6173C11.1776 17.3723 11.3723 17.1776 11.6173 17.0761C11.8011 17 12.0341 17 12.5 17Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M9.5 9.5C9.96594 9.5 10.1989 9.5 10.3827 9.57612C10.6277 9.67761 10.8224 9.87229 10.9239 10.1173C11 10.3011 11 10.5341 11 11L11 12C11 12.4659 11 12.6989 10.9239 12.8827C10.8224 13.1277 10.6277 13.3224 10.3827 13.4239C10.1989 13.5 9.96594 13.5 9.5 13.5C9.03406 13.5 8.80109 13.5 8.61732 13.4239C8.37229 13.3224 8.17761 13.1277 8.07612 12.8827C8 12.6989 8 12.4659 8 12L8 11C8 10.5341 8 10.3011 8.07612 10.1173C8.17761 9.87229 8.37229 9.67761 8.61732 9.57612C8.80109 9.5 9.03406 9.5 9.5 9.5Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          </Dropdown>
+            <Dropdown
+              menu={{
+                items: OrderStatusFilter({
+                  onStatusChange: (statuses) => setFilteredStatuses(statuses),
+                }),
+              }}
+              trigger={["click"]}
+              placement="bottomRight"
+            >
+              <button className=" bg-primary hover:bg-primary text-white text-sm py-2 px-2 rounded-sm focus:ring-primary flex items-center ">
+                Fillter
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  color="currentColor"
+                  fill="none"
+                  className="ml-2 size-5"
+                >
+                  <path
+                    d="M13 4L3 4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M11 19L3 19"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M21 19L17 19"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M21 11.5L11 11.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M21 4L19 4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M5 11.5L3 11.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M14.5 2C14.9659 2 15.1989 2 15.3827 2.07612C15.6277 2.17761 15.8224 2.37229 15.9239 2.61732C16 2.80109 16 3.03406 16 3.5L16 4.5C16 4.96594 16 5.19891 15.9239 5.38268C15.8224 5.62771 15.6277 5.82239 15.3827 5.92388C15.1989 6 14.9659 6 14.5 6C14.0341 6 13.8011 6 13.6173 5.92388C13.3723 5.82239 13.1776 5.62771 13.0761 5.38268C13 5.19891 13 4.96594 13 4.5L13 3.5C13 3.03406 13 2.80109 13.0761 2.61732C13.1776 2.37229 13.3723 2.17761 13.6173 2.07612C13.8011 2 14.0341 2 14.5 2Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M12.5 17C12.9659 17 13.1989 17 13.3827 17.0761C13.6277 17.1776 13.8224 17.3723 13.9239 17.6173C14 17.8011 14 18.0341 14 18.5L14 19.5C14 19.9659 14 20.1989 13.9239 20.3827C13.8224 20.6277 13.6277 20.8224 13.3827 20.9239C13.1989 21 12.9659 21 12.5 21C12.0341 21 11.8011 21 11.6173 20.9239C11.3723 20.8224 11.1776 20.6277 11.0761 20.3827C11 20.1989 11 19.9659 11 19.5L11 18.5C11 18.0341 11 17.8011 11.0761 17.6173C11.1776 17.3723 11.3723 17.1776 11.6173 17.0761C11.8011 17 12.0341 17 12.5 17Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M9.5 9.5C9.96594 9.5 10.1989 9.5 10.3827 9.57612C10.6277 9.67761 10.8224 9.87229 10.9239 10.1173C11 10.3011 11 10.5341 11 11L11 12C11 12.4659 11 12.6989 10.9239 12.8827C10.8224 13.1277 10.6277 13.3224 10.3827 13.4239C10.1989 13.5 9.96594 13.5 9.5 13.5C9.03406 13.5 8.80109 13.5 8.61732 13.4239C8.37229 13.3224 8.17761 13.1277 8.07612 12.8827C8 12.6989 8 12.4659 8 12L8 11C8 10.5341 8 10.3011 8.07612 10.1173C8.17761 9.87229 8.37229 9.67761 8.61732 9.57612C8.80109 9.5 9.03406 9.5 9.5 9.5Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </Dropdown>
+          </ConfigProvider>
         </div>
         <div className="overflow-x-auto table-order-users">
-          <Table className="text-center">
+          <Table>
             <Table.Head>
               <Table.HeadCell className="bg-primary text-util text-sm font-normal capitalize !rounded-s-sm text-nowrap">
                 Mã đơn hàng
@@ -677,121 +675,127 @@ const ManagerOrdersUser = () => {
               </Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y">
-              {orderUsers &&
+              {orderUsers.length === 0 ||
+              orderUsers.filter((items) => {
+                const searchTerm = valueSearch.toLowerCase();
+                const code = items.code.toLowerCase();
+                const matchesSearch =
+                  `#${code}`.includes(searchTerm) || code.includes(searchTerm);
+                const matchesStatus =
+                  filteredStatuses.length === 0 ||
+                  filteredStatuses.includes(items.status_order);
+                return matchesSearch && matchesStatus;
+              }).length === 0 ? (
+                <Table.Row>
+                  <Table.Cell colSpan={6}>
+                    <div className="flex flex-col items-center text-secondary/20 space-y-2 justify-center min-h-[50vh]">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="size-16"
+                        viewBox="0 0 64 41"
+                      >
+                        <g
+                          fill="none"
+                          fillRule="evenodd"
+                          transform="translate(0 1)"
+                        >
+                          <ellipse
+                            cx="32"
+                            cy="33"
+                            fill="#f5f5f5"
+                            rx="32"
+                            ry="7"
+                          ></ellipse>
+                          <g fillRule="nonzero" stroke="#d9d9d9">
+                            <path d="M55 12.76L44.854 1.258C44.367.474 43.656 0 42.907 0H21.093c-.749 0-1.46.474-1.947 1.257L9 12.761V22h46v-9.24z"></path>
+                            <path
+                              fill="#fafafa"
+                              d="M41.613 15.931c0-1.605.994-2.93 2.227-2.931H55v18.137C55 33.26 53.68 35 52.05 35h-40.1C10.32 35 9 33.259 9 31.137V13h11.16c1.233 0 2.227 1.323 2.227 2.928v.022c0 1.605 1.005 2.901 2.237 2.901h14.752c1.232 0 2.237-1.308 2.237-2.913v-.007z"
+                            ></path>
+                          </g>
+                        </g>
+                      </svg>
+                      <p>Không có đơn hàng nào</p>
+                    </div>
+                  </Table.Cell>
+                </Table.Row>
+              ) : (
                 orderUsers
                   .filter((items) => {
-                    return (
-                      `#${items.code.toLowerCase()}`
-                        .toLowerCase()
-                        .includes(valueSearch.toLowerCase()) ||
-                      items.code
-                        .toLowerCase()
-                        .includes(valueSearch.toLowerCase())
-                    );
+                    const searchTerm = valueSearch.toLowerCase();
+                    const code = items.code.toLowerCase();
+                    const matchesSearch =
+                      `#${code}`.includes(searchTerm) ||
+                      code.includes(searchTerm);
+                    const matchesStatus =
+                      filteredStatuses.length === 0 ||
+                      filteredStatuses.includes(items.status_order);
+                    return matchesSearch && matchesStatus;
                   })
-                  .map((orderUser) => {
-                    return (
-                      <Table.Row
-                        className="bg-white border-b border-[#EBEDF0] border-dashed"
-                        key={orderUser.id}
-                      >
-                        <Table.Cell className="whitespace-nowrap text-primary">
-                          <span className="border border-primary border-dashed py-1 px-2 rounded-sm bg-primary/10">
-                            {`#${orderUser.code}`}
-                          </span>
-                        </Table.Cell>
-                        <Table.Cell className="whitespace-nowrap text-secondary/75">
-                          {dayjs(orderUser.created_at).format("DD-MM-YYYY")}
-                        </Table.Cell>
-                        <Table.Cell className="whitespace-nowrap text-secondary/75">
-                          <span className="text-primary">
-                            {orderUser.final_total?.toLocaleString()}đ
-                          </span>
-                        </Table.Cell>
-                        <Table.Cell className="whitespace-nowrap text-secondary/75">
-                          <div className="flex justify-center items-center">
-                            {checkPaymentMethod(orderUser.payment_method)}
-                          </div>
-                        </Table.Cell>
-                        <Table.Cell className="whitespace-nowrap text-secondary/75">
-                          {status(orderUser.status_order)}
-                        </Table.Cell>
-                        <Table.Cell className="whitespace-nowrap text-secondary/75">
-                          <div className="flex items-center gap-2">
-                            <NavLink
-                              to={`/user-manager/user-orders/order-detail/${orderUser.code}`}
-                              className="text-util bg-primary py-1.5 px-2 flex items-center flex-nowrap gap-1 rounded-sm"
+                  .map((orderUser) => (
+                    <Table.Row className="bg-white" key={orderUser.id}>
+                      <Table.Cell className="whitespace-nowrap text-primary">
+                        <span className="border border-primary border-dashed py-1 px-2 rounded-sm bg-primary/10">
+                          #{orderUser.code}
+                        </span>
+                      </Table.Cell>
+                      <Table.Cell className="whitespace-nowrap text-secondary/75">
+                        {dayjs(orderUser.created_at).format("DD-MM-YYYY")}
+                      </Table.Cell>
+                      <Table.Cell className="whitespace-nowrap text-secondary/75">
+                        <span className="text-primary">
+                          {orderUser.final_total?.toLocaleString()}đ
+                        </span>
+                      </Table.Cell>
+                      <Table.Cell className="whitespace-nowrap text-secondary/75">
+                        <div className="flex justify-center items-center">
+                          {checkPaymentMethod(orderUser.payment_method)}
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell className="whitespace-nowrap text-secondary/75">
+                        {status(orderUser.status_order)}
+                      </Table.Cell>
+                      <Table.Cell className="whitespace-nowrap text-secondary/75">
+                        <div className="flex items-center gap-2">
+                          <NavLink
+                            to={`/user-manager/user-orders/order-detail/${orderUser.code}`}
+                            className="text-util bg-primary py-1.5 px-2 flex items-center flex-nowrap gap-1 rounded-sm"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              className="size-5"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
                             >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                className="size-5"
-                                color={"currentColor"}
-                                fill={"none"}
-                              >
-                                <path
-                                  d="M19 11V10C19 6.22876 19 4.34315 17.8284 3.17157C16.6569 2 14.7712 2 11 2C7.22876 2 5.34315 2 4.17157 3.17157C3 4.34315 3 6.22876 3 10V14C3 17.7712 3 19.6569 4.17157 20.8284C5.34315 22 7.22876 22 11 22"
-                                  stroke="currentColor"
-                                  strokeWidth="1.5"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                                <path
-                                  d="M21 22L19.2857 20.2857M19.8571 17.4286C19.8571 19.3221 18.3221 20.8571 16.4286 20.8571C14.535 20.8571 13 19.3221 13 17.4286C13 15.535 14.535 14 16.4286 14C18.3221 14 19.8571 15.535 19.8571 17.4286Z"
-                                  stroke="currentColor"
-                                  strokeWidth="1.5"
-                                  strokeLinecap="round"
-                                />
-                                <path
-                                  d="M7 7H15M7 11H11"
-                                  stroke="currentColor"
-                                  strokeWidth="1.5"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                              <span>Chi tiết</span>
-                            </NavLink>
-                            {checkIsCancelOrder(
-                              orderUser.status_order,
-                              orderUser.code
-                            )}
-                            <button>
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                className="size-6"
-                                color={"currentColor0"}
-                                fill={"none"}
-                              >
-                                <path
-                                  d="M11.992 12H12.001"
-                                  stroke="currentColor"
-                                  strokeWidth="2.5"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                                <path
-                                  d="M11.9842 18H11.9932"
-                                  stroke="currentColor"
-                                  strokeWidth="2.5"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                                <path
-                                  d="M11.9998 6H12.0088"
-                                  stroke="currentColor"
-                                  strokeWidth="2.5"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                            </button>
-                          </div>
-                        </Table.Cell>
-                      </Table.Row>
-                    );
-                  })}
+                              <path d="M19 11V10C19 6.22876 19 4.34315 17.8284 3.17157C16.6569 2 14.7712 2 11 2C7.22876 2 5.34315 2 4.17157 3.17157C3 4.34315 3 6.22876 3 10V14C3 17.7712 3 19.6569 4.17157 20.8284C5.34315 22 7.22876 22 11 22" />
+                              <path d="M21 22L19.2857 20.2857M19.8571 17.4286C19.8571 19.3221 18.3221 20.8571 16.4286 20.8571C14.535 20.8571 13 19.3221 13 17.4286C13 15.535 14.535 14 16.4286 14C18.3221 14 19.8571 15.535 19.8571 17.4286Z" />
+                              <path d="M7 7H15M7 11H11" />
+                            </svg>
+                            <span>Chi tiết</span>
+                          </NavLink>
+                          {checkIsCancelOrder(
+                            orderUser.status_order,
+                            orderUser.code
+                          )}
+                          {/* <button className="text-secondary/75">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              className="size-6"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                            >
+                              <path d="M11.992 12H12.001M11.9842 18H11.9932M11.9998 6H12.0088" />
+                            </svg>
+                          </button> */}
+                        </div>
+                      </Table.Cell>
+                    </Table.Row>
+                  ))
+              )}
             </Table.Body>
           </Table>
         </div>
@@ -807,7 +811,6 @@ const ManagerOrdersUser = () => {
         showTotal={(total, range) => `${range[0]}-${range[1]} của ${total} mục`}
         align="end"
       />
-
     </div>
   );
 };

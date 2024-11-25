@@ -16,6 +16,7 @@ return new class extends Migration
             $table->integer('quantity');
             $table->integer('import_price');
             $table->foreignId('variant_id')->constrained('variants')->cascadeOnDelete();
+            $table->foreignId('supplier_id')->constrained('suppliers')->cascadeOnDelete();
             $table->timestamps();
         });
     }

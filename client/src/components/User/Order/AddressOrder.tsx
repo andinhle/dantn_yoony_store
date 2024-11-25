@@ -224,7 +224,6 @@ const AddressOrder = forwardRef((props, ref) => {
     });
     setErrors(newErrors);
     if (Object.keys(newErrors).length === 0) {
-      // Xử lý gửi form ở đây
       console.log("Form is valid. Submitting...", formData);
     } else {
       console.log("Form has errors. Please correct them.");
