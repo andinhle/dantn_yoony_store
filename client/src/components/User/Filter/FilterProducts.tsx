@@ -164,7 +164,7 @@ const FilterProducts = () => {
   const handleResetFilters = () => {
     setSelectedCategories([]);
     setSelectedAttributes({});
-    setSelectedRating(0)
+    setSelectedRating(undefined)
     // setSliderValue([dataFilter.price.min, dataFilter.price.max]);
     setSliderValue(undefined);
     handleFiltersChange();

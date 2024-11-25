@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Chart from "react-apexcharts";
 import type { ChartOptions, ChartSeries } from "./types";
+import instance from "../../../instance/instance";
 
 type TimelinePeriod =
   | "one_day"
@@ -18,73 +19,52 @@ interface TimelineButton {
   endDate: string;
 }
 
-const TIMELINE_BUTTONS: TimelineButton[] = [
-  {
-    label: "1 Ngày",
-    value: "one_day",
-    startDate: "20 Nov 2024",
-    endDate: "20 Nov 2024",
-  },
-  {
-    label: "1 Tháng",
-    value: "one_month",
-    startDate: "01 Nov 2024",
-    endDate: "30 Nov 2024",
-  },
-  {
-    label: "6 Tháng",
-    value: "six_months",
-    startDate: "01 May 2024",
-    endDate: "20 Nov 2024",
-  },
-  {
-    label: "1 Năm",
-    value: "one_year",
-    startDate: "01 Jan 2024",
-    endDate: "20 Nov 2024",
-  },
-  {
-    label: "Năm trước",
-    value: "last_year",
-    startDate: "01 Jan 2023",
-    endDate: "31 Dec 2023",
-  },
-  {
-    label: "Tất cả",
-    value: "all",
-    startDate: "10 Jan 2024",
-    endDate: "20 Nov 2024",
-  },
-];
-
-const formatNumber = (num) => {
-  return new Intl.NumberFormat("vi-VN").format(num);
-};
-const result = [
-  [1722445200000, 250000],
-  [1725123600000, 300000],
-  [1729530000000, 250000],
-  [1731171600000, 500000],
-  [1732035600000, 280000],
-  [1732122000000, 800000],
-  [1732554000000, 1250000],
-];
-
-const chartSeries: ChartSeries[] = [
-  {
-    name: "Đơn hàng",
-    data: result.map(([timestamp, value]) => [
-      timestamp + 7 * 60 * 60 * 1000,
-      value,
-    ]),
-  },
-];
-
 const ChartAreaProfit: React.FC = () => {
+  const [dataDateFilter, setDataDateFilter] = useState<TimelineButton[]>([])
+  const [data, setData] = useState<string[]>([])
+  
+  useEffect(() => {
+    (async()=>{
+      try {
+        const {data}=await instance.get('thong-ke/ngay-thong-ke')
+        console.log(data)
+        setDataDateFilter(data)
+      } catch (error) {
+        console.log(error)
+      }
+    })()
+  }, [])
+
+  useEffect(() => {
+    (async ()=>{
+      try {
+        const {data:{data:response}}=await instance.get('thong-ke/doanh-thu')
+        setData(response)
+      } catch (error) {
+        console.log(error)
+      }
+    })()
+  }, [])
+
+
+  const formatNumber = (num) => {
+    return new Intl.NumberFormat("vi-VN").format(num);
+  };
+
+  const chartSeries: ChartSeries[] = [
+    {
+      name: "Đơn hàng",
+      data: data.map(([timestamp, value]) => [
+        timestamp + 7 * 60 * 60 * 1000,
+        value,
+      ]),
+    },
+  ];
+
   const [selection, setSelection] = useState<TimelinePeriod>("one_month");
 
   const chartOptions: ChartOptions = useMemo(() => {
-    const selectedTimeline = TIMELINE_BUTTONS.find(
+    const selectedTimeline = dataDateFilter.find(
       (btn) => btn.value === selection
     );
 
@@ -166,7 +146,7 @@ const ChartAreaProfit: React.FC = () => {
   return (
     <div className="bg-white rounded-lg shadow p-5 col-span-8">
       <div className="mb-4 space-x-2">
-        {TIMELINE_BUTTONS.map(({ label, value }) => (
+        {dataDateFilter.map(({ label, value }) => (
           <button
             key={value}
             onClick={() => updateData(value)}

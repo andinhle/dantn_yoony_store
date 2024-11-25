@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { IAddress } from "../../../../interfaces/IAddress";
 import axios from "axios";
 import instance from "../../../../instance/instance";
+import { useAuth } from "../../../../providers/AuthProvider";
 
 type Props = {
   isModalOpen: boolean;
@@ -37,6 +38,7 @@ const ModalAddress = ({
   const [selectedProvince, setSelectedProvince] = useState<IAddressApi | null>(
     null
   );
+  const {user}=useAuth()
   const [selectedDistrict, setSelectedDistrict] = useState<IAddressApi | null>(
     null
   );
@@ -97,9 +99,11 @@ const ModalAddress = ({
               message.success("Thêm địa chỉ thành công !");
               reset();
               setIsModalOpen(false);
-              // const userData = JSON.parse(localStorage.getItem("userInfor")!);
-              // userData.address_id = response?.id;
-              // localStorage.setItem("userInfor", JSON.stringify(userData));
+              if (!user?.address_id) {
+              const userData = JSON.parse(localStorage.getItem("userInfor")!);
+              userData.address_id = response?.id;
+              localStorage.setItem("userInfor", JSON.stringify(userData));
+              }
             }
           }
           break;

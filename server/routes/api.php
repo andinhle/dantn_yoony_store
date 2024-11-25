@@ -120,6 +120,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('/users', [UserController::class, 'index']);
         // Cập nhật role của user
         Route::patch('/users/{id}/role', [UserController::class, 'updateRole']);
+        Route::get('/user/{id}', [UserController::class, 'show']);
 
         //Thống kê
         Route::get('thong-ke/doanh-thu', [StatisticalController::class, 'doanhThu']);
