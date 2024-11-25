@@ -380,7 +380,7 @@ const CategoryList: React.FC = () => {
         </div>
       </div>
       <div className="overflow-x-auto rounded-lg">
-        <Table>
+        <Table className="border-b border-[#E4E7EB]">
           <Table.Head className="text-center">
             <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
               Tên Danh Mục
@@ -449,7 +449,7 @@ const CategoryList: React.FC = () => {
                     {/* <Table.Cell className="font-medium text-primary text-base border-[#f5f5f5] border-r ">
                           {index + 1}
                         </Table.Cell> */}
-                    <Table.Cell className="whitespace-nowrap font-medium text-left text-secondary dark:text-white">
+                    <Table.Cell className="whitespace-nowrap font-medium text-left dark:text-white">
                       <Highlighter
                         highlightClassName="YourHighlightClass"
                         searchWords={[valSearch.toLowerCase()]}
@@ -476,7 +476,7 @@ const CategoryList: React.FC = () => {
                         <Switch
                           checkedChildren={<CheckOutlined />}
                           unCheckedChildren={<CloseOutlined />}
-                          defaultChecked={category.is_active}
+                          checked={category.is_active}
                           onChange={() =>
                             handleToggleActive(
                               category.id!,

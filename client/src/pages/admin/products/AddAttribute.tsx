@@ -112,7 +112,7 @@ const AddAttribute = () => {
             ]}
           />
         </div>
-        <ButtonSubmit content="Add" />
+        <ButtonSubmit content="Thêm" />
       </form>
     </div>
   );

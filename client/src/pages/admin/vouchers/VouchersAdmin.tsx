@@ -11,17 +11,18 @@ import { toast } from "react-toastify";
 import ListVouchersAdmin from "./ListVouchersAdmin";
 import ramdom from "random-string-generator";
 import axios from "axios";
-import { Input } from "antd";
+import { Input, Pagination } from "antd";
 const VouchersAdmin = () => {
   const [openModal, setOpenModal] = useState(false);
   const [status, setStatus] = useState(false);
   const [vouchers, setVoucher] = useState<IVoucher[]>([]);
   const [codeVoucher, setCodeVoucher] = useState("");
-  const { dispatch } = useContext(VoucherContext);
+  const { dispatch,meta,page,setSearchParams } = useContext(VoucherContext);
   const [AddOrUpdate, setAddOrUpdate] = useState<string>("ADD");
   const [idVoucher, setIdVoucher] = useState<string>("");
   const [valueSearch, setValueSearch] = useState<string>("");
   const { Search } = Input;
+
   const handleRamdomVoucher = () => {
     const randomCode = ramdom("uppernumeric");
     setCodeVoucher(randomCode);
@@ -33,21 +34,23 @@ const VouchersAdmin = () => {
     handleSubmit,
     setValue,
     reset,
+    watch,
   } = useForm<IVoucher>({
     resolver: zodResolver(VoucherSchemaValid),
   });
 
   const onSubmit = async (dataForm: IVoucher) => {
-    console.log("dataForm:", dataForm);
     try {
       if (AddOrUpdate === "ADD") {
         const { data } = await instance.post("coupon", dataForm);
+        console.log(data);
         dispatch({
           type: "ADD",
           payload: data.data,
         });
         toast.success("Thêm coupon thành công !");
       } else {
+
         const { data } = await instance.put(`coupon/${idVoucher}`, dataForm);
         dispatch({
           type: "UPDATE",
@@ -126,6 +129,17 @@ const VouchersAdmin = () => {
           valueSearch={valueSearch}
         />
       </div>
+      <Pagination
+        current={page}
+        onChange={(page) => {
+          setSearchParams({ page: String(page) });
+        }}
+        total={meta?.total || 0}
+        pageSize={meta?.per_page || 10}
+        showSizeChanger={false}
+        showTotal={(total, range) => `${range[0]}-${range[1]} của ${total} mục`}
+        align="end"
+      />
       <Modal
         dismissible
         show={openModal}
@@ -146,7 +160,7 @@ const VouchersAdmin = () => {
                 <div className="space-y-1.5">
                   <div className="flex justify-between">
                     <label htmlFor="code" className="font-medium text-sm">
-                      Code
+                      Mã giảm giá
                     </label>
                     <button
                       className="flex items-center text-sm gap-1 text-primary"
@@ -174,7 +188,7 @@ const VouchersAdmin = () => {
                     type="text"
                     className="block px-2 py-2 border border-[#d9d9d9] rounded-md w-full h-10 text-sm"
                     value={codeVoucher.toUpperCase()}
-                    placeholder="Code: "
+                    placeholder="Mã giảm giá: "
                     {...register("code", {
                       onChange(event) {
                         setCodeVoucher(event.target.value);
@@ -185,69 +199,96 @@ const VouchersAdmin = () => {
                     {errors.code?.message}
                   </span>
                 </div>
-                <div className="flex gap-2">
-                  <div className="space-y-1.5">
-                    <label htmlFor="name" className="font-medium text-sm">
-                      Name
-                    </label>
-                    <input
-                      type="text"
-                      className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
-                      placeholder="Name voucher"
-                      {...register("name")}
-                    />
-                    <span className="text-sm text-red-400">
-                      {errors.name?.message}
-                    </span>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label
-                      htmlFor="description"
-                      className="font-medium text-sm"
-                    >
-                      Description
-                    </label>
-                    <textarea
-                      className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
-                      id=""
-                      placeholder="Description"
-                      {...register("description")}
-                    ></textarea>
-                    <span className="text-sm text-red-400">
-                      {errors.description?.message}
-                    </span>
-                  </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="name" className="font-medium text-sm">
+                    Tên giảm giá
+                  </label>
+                  <input
+                    type="text"
+                    className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
+                    placeholder="Tên giảm giá"
+                    {...register("name")}
+                  />
+                  <span className="text-sm text-red-400">
+                    {errors.name?.message}
+                  </span>
+                </div>
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="discount_type"
+                    className="font-medium text-sm"
+                  >
+                    Kiểu giảm giá
+                  </label>
+                  <Select {...register("discount_type")} id="discount_type">
+                    <option value="fixed">Cố định</option>
+                    <option value="percentage">Phần trăm</option>
+                  </Select>
+                  <span className="text-sm text-red-400">
+                    {errors.discount_type?.message}
+                  </span>
                 </div>
                 <div className="flex gap-2">
-                  <div className="space-y-1.5">
-                    <label htmlFor="discount" className="font-medium text-sm">
-                      Discount
-                    </label>
-                    <input
-                      type="number"
-                      className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
-                      placeholder="% "
-                      {...register("discount", {
-                        valueAsNumber: true,
-                      })}
-                      min={0}
-                      style={{ pointerEvents: "auto" }}
-                    />
-                    <span className="text-sm text-red-400">
-                      {errors.discount?.message}
-                    </span>
-                  </div>
-                  <div className="space-y-1.5">
+                  {watch("discount_type") === "fixed" ? (
+                    <div className="space-y-1.5 w-full">
+                      <label htmlFor="discount" className="font-medium text-sm">
+                        Giảm giá (VND)
+                      </label>
+                      <input
+                        type="number"
+                        className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
+                        placeholder="Số tiền giảm"
+                        {...register("discount", {
+                          valueAsNumber: true,
+                          validate: {
+                            positive: (value) =>
+                              value >= 0 || "Giảm giá phải là số dương",
+                          },
+                        })}
+                        min={0}
+                        style={{ pointerEvents: "auto" }}
+                      />
+                      <span className="text-sm text-red-400">
+                        {errors.discount?.message}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5 w-full">
+                      <label htmlFor="discount" className="font-medium text-sm">
+                        Giảm giá (%)
+                      </label>
+                      <input
+                        type="number"
+                        className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
+                        placeholder="Phần trăm giảm"
+                        {...register("discount", {
+                          valueAsNumber: true,
+                          validate: {
+                            range: (value) =>
+                              (value >= 0 && value <= 100) ||
+                              "Giảm giá phải từ 0-100%",
+                          },
+                        })}
+                        min={0}
+                        max={100}
+                        style={{ pointerEvents: "auto" }}
+                      />
+                      <span className="text-sm text-red-400">
+                        {errors.discount?.message}
+                      </span>
+                    </div>
+                  )}
+                  <div className="space-y-1.5 w-full">
                     <label
                       htmlFor="usage_limits"
                       className="font-medium text-sm"
                     >
-                      Usage Limits
+                      Giới hạn sử dụng
                     </label>
                     <input
                       type="number"
                       className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
-                      placeholder="Usage Limits"
+                      placeholder="Giới hạn sử dụng"
                       {...register("usage_limit", {
                         valueAsNumber: true,
                       })}
@@ -265,15 +306,14 @@ const VouchersAdmin = () => {
                       htmlFor="min_order_value"
                       className="font-medium text-sm"
                     >
-                      Min Order Value
+                      Giá trị đơn tối thiểu
                     </label>
                     <input
                       type="number"
                       className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
-                      placeholder="Min Order Value"
-                      {...register("min_order_value", {
-                        valueAsNumber: true,
-                      })}
+                      placeholder="Giá trị đơn tối thiểu"
+                      defaultValue={undefined}
+                      {...register("min_order_value")}
                       min={0}
                       style={{ pointerEvents: "auto" }}
                     />
@@ -286,16 +326,15 @@ const VouchersAdmin = () => {
                       htmlFor="max_order_value"
                       className="font-medium text-sm"
                     >
-                      Max Order Value
+                      Giá trị đơn tối đa
                     </label>
                     <input
                       type="number"
                       className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
-                      placeholder="Max Order Value"
-                      {...register("max_order_value", {
-                        valueAsNumber: true,
-                      })}
+                      placeholder="Giá trị đơn tối đa"
+                      {...register("max_order_value")}
                       min={0}
+                      defaultValue={undefined}
                       style={{ pointerEvents: "auto" }}
                     />
                     <span className="text-sm text-red-400">
@@ -304,23 +343,8 @@ const VouchersAdmin = () => {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label
-                    htmlFor="discount_type"
-                    className="font-medium text-sm"
-                  >
-                    Discount Type
-                  </label>
-                  <Select {...register("discount_type")} id="discount_type">
-                    <option value="fixed">Fixed</option>
-                    <option value="percentage">Percentage</option>
-                  </Select>
-                  <span className="text-sm text-red-400">
-                    {errors.discount_type?.message}
-                  </span>
-                </div>
-                <div className="space-y-1.5">
                   <label htmlFor="start_date" className="font-medium text-sm">
-                    Start Date
+                    Ngày bắt đầu
                   </label>
                   <input
                     type="date"
@@ -333,7 +357,7 @@ const VouchersAdmin = () => {
                 </div>
                 <div className="space-y-1.5">
                   <label htmlFor="end_date" className="font-medium text-sm">
-                    End Date
+                    Ngày kết thúc
                   </label>
                   <input
                     type="date"
@@ -342,6 +366,21 @@ const VouchersAdmin = () => {
                   />
                   <span className="text-sm text-red-400">
                     {errors.end_date?.message}
+                  </span>
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="description" className="font-medium text-sm">
+                    Mô tả giảm giá
+                  </label>
+                  <textarea
+                    className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full text-sm"
+                    id=""
+                    rows={3}
+                    placeholder="Mô tả giảm giá"
+                    {...register("description")}
+                  ></textarea>
+                  <span className="text-sm text-red-400">
+                    {errors.description?.message}
                   </span>
                 </div>
                 <div className="flex gap-5 place-items-center">
@@ -354,8 +393,8 @@ const VouchersAdmin = () => {
                         setStatus(!status);
                         setValue("status", !status);
                       }}
-                      sizing={"sm"}
-                      className="my-8"
+                      sizing={"md"}
+                      className="my-5"
                     />
                   </div>
                 </div>

@@ -235,7 +235,7 @@ class ReviewController extends Controller
             ->where('user_id', $userId)
             ->where('status_order', Order::STATUS_ORDER_DELIVERED)
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(10);
             
             // Lập danh sách đánh giá cho mỗi đơn hàng
             $reviewedOrders = $orders->filter(function ($order) {
@@ -296,7 +296,15 @@ class ReviewController extends Controller
                 ];
             })->values();
             
-            return response()->json($reviewedOrders);
+            return response()->json([
+                'data' => $reviewedOrders,
+                'pagination' => [
+                    'total' => $orders->total(),
+                    'current_page' => $orders->currentPage(),
+                    'per_page' => $orders->perPage(),
+                    'last_page' => $orders->lastPage(),
+                ]
+            ]);
             
         } catch (\Exception $e) {
             return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
