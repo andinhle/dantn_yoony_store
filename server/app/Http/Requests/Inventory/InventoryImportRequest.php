@@ -22,21 +22,23 @@ class InventoryImportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'quantity' => 'required|integer|min:1',
-            'import_price' => 'required|integer',
-            'supplier' => 'required',
+            '*.quantity' => 'required|integer|min:1',
+            '*.import_price' => 'required|integer',
+            '*.variant_id' => 'required',
+            '*.supplier_id' => 'required',
         ];
     }
-
+    
     public function messages()
     {
         return [
-            'quantity.required' => 'Số lượng là bắt buộc.',
-            'quantity.integer' => 'Số lượng phải là số.',
-            'quantity.min' => 'Số lượng phải >= 1',
-            'import_price.required' => 'Giá nhập là bắt buộc',
-            'import_price.integer' => 'Giá nhập phải là số.',
-            'supplier.required' => 'Nhà cung cấp là bắt buộc.',
+            '*.quantity.required' => 'Số lượng là bắt buộc.',
+            '*.quantity.integer' => 'Số lượng phải là số.',
+            '*.quantity.min' => 'Số lượng phải >= 1',
+            '*.import_price.required' => 'Giá nhập là bắt buộc',
+            '*.import_price.integer' => 'Giá nhập phải là số.',
+            '*.variant_id.required' => 'Biến thể là bắt buộc.',
+            '*.supplier_id.required' => 'Nhà cung cấp là bắt buộc.',
         ];
     }
 }
