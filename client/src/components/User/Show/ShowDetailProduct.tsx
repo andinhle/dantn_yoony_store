@@ -17,6 +17,7 @@ import CartContext from "../../../contexts/CartContext";
 import axios from "axios";
 import { Tooltip } from "@mui/material";
 import RatingProduct from "./RatingProduct";
+import { LoadingOverlay } from "@achmadk/react-loading-overlay";
 interface IAttribute {
   value: string;
   type: "select" | "color" | "button" | "radio";
@@ -324,7 +325,31 @@ const ShowDetailProduct: React.FC = () => {
     }
   };
 
-  if (!product) return <div>Loading...</div>;
+  if (!product)
+    return (
+      <div>
+        <LoadingOverlay
+          active={!product}
+          spinner
+          text="Đang load dữ liệu ..."
+          styles={{
+            overlay: (base) => ({
+              ...base,
+              background: "rgba(255, 255, 255, 0.75)",
+              backdropFilter: "blur(4px)",
+            }),
+            spinner: (base) => ({
+              ...base,
+              width: "40px",
+              "& svg circle": {
+                stroke: "rgba(255, 153, 0,5)",
+                strokeWidth: "3px",
+              },
+            }),
+          }}
+        ></LoadingOverlay>
+      </div>
+    );
 
   const renderAttributeValue = (
     group: IAttributeGroup,

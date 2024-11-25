@@ -11,7 +11,6 @@ export interface IProduct{
     description:string,
     category_id:ICategory,
     is_active:boolean,
-    is_good_deal:boolean,
     is_featured:boolean,
     is_variant:boolean,
     variants:IVariants[]

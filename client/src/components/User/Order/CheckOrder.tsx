@@ -7,7 +7,6 @@ import ReCAPTCHA from "react-google-recaptcha";
 import { SearchOutlined } from "@ant-design/icons";
 import ListOrdersCheck from "./ListOrdersCheck";
 import { IOrderUserClient } from "../../../interfaces/IOrderUserClient";
-import AddressProvider from "../../../providers/AddressProvider";
 export const CheckOrder = () => {
   const [capVal, SetCapVal] = useState<string | null>(null);
   const {

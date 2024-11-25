@@ -1,5 +1,5 @@
 import JoditEditor from "jodit-react";
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useMemo, useRef, useState } from "react";
 import LoadingOverlay from "react-loading-overlay-ts";
 import ButtonSubmit from "../../../components/Admin/ButtonSubmit";
 import { useForm } from "react-hook-form";
@@ -10,53 +10,12 @@ import instance from "../../../instance/instance";
 import axios from "axios";
 import slugify from "react-slugify";
 import { BlogContext } from "../../../contexts/BlogsContext";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-
-const isCloudinaryUrl = (url: string): boolean => {
-  return url.includes("cloudinary.com");
-};
-
-const isValidUrl = (url: string): boolean => {
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-const extractImageUrl = (src: string): string => {
-  if (src.startsWith("data:image")) return src;
-  if (isValidUrl(src)) {
-    return new URL(src).href;
-  }
-  return src;
-};
-const uploadToCloudinary = async (file: File | Blob): Promise<string> => {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append(
-      "upload_preset",
-      import.meta.env.VITE_PRESET_KEY_CLOADINARY
-    );
-
-    const { data } = await axios.post(
-      `https://api.cloudinary.com/v1_1/${
-        import.meta.env.VITE_CLOUD_NAME_CLOADINARY
-      }/image/upload`,
-      formData
-    );
-
-    return data.secure_url;
-  } catch (error) {
-    console.error("Cloudinary upload error:", error);
-    throw new Error("Failed to upload image to Cloudinary");
-  }
-};
-const UpdateBlogsAdmin = () => {
-  const { id } = useParams();
+type Prop={
+  setSteps:(steps:string)=>void
+}
+const AddBlogAdmin = ({setSteps}:Prop) => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const {
@@ -64,110 +23,37 @@ const UpdateBlogsAdmin = () => {
     handleSubmit,
     watch,
     setValue,
-    reset,
     formState: { errors },
   } = useForm<IBlog>({
     defaultValues: {
-      is_active: false,
+      is_active: true,
     },
   });
   const [content, setContent] = useState<string>("");
   const editorRef = useRef(null);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const { dispatch } = useContext(BlogContext);
-  useEffect(() => {
-    const fetchBlogData = async () => {
-      const numericId = Number(id);
-      if (!isNaN(numericId)) {
-        try {
-          const { data } = await instance.get(`blogs/${numericId}`);
-          reset(data.data);
-          setContent(data.data.content);
-          setThumbnail(data.data.thumbnail);
-        } catch (error) {
-          console.log(error);
-        }
-      } else {
-        console.log("ID không hợp lệ");
-      }
-    };
 
-    fetchBlogData();
-  }, [id]);
-  const processImages = async (content: string): Promise<string> => {
-    if (!content) return content;
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(content, "text/html");
-    const images = doc.querySelectorAll("img");
-    const processedImages = new Map<string, string>();
-
+  const handleUploadImage = async (file: File): Promise<string> => {
     try {
-      for (const img of Array.from(images)) {
-        try {
-          const originalSrc = extractImageUrl(img.src);
-
-          if (
-            isCloudinaryUrl(originalSrc) ||
-            processedImages.has(originalSrc)
-          ) {
-            continue;
-          }
-          if (originalSrc.startsWith("data:image")) {
-            try {
-              const response = await fetch(originalSrc);
-              const blob = await response.blob();
-              const newSrc = await uploadToCloudinary(blob);
-              processedImages.set(originalSrc, newSrc);
-            } catch (error) {
-              console.error("Error processing base64 image:", error);
-              continue;
-            }
-            continue;
-          }
-
-          if (isValidUrl(originalSrc)) {
-            try {
-              const response = await fetch(originalSrc);
-              if (!response.ok) {
-                console.error(`Failed to fetch image: ${response.statusText}`);
-                continue;
-              }
-
-              const blob = await response.blob();
-              const newSrc = await uploadToCloudinary(blob);
-              processedImages.set(originalSrc, newSrc);
-            } catch (error) {
-              console.error(
-                `Error processing URL image ${originalSrc}:`,
-                error
-              );
-              continue;
-            }
-          }
-        } catch (error) {
-          console.error("Error processing individual image:", error);
-          continue;
-        }
-      }
-
-      let newContent = content;
-      processedImages.forEach((newSrc, originalSrc) => {
-        const escapedOriginalSrc = originalSrc.replace(
-          /[.*+?^${}()|[\]\\]/g,
-          "\\$&"
-        );
-        const regex = new RegExp(escapedOriginalSrc, "g");
-        newContent = newContent.replace(regex, newSrc);
-      });
-
-      return newContent;
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append(
+        "upload_preset",
+        import.meta.env.VITE_PRESET_KEY_CLOADINARY
+      );
+      const { data } = await axios.post(
+        `https://api.cloudinary.com/v1_1/${
+          import.meta.env.VITE_CLOUD_NAME_CLOADINARY
+        }/image/upload`,
+        formData
+      );
+      return data.secure_url;
     } catch (error) {
-      console.error("Error in processImages:", error);
-      return content;
+      console.log(error);
+      throw error;
     }
   };
-
   const onSubmit = async (dataForm: IBlog) => {
     try {
       setIsLoading(true);
@@ -175,40 +61,62 @@ const UpdateBlogsAdmin = () => {
         top:0,
         behavior:'smooth'
       })
-      let thumbnailUrl = thumbnail;
-      if (thumbnail instanceof File) {
-        try {
-          thumbnailUrl = await uploadToCloudinary(thumbnail);
-        } catch (error) {
-          console.log(error);
-          setIsLoading(false);
-          return;
-        }
+      let thumbnailUrl = "";
+      if (thumbnail) {
+        thumbnailUrl = await handleUploadImage(thumbnail);
       }
 
-      const processedContent = await processImages(content);
+      const { title, is_active } = dataForm;
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(content, "text/html");
+      const images = doc.querySelectorAll("img");
 
-      const payload = {
+      const uploadImagesBlog = Array.from(images).map(async (img) => {
+        const src = img.src;
+        const response = await fetch(src);
+        const fileBlob = await response.blob();
+        const formData = new FormData();
+        formData.append("file", fileBlob);
+        formData.append(
+          "upload_preset",
+          import.meta.env.VITE_PRESET_KEY_CLOADINARY
+        );
+        const responseImageCloud = await axios.post(
+          `https://api.cloudinary.com/v1_1/${
+            import.meta.env.VITE_CLOUD_NAME_CLOADINARY
+          }/image/upload`,
+          formData
+        );
+        return { originalSrc: src, newSrc: responseImageCloud.data.secure_url };
+      });
+
+      const dataImagesCloud = await Promise.all(uploadImagesBlog);
+      let contentNew = content;
+      dataImagesCloud.forEach((img) => {
+        contentNew = contentNew.replace(img.originalSrc, img.newSrc);
+      });
+
+      const { data:{data:response} } = await instance.post("blogs", {
         thumbnail: thumbnailUrl,
-        content: processedContent,
-        slug: slugify(dataForm.title),
-        title: dataForm.title,
-        is_active: Boolean(dataForm.is_active),
-      };
-
-      const { data } = await instance.put(`blogs/${id}`, payload);
-      if (data) {
-        toast.success("Cập nhật bài viết thành công!");
-        navigate("/admin/blogs?page=1");
+        content: contentNew,
+        slug: slugify(watch("title")),
+        title,
+        is_active,
+      });
+      if (response) {
+        setIsLoading(false);
+        dispatch({
+          type: "ADD",
+          payload: response,
+        });
+        toast.success('Thêm bài viết thành công')
+        setSteps('1')
       }
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi cập nhật bài viết");
-      console.error("Error updating blog:", error);
-    } finally {
       setIsLoading(false);
+      console.log(error);
     }
   };
-
   const config = useMemo(
     () => ({
       readonly: false,
@@ -221,11 +129,11 @@ const UpdateBlogsAdmin = () => {
     []
   );
   return (
-    <div className="bg-util rounded-md p-5">
+    <div>
       <LoadingOverlay
         active={isLoading}
         spinner
-        text="Đang sửa bài viết ..."
+        text="Đang thêm bài viết ..."
         styles={{
           overlay: (base) => ({
             ...base,
@@ -278,10 +186,10 @@ const UpdateBlogsAdmin = () => {
                     setThumbnail(e.target.files[0]);
                   }
                 }}
-                className="py-10 px-2 hover:cursor-pointer opacity-0 z-50 relative gruop"
+                className="py-10 px-2 hover:cursor-pointer opacity-0 z-[999] relative gruop"
               />
               {thumbnail && (
-                <div className="absolute top-0 left-0 w-full h-full bg-black opacity-0 group-hover:opacity-35 z-40 transition-opacity duration-300 text-util flex items-center justify-center">
+                <div className="absolute top-0 left-0 w-full h-full bg-black opacity-0 group-hover:opacity-35 z-40 transition-opacity duration-300 text-primary flex items-center justify-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -292,19 +200,19 @@ const UpdateBlogsAdmin = () => {
                     <path
                       d="M14.0737 3.88545C14.8189 3.07808 15.1915 2.6744 15.5874 2.43893C16.5427 1.87076 17.7191 1.85309 18.6904 2.39232C19.0929 2.6158 19.4769 3.00812 20.245 3.79276C21.0131 4.5774 21.3972 4.96972 21.6159 5.38093C22.1438 6.37312 22.1265 7.57479 21.5703 8.5507C21.3398 8.95516 20.9446 9.33578 20.1543 10.097L10.7506 19.1543C9.25288 20.5969 8.504 21.3182 7.56806 21.6837C6.63212 22.0493 5.6032 22.0224 3.54536 21.9686L3.26538 21.9613C2.63891 21.9449 2.32567 21.9367 2.14359 21.73C1.9615 21.5234 1.98636 21.2043 2.03608 20.5662L2.06308 20.2197C2.20301 18.4235 2.27297 17.5255 2.62371 16.7182C2.97444 15.9109 3.57944 15.2555 4.78943 13.9445L14.0737 3.88545Z"
                       stroke="currentColor"
-                      strokeWidth="2.5"
+                      strokeWidth="1.5"
                       strokeLinejoin="round"
                     />
                     <path
                       d="M13 4L20 11"
                       stroke="currentColor"
-                      strokeWidth="2.5"
+                      strokeWidth="1.5"
                       strokeLinejoin="round"
                     />
                     <path
                       d="M14 22L22 22"
                       stroke="currentColor"
-                      strokeWidth="2.5"
+                      strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
@@ -348,11 +256,7 @@ const UpdateBlogsAdmin = () => {
               </span>
               {thumbnail && (
                 <img
-                  src={
-                    typeof thumbnail !== "string"
-                      ? URL.createObjectURL(thumbnail)
-                      : thumbnail
-                  }
+                  src={URL.createObjectURL(thumbnail)}
                   className="object-cover object-center absolute top-0 z-30 block w-full h-full"
                   alt="Thumbnail preview"
                 />
@@ -386,20 +290,19 @@ const UpdateBlogsAdmin = () => {
               }}
             >
               <Switch
-                checked={Boolean(watch("is_active"))} 
-                {...register('is_active')}
-                onChange={(checked) => {
-                  setValue("is_active", Boolean(checked));
+                checked={watch("is_active")}
+                onChange={(e) => {
+                  setValue("is_active", e);
                 }}
               />
             </ConfigProvider>
             Trạng thái
           </div>
-          <ButtonSubmit content="Sửa bài viết" />
+          <ButtonSubmit content="Thêm bài viết" />
         </form>
       </LoadingOverlay>
     </div>
   );
 };
 
-export default UpdateBlogsAdmin;
+export default AddBlogAdmin;
