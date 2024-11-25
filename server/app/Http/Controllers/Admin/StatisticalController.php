@@ -329,10 +329,10 @@ class StatisticalController extends Controller
     public function thongKeNgay(Request $request)
     {
         try {
-            $today = now()->startOfDay(); 
+            $today = now()->startOfDay();
             $endOfDay = now()->endOfDay();
 
-            $revenueToday = Order::where('status_order', 'delivered') 
+            $revenueToday = Order::where('status_order', 'delivered')
                 ->whereBetween('updated_at', [$today, $endOfDay])
                 ->sum('final_total');
 
@@ -359,14 +359,24 @@ class StatisticalController extends Controller
             ], 500);
         }
     }
-    
+
     public function listSoLuongBienTheDuoi10(): JsonResponse
     {
         try {
-            $variants = InventoryStock::with('variant.attributeValues')
+            $variants = InventoryStock::with(['variant.attributeValues', 'variant.product'])
                 ->where('quantity', '<', 10)
-                ->get();
-    
+                ->where('quantity', '>', 0)
+                ->paginate(10);
+
+            $variants->getCollection()->transform(function ($inventoryStock) {
+                if (isset($inventoryStock->variant->product->images)) {
+                    if (!is_array($inventoryStock->variant->product->images)) {
+                        $inventoryStock->variant->product->images = json_decode($inventoryStock->variant->product->images, true);
+                    }
+                }
+                return $inventoryStock;
+            });
+
             return response()->json([
                 'variants' => $variants,
                 'count' => $variants->count(),
@@ -379,14 +389,23 @@ class StatisticalController extends Controller
             ], 500);
         }
     }
-    
+
     public function listSoLuongBienTheDaHet(): JsonResponse
     {
         try {
-            $variants = InventoryStock::with('variant.attributeValues')
+            $variants = InventoryStock::with(['variant.attributeValues', 'variant.product'])
                 ->where('quantity', '=', 0)
-                ->get();
-    
+                ->paginate(10);
+
+            $variants->getCollection()->transform(function ($inventoryStock) {
+                if (isset($inventoryStock->variant->product->images)) {
+                    if (!is_array($inventoryStock->variant->product->images)) {
+                        $inventoryStock->variant->product->images = json_decode($inventoryStock->variant->product->images, true);
+                    }
+                }
+                return $inventoryStock;
+            });
+
             return response()->json([
                 'variants' => $variants,
                 'count' => $variants->count(),
@@ -399,5 +418,5 @@ class StatisticalController extends Controller
             ], 500);
         }
     }
-    
+
 }
