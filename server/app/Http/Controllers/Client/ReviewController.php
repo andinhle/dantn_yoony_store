@@ -228,13 +228,14 @@ class ReviewController extends Controller
         try {
             // Lấy các đơn hàng đã giao và có đánh giá từ người dùng
             $orders = Order::with([
-                'rates.product',
+                'rates.product.category',
                 'rates.user',
-                'items.variant.attributeValues.attribute' // Load attribute values thông qua variant
+                'items.variant.attributeValues.attribute'
             ])
             ->where('user_id', $userId)
             ->where('status_order', Order::STATUS_ORDER_DELIVERED)
-            ->get();
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
             
             // Lập danh sách đánh giá cho mỗi đơn hàng
             $reviewedOrders = $orders->filter(function ($order) {
@@ -275,6 +276,11 @@ class ReviewController extends Controller
                                 'name' => $rate->product->name,
                                 'slug' => $rate->product->slug,
                                 'images' => $rate->product->images,
+                                'category' => [  // Thêm thông tin category
+                                    'id' => $rate->product->category->id,
+                                    'name' => $rate->product->category->name,
+                                    'slug' => $rate->product->category->slug,
+                                ]
                             ],
                             'user' => [
                                 'id' => $rate->user->id,
@@ -290,7 +296,15 @@ class ReviewController extends Controller
                 ];
             })->values();
             
-            return response()->json($reviewedOrders);
+            return response()->json([
+                'data' => $reviewedOrders,
+                'pagination' => [
+                    'total' => $orders->total(),
+                    'current_page' => $orders->currentPage(),
+                    'per_page' => $orders->perPage(),
+                    'last_page' => $orders->lastPage(),
+                ]
+            ]);
             
         } catch (\Exception $e) {
             return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);

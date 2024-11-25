@@ -23,12 +23,12 @@ class CartController extends Controller
     {
         try {
             $data = Cart::query()
-                ->with(['variant.product', 'variant.attributeValues.attribute'])
+                ->with(['variant.product.category', 'variant.attributeValues.attribute', 'variant.inventoryStock'])
                 ->where('user_id', Auth::id())
                 ->orderBy('created_at', 'desc')
                 ->get();
     
-
+               
             foreach ($data as $item) {
 
                 $this->totalAmount += $item['variant']['sale_price'] * $item['quantity'];
@@ -37,7 +37,13 @@ class CartController extends Controller
                 if (is_string($images)) {
                     $item['variant']['product']['images'] = json_decode($images, true);
                 }
+
+                Log::info($item->variant->product->is_active);
+                if($item->variant->product->category->is_active === false || $item->variant->product->is_active === false){
+                    Cart::query()->where('variant_id',$item->variant_id)->delete();
+                }
             }
+            
 
             return response()->json([
                 'status' => 'success',
@@ -75,23 +81,34 @@ class CartController extends Controller
                 ->with(['variant.product.category','variant.attributeValues.attribute', "user"])
                 ->where('variant_id', $request->variant_id)
                 ->where('user_id', Auth::id())
-                ->first();
+                ->first();  
     
 
-            $variant = Variant::query()->with(['inventoryStock'])->find($request->variant_id);
+            $variant = Variant::query()->with(['product.category','inventoryStock'])->find($request->variant_id);
 
+            if($variant->product->category->is_active === false || $variant->product->is_active === false){
+                return response()->json([
+                    'message' => 'Sản phẩm không tồn tại'
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            
             if($request->quantity > $variant->inventoryStock->quantity){
                 
                 return response()->json([
                     'message' => 'Số lượng trong kho không đủ. Vui lòng giảm số lượng!'
-                ]);
+                ], Response::HTTP_BAD_REQUEST);
 
             }else{
                 if ($idExist) {
-
-
-
+                    if($idExist->where(''))
                     if($request->quantity>1){
+                        if($idExist->quantity > $variant->inventoryStock->quantity){
+                            return response()->json([
+                                'message' => 'Số lượng trong kho không đủ!'
+                            ], Response::HTTP_BAD_REQUEST);
+            
+                        }
                         $idExist->quantity += $request->quantity;
                         $idExist->save();
                     }else{
@@ -142,14 +159,20 @@ class CartController extends Controller
         try {
         
             $idExist = Cart::query()
-            ->with(['variant.attributeValues.attribute', "user"])
+            ->with(['variant.attributeValues.attribute', "user", 'variant.inventoryStock'])
             ->find($id);
 
 
             if ($idExist) {
 
-                if($request->quantity>1){
-                    $idExist->quantity += $request->quantity;
+                if($request->quantity>=1){
+                    if($request->quantity > $idExist->variant->inventoryStock->quantity){
+                        return response()->json([
+                            'message' => 'Số lượng trong kho không đủ!'
+                        ], Response::HTTP_BAD_REQUEST);
+     
+                    }
+                    $idExist->quantity = $request->quantity;
                     $idExist->save();
                 }else{
                     if($operation){
@@ -157,6 +180,13 @@ class CartController extends Controller
                         if ($operation === 'increase') {
 
                             $idExist->quantity += 1; // Tăng số lượng
+                            if($idExist->quantity > $idExist->variant->inventoryStock->quantity){
+                                $idExist->quantity = $idExist->variant->inventoryStock->quantity;
+                                return response()->json([
+                                    'message' => 'Số lượng trong kho không đủ!'
+                                ], Response::HTTP_BAD_REQUEST);
+             
+                            }
 
                         } elseif ($operation === 'decrease') {
 

@@ -1,19 +1,20 @@
 
 import { Avatar } from "@mui/material";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../../../providers/AuthProvider";
 
 const SidebarUserDetails = () => {
-  const userInfor = JSON.parse(localStorage.getItem("userInfor")!);
+  const { user, logout } = useAuth();
   return (
     <div className="col-span-2 min-h-screen bg-util border border-[#f1f1f1] rounded-md">
       <div className="flex items-center p-4 border-b border-[#f1f1f1]">
         <Avatar
-              alt={String(userInfor?.name).toUpperCase()}
-              src={userInfor?.avatar || "/default-avatar.png"}
+              alt={String(user?.name).toUpperCase()}
+              src={user?.avatar || "/default-avatar.png"}
               sx={{ width: 50, height: 50 }}
             />
         <div className="ml-3">
-          <h4 className="font-medium line-clamp-2">{userInfor?.name}</h4>
+          <h4 className="font-medium line-clamp-2">{user?.name}</h4>
           <p className="text-sm text-primary italic">( Member )</p>
         </div>
       </div>
@@ -118,7 +119,7 @@ const SidebarUserDetails = () => {
           </li>
           <li className="mb-2">
             <NavLink
-              to="address"
+              to="addresses"
               className={`flex items-center px-3 py-2.5 cursor-pointer border m-4 rounded-sm hover:bg-[#fafafe] hover:text-hover transition-all border-[#f1f1f1] 
               }`}
             >
@@ -144,7 +145,7 @@ const SidebarUserDetails = () => {
               <span>Địa chỉ</span>
             </NavLink>
           </li>
-          <li className="mb-2">
+          {/* <li className="mb-2">
             <NavLink
               to="setting"
               className={`flex items-center px-3 py-2.5 cursor-pointer border m-4 rounded-sm hover:bg-[#fafafe] hover:text-hover transition-all border-[#f1f1f1]`}
@@ -170,7 +171,7 @@ const SidebarUserDetails = () => {
               </svg>
               <span>Cài đặt</span>
             </NavLink>
-          </li>
+          </li> */}
         </ul>
       </nav>
     </div>

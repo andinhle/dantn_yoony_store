@@ -103,7 +103,7 @@ const FormAddOrUpdateProduct = () => {
       category_id: undefined,
       is_active: true,
       is_featured: false,
-      is_good_deal: false,
+      // is_good_deal: false,
       variants: [
         {
           price: undefined,
@@ -113,7 +113,7 @@ const FormAddOrUpdateProduct = () => {
           attribute_values: [{}],
         },
       ],
-      is_variant: false,
+      // is_variant: false,
     },
     // resolver: zodResolver(productValidSchema),
     mode: "onChange",
@@ -159,7 +159,7 @@ const FormAddOrUpdateProduct = () => {
         const {
           data: { data: response },
         } = await instance.get(`products/${id}`);
-        // console.log(response);
+        console.log(response);
         reset({
           ...response,
           variants: response.variants.map((variant) => ({
@@ -167,7 +167,7 @@ const FormAddOrUpdateProduct = () => {
             end_sale: variant.end_sale ? variant.end_sale : null,
             attribute_values: variant.attribute_values.map((av) => ({
               attribute_id: av.attribute_id,
-              attribute_value_id: av.pivot.attribute_value_id,
+              attribute_value_id: av.id,
               type: av.attribute.type,
             })),
           })),
@@ -572,7 +572,7 @@ const FormAddOrUpdateProduct = () => {
                 />
               </div>
             </div>
-            <div className="flex gap-3 items-center">
+            {/* <div className="flex gap-3 items-center">
               <div className="block">
                 <Label htmlFor="good-deal-product" value="Giá tốt" />
               </div>
@@ -587,8 +587,8 @@ const FormAddOrUpdateProduct = () => {
                   }}
                 />
               </div>
-            </div>
-            <div className="flex gap-3 items-center">
+            </div> */}
+            {/* <div className="flex gap-3 items-center">
               <div className="block">
                 <Label htmlFor="is_variant-product" value="Có biến thể" />
               </div>
@@ -603,7 +603,7 @@ const FormAddOrUpdateProduct = () => {
                   }}
                 />
               </div>
-            </div>
+            </div> */}
           </div>
           <div className="space-y-3">
             {variantFields.map((field, index) => {

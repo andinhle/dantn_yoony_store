@@ -9,14 +9,20 @@ import { Link, useParams } from "react-router-dom";
 import instance from "../../../instance/instance";
 import { IProduct } from "../../../interfaces/IProduct";
 import { HomeOutlined } from "@ant-design/icons";
-import { Breadcrumb, message, Rate, Statistic } from "antd";
+import { Breadcrumb, message, Rate, Select, Statistic } from "antd";
 import Zoom from "react-zoom-image-hover";
 import { Label } from "flowbite-react";
 import ShowProductRelated from "./ShowProductRelated";
 import CartContext from "../../../contexts/CartContext";
 import axios from "axios";
 import { Tooltip } from "@mui/material";
-import isAuthenticated from '../../Middleware/isAuthenticated';
+import RatingProduct from "./RatingProduct";
+import { LoadingOverlay } from "@achmadk/react-loading-overlay";
+interface IAttribute {
+  value: string;
+  type: "select" | "color" | "button" | "radio";
+}
+
 interface IVariant {
   id: number;
   price: number;
@@ -25,13 +31,15 @@ interface IVariant {
   image?: string;
   end_sale?: string;
   attributes: {
-    [key: string]: string;
+    [key: string]: IAttribute;
   };
 }
 
 interface IAttributeGroup {
   name: string;
   values: string[];
+  type: "select" | "color" | "button" | "radio";
+  images: string[];
 }
 
 const ShowDetailProduct: React.FC = () => {
@@ -44,6 +52,7 @@ const ShowDetailProduct: React.FC = () => {
   const [related_products, setRelated_Products] = useState<IProduct[]>([]);
   const [imageProducts, setImageProducts] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string>("");
+  const [average_rating, setAverage_rating] = useState<number>();
   const [variants, setVariants] = useState<IVariant[]>([]);
   const [attributeGroups, setAttributeGroups] = useState<IAttributeGroup[]>([]);
   const [selectedAttributes, setSelectedAttributes] = useState<{
@@ -51,7 +60,7 @@ const ShowDetailProduct: React.FC = () => {
   }>({});
   const [selectedVariant, setSelectedVariant] = useState<IVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const { dispatch } = useContext(CartContext);
+  const { dispatch, carts } = useContext(CartContext);
   const [isZoomEnabled, setIsZoomEnabled] = useState(false);
 
   useEffect(() => {
@@ -61,6 +70,7 @@ const ShowDetailProduct: React.FC = () => {
         setProduct(data.product);
         setRelated_Products(data.related_products);
         processProductData(data.product);
+        setAverage_rating(data.average_rating);
       } catch (error) {
         console.error("Error fetching product:", error);
       }
@@ -68,7 +78,7 @@ const ShowDetailProduct: React.FC = () => {
     fetchProduct();
   }, [slugproduct]);
 
-  const intervalId = useRef<number | null>(null); 
+  const intervalId = useRef<number | null>(null);
   const callApiToUpdateData = useCallback(async () => {
     try {
       const { data } = await instance.get(`home/product/${slugproduct}`);
@@ -90,7 +100,9 @@ const ShowDetailProduct: React.FC = () => {
   useEffect(() => {
     const updateData = async () => {
       await callApiToUpdateData();
-      if (variants.some((item) => item.sale_price && isSaleActive(item.end_sale))) {
+      if (
+        variants.some((item) => item.sale_price && isSaleActive(item.end_sale))
+      ) {
         intervalId.current = setTimeout(updateData, 5000);
       }
     };
@@ -103,14 +115,12 @@ const ShowDetailProduct: React.FC = () => {
         intervalId.current = null;
       }
     };
-  }, [callApiToUpdateData, variants]); 
-  
-  
+  }, [callApiToUpdateData, variants]);
+
   const isSaleActive = (endSale: string | undefined): boolean => {
     if (!endSale) return false;
     return new Date(endSale).getTime() > Date.now();
   };
-  
 
   const processProductData = (productData: IProduct) => {
     if (productData) {
@@ -122,33 +132,65 @@ const ShowDetailProduct: React.FC = () => {
         image: variant.image,
         end_sale: variant.end_sale,
         attributes: variant.attribute_values.reduce((acc: any, attr: any) => {
-          acc[attr.attribute.name] = attr.value;
+          acc[attr.attribute.name] = {
+            value: attr.value,
+            type: attr.attribute.type,
+          };
           return acc;
         }, {}),
       }));
       setVariants(processedVariants);
+
       const groups = generateAttributeGroups(processedVariants);
       setAttributeGroups(groups);
+
       setImageProducts([
         productData.images?.[0] || "",
         ...processedVariants.map((v) => v.image).filter(Boolean),
       ]);
+
       setSelectedImage(
         productData.images?.[0] || processedVariants[0]?.image || ""
       );
+
+      if (processedVariants.length > 0) {
+        const defaultVariant = processedVariants[0];
+        const defaultAttributes = Object.entries(
+          defaultVariant.attributes
+        ).reduce(
+          (acc, [key, attr]) => ({
+            ...acc,
+            [key]: attr.value,
+          }),
+          {}
+        );
+        setSelectedAttributes(defaultAttributes);
+        setSelectedVariant(defaultVariant);
+      }
     }
   };
 
   const generateAttributeGroups = (variants: IVariant[]): IAttributeGroup[] => {
     const attributeMap: {
-      [key: string]: { values: Set<string>; images: Set<string> };
+      [key: string]: {
+        values: Set<string>;
+        images: Set<string>;
+        type: "select" | "color" | "button" | "radio";
+      };
     } = {};
 
     variants.forEach((variant) => {
-      Object.entries(variant.attributes).forEach(([key, value]) => {
+      Object.entries(variant.attributes).forEach(([key, attrDetails]) => {
+        const { value, type } = attrDetails;
+
         if (!attributeMap[key]) {
-          attributeMap[key] = { values: new Set(), images: new Set() };
+          attributeMap[key] = {
+            values: new Set(),
+            images: new Set(),
+            type: type,
+          };
         }
+
         attributeMap[key].values.add(value);
         if (variant.image) {
           attributeMap[key].images.add(variant.image);
@@ -156,23 +198,21 @@ const ShowDetailProduct: React.FC = () => {
       });
     });
 
-    return Object.entries(attributeMap).map(([name, { values, images }]) => ({
-      name,
-      values: Array.from(values),
-      images: Array.from(images),
-    }));
+    return Object.entries(attributeMap).map(
+      ([name, { values, images, type }]) => ({
+        name,
+        values: Array.from(values),
+        images: Array.from(images),
+        type,
+      })
+    );
   };
 
   const handleAttributeSelect = (attributeName: string, value: string) => {
-    setSelectedAttributes((prev) => {
-      const newAttributes = { ...prev };
-      if (newAttributes[attributeName] === value) {
-        delete newAttributes[attributeName];
-      } else {
-        newAttributes[attributeName] = value;
-      }
-      return newAttributes;
-    });
+    setSelectedAttributes((prev) => ({
+      ...prev,
+      [attributeName]: value,
+    }));
 
     const currentGroup = attributeGroups.find(
       (group) => group.name === attributeName
@@ -190,23 +230,27 @@ const ShowDetailProduct: React.FC = () => {
     value: string
   ): boolean => {
     return variants.some((variant) => {
-      for (const [key, val] of Object.entries(selectedAttributes)) {
-        if (key !== attributeName && variant.attributes[key] !== val) {
+      for (const [key, selectedValue] of Object.entries(selectedAttributes)) {
+        if (
+          key !== attributeName &&
+          variant.attributes[key]?.value !== selectedValue
+        ) {
           return false;
         }
       }
-      return variant?.attributes[attributeName] === value;
+      return variant.attributes[attributeName]?.value === value;
     });
   };
 
   useEffect(() => {
     const matchingVariant = variants.find((variant) =>
       Object.entries(selectedAttributes).every(
-        ([key, value]) => variant.attributes[key] === value
+        ([key, value]) => variant.attributes[key]?.value === value
       )
     );
     setSelectedVariant(matchingVariant || null);
   }, [selectedAttributes, variants]);
+
   const handleImageClick = () => {
     setIsZoomEnabled(!isZoomEnabled);
   };
@@ -216,9 +260,42 @@ const ShowDetailProduct: React.FC = () => {
     setQuantity(value);
   };
 
-  const addCart = async () => {
+  const validateCartQuantity = (requestedQuantity, selectedVariant, carts) => {
     if (!selectedVariant) {
       message.error("Vui lòng chọn đầy đủ thuộc tính sản phẩm");
+      return false;
+    }
+
+    const existingCartItems = carts.filter(
+      (cart) => cart.variant.id === selectedVariant.id
+    );
+
+    const quantityInCart = existingCartItems.reduce(
+      (total, cart) => total + cart.quantity,
+      0
+    );
+
+    const availableQuantity = selectedVariant.quantity - quantityInCart;
+
+    if (requestedQuantity > availableQuantity) {
+      message.warning(
+        `Số lượng không được vượt quá ${selectedVariant.quantity}`
+      );
+      return false;
+    }
+
+    if (requestedQuantity > selectedVariant.quantity) {
+      message.warning(
+        `Số lượng không được vượt quá ${selectedVariant.quantity}`
+      );
+      return false;
+    }
+
+    return true;
+  };
+
+  const addCart = async () => {
+    if (!validateCartQuantity(quantity, selectedVariant, carts)) {
       return;
     }
     try {
@@ -226,7 +303,7 @@ const ShowDetailProduct: React.FC = () => {
         data: { data: response },
       } = await instance.post("cart", {
         quantity,
-        variant_id: selectedVariant.id,
+        variant_id: selectedVariant?.id,
         user_id: 1,
       });
       if (response) {
@@ -248,7 +325,31 @@ const ShowDetailProduct: React.FC = () => {
     }
   };
 
-  if (!product) return <div>Loading...</div>;
+  if (!product)
+    return (
+      <div>
+        <LoadingOverlay
+          active={!product}
+          spinner
+          text="Đang load dữ liệu ..."
+          styles={{
+            overlay: (base) => ({
+              ...base,
+              background: "rgba(255, 255, 255, 0.75)",
+              backdropFilter: "blur(4px)",
+            }),
+            spinner: (base) => ({
+              ...base,
+              width: "40px",
+              "& svg circle": {
+                stroke: "rgba(255, 153, 0,5)",
+                strokeWidth: "3px",
+              },
+            }),
+          }}
+        ></LoadingOverlay>
+      </div>
+    );
 
   const renderAttributeValue = (
     group: IAttributeGroup,
@@ -257,81 +358,191 @@ const ShowDetailProduct: React.FC = () => {
   ) => {
     const isAvailable = isAttributeAvailable(group.name, value);
     const isSelected = selectedAttributes[group.name] === value;
-    const isColorAttribute = group.name.toLowerCase() === "color";
-
-    return (
-      <Tooltip
-        key={value}
-        title={isAvailable ? value : "Không có sẵn"}
-        placement="top"
-      >
-        <div
-          className={`relative overflow-hidden rounded-lg hover:cursor-pointer ${
-            !isAvailable ? "opacity-40" : ""
-          }`}
-          onClick={() => {
-            if (isAvailable) {
-              handleAttributeSelect(group.name, value);
-            }
-          }}
-        >
-          {isColorAttribute ? (
-            <div className="relative">
-              <img
-                src={
-                  group.images[index] ||
-                  "https://www.shutterstock.com/shutterstock/videos/3516224453/thumb/5.jpg?ip=x480"
+    switch (group.type) {
+      case "color":
+        return (
+          <Tooltip
+            key={value}
+            title={isAvailable ? value : "Không có sẵn"}
+            placement="top"
+          >
+            <div
+              className={`relative overflow-hidden rounded-lg ${
+                !isAvailable
+                  ? "opacity-40 cursor-not-allowed"
+                  : "hover:cursor-pointer"
+              }`}
+              onClick={() => {
+                if (isAvailable) {
+                  handleAttributeSelect(group.name, value);
                 }
-                alt={value}
-                className={`w-12 h-12 object-cover rounded-lg border transition-all ${
-                  isSelected
-                    ? "border-primary/80"
+              }}
+            >
+              <div className="relative">
+                <img
+                  src={
+                    group.images[index] ||
+                    "https://www.shutterstock.com/shutterstock/videos/3516224453/thumb/5.jpg?ip=x480"
+                  }
+                  alt={value}
+                  className={`w-12 h-12 object-cover rounded-lg border transition-all ${
+                    isSelected
+                      ? "border-primary/80"
+                      : "border-input hover:border-primary/80"
+                  }`}
+                />
+                <p className="absolute bottom-0 left-0 right-0 bg-primary/80 text-white text-xs py-0.5 text-center overflow-hidden whitespace-nowrap text-ellipsis">
+                  {value}
+                </p>
+              </div>
+              {isSelected && (
+                <span className="text-util absolute -top-1 -right-1 bg-primary rounded-full">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="size-4"
+                    color="currentColor"
+                    fill="none"
+                  >
+                    <path
+                      d="M5 14.5C5 14.5 6.5 14.5 8.5 18C8.5 18 14.0588 8.83333 19 7"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              )}
+            </div>
+          </Tooltip>
+        );
+      case "radio":
+        return (
+          <Tooltip
+            key={value}
+            title={isAvailable ? value : "Không có sẵn"}
+            placement="top"
+          >
+            <div className="relative overflow-hidden rounded-lg">
+              <button
+                type="button"
+                className={`px-3.5 py-[9px] flex items-center justify-center border rounded-full transition-all ${
+                  !isAvailable
+                    ? "opacity-40 cursor-not-allowed"
+                    : isSelected
+                    ? "border-primary/80 bg-primary/10 text-primary"
                     : "border-input hover:border-primary/80"
                 }`}
-              />
-              <p className="absolute bottom-0 left-0 right-0 bg-primary/80 text-white text-xs py-0.5 text-center overflow-hidden whitespace-nowrap text-ellipsis">
-                {value}
-              </p>
-            </div>
-          ) : (
-            <div
-              className={`px-4 py-2.5 flex items-center justify-center border rounded-lg transition-all ${
-                isSelected
-                  ? "border-primary/80 bg-primary/10 text-primary"
-                  : "border-input hover:border-primary/80"
-              }`}
-            >
-              <p className="text-xs font-normal overflow-hidden text-ellipsis white-space">
-                {value}
-              </p>
-            </div>
-          )}
-          {isSelected && (
-            <span className="text-util absolute -top-1 -right-1 bg-primary rounded-full">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                className="size-4"
-                color={"currentColor"}
-                fill={"none"}
+                onClick={() => {
+                  if (isAvailable) {
+                    handleAttributeSelect(group.name, value);
+                  }
+                }}
+                disabled={!isAvailable}
               >
-                <path
-                  d="M5 14.5C5 14.5 6.5 14.5 8.5 18C8.5 18 14.0588 8.83333 19 7"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
-          )}
-        </div>
-      </Tooltip>
-    );
+                <p className="text-xs font-normal overflow-hidden text-ellipsis white-space">
+                  {value}
+                </p>
+              </button>
+              {isSelected && (
+                <span className="text-util absolute -top-1 -right-1 bg-primary rounded-full">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="size-4"
+                    color="currentColor"
+                    fill="none"
+                  >
+                    <path
+                      d="M5 14.5C5 14.5 6.5 14.5 8.5 18C8.5 18 14.0588 8.83333 19 7"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              )}
+            </div>
+          </Tooltip>
+        );
+      case "select":
+        break;
+      default:
+        return (
+          <Tooltip
+            key={value}
+            title={isAvailable ? value : "Không có sẵn"}
+            placement="top"
+          >
+            <div className="relative overflow-hidden rounded-lg">
+              <button
+                type="button"
+                className={`px-4 py-2.5 flex items-center justify-center border rounded-lg transition-all ${
+                  !isAvailable
+                    ? "opacity-40 cursor-not-allowed"
+                    : isSelected
+                    ? "border-primary/80 bg-primary/10 text-primary"
+                    : "border-input hover:border-primary/80"
+                }`}
+                onClick={() => {
+                  if (isAvailable) {
+                    handleAttributeSelect(group.name, value);
+                  }
+                }}
+                disabled={!isAvailable}
+              >
+                <p className="text-xs font-normal overflow-hidden text-ellipsis white-space">
+                  {value}
+                </p>
+              </button>
+              {isSelected && (
+                <span className="text-util absolute -top-1 -right-1 bg-primary rounded-full">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="size-4"
+                    color="currentColor"
+                    fill="none"
+                  >
+                    <path
+                      d="M5 14.5C5 14.5 6.5 14.5 8.5 18C8.5 18 14.0588 8.83333 19 7"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              )}
+            </div>
+          </Tooltip>
+        );
+    }
   };
 
-  // console.log(attributeGroups);
-  // console.log(selectedAttributes);
+  const renderSelectTypeValue = (group: IAttributeGroup) => {
+    switch (group.type) {
+      default:
+        return (
+          <div className="max-w-[150px] w-full">
+            <Select
+              key={`${group.name}-select`}
+              value={selectedAttributes[group.name]}
+              onChange={(value) => handleAttributeSelect(group.name, value)}
+              className="w-full h-[35px]"
+              placeholder={`Chọn ${group.name}`}
+              options={group.values.map((val) => ({
+                value: val,
+                label: val,
+                disabled: !isAttributeAvailable(group.name, val),
+              }))}
+            />
+          </div>
+        );
+    }
+  };
 
   return (
     <section className="space-y-8">
@@ -395,8 +606,8 @@ const ShowDetailProduct: React.FC = () => {
           <h2 className="font-medium text-xl line-clamp-2">{product.name}</h2>
           <div className="flex gap-7 items-center mt-2">
             <div>
-              <span className="text-primary">4.5 </span>
-              <Rate disabled allowHalf defaultValue={4.5} />
+              <span className="text-primary">{average_rating} </span>
+              <Rate disabled allowHalf value={average_rating} />
             </div>
             {selectedVariant ? (
               <div className="py-1 px-3 bg-[#3CD139]/10 text-[#3CD139] rounded-full flex gap-1 w-fit text-sm">
@@ -565,6 +776,7 @@ const ShowDetailProduct: React.FC = () => {
                   />
                 </div>
                 <div className="flex gap-2">
+                  {group.type === "select" && renderSelectTypeValue(group)}
                   {group.values.map((value, index) =>
                     renderAttributeValue(group, value, index)
                   )}
@@ -604,6 +816,7 @@ const ShowDetailProduct: React.FC = () => {
                 <input
                   id="quantity-product"
                   min={1}
+                  max={selectedVariant?.quantity}
                   value={quantity}
                   onChange={handleChangeQuantity}
                   className="w-10 p-1.5 border border-input outline-none text-center"
@@ -744,6 +957,7 @@ const ShowDetailProduct: React.FC = () => {
           </form>
         </div>
       </div>
+      <RatingProduct slugProd={slugproduct} />
       <ShowProductRelated related_products={related_products} />
     </section>
   );

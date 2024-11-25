@@ -8,9 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class InventoryImport extends Model
 {
     use HasFactory;
-    protected $fillable = ['import_price', 'quantity', 'variant_id'];
+    protected $fillable = ['import_price', 'quantity', 'variant_id', 'supplier_id'];
     public function variant()
     {
         return $this->belongsTo(Variant::class);
+    }
+
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class);
     }
 }

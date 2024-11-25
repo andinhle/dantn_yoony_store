@@ -4,7 +4,7 @@ import { Controller, useForm } from "react-hook-form";
 import axios from "axios";
 import instance from "../../../instance/instance";
 import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../providers/AuthProvider";
 import { Input, message } from "antd";
 import LoginGoogleFaceBook from "./LoginGoogleFaceBook";
@@ -67,21 +67,28 @@ const Login = () => {
               className="block focus:!border-primary/50 h-10 border-input px-3 rounded-lg w-full focus:!shadow-none"
             />
           </div>
-          <div>
-            <div className="mb-2 block">
-              <Label htmlFor="password-input" value="Mật khẩu" />
+          <div className="space-y-1">
+            <div className="space-y-2">
+              <div className="block">
+                <Label htmlFor="password-input" value="Mật khẩu" />
+              </div>
+              <Controller
+                name="password"
+                control={control}
+                render={({ field }) => (
+                  <Input.Password
+                    {...field}
+                    placeholder="Mật khẩu"
+                    className="h-10"
+                  />
+                )}
+              />
             </div>
-            <Controller
-              name="password"
-              control={control}
-              render={({ field }) => (
-                <Input.Password
-                  {...field}
-                  placeholder="Mật khẩu"
-                  className="h-10"
-                />
-              )}
-            />
+            <div>
+              <Link to={"/reset-password"} className="text-sm text-primary">
+                Quên mật khẩu ?
+              </Link>
+            </div>
           </div>
         </div>
         <button

@@ -16,6 +16,8 @@ export interface Orders {
     updated_at: string;
     items: ItemProduct[];
     product: OrderProduct[];
+    user: User;
+    coupons:Coupons[]
 }
 export interface ItemProduct {
     id?: number;
@@ -78,4 +80,56 @@ export interface Pivot {
     variant_id: number;
 }
 
+export interface User {
+    address: string;
+    avatar: string;
+    create_at: string;
+    email: string;
+    name:string;
+    email_verified_at: string;
+    id: number;
+    provider: string;
+    provider_id: string;
+    tel: string;
+    update_at: string
+}
 
+export interface Coupons {
+    id?: number;
+    coupon: Coupon;
+    coupon_id: number;
+    created_at: string;
+    discount_amount: number;
+    order_id: number;
+    updated_at: string;
+
+
+}
+export interface Coupon {
+    id: number;
+    code: string;
+    name: string;
+    description: string;
+    discount: number;
+    discount_type: "fixed" | "percentage"; // Kiểu "fixed" hoặc "percentage"
+    min_order_value: number | null;
+    max_order_value: number | null;
+    usage_limit: number;
+    winning_probability: number;
+    start_date: string; // Có thể dùng kiểu `Date` nếu bạn muốn xử lý với đối tượng `Date`
+    end_date: string;
+    status: boolean;
+    type: "coupon" | "otherType"; // Kiểu "coupon" hoặc các loại khác (tùy vào yêu cầu thực tế)
+    created_at: string | null; // Có thể dùng `Date` nếu cần
+    updated_at: string | null; // Có thể dùng `Date` nếu cần
+}
+
+
+export interface UserOrder {
+    id?:number;
+    address:string;
+    avatar:string;
+    created_at:string;
+    email:string;
+    name:string
+}
