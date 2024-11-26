@@ -1,6 +1,25 @@
+import { useEffect, useState } from "react";
 import ChartAdmin from "./ChartAdmin";
-
+import instance from "../../../instance/instance";
+import StatisticalProductTopSell from "./StatisticalProductTopSell";
+type OrderStats = {
+  revenue_today: string;
+  new_orders_count: number;
+  pending_orders_count: number;
+  total_users: number;
+};
 const DashboardAdmin = () => {
+  const [statistical, setStatistical] = useState<OrderStats>();
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await instance.get("thong-ke/thong-ke-theo-ngay");
+        setStatistical(data);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, []);
   return (
     <div className="space-y-5">
       <div
@@ -32,7 +51,7 @@ const DashboardAdmin = () => {
               </span>
             </h5>
             <span className="text-sm text-primary tracking-[0.75px]">
-              200.000đ
+              {Number(statistical?.revenue_today).toLocaleString()}đ
             </span>
           </div>
         </div>
@@ -57,7 +76,9 @@ const DashboardAdmin = () => {
             <h5 className="font-medium">
               Đơn Hàng Mới <span className="text-primary">*</span>
             </h5>
-            <span className="text-sm text-primary tracking-[0.75px]">50</span>
+            <span className="text-sm text-primary tracking-[0.75px]">
+              {statistical?.new_orders_count}
+            </span>
           </div>
         </div>
         <div className="bg-util w-full min-h-[80px] rounded-lg px-4 py-2 flex items-center gap-5 shadow-sm">
@@ -109,7 +130,9 @@ const DashboardAdmin = () => {
             <h5 className="font-medium">
               Đơn chờ xác nhận <span className="text-primary">*</span>
             </h5>
-            <span className="text-sm text-primary tracking-[0.75px]">50</span>
+            <span className="text-sm text-primary tracking-[0.75px]">
+              {statistical?.pending_orders_count}
+            </span>
           </div>
         </div>
         <div className="bg-util w-full min-h-[80px] rounded-lg px-4 py-2 flex items-center gap-5 shadow-sm">
@@ -131,11 +154,17 @@ const DashboardAdmin = () => {
           </div>
           <div>
             <h5 className="font-medium">Số người dùng</h5>
-            <span className="text-sm text-primary tracking-[0.75px]">50</span>
+            <span className="text-sm text-primary tracking-[0.75px]">
+              {statistical?.total_users}
+            </span>
           </div>
         </div>
       </div>
       <ChartAdmin />
+      <div className="grid grid-cols-12 gap-5">
+        <StatisticalProductTopSell />
+        <div className="col-span-4">ok</div>
+      </div>
     </div>
   );
 };

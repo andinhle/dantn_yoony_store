@@ -81,47 +81,37 @@ class InventoryImportController extends Controller
     // }
     public function index()
     {
-        $products = Product::with(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock', 'variants.inventoryImports.supplier'])->paginate(5);
+        $products = Product::with(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock', 'variants.inventoryImports.supplier'])->paginate(10);
 
         return ProductResource::collection($products);
     }
-
     public function productsWithInventoryImports()
+    {
+        $products = Product::whereHas('variants.inventoryImports')
+            ->with([
+                'category',
+                'variants.attributeValues.attribute',
+                'variants.inventoryStock',
+                'variants.inventoryImports.supplier'
+            ])
+            ->paginate(10);
+    
+        return ProductResource::collection($products);
+    }
+    public function getAllProductNoImport()
     {
         $products = Product::with([
             'category',
-            'variants.inventoryImports',
             'variants.attributeValues.attribute',
-            'variants.inventoryStock'
-        ])->get(); // Lấy tất cả để xử lý lọc
-
-        // Lọc chỉ các sản phẩm mà tất cả variants đều có inventoryImports
-        $filteredProducts = $products->filter(function ($product) {
-            return $product->variants->every(function ($variant) {
-                return $variant->inventoryImports->isNotEmpty(); // Tất cả variants có inventoryImports
-            });
-        });
-
-        return ProductResource::collection($filteredProducts);
-    }
-
-    public function getAllProductNoImport(){
-
-    $products = Product::with([
-        'category',
-        'variants.attributeValues.attribute',
-        'variants.inventoryStock',
-        'variants.inventoryImports'
-    ])->get(); // Lấy tất cả để xử lý lọc
-
-    $filteredProducts = $products->filter(function ($product) {
-        return $product->variants->contains(function ($variant) {
-            return $variant->inventoryImports->isEmpty(); // Variant chưa có inventoryImports
-        });
-    });
-
-    return ProductResource::collection($filteredProducts);
-
+            'variants.inventoryStock',
+            'variants.inventoryImports.supplier',
+        ])
+        ->whereHas('variants', function ($query) {
+            $query->doesntHave('inventoryImports');
+        })
+        ->paginate(10);
+    
+        return ProductResource::collection($products);
     }
 
 
