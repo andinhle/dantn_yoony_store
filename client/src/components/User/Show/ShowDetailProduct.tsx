@@ -544,6 +544,8 @@ const ShowDetailProduct: React.FC = () => {
     }
   };
 
+  console.log(product);
+
   return (
     <section className="space-y-8">
       <Breadcrumb
@@ -559,11 +561,11 @@ const ShowDetailProduct: React.FC = () => {
           },
           {
             path: `/${category}`,
-            title: <Link to={`/${category}`}>{category}</Link>,
+            title: <Link to={`/${category}`}>{product?.category?.name}</Link>,
           },
           {
             className: "!text-primary",
-            title: slugproduct,
+            title: product?.name,
           },
         ]}
       />
