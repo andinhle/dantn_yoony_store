@@ -30,5 +30,6 @@ class BlogResource extends JsonResource
                 'email' => $this->user->email,
             ] : null,
         ];
+
     }
 }
