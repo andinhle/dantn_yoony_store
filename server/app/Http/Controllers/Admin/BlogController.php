@@ -74,7 +74,6 @@ class BlogController extends Controller
                 'message' => 'Blog đã được sửa thành công!',
                 'data' => new BlogResource($blog)
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Có lỗi xảy ra trong quá trình cập nhật blog.',

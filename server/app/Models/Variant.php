@@ -31,6 +31,12 @@ class Variant extends Model
     {
         return $this->hasOne(InventoryStock::class);
     }
+    public function inventoryImports()
+    {
+        return $this->hasMany(InventoryImport::class); // Quan hệ với InventoryImport
+    }
+
+  
 
     public function orderItems()
     {

@@ -33,7 +33,6 @@ class HomeController extends Controller
     public function getOneProductBySlug(Request $request, string $slug)
     {
         try {
-            event(new CheckExpiredSalePrices());
 
             // Lấy thông tin sản phẩm
             $product = Product::with('category', 'variants.attributeValues.attribute', 'variants.inventoryStock')
@@ -41,7 +40,14 @@ class HomeController extends Controller
                 ->where('is_active', 1)
                 ->firstOrFail();
 
-            // Lấy sản phẩm liên quan
+                $variant = $product->variants->first();
+
+                if ($variant) {
+                    event(new CheckExpiredSalePrices($variant));
+                } else {
+                    Log::warning('Không tìm thấy variant cho sản phẩm: ' . $slug);
+                }
+
             $relatedProducts = Product::with('category', 'variants.attributeValues.attribute')
                 ->where('category_id', $product->category_id)
                 ->where('is_active', true)
@@ -102,10 +108,10 @@ class HomeController extends Controller
         {
             if (auth()->check()) {
                 $user = auth()->user();
-                
+
                 // Chỉ lấy danh sách wishlists không kèm product
                 $wishlists = $user->wishlists()->select(['id', 'user_id', 'product_id'])->get();
-                
+
                 return response()->json([
                     'wishlists' => $wishlists
                 ], 200);
@@ -113,24 +119,24 @@ class HomeController extends Controller
                 return response()->json(['error' => 'Tài khoản chưa đăng nhập.'], 401);
             }
         }
-    
+
     //insert wishlists by user
     public function toggleWishlist(Request $request)
     {
         if (!auth()->check()) {
             return response()->json(['error' => 'Tài khoản chưa đăng nhập.'], 401);
         }
-    
+
         $user = auth()->user();
-    
+
         // Validate request input
         $validatedData = $request->validate([
             'product_id' => 'required|exists:products,id',
         ]);
-    
+
         // Check if product exists in the wishlist
         $wishlist = $user->wishlists()->where('product_id', $request->product_id)->first();
-    
+
         if ($wishlist) {
             // If exists, remove it
             $wishlist->delete();
@@ -139,12 +145,12 @@ class HomeController extends Controller
                 'status' => 'removed'
             ], 200);
         }
-    
+
         // If not exists, create new wishlist entry
         $wishlist = $user->wishlists()->create([
             'product_id' => $request->product_id,
         ]);
-    
+
         return response()->json([
             'message' => 'Sản phẩm đã được thêm vào danh sách yêu thích.',
             'status' => 'added',
@@ -541,19 +547,19 @@ class HomeController extends Controller
         try {
             // Đếm số địa chỉ hiện tại của user
             $addressCount = Address::where('user_id', Auth::id())->count();
-            
+
             // Kiểm tra nếu đã có 5 địa chỉ
             if ($addressCount >= 5) {
                 return response()->json([
                     'error' => 'Bạn chỉ được thêm tối đa 5 địa chỉ'
                 ], 400);
             }
-    
+
             // Nếu chưa đủ 5 địa chỉ thì tạo mới
             $address = Address::create([
                 'fullname' => $request->fullname,
                 'phone' => $request->phone,
-                'province' => $request->province, 
+                'province' => $request->province,
                 'district' => $request->district,
                 'ward' => $request->ward,
                 'address' => $request->address,
@@ -562,18 +568,18 @@ class HomeController extends Controller
 
             // Kiểm tra xem có phải địa chỉ đầu tiên của thằng này không
             $userAddressCount = Address::where('user_id', Auth::id())->count();
-            
+
             // Nếu đúng thì đặt nó làm mặc định
             if ($userAddressCount === 1) {
                 $user = Auth::user();
                 $user->address_id = $address->id;
                 $user->save();
             }
-    
+
             return response()->json([
                 'data' => $address
             ]);
-    
+
         } catch (\Exception $e) {
             return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
         }
@@ -583,7 +589,7 @@ class HomeController extends Controller
     {
         try {
             $address = Address::findOrFail($id);
-            
+
             $updateAddress = $address->update([
                 'fullname' => $request->fullname,
                 'phone' => $request->phone,
@@ -613,7 +619,7 @@ class HomeController extends Controller
         }
 
     }
-    // Thiết lập 
+    // Thiết lập
     public function updateDefaultAddress(int $id)
     {
         try {
