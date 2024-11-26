@@ -66,7 +66,6 @@ const ListVariant = () => {
       console.log(error);
     }
   };
-  console.log(attribute);
   return (
     <div className="bg-util p-5 rounded-md space-y-5">
       <div className="w-fit">

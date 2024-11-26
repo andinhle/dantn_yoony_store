@@ -142,14 +142,17 @@ class StatisticalController extends Controller
                     $query->withSum([
                         'orderItems as total_revenue' => function ($query) use ($dateCondition) {
                             $query->select(DB::raw('SUM(order_items.total_price)'))
-                                ->join('orders', 'orders.id', '=', 'order_items.order_id');
+                                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                                ->where('orders.status_order', Order::STATUS_ORDER_DELIVERED);
                             if ($dateCondition) {
                                 $dateCondition($query, 'orders.created_at');
                             }
                         }
                     ], 'total_price');
                 },
-                'category:id,name'
+                'category:id,name',
+                'variants.attributeValues'
+
             ])
                 ->get()
                 ->map(function ($product) {
@@ -160,6 +163,7 @@ class StatisticalController extends Controller
                 ->sortByDesc('total_revenue')
                 ->take(10)
                 ->values();
+
 
             // Thống kê sản phẩm theo đánh giá cao nhất
             $topRatedProductsQuery = Product::query()

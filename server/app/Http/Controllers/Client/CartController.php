@@ -78,7 +78,7 @@ class CartController extends Controller
             $data = $request->all();
             $data['user_id'] = Auth::id();
             $idExist = Cart::query()
-                ->with(['variant.product.category','variant.attributeValues.attribute', "user"])
+                ->with(['variant.product.category','variant.attributeValues.attribute', "user",'variant.inventoryStock'])
                 ->where('variant_id', $request->variant_id)
                 ->where('user_id', Auth::id())
                 ->first();  
@@ -125,7 +125,7 @@ class CartController extends Controller
 
             
 
-            $idExist->load(['variant.product.category','variant.attributeValues.attribute', "user"]);
+            $idExist->load(['variant.product.category','variant.attributeValues.attribute', "user",'variant.inventoryStock']);
 
             $images = $idExist->variant->product->images;
             if (is_string($images)) {

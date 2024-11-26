@@ -14,8 +14,6 @@ class VariantResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $minQuantity = $this->inventoryImports->min('quantity');
-        $maxQuantity = $this->inventoryImports->max('quantity');
 
         return [
             'id' => $this->id,
@@ -23,10 +21,9 @@ class VariantResource extends JsonResource
             'sale_price' => $this->sale_price,
             'end_sale' => $this->end_sale,
             'quantity' => optional($this->inventoryStock)->quantity,
-            'quantity_range' => $minQuantity . ' - ' . $maxQuantity,
             'image' => $this->image,
             'attribute_values' => AttributeValueResource::collection($this->whenLoaded('attributeValues')),
-
+            'updated_at'=>$this->updated_at,
             'inventoryImports' => InventoryImportResource::collection($this->whenLoaded('inventoryImports')),
             'has_inventory_imports' => $this->inventoryImports->isNotEmpty(), 
 
