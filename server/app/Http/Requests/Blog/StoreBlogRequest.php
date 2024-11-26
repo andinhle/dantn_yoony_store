@@ -23,7 +23,7 @@ class StoreBlogRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:255',
-            'thambnail' => 'nullable|string|max:255',
+            'thumbnail' => 'nullable|string|max:255',
             'content' => 'required',
             'slug' => 'required|string|unique:blogs,slug',
             'is_active' => 'boolean',

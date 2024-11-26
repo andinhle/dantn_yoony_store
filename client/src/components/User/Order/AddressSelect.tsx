@@ -7,7 +7,7 @@ import instance from "../../../instance/instance";
 import { message, Popconfirm } from "antd";
 import { useAuth } from "../../../providers/AuthProvider";
 
-const AddressSelect = () => {
+const AddressSelect = ({ onAddressSelect }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { addresses, dispatch } = useContext(AddressContext);
   const [addOrUpdate, setAddOrUpdate] = useState<string>("ADD");
@@ -23,10 +23,15 @@ const AddressSelect = () => {
     }
   })();
 
+
   const showModal = () => {
     setIsModalOpen(true);
   };
   const [addressOrder, setAddressOrder] = useState<number | undefined>();
+
+  useEffect(() => {
+    onAddressSelect(addressOrder || null);
+  }, [addressOrder, onAddressSelect]);
   const handleCancel = () => {
     setIsModalOpen(false);
   };
@@ -37,7 +42,8 @@ const AddressSelect = () => {
         setAddressOrder(userData.address_id);
         localStorage.setItem('addressSelect',JSON.stringify(userData?.address_id))
       }
-      const addressSelect = JSON.parse(localStorage.getItem('addressSelect') || "");
+      const dataLocalAddress=localStorage.getItem('addressSelect')
+      const addressSelect = JSON.parse(dataLocalAddress!);
       if (addressSelect) {
         setAddressOrder(addressSelect);
       } else if (userData?.address_id) {

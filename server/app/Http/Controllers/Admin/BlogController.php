@@ -37,7 +37,7 @@ class BlogController extends Controller
 
             return response()->json([
                 'message' => 'Blog đã được thêm thành công!',
-                'blog' => new BlogResource($blog)
+                'data' => new BlogResource($blog)
             ], 201);
 
         } catch (\Exception $e) {
@@ -61,8 +61,8 @@ class BlogController extends Controller
             $blog = Blog::findOrFail($id);
 
             $data = [
-                'title' => $request->title,
-                'thambnail' => $request->thambnail,
+                'title' =>  $request->title,
+                'thumbnail' =>  $request->thumbnail,
                 'content' => $request->content,
                 'slug' => $request->slug,
                 'is_active' => $request->has('is_active') ? $request->is_active : $blog->is_active,
@@ -72,7 +72,7 @@ class BlogController extends Controller
 
             return response()->json([
                 'message' => 'Blog đã được sửa thành công!',
-                'blog' => new BlogResource($blog)
+                'data' => new BlogResource($blog)
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -84,9 +84,7 @@ class BlogController extends Controller
 
 
 
-
-
-    public function updateIsActive(Request $request, string $id)
+    public function updateIsActive(Request $request, $id)
 {
     try {
         $blog = Blog::findOrFail($id);

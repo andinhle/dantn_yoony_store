@@ -603,7 +603,7 @@ const OrderDetails = () => {
                         <div className="flex space-x-2">
                             <p className="font-bold text-sm">Họ và tên :</p>
                             <span className="text-sm">
-                                {orderDetail?.name}
+                                {orderDetail?.user?.name}
                             </span>
                         </div>
                         <div className="flex space-x-2">

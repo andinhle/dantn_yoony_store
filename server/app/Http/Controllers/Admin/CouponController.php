@@ -16,7 +16,7 @@ class CouponController extends Controller
     public function index()
     {
         try {
-            $data = Coupon::query()->latest('id')->paginate(5);
+            $data = Coupon::query()->latest('id')->paginate(10);
 
             return response()->json([
                 'message' => 'Danh sách coupon trang ' . request('page', 1),
@@ -45,12 +45,11 @@ class CouponController extends Controller
     {
         try {
             $coupon = Coupon::create($request->validated());
-            $data['id'] = $coupon->id;
 
             return response()->json([
                 'message' => 'Thêm mới coupon thành công',
                 'status' => 'success',
-                'data' => $data
+                'data' => $coupon
             ], Response::HTTP_CREATED);
         } catch (\Throwable $th) {
 
@@ -100,7 +99,6 @@ class CouponController extends Controller
     public function update(UpdateCouponRequest $request, string $id)
     {
         try {
-            \Log::info($request->all()); 
             $data = $request->all();
 
             $model = Coupon::query()->findOrFail($id);

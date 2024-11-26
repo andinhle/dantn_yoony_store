@@ -86,7 +86,7 @@ const AddAttributeValue = () => {
             className="block focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-input rounded-[5px] w-full focus:!shadow-none"
           />
         </div>
-        <ButtonSubmit content="Add" />
+        <ButtonSubmit content="Thêm" />
       </form>
     </div>
   );

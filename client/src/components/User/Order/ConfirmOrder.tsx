@@ -10,9 +10,10 @@ import queryString from "query-string";
 import { useRef } from "react";
 type Prop = {
   current: number;
+  setIsLoading:(isLoading:boolean)=>void
 };
 
-const ConfirmOrder = ({ current }: Prop) => {
+const ConfirmOrder = ({ current,setIsLoading }: Prop) => {
   const { dispatch } = useContext(CartContext);
   const final_total = JSON.parse(localStorage.getItem("final_total") || "0");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,6 +27,7 @@ const ConfirmOrder = ({ current }: Prop) => {
   const navigate = useNavigate();
   useEffect(() => {
     (async () => {
+      setIsLoading(true);
       try {
         const parsed = queryString.parse(location.search);
         const vnp_ResponseCode = parsed?.vnp_ResponseCode;
@@ -67,7 +69,7 @@ const ConfirmOrder = ({ current }: Prop) => {
             vnp_TransactionStatus === "00" &&
             String(data.status) === "success"
           ) {
-            message.success("Thanh toán thành công!");
+            // message.success("Thanh toán thành công!");
             const checkoutData = await instance.post("checkout-vnpay", {
               name: parsedOrderData.fullName,
               tel: parsedOrderData.phone,
@@ -99,15 +101,13 @@ const ConfirmOrder = ({ current }: Prop) => {
           }
         }
 
-        if (
-          resultCode
-        ) {
+        if (resultCode) {
           const { data } = await instance.post("momo/callback", {
             ...parsed,
           });
 
           if (resultCode === "0" && String(data.status) === "success") {
-            message.success("Thanh toán thành công!");
+            // message.success("Thanh toán thành công!");
             const checkoutData = await instance.post("checkout-momo", {
               name: parsedOrderData.fullName,
               tel: parsedOrderData.phone,
@@ -140,6 +140,8 @@ const ConfirmOrder = ({ current }: Prop) => {
         }
       } catch (error) {
         console.log(error);
+      } finally {
+        setIsLoading(false);
       }
     })();
 
@@ -168,6 +170,7 @@ const ConfirmOrder = ({ current }: Prop) => {
   };
 
   const submitOrder = async () => {
+    setIsLoading(true);
     try {
       const orderDataRaw = localStorage.getItem("orderData");
       const parsedOrderData = JSON.parse(orderDataRaw!);
@@ -232,7 +235,6 @@ const ConfirmOrder = ({ current }: Prop) => {
         });
 
         if (data) {
-          console.log(data);
           window.location.assign(data.paymentUrl);
         }
       }
@@ -244,6 +246,8 @@ const ConfirmOrder = ({ current }: Prop) => {
       } else {
         toast.error("Đã xảy ra lỗi không mong muốn");
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -543,11 +547,13 @@ const ConfirmOrder = ({ current }: Prop) => {
         <p className="font-medium">
           Tổng thanh toán:{" "}
           <span className="text-primary">
-            {(voucherCheck
-              ? final_total - voucherCheck.discount
+            {/* {(voucherCheck
+               final_total - voucherCheck.discount
               : final_total
-            ).toLocaleString()}
-            đ
+            ).toLocaleString()} */}
+            {
+              (voucherCheck?voucherCheck.discount>final_total? 0 : final_total - voucherCheck.discount : final_total).toLocaleString()
+            }đ
           </span>
         </p>
       </div>

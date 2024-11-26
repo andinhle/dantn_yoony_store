@@ -653,7 +653,7 @@ const ManagerOrdersUser = () => {
           </ConfigProvider>
         </div>
         <div className="overflow-x-auto table-order-users">
-          <Table striped>
+          <Table>
             <Table.Head>
               <Table.HeadCell className="bg-primary text-util text-sm font-normal capitalize !rounded-s-sm text-nowrap">
                 Mã đơn hàng
@@ -779,7 +779,7 @@ const ManagerOrdersUser = () => {
                             orderUser.status_order,
                             orderUser.code
                           )}
-                          <button className="text-secondary/75">
+                          {/* <button className="text-secondary/75">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               viewBox="0 0 24 24"
@@ -790,7 +790,7 @@ const ManagerOrdersUser = () => {
                             >
                               <path d="M11.992 12H12.001M11.9842 18H11.9932M11.9998 6H12.0088" />
                             </svg>
-                          </button>
+                          </button> */}
                         </div>
                       </Table.Cell>
                     </Table.Row>
