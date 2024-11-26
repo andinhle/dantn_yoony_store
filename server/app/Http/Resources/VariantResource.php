@@ -28,6 +28,8 @@ class VariantResource extends JsonResource
             'attribute_values' => AttributeValueResource::collection($this->whenLoaded('attributeValues')),
 
             'inventoryImports' => InventoryImportResource::collection($this->whenLoaded('inventoryImports')),
+            'has_inventory_imports' => $this->inventoryImports->isNotEmpty(), 
+
         ];
     }
 }
