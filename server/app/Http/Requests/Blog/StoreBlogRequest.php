@@ -40,3 +40,4 @@ class StoreBlogRequest extends FormRequest
         ];
     }
 }
+
