@@ -25,7 +25,15 @@ const ProductClothes = () => {
             spaceBetween: 10,
           },
           768: {
+            slidesPerView: 3.3,
+            spaceBetween: 10,
+          },
+          800: {
             slidesPerView: 3.5,
+            spaceBetween: 10,
+          },
+          884: {
+            slidesPerView: 4,
             spaceBetween: 10,
           },
           1024: {

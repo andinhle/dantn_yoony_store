@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 const Footer = () => {
   return (
     <footer className="bg-primary py-10 min-h-[255px] relative">
-      <section className="container-main mx-auto grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-10 text-util">
-        <div className="lg:col-span-4">
+      <section className="container-main mx-auto grid grid-cols-12 gap-5 md:gap-10 text-util">
+        <div className="col-span-11 md:col-span-5 lg:col-span-4">
           <img
             src="../../../../src/assets/images/Logo-footer.svg"
             alt="logo-footer"
@@ -18,9 +18,9 @@ const Footer = () => {
             Thời gian : 8:30 - 18:00 (Thứ 2 - Thứ 7)
           </span>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-10 lg:col-span-8">
-          <div className="space-y-3">
-            <h3 className="font-medium">VỀ CHÚNG TÔI</h3>
+        <div className="col-span-11 md:col-span-6 lg:col-span-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-10">
+          <div className="space-y-3 col-span-2 md:col-span-1">
+            <h3 className={'font-medium'}>VỀ CHÚNG TÔI</h3>
             <ul className="text-sm leading-6">
               <li>
                 <Link to={""}>Giới thiệu công ty</Link>
@@ -37,7 +37,7 @@ const Footer = () => {
             </ul>
           </div>
           <div className="space-y-3">
-            <h3 className="font-medium">HỖ TRỢ KHÁCH HÀNG 24/7</h3>
+            <h3 className={'font-medium'}>HỖ TRỢ KHÁCH HÀNG 24/7</h3>
             <ul className="text-sm leading-6">
               <li>Hotline bán hàng : 084.6886.000</li>
               <li>Hotline kĩ thuật : 084.3434.000</li>
@@ -45,8 +45,8 @@ const Footer = () => {
               <li>Địa chỉ Hà Nội : Số 10 Ngõ 108 Trần Phú- Hà Đông- Hà Nội</li>
             </ul>
           </div>
-          <div className="space-y-3">
-            <h3 className="font-medium">PHƯƠNG THỨC THANH TOÁN</h3>
+          <div className="space-y-3 col-span-2 lg:col-span-1">
+            <h3 className={'font-medium'}>PHƯƠNG THỨC THANH TOÁN</h3>
             <ul className="text-sm leading-6">
               <li>Thanh toán chuyển khoản</li>
               <li>Thanh toán khi nhận hàng</li>
@@ -56,8 +56,8 @@ const Footer = () => {
               </li>
             </ul>
           </div>
-          <div className="space-y-3 lg:col-span-2 hidden lg:block">
-            <h3 className="font-medium">GIAO HÀNG</h3>
+          <div className="space-y-3 col-span-2">
+            <h3 className={'font-medium'}>GIAO HÀNG</h3>
             <div className="flex items-center gap-5 flex-wrap">
               <img
                 src="../../../../src/assets/images/viettel.png"
@@ -73,9 +73,8 @@ const Footer = () => {
               />
             </div>
           </div>
-
-          <div className="space-y-3">
-            <h3 className="font-medium">MẠNG XÃ HỘI</h3>
+          <div className="space-y-3 col-span-2">
+            <h3 className={'font-medium'}>MẠNG XÃ HỘI</h3>
             <div className="flex gap-3 items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -120,6 +119,4 @@ const Footer = () => {
     </footer>
   );
 };
-
-export default Footer;
-
+export default Footer; 

@@ -44,14 +44,18 @@ const ProductFeature = () => {
             spaceBetween: 10,
           },
           768: {
+            slidesPerView: 3.3,
+            spaceBetween: 10,
+          },
+          800: {
             slidesPerView: 3.5,
             spaceBetween: 10,
           },
-          1024: {
+          884: {
             slidesPerView: 4,
             spaceBetween: 10,
           },
-          1280: {
+          1024: {
             slidesPerView: 5,
             spaceBetween: 10,
           },
