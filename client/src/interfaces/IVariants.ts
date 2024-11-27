@@ -7,11 +7,13 @@ export interface IVariants{
     price:number,
     sale_price?:number,
     end_sale?:string,
+    import_price?:number,
     image:string,
+    quantity:number,
     attribute_values:IAttributeValue[],
     product:IProduct,
     total_revenue?:number,
-    inventoryImports: InventoryImport[];
+    inventoryImports: InventoryImport;
     updated_at?:string
 }
 
