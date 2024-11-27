@@ -1,5 +1,5 @@
 export interface IUser{
-    _id?:number,
+    id?:number,
     name:string,
     email:string,
     tel:number,
@@ -8,6 +8,7 @@ export interface IUser{
     status?: boolean,
     password?: string;
     address_id?:number;
+    provider:string;
     confirmPass?: string;
     role?: "member" | "admin"
 }

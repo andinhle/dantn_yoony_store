@@ -8,11 +8,15 @@ export interface IProduct{
     slug:string,
     images:string[],
     category?:ICategory
+    price_range?: string;
+    import_price_range?: string;
+    quantity_range:string,
     description:string,
     category_id:ICategory,
     is_active:boolean,
-    is_good_deal:boolean,
     is_featured:boolean,
     is_variant:boolean,
-    variants:IVariants[]
+    variants:IVariants[],
+    total_revenue?:number,
+    updated_at?:string
 }

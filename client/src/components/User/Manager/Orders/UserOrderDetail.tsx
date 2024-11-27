@@ -552,6 +552,8 @@ const UserOrderDetail = () => {
     }
   };
 
+  console.log(orderDetails);
+
   return (
     <div className="grid grid-cols-7 gap-5">
       <div className="col-span-5 w-full space-y-4">
@@ -560,13 +562,13 @@ const UserOrderDetail = () => {
             <h3 className="uppercase font-medium text-sm">
               Đơn hàng <span className="text-primary">#{code_order}</span>
             </h3>
-            {orderDetails?.payment_method === "VNPAY" ||
-              (orderDetails?.payment_method === "MOMO" &&
-                orderDetails.paid_at && (
-                  <p className="bg-[#DBF8F4] text-[#1f9e8d] px-2 py-1 rounded-sm text-xs flex items-center gap-1">
-                    Đã thanh toán
-                  </p>
-                ))}
+            {(orderDetails?.payment_method === "VNPAY" ||
+              orderDetails?.payment_method === "MOMO") &&
+              orderDetails.paid_at && (
+                <p className="bg-[#DBF8F4] text-[#1f9e8d] px-2 py-1 rounded-sm text-xs flex items-center gap-1">
+                  Đã thanh toán
+                </p>
+              )}
           </div>
           <table className="table w-full overflow-hidden rounded-sm">
             <thead>
@@ -608,10 +610,7 @@ const UserOrderDetail = () => {
                                 (attribute_value, index) => {
                                   return (
                                     <>
-                                      <div
-                                        className="text-[13px]"
-                                        key={attribute_value.id}
-                                      >
+                                      <div className="text-[13px]">
                                         <span>
                                           {attribute_value.attribute.name}
                                         </span>

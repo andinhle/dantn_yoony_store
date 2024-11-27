@@ -1,12 +1,21 @@
-import { Outlet } from "react-router-dom"
-import ProductProvider from "../../providers/ProductProvider"
+import { Outlet } from "react-router-dom";
+import ProductProvider from "../../providers/ProductProvider";
+import AttributeProvider from "../../providers/AttributeProvider";
+import AttributeValueProvider from "../../providers/AttributeValueProvider";
+import InventoryProvider from "../../providers/InventoryProvider";
 
 const LayoutProductAdmin = () => {
   return (
     <ProductProvider>
-        <Outlet/>
+      <AttributeValueProvider>
+        <AttributeProvider>
+          <InventoryProvider>
+            <Outlet />
+          </InventoryProvider>
+        </AttributeProvider>
+      </AttributeValueProvider>
     </ProductProvider>
-  )
-}
+  );
+};
 
-export default LayoutProductAdmin
+export default LayoutProductAdmin;

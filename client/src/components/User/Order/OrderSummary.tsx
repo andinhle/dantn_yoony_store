@@ -21,6 +21,7 @@ interface IOrderData {
 
 const OrderSummary = ({ setCurrent }: Prop) => {
   const { carts } = useContext(CartContext);
+  const [notes, setNote] = useState<string>("")
   const [listSelectCartItem, setListSelectCartItem] = useState<ICart[]>([]);
   const [orderData, setOrderData] = useState<IOrderData>({
     fullName: "",
@@ -48,14 +49,14 @@ const OrderSummary = ({ setCurrent }: Prop) => {
         const response = await instance.get(`get-address/${addressSelect}`);
         const addressData = response.data.data[0];
         setAddress(addressData);
-        setOrderData(prev => ({
+        setOrderData((prev) => ({
           ...prev,
           fullName: addressData.fullname || "",
           phone: addressData.phone || "",
           province: addressData.province || "",
           district: addressData.district || "",
           ward: addressData.ward || "",
-          addressDetail: addressData.address || ""
+          addressDetail: addressData.address || "",
         }));
       } catch (error) {
         console.log(error);
@@ -226,18 +227,20 @@ const OrderSummary = ({ setCurrent }: Prop) => {
     // }, 0);
 
     // setTotalAmount(total);
-    setOrderData(prev => ({
+    setOrderData((prev) => ({
       ...prev,
       payment_method: methodPayment,
       selected_items: idCarts,
+      notes:notes
     }));
-  }, [carts]);
+  }, [carts,notes]);
 
   useEffect(() => {
     if (orderData) {
       localStorage.setItem("orderData", JSON.stringify(orderData));
     }
   }, [orderData]);
+
 
   return (
     <div className="space-y-5">
@@ -444,8 +447,9 @@ const OrderSummary = ({ setCurrent }: Prop) => {
           </div>
         </div>
       </div>
-      <div>
-        <textarea id=""></textarea>
+      <div className="space-y-3">
+        <h3 className="font-medium">Ghi chú</h3>
+        <textarea onChange={(e)=>setNote(e.target.value)} rows={3} className="w-full border border-[#f1f1f1] focus:border-[#ededed] rounded-md placeholder:text-sm" placeholder="Nhập ghi chú"></textarea>
       </div>
     </div>
   );

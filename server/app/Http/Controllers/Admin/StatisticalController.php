@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\InventoryStock;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
@@ -68,51 +71,51 @@ class StatisticalController extends Controller
 
     public function doanhThu(Request $request)
     {
-       try {
-           $type = $request->type;
-           
-           $query = Order::where('status_order', 'delivered');
-           
-           match ($type) {
-               'day' => $query->whereDate('created_at', today()),
-               'month' => $query->whereMonth('created_at', now()->month)
-                                ->whereYear('created_at', now()->year),
-               '6months' => $query->whereBetween('created_at', [
-                   now()->subMonths(6)->startOfMonth(),
-                   now()->endOfMonth()
-               ]),
-               'year' => $query->whereYear('created_at', now()->year),
-               'last_month' => $query->whereMonth('created_at', now()->subMonth()->month)
-                                     ->whereYear('created_at', now()->year),
-               default => $query,
-           };
-           
-           $totalRevenue = $query->sum('final_total');
-           
-           $result = $query->get(['created_at', 'final_total'])
-               ->groupBy(function ($order) {
-                   return Carbon::parse($order->created_at)
-                       ->timezone('Asia/Ho_Chi_Minh')
-                       ->startOfDay()
-                       ->timestamp * 1000;
-               })
-               ->sortKeys()
-               ->map(function ($group, $timestamp) {
-                   return [$timestamp, $group->sum('final_total')];
-               })
-               ->values();
-           
-           return response()->json([
-               'data' => $result,
-               'total_revenue' => (float) $totalRevenue
-           ]);
-       } catch (\Exception $e) {
-           return response()->json([
-               'error' => true,
-               'message' => 'Đã xảy ra lỗi trong quá trình xử lý.',
-               'details' => $e->getMessage(),
-           ], 500);
-       }
+        try {
+            $type = $request->type;
+
+            $query = Order::where('status_order', 'delivered');
+
+            match ($type) {
+                'day' => $query->whereDate('created_at', today()),
+                'month' => $query->whereMonth('created_at', now()->month)
+                    ->whereYear('created_at', now()->year),
+                '6months' => $query->whereBetween('created_at', [
+                    now()->subMonths(6)->startOfMonth(),
+                    now()->endOfMonth()
+                ]),
+                'year' => $query->whereYear('created_at', now()->year),
+                'last_month' => $query->whereMonth('created_at', now()->subMonth()->month)
+                    ->whereYear('created_at', now()->year),
+                default => $query,
+            };
+
+            $totalRevenue = $query->sum('final_total');
+
+            $result = $query->get(['created_at', 'final_total'])
+                ->groupBy(function ($order) {
+                    return Carbon::parse($order->created_at)
+                        ->timezone('Asia/Ho_Chi_Minh')
+                        ->startOfDay()
+                        ->timestamp * 1000;
+                })
+                ->sortKeys()
+                ->map(function ($group, $timestamp) {
+                    return [$timestamp, $group->sum('final_total')];
+                })
+                ->values();
+
+            return response()->json([
+                'data' => $result,
+                'total_revenue' => (float) $totalRevenue
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Đã xảy ra lỗi trong quá trình xử lý.',
+                'details' => $e->getMessage(),
+            ], 500);
+        }
     }
 
 
@@ -138,14 +141,18 @@ class StatisticalController extends Controller
                 'variants' => function ($query) use ($dateCondition) {
                     $query->withSum([
                         'orderItems as total_revenue' => function ($query) use ($dateCondition) {
-                            $query->select(DB::raw('SUM(order_items.total_price)')) // Tính tổng total_price
-                                ->join('orders', 'orders.id', '=', 'order_items.order_id');
+                            $query->select(DB::raw('SUM(order_items.total_price)'))
+                                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                                ->where('orders.status_order', Order::STATUS_ORDER_DELIVERED);
                             if ($dateCondition) {
                                 $dateCondition($query, 'orders.created_at');
                             }
                         }
                     ], 'total_price');
-                }
+                },
+                'category:id,name',
+                'variants.attributeValues'
+
             ])
                 ->get()
                 ->map(function ($product) {
@@ -157,11 +164,13 @@ class StatisticalController extends Controller
                 ->take(10)
                 ->values();
 
+
             // Thống kê sản phẩm theo đánh giá cao nhất
             $topRatedProductsQuery = Product::query()
                 ->withAvg('rates', 'rating')  // Lấy điểm trung bình
                 ->withCount('rates')  // Lấy số lượng đánh giá
-                ->having('rates_avg_rating', '>', 0);
+                ->having('rates_avg_rating', '>', 0)
+                ->with('category:id,name');
 
             if ($dateCondition) {
                 $topRatedProductsQuery->whereHas('rates', function ($query) use ($dateCondition) {
@@ -176,6 +185,7 @@ class StatisticalController extends Controller
                 ->map(function ($product) {
                     // Làm tròn giá trị của 'rates_avg_rating' tới 0.5
                     $product->rates_avg_rating = round($product->rates_avg_rating * 2) / 2;
+                    $product->images = json_decode($product->images, true);
                     return $product;
                 });
 
@@ -183,7 +193,8 @@ class StatisticalController extends Controller
             $lowestRatedProductsQuery = Product::query()
                 ->withAvg('rates', 'rating')  // Lấy điểm trung bình
                 ->withCount('rates')  // Lấy số lượng đánh giá
-                ->having('rates_avg_rating', '>', 0);
+                ->having('rates_avg_rating', '>', 0)
+                ->with('category:id,name');
 
             if ($dateCondition) {
                 $lowestRatedProductsQuery->whereHas('rates', function ($query) use ($dateCondition) {
@@ -198,6 +209,7 @@ class StatisticalController extends Controller
                 ->map(function ($product) {
                     // Làm tròn giá trị của 'rates_avg_rating' tới 0.5
                     $product->rates_avg_rating = round($product->rates_avg_rating * 2) / 2;
+                    $product->images = json_decode($product->images, true);
                     return $product;
                 });
 
@@ -317,9 +329,98 @@ class StatisticalController extends Controller
     }
 
 
+    //thôgns kê lại doanh thu trongngay,đơn hàng mới,đơn hàng chưa xác nhận,và đếm số ng dùng
+    public function thongKeNgay(Request $request)
+    {
+        try {
+            $today = now()->startOfDay();
+            $endOfDay = now()->endOfDay();
 
+            $revenueToday = Order::where('status_order', 'delivered')
+                ->whereBetween('updated_at', [$today, $endOfDay])
+                ->sum('final_total');
 
+            // Số đơn hàng mới trong ngày
+            $newOrdersCount = Order::whereBetween('created_at', [$today, $endOfDay])->count();
 
+            // Số đơn hàng chờ xác nhận
+            $pendingOrdersCount = Order::where('status_order', 'pending')->count();
 
+            $totalUsers = User::count();
+
+            // Trả về kết quả thống kê
+            return response()->json([
+                'revenue_today' => $revenueToday,
+                'new_orders_count' => $newOrdersCount,
+                'pending_orders_count' => $pendingOrdersCount,
+                'total_users' => $totalUsers,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Đã xảy ra lỗi trong quá trình xử lý.',
+                'details' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function listSoLuongBienTheDuoi10(): JsonResponse
+    {
+        try {
+            $variants = InventoryStock::with(['variant.attributeValues', 'variant.product'])
+                ->where('quantity', '<', 10)
+                ->where('quantity', '>', 0)
+                ->paginate(10);
+
+            $variants->getCollection()->transform(function ($inventoryStock) {
+                if (isset($inventoryStock->variant->product->images)) {
+                    if (!is_array($inventoryStock->variant->product->images)) {
+                        $inventoryStock->variant->product->images = json_decode($inventoryStock->variant->product->images, true);
+                    }
+                }
+                return $inventoryStock;
+            });
+
+            return response()->json([
+                'variants' => $variants,
+                'count' => $variants->count(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Đã xảy ra lỗi khi lấy danh sách biến thể có số lượng dưới 10.',
+                'details' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function listSoLuongBienTheDaHet(): JsonResponse
+    {
+        try {
+            $variants = InventoryStock::with(['variant.attributeValues', 'variant.product'])
+                ->where('quantity', '=', 0)
+                ->paginate(10);
+
+            $variants->getCollection()->transform(function ($inventoryStock) {
+                if (isset($inventoryStock->variant->product->images)) {
+                    if (!is_array($inventoryStock->variant->product->images)) {
+                        $inventoryStock->variant->product->images = json_decode($inventoryStock->variant->product->images, true);
+                    }
+                }
+                return $inventoryStock;
+            });
+
+            return response()->json([
+                'variants' => $variants,
+                'count' => $variants->count(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Đã xảy ra lỗi khi lấy danh sách biến thể đã hết hàng.',
+                'details' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
 }

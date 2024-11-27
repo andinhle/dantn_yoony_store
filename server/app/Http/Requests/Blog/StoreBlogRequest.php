@@ -23,10 +23,9 @@ class StoreBlogRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:255',
-            'thambnail' => 'nullable|string|max:255',
+            'thumbnail' => 'nullable|string|max:255',
             'content' => 'required',
             'slug' => 'required|string|unique:blogs,slug',
-            'user_id' => 'required|exists:users,id',
             'is_active' => 'boolean',
         ];
     }
@@ -37,9 +36,8 @@ class StoreBlogRequest extends FormRequest
             'content.required' => 'Nội dung không được để trống.',
             'slug.required' => 'Slug không được để trống.',
             'slug.unique' => 'Slug đã tồn tại. Vui lòng chọn một slug khác.',
-            'user_id.required' => 'Người dùng không được để trống.',
-            'user_id.exists' => 'Người dùng không tồn tại trong hệ thống.',
             'is_active.boolean' => 'Trạng thái phải là true hoặc false.',
         ];
     }
 }
+

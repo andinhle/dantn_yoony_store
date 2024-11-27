@@ -5,7 +5,6 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import LayoutUser from "./layouts/LayoutUser.tsx";
 import LayoutAdmin from "./layouts/LayoutAdmin.tsx";
 import DashboardAdmin from "./pages/admin/dashboard/DashboardAdmin.tsx";
-import UsersAdmin from "./pages/admin/users/UserAdmin.tsx";
 import CategorysAdmin from "./pages/admin/category/CategorysAdmin.tsx";
 import Register from "./components/User/Auth/Register.tsx";
 import "swiper/css";
@@ -26,7 +25,6 @@ import ResetPassRequest from "./components/User/Auth/ResetPassRequest.tsx";
 import FormResetPass from "./components/User/Auth/FormResetPass.tsx";
 import LayoutVoucherAdmin from "./layouts/Admin/LayoutVoucherAdmin.tsx";
 import LayoutBlogsAdmin from "./layouts/Admin/LayoutBlogsAdmin.tsx";
-import BlogProvider from "./contexts/BlogsContext.tsx";
 import UpdateBlogsAdmin from "./pages/admin/blogs/UpdateBlogAdmin.tsx";
 import BlogPage from "./components/User/Blogs/BlogsPage.tsx";
 import LayoutProductAdmin from "./layouts/Admin/LayoutProductAdmin.tsx";
@@ -34,7 +32,6 @@ import AddOrUpdateProduct from "./pages/admin/products/AddOrUpdateProduct.tsx";
 import ShowDetailProduct from "./components/User/Show/ShowDetailProduct.tsx";
 import CartListClient from "./components/User/Cart/CartListClient.tsx";
 import LayoutUsersAdmin from "./layouts/Admin/LayoutUsersAdmin.tsx";
-import UserRoleManager from "./pages/admin/users/UserRoleManager.tsx";
 import CheckOutOrder from "./components/User/Order/CheckOutOrder.tsx";
 import CheckPermission from "./components/Middleware/CheckPermission.tsx";
 import UserDetails from "./components/User/Manager/Profile/UserDetails.tsx";
@@ -54,11 +51,12 @@ import { StrictMode } from "react";
 import Whistlist from "./components/User/Manager/Wishlist/Wishlist.tsx";
 import BannerList from "./pages/admin/banner/BannerAdmin.tsx";
 import AddressesUser from "./components/User/Manager/Addresses/AddressesUser.tsx";
+import ListInventory from "./pages/admin/inventory/ListInventory.tsx";
+import ListVariant from "./pages/admin/varriant/ListVariant.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
-      <BlogProvider>
         <FiledsProvider>
           <ScrollToTop />
           <Routes>
@@ -117,13 +115,16 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="products" element={<LayoutProductAdmin />}>
                   <Route index element={<ProductList />} />
                   <Route path="add" element={<AddOrUpdateProduct />} />
+                  <Route path="variants" element={<ListVariant />} />
+                  <Route path="inventory" element={<ListInventory />} />
                   <Route path="update/:id" element={<AddOrUpdateProduct />} />
                 </Route>
                 <Route path="orders" element={<Orders />} />
-                <Route path="users" element={<LayoutUsersAdmin />}>
+                {/* <Route path="users" element={<LayoutUsersAdmin />}>
                   <Route index element={<UsersAdmin />} />
-                  <Route path="role-manager" element={<UserRoleManager />} />
-                </Route>
+                </Route> */}
+                <Route path='users' element={<LayoutUsersAdmin />}/>
+                
                 <Route path="vouchers" element={<LayoutVoucherAdmin />} />
                 {/* <Route path="events" element={<LayoutEventAdmin />} /> */}
                 <Route path="banner" element={<BannerList />} />
@@ -138,7 +139,6 @@ createRoot(document.getElementById("root")!).render(
           </Routes>
           <ToastContainer autoClose={3000} newestOnTop={true} />
         </FiledsProvider>
-      </BlogProvider>
     </BrowserRouter>
   </StrictMode>
 );

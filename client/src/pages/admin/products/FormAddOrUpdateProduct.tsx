@@ -103,7 +103,7 @@ const FormAddOrUpdateProduct = () => {
       category_id: undefined,
       is_active: true,
       is_featured: false,
-      is_good_deal: false,
+      // is_good_deal: false,
       variants: [
         {
           price: undefined,
@@ -572,7 +572,7 @@ const FormAddOrUpdateProduct = () => {
                 />
               </div>
             </div>
-            <div className="flex gap-3 items-center">
+            {/* <div className="flex gap-3 items-center">
               <div className="block">
                 <Label htmlFor="good-deal-product" value="Giá tốt" />
               </div>
@@ -587,7 +587,7 @@ const FormAddOrUpdateProduct = () => {
                   }}
                 />
               </div>
-            </div>
+            </div> */}
             {/* <div className="flex gap-3 items-center">
               <div className="block">
                 <Label htmlFor="is_variant-product" value="Có biến thể" />

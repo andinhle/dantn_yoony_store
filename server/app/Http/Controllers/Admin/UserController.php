@@ -10,34 +10,40 @@ use Illuminate\Support\Facades\Validator;
 class UserController extends Controller
 {
     // Lấy tất cả thông tin user
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::query()->paginate(5);
+        $currentUserId = $request->user()->id;
+
+        $users = User::query()
+            ->where('id', '!=', $currentUserId)
+            ->paginate(10);
 
         return response()->json($users, 200);
     }
+    //detail user
+    public function show(string $id)
+    {
+        $users = User::query()->findOrFail($id);
+        return response()->json($users, 200);
+    }
+    
     public function updateRole(Request $request, $id)
     {
         try {
-            // Xác thực đầu vào
-            $validatedData = $request->validate([
-                'role' => 'required|in:admin,user', 
-            ]);
+            $role = $request->input('role');
 
-            // Tìm người dùng theo ID
             $user = User::find($id);
 
             if (!$user) {
                 return response()->json(['message' => 'Người dùng không tồn tại.'], 404);
             }
 
-            // Cập nhật quyền
-            $user->role = $validatedData['role'];
+            $user->role = $role;
             $user->save();
 
             return response()->json([
                 'message' => 'Cập nhật quyền thành công.',
-                'user' => $user,
+                'data' => $user,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
