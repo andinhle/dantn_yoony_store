@@ -1,11 +1,10 @@
 import CardProductAll from "./CardProductAll";
 import { Swiper, SwiperSlide } from "swiper/react";
-import {
-  FreeMode,
-  Navigation,
-  HashNavigation,
-} from "swiper/modules";
+import { FreeMode, Navigation, HashNavigation } from "swiper/modules";
 import ButtonSeeMore from "../Button/ButtonSeeMore";
+import "swiper/css";
+import "swiper/css/navigation";
+
 const ProductClothes = () => {
   return (
     <section className="py-5">
@@ -20,34 +19,26 @@ const ProductClothes = () => {
         navigation={true}
         modules={[FreeMode, Navigation, HashNavigation]}
         className="mySwiper my-5"
+        breakpoints={{
+          0: {
+            slidesPerView: 2,
+            spaceBetween: 10,
+          },
+          768: {
+            slidesPerView: 3.5,
+            spaceBetween: 10,
+          },
+          1024: {
+            slidesPerView: 5,
+            spaceBetween: 20,
+          },
+        }}
       >
-        <SwiperSlide className="pb-1 px-0.5">
+        {[...Array(9)].map((_, index) => (
+          <SwiperSlide key={index} className="pb-1 px-0.5">
             <CardProductAll />
-        </SwiperSlide>
-        <SwiperSlide className="pb-1 px-0.5">
-            <CardProductAll />
-        </SwiperSlide>
-        <SwiperSlide className="pb-1 px-0.5">
-            <CardProductAll />
-        </SwiperSlide>
-        <SwiperSlide className="pb-1 px-0.5">
-            <CardProductAll />
-        </SwiperSlide>
-        <SwiperSlide className="pb-1 px-0.5">
-            <CardProductAll />
-        </SwiperSlide>
-        <SwiperSlide className="pb-1 px-0.5">
-            <CardProductAll />
-        </SwiperSlide>
-        <SwiperSlide className="pb-1 px-0.5">
-            <CardProductAll />
-        </SwiperSlide>
-        <SwiperSlide className="pb-1 px-0.5">
-            <CardProductAll />
-        </SwiperSlide>
-        <SwiperSlide className="pb-1 px-0.5">
-            <CardProductAll />
-        </SwiperSlide>
+          </SwiperSlide>
+        ))}
       </Swiper>
       <ButtonSeeMore link="/product-clothes" />
     </section>

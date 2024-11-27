@@ -38,6 +38,24 @@ const ProductFeature = () => {
         navigation={true}
         modules={[FreeMode, Navigation, HashNavigation]}
         className="mySwiper my-5 flex flex-wrap gap-[25px]"
+        breakpoints={{
+          0: {
+            slidesPerView: 2,
+            spaceBetween: 10,
+          },
+          768: {
+            slidesPerView: 3.5,
+            spaceBetween: 10,
+          },
+          1024: {
+            slidesPerView: 4,
+            spaceBetween: 10,
+          },
+          1280: {
+            slidesPerView: 5,
+            spaceBetween: 10,
+          },
+        }}
       >
         {productFeatures.map((productFeature) => {
           // const colorVariants = productFeature.variants
