@@ -195,7 +195,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::patch('admin/order-cancelation/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'canceledOrder']);
         Route::post('admin/order-update_much', [\App\Http\Controllers\Admin\OrderController::class, 'updateMuch']);
 
+        //lưu lịch sử nhập hàng
+        Route::post('/inventory-history/{inventoryImportId}', [InventoryImportController::class, 'storeInventoryHistory']);
+        Route::get('/inventory-history', [InventoryImportController::class, 'getInventoryHistory']);
+
         // Nhập hàng
+        Route::put('/updateVariant', [InventoryImportController::class, 'updateVariant']);
+        Route::put('/UpdateMultiple', [InventoryImportController::class, 'UpdateMultiple']);
 
         Route::get('/productsWithInventoryImports', [InventoryImportController::class, 'productsWithInventoryImports']);
         Route::get('/getAllProductNoImport', [InventoryImportController::class, 'getAllProductNoImport']);

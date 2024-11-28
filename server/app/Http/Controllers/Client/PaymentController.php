@@ -127,6 +127,9 @@ class PaymentController extends Controller
                 if($request->payment_method === "VNPAY" || $request->payment_method === "MOMO"){
                     $data['paid_at'] = now();
                 }
+                if($request->final_total < 0){
+                    $data['final_total'] = 0;
+                }
                 $order = Order::query()->create($data);
 
                 if ($request->coupon_id && $request->discount_amount) {

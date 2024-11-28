@@ -14,4 +14,8 @@ class Supplier extends Model
         'email',
         'address',
     ];
+    public function inventoryImportHistories()
+    {
+        return $this->hasMany(InventoryImportHistory::class);
+    }
 }

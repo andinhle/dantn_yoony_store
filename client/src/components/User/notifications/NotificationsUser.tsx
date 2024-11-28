@@ -18,7 +18,8 @@ const NotificationsUser = () => {
     });
 
     return () => {
-      pusher.unsubscribe("notifications");
+      channel.unbind_all();
+      channel.unsubscribe();
     };
   }, []);
   console.log(eventData);

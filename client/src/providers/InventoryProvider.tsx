@@ -9,19 +9,23 @@ const InventoryProvider = (props: Props) => {
     InventoryReducer,
     [] as IProduct[]
   );
-//   useEffect(() => {
-//     (async () => {
-//       try {
-//         const { data: { data: { data: response } } } = await instance.get('attribute')
-//         dispatch({
-//           type:"LIST",
-//           payload:response
-//         })
-//       } catch (error) {
-//         console.log(error)
-//       }
-//     })()
-//   }, [])
+  // useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       const { data } = await instance.get(
+  //         `productsWithInventoryImports`
+  //       );
+  //       if (data) {
+  //         dispatch({
+  //           type: "LIST",
+  //           payload: data.data,
+  //         });
+  //       }
+  //     } catch (error) {
+  //       console.log(error)
+  //     }
+  //   })()
+  // }, [])
   return (
     <InventoryContext.Provider value={{ inventorys, dispatch }}>
       {props.children}

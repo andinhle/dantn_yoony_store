@@ -1,254 +1,31 @@
-import { Avatar, ConfigProvider, Input, Modal, Select } from "antd";
+import { Modal } from "antd";
 import { Table } from "flowbite-react";
-import { useContext, useEffect, useState } from "react";
-import instance from "../../../instance/instance";
-import { IProduct } from "../../../interfaces/IProduct";
-import { Link, useNavigate } from "react-router-dom";
-import dayjs from "dayjs";
-import { IVariants } from "../../../interfaces/IVariants";
-import ButtonSubmit from "../../../components/Admin/ButtonSubmit";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
-import { DatePicker } from "antd";
-import { IAttributeValue } from "../../../interfaces/IAttributeValue";
-import { LoadingOverlay } from "@achmadk/react-loading-overlay";
-import { Checkbox } from "antd";
-import { toast } from "react-toastify";
-import InventoryContext from "../../../contexts/InventoryContext";
+
 type Props = {
-  isModalOpen: boolean;
-  handleCancel: () => void;
-  findNewestUpdateTime: (variants: IVariants[]) => void;
-  setIsModalOpen:(isModalOpen:boolean)=>void
+  isModalOpenHistory: boolean;
+  handleCancelHistory: () => void;
+  setIsModalOpenHistory: (isModalOpenHistory: boolean) => void;
 };
 
-type FormValues = {
-  variants: IVariants[];
-};
-
-const ModalInventoryImport = ({
-  isModalOpen,
-  findNewestUpdateTime,
-  handleCancel,
-  setIsModalOpen
+const ModalHistoryInventory = ({
+  isModalOpenHistory,
+  handleCancelHistory,
+  setIsModalOpenHistory,
 }: Props) => {
-  const { Search } = Input;
-  const [valSearch, SetValSearch] = useState<string>("");
-  const [inventorys, setInventorys] = useState<IProduct[]>([]);
-  const [inventoryItem, setInventoryItem] = useState<IVariants[]>([]);
-  const [selectedProductId, setSelectedProductId] = useState<number | null>(
-    null
-  );
-  // const { inventorys, dispatch } = useContext(InventoryContext);
-  const [optionsSupplier, setOptionsSupplier] = useState([]);
-  const [selectedVariantIndices, setSelectedVariantIndices] = useState<
-    number[]
-  >([]);
-  // const [isSelectAll, setIsSelectAll] = useState(false);
-  const [isLoading, setLoading] = useState<boolean>(false);
-
-  const handleCheckboxChange = (index: number) => {
-    setSelectedVariantIndices((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
-    );
-  };
-  const handleSelectAll = () => {
-    if (selectedVariantIndices.length === fields.length) {
-      setSelectedVariantIndices([]);
-    } else {
-      setSelectedVariantIndices(fields.map((_, index) => index));
-    }
-  };
-  const fetchSuppliers = async () => {
-    try {
-      const {
-        data: {
-          data: { data: response },
-        },
-      } = await instance.get("suppliers");
-      return response.map((supplier) => ({
-        label: supplier.name,
-        value: supplier.id,
-      }));
-    } catch (error) {
-      console.error("Error fetching suppliers:", error);
-      return [];
-    }
-  };
-
-  useEffect(() => {
-    const loadSuppliers = async () => {
-      const suppliers = await fetchSuppliers();
-      setOptionsSupplier(suppliers);
-    };
-    loadSuppliers();
-  }, []);
-
-  const fetchNoInventory = async () => {
-    try {
-      const { data } = await instance.get(`getAllProductNoImport`);
-      setInventorys(data.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  useEffect(() => {
-    fetchNoInventory();
-  }, []);
-
-  const { control, handleSubmit, register, setValue, reset, watch } =
-    useForm<FormValues>({
-      defaultValues: {
-        variants: inventoryItem.map((item) => {
-          const modifiedItem = { ...item };
-          if (modifiedItem.inventoryImports) {
-            modifiedItem.inventoryImports.quantity = 0;
-          }
-          return modifiedItem;
-        }),
-      },
-    });
-
-  const { fields } = useFieldArray({
-    control,
-    name: "variants",
-  });
-
-  const handleUpdateVariantIventory = (id: number) => {
-    const inventoryItem =
-      inventorys.find((item) => item.id === id)?.variants || [];
-
-    reset({
-      variants: inventoryItem,
-    });
-
-    setInventoryItem(inventoryItem);
-  };
-
-  const handleToggleVariants = (id: number) => {
-    if (selectedProductId === id) {
-      setSelectedProductId(null);
-    } else {
-      setSelectedProductId(id);
-      handleUpdateVariantIventory(id);
-    }
-  };
-
-  useEffect(() => {
-    if (inventoryItem.length > 0) {
-      setValue("variants", inventoryItem);
-    }
-  }, [inventoryItem, setValue]);
-
-  const renderAttributes = (attributeValues?: IAttributeValue[]) => {
-    if (!attributeValues || !Array.isArray(attributeValues)) {
-      return "Không có phân loại";
-    }
-    return attributeValues
-      .map((attr) => {
-        return attr.value;
-      })
-      .join(", ");
-  };
-
-  const onSave = (index: number) => async (data: FormValues) => {
-    setLoading(true);
-    const variant = data.variants[index];
-    try {
-      const savedVariantData = {
-        variant_id: variant.id,
-        supplier_id: variant.inventoryImports?.supplier?.id || null,
-        price: variant.price || null,
-        sale_price: variant.sale_price || null,
-        end_sale: variant.end_sale
-          ? dayjs(variant.end_sale).format("YYYY-MM-DD HH:mm:ss")
-          : null,
-        quantity: variant.inventoryImports?.quantity || null,
-        import_price: variant.inventoryImports?.import_price || null,
-      };
-      const { data } = await instance.post("import-orders", {
-        variants: [savedVariantData],
-      });
-      if (data) {
-        toast.success("Nhập vào kho thành công !");
-        await fetchNoInventory();
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onUpdateVariantProduct =
-    (index: number) => async (data: FormValues) => {
-      setLoading(true);
-      const variant = data.variants[index];
-      try {
-        const savedVariantData = {
-          variant_id: variant.id,
-          supplier_id: variant.inventoryImports?.supplier?.id || null,
-          price: variant.price || null,
-          sale_price: variant.sale_price || null,
-          end_sale: variant.end_sale
-            ? dayjs(variant.end_sale).format("YYYY-MM-DD HH:mm:ss")
-            : null,
-          import_price: variant.inventoryImports?.import_price || null,
-        };
-        const { data } = await instance.put("updateVariant", {
-          variants: [savedVariantData],
-        });
-        if (data) {
-          toast.success("Cập nhật thành công !");
-          await fetchNoInventory();
-        }
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const onImportInventory = async(dataForm: FormValues) => {
-      setLoading(true);
-      try {
-        const updatedVariants = dataForm.variants
-        .filter((_, index) => selectedVariantIndices.includes(index))
-        .map((variant) => {
-          return {
-            variant_id: variant.id, 
-            supplier_id: variant.inventoryImports?.supplier?.id || null, 
-            price: variant.price || null,
-            sale_price: variant.sale_price || null,
-            quantity: variant.inventoryImports?.quantity || null,
-            end_sale: variant.end_sale ? dayjs(variant.end_sale).format("YYYY-MM-DD") : null,
-            import_price: variant.inventoryImports?.import_price || null,
-          };
-        });
-        console.log({ variants: updatedVariants });
-        const { data } = await instance.post("import-multiple-orders", {
-          variants: updatedVariants,
-        });
-        if (data) {
-          toast.success("Nhập tất cả vào kho thành công !");
-          await fetchNoInventory();
-          window.location.reload()
-        }
-      
-  
-      } catch (error) {
-        console.log(error);
-      }finally{
-        setLoading(false);
-      }
-
-    };
-
   return (
     <div>
-      <Modal open={isModalOpen} width={750} onCancel={handleCancel} footer={[]}>
+      <Modal
+        open={isModalOpenHistory}
+        width={750}
+        onCancel={handleCancelHistory}
+        footer={[]}
+      >
         <div className="space-y-7">
           <div className="flex items-center justify-between gap-5">
-            <button className="font-medium flex items-center gap-1.5" onClick={()=>setIsModalOpen(!isModalOpen)}>
+            <button
+              className="font-medium flex items-center gap-1.5"
+              onClick={() => setIsModalOpenHistory(!isModalOpenHistory)}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -271,51 +48,7 @@ const ModalInventoryImport = ({
                   strokeLinejoin="round"
                 />
               </svg>
-              Nhập hàng
-            </button>
-            <ConfigProvider
-              theme={{
-                token: {
-                  colorPrimary: "#ff9900",
-                },
-              }}
-            >
-              <div className="max-w-[600px]">
-                <Search
-                  placeholder="Tên hàng hoá"
-                  allowClear
-                  style={{ width: "300px" }}
-                  size="middle"
-                  onChange={(e) => {
-                    SetValSearch(e.target.value);
-                  }}
-                />
-              </div>
-            </ConfigProvider>
-            <button className="flex gap-1.5 text-sm items-center text-util bg-[#5EB800] py-2 px-4 rounded-md mr-7">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                className="size-5"
-                color={"currentColor"}
-                fill={"none"}
-              >
-                <path
-                  d="M12 4.5L12 14.5M12 4.5C11.2998 4.5 9.99153 6.4943 9.5 7M12 4.5C12.7002 4.5 14.0085 6.4943 14.5 7"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M20 16.5C20 18.982 19.482 19.5 17 19.5H7C4.518 19.5 4 18.982 4 16.5"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Nhập Excel
+              Lịch sử nhập hàng
             </button>
           </div>
           <div className={"min-h-[80vh] overflow-x-auto"}>
@@ -343,7 +76,7 @@ const ModalInventoryImport = ({
                 </Table.HeadCell>
               </Table.Head>
               <Table.Body className="divide-y">
-                {inventorys.length === 0 ? (
+                {/* {inventorys.length === 0 ? (
                   <Table.Row>
                     <Table.Cell colSpan={6}>
                       <div className="flex flex-col items-center text-secondary/20 space-y-2 justify-center min-h-[50vh]">
@@ -806,7 +539,7 @@ const ModalInventoryImport = ({
                       </>
                     );
                   })
-                )}
+                )} */}
               </Table.Body>
             </Table>
           </div>
@@ -816,4 +549,4 @@ const ModalInventoryImport = ({
   );
 };
 
-export default ModalInventoryImport;
+export default ModalHistoryInventory;

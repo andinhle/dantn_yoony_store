@@ -359,7 +359,7 @@ const SideBarAdmin = () => {
                   </li>
                   <li className="">
                     <NavLink
-                      to={""}
+                      to={"products/suppliers"}
                       end
                       className={
                         "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-primary hover:text-util text-[15px] transition-all"
