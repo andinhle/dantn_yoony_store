@@ -35,6 +35,7 @@ class InsertOrderItems
         
         foreach ($objectData as $value) {
                 $orderItem['order_id'] = $orderId;
+                $orderItem['variant_id'] = $value->variant->id;
                 $orderItem['order_item_attribute'] = json_encode($value->variant->attribute_values);
                 $orderItem['product_name'] = $value->variant->product->name;
                 $orderItem['product_image'] = json_encode($value->variant->image) ?? json_encode($value->variant->product->images[0]) ;
