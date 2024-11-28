@@ -22,12 +22,12 @@ class InventoryImportRequest extends FormRequest
     public function rules()
     {
         return [
-            'variants.*.supplier_id' => 'required|exists:suppliers,id',
             'variants' => 'required|array',
+            'variants.*.supplier_id' => 'required|exists:suppliers,id',
             'variants.*.variant_id' => 'required|exists:variants,id',
-            'variants.*.quantity' => 'nullable|integer|min:1',
+            'variants.*.quantity' => 'required|integer|min:1',
             'variants.*.import_price' => 'required|numeric|min:0',
-            'variants.*.price' => 'nullable|numeric|min:0',
+            'variants.*.price' => 'required|numeric|min:0',
             'variants.*.sale_price' => 'nullable|numeric|min:0|lt:variants.*.price',
             'variants.*.end_sale' => 'nullable|date|after:now',
         ];

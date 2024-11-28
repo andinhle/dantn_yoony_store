@@ -26,7 +26,7 @@ class UpdateInventoryImportRequest extends FormRequest
             'variants' => 'required|array',
             'variants.*.variant_id' => 'required|exists:variants,id',
             'variants.*.import_price' => 'required|numeric|min:0',
-            'variants.*.price' => 'nullable|numeric|min:0',
+            'variants.*.price' => 'required|numeric|min:0',
             'variants.*.sale_price' => 'nullable|numeric|min:0|lt:variants.*.price',
             'variants.*.end_sale' => 'nullable|date|after:now',
         ];
