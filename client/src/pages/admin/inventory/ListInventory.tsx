@@ -1,4 +1,11 @@
-import { Avatar, Checkbox, ConfigProvider, Input, Modal, Pagination } from "antd";
+import {
+  Avatar,
+  Checkbox,
+  ConfigProvider,
+  Input,
+  Modal,
+  Pagination,
+} from "antd";
 import type { CheckboxProps } from "antd";
 import { Table } from "flowbite-react";
 import { useContext, useEffect, useState } from "react";
@@ -6,9 +13,11 @@ import InventoryContext from "../../../contexts/InventoryContext";
 import instance from "../../../instance/instance";
 import dayjs from "dayjs";
 import { IVariants } from "../../../interfaces/IVariants";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, Outlet, useSearchParams } from "react-router-dom";
 import { IMeta } from "../../../interfaces/IMeta";
 import ModalInventoryImport from "./ModalInventoryImport";
+import ModalHistoryInventory from "./ModalHistoryInventory";
+import ButtonExport from "../../../components/Admin/Button/ButtonExport";
 const plainOptionsCategory = ["Apple", "Pear", "Orange"];
 const plainOptionsInventory = [
   "Dưới định mức tồn (SL: 50)",
@@ -53,7 +62,6 @@ const ListInventory = () => {
         const { data } = await instance.get(
           `productsWithInventoryImports?page=${page}`
         );
-
         if (data) {
           dispatch({
             type: "LIST",
@@ -81,12 +89,20 @@ const ListInventory = () => {
   }
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpenHistory, setIsModalOpenHistory] = useState(false);
 
   const showModal = () => {
     setIsModalOpen(true);
   };
+  const showModalHistory = () => {
+    setIsModalOpenHistory(true);
+  };
   const handleCancel = () => {
     setIsModalOpen(false);
+  };
+
+  const handleCancelHistory = () => {
+    setIsModalOpenHistory(false);
   };
 
   return (
@@ -153,7 +169,10 @@ const ListInventory = () => {
         <div className="flex justify-between items-center">
           <h2 className="font-medium text-lg">Hàng hoá</h2>
           <div className="flex items-center gap-2.5">
-            <button className="flex gap-1.5 text-sm items-center text-util bg-primary py-2 px-4 rounded-md" onClick={showModal}>
+            <button
+              className="flex gap-1.5 text-sm items-center text-util bg-primary py-2 px-4 rounded-md"
+              onClick={showModal}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -171,7 +190,16 @@ const ListInventory = () => {
               </svg>
               Thêm mới
             </button>
-            <button className="flex gap-1.5 text-sm items-center text-util bg-[#5EB800] py-2 px-4 rounded-md">
+            <ButtonExport
+              data={inventorys}
+              nameButton="Xuất excel"
+              nameSheet="Bảng nhập hàng"
+              nameFile="nhaphang.xlsx"
+            />
+            <button
+              className="flex gap-1.5 text-sm items-center text-primary bg-primary/15 py-2 px-4 rounded-md"
+              onClick={showModalHistory}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -180,46 +208,28 @@ const ListInventory = () => {
                 fill={"none"}
               >
                 <path
-                  d="M12 4.5L12 14.5M12 4.5C11.2998 4.5 9.99153 6.4943 9.5 7M12 4.5C12.7002 4.5 14.0085 6.4943 14.5 7"
+                  d="M12 22C6.47715 22 2.00004 17.5228 2.00004 12C2.00004 6.47715 6.47719 2 12 2C16.4777 2 20.2257 4.94289 21.5 9H19"
                   stroke="currentColor"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
                 <path
-                  d="M20 16.5C20 18.982 19.482 19.5 17 19.5H7C4.518 19.5 4 18.982 4 16.5"
+                  d="M12 8V12L14 14"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M21.9551 13C21.9848 12.6709 22 12.3373 22 12M15 22C15.3416 21.8876 15.6753 21.7564 16 21.6078M20.7906 17C20.9835 16.6284 21.1555 16.2433 21.305 15.8462M18.1925 20.2292C18.5369 19.9441 18.8631 19.6358 19.1688 19.3065"
                   stroke="currentColor"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
-              Nhập Excel
-            </button>
-            <button className="flex gap-1.5 text-sm items-center text-util bg-secondary/75 py-2 px-4 rounded-md">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                className="size-5"
-                color={"currentColor"}
-                fill={"none"}
-              >
-                <path
-                  d="M12 15L12 5M12 15C11.2998 15 9.99153 13.0057 9.5 12.5M12 15C12.7002 15 14.0085 13.0057 14.5 12.5"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M5 19H19.0001"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Xuất file
+              Lịch sử nhập hàng
             </button>
           </div>
         </div>
@@ -372,7 +382,17 @@ const ListInventory = () => {
           align="end"
         />
       </div>
-      <ModalInventoryImport isModalOpen={isModalOpen} findNewestUpdateTime={findNewestUpdateTime} handleCancel={handleCancel}  />
+      <ModalInventoryImport
+        setIsModalOpen={setIsModalOpen}
+        isModalOpen={isModalOpen}
+        findNewestUpdateTime={findNewestUpdateTime}
+        handleCancel={handleCancel}
+      />
+      <ModalHistoryInventory
+        setIsModalOpenHistory={setIsModalOpenHistory}
+        isModalOpenHistory={isModalOpenHistory}
+        handleCancelHistory={handleCancelHistory}
+      />
     </div>
   );
 };

@@ -593,8 +593,7 @@ const UserOrderDetail = () => {
                         <div className="flex gap-3 w-fit items-center">
                           <img
                             src={
-                              item.variant.image ||
-                              item.variant.product.images[0]
+                              item?.product_image
                             }
                             className="w-14 h-14 object-cover rounded-lg"
                           />
@@ -603,10 +602,10 @@ const UserOrderDetail = () => {
                               to={`/${item.variant.product.category?.slug}/${item.variant.product.slug}`}
                               className="line-clamp-1 text-sm hover:text-primary"
                             >
-                              {item.variant.product.name}
+                              {item.product_name}
                             </Link>
                             <div className="flex gap-2 text-secondary/50 flex-wrap">
-                              {item.variant.attribute_values.map(
+                              {item?.order_item_attribute.map(
                                 (attribute_value, index) => {
                                   return (
                                     <>
@@ -618,7 +617,7 @@ const UserOrderDetail = () => {
                                         <span>{attribute_value.value}</span>
                                       </div>
                                       {index <
-                                        item.variant.attribute_values.length -
+                                        item?.order_item_attribute.length -
                                           1 && (
                                         <span className="text-[13px]">|</span>
                                       )}

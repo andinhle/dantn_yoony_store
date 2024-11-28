@@ -53,6 +53,7 @@ import BannerList from "./pages/admin/banner/BannerAdmin.tsx";
 import AddressesUser from "./components/User/Manager/Addresses/AddressesUser.tsx";
 import ListInventory from "./pages/admin/inventory/ListInventory.tsx";
 import ListVariant from "./pages/admin/varriant/ListVariant.tsx";
+import SuppliersAdmin from "./pages/admin/suppliers/SuppliersAdmin.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -117,6 +118,7 @@ createRoot(document.getElementById("root")!).render(
                   <Route path="add" element={<AddOrUpdateProduct />} />
                   <Route path="variants" element={<ListVariant />} />
                   <Route path="inventory" element={<ListInventory />} />
+                  <Route path="suppliers" element={<SuppliersAdmin />} />
                   <Route path="update/:id" element={<AddOrUpdateProduct />} />
                 </Route>
                 <Route path="orders" element={<Orders />} />

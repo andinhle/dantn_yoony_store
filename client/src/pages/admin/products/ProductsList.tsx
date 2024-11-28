@@ -8,6 +8,9 @@ import { Avatar } from "flowbite-react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import instance from "../../../instance/instance";
+import ButtonExport from "../../../components/Admin/Button/ButtonExport";
+import { IProduct } from "../../../interfaces/IProduct";
+import * as XLSX from 'xlsx';
 const ProductList = () => {
   const { Search } = Input;
   const { products, dispatch } = useContext(ProductContext);
@@ -20,12 +23,12 @@ const ProductList = () => {
     }
     return avatars;
   };
-  
+
   const handleRemoveProduct = async (id: number) => {
     try {
       const data = await instance.delete(`products/${id}`);
       if (data) {
-        toast.success('Di chuyển tới thùng rác thành công !')
+        toast.success("Di chuyển tới thùng rác thành công !");
         dispatch({
           type: "DELETE",
           payload: id,
@@ -41,6 +44,50 @@ const ProductList = () => {
       }
     }
   };
+
+  // Chuyển đổi mảng sản phẩm thành định dạng dữ liệu Excel
+  function convertToExcelData(products:IProduct[]) {
+    const result = [];
+    const allAttributes = new Set(); // Sử dụng Set để lấy tất cả tên thuộc tính duy nhất
+    
+    // Lặp qua các sản phẩm
+    products.forEach((product) => {
+      // Lặp qua các biến thể của sản phẩm
+      product.variants.forEach((variant) => {
+        // Tạo một đối tượng để lưu thông tin dòng hiện tại
+        const row = {
+          "Product Name": product.name,
+          "Category": product.category?.name,
+          "Price": variant.price,
+          "Sale Price": variant.sale_price || "N/A",
+          "Quantity": variant.quantity
+        };
+
+        variant.attribute_values.forEach((attr) => {
+          row[attr.attribute.name] = attr.value;
+          allAttributes.add(attr.attribute.name);
+        });
+        result.push(row);
+      });
+    });
+  
+    // Chuyển Set thành mảng để tạo tiêu đề cột
+    const columns = ["Product Name", "Category", "Price", "Sale Price", "Quantity", ...Array.from(allAttributes)];
+  
+    return { result, columns };
+  }
+  function exportToExcel(products) {
+    const { result, columns } = convertToExcelData(products);
+  
+    // Chuyển đổi mảng kết quả thành worksheet
+    const ws = XLSX.utils.json_to_sheet(result, { header: columns });
+    const wb = XLSX.utils.book_new(); // Tạo workbook mới
+    XLSX.utils.book_append_sheet(wb, ws, 'Products'); // Thêm sheet vào workbook
+  
+    // Xuất file Excel
+    XLSX.writeFile(wb, 'products_with_attributes.xlsx');
+  }
+
 
   return (
     <div className="space-y-5">
@@ -65,7 +112,14 @@ const ProductList = () => {
           </svg>
           THÊM SẢN PHẨM
         </Link>
-        <div>
+        <div className="flex items-center gap-3">
+          {/* <ButtonExport
+            data={dataProducts}
+            nameButton="Xuất excel"
+            nameSheet="Bảng danh sách sản phẩm"
+            nameFile="dsachsanpham.xlsx"
+          /> */}
+          <button onClick={()=>exportToExcel(products)}>xuất file</button>
           <Search
             placeholder="Tên sản phẩm"
             allowClear
@@ -137,7 +191,10 @@ const ProductList = () => {
                     <Table.Cell>
                       <Avatar.Group className="justify-center">
                         {renderImageProduct(product.images)}
-                        <Avatar.Counter className="bg-primary" total={product.images.length} />
+                        <Avatar.Counter
+                          className="bg-primary"
+                          total={product.images.length}
+                        />
                       </Avatar.Group>
                     </Table.Cell>
                     <Table.Cell>
@@ -166,7 +223,8 @@ const ProductList = () => {
                     </Table.Cell>
                     <Table.Cell>
                       <div className="flex gap-2 justify-center">
-                        <Link to={`update/${product.id}`}
+                        <Link
+                          to={`update/${product.id}`}
                           className="bg-util shadow py-1.5 px-3 rounded-md"
                         >
                           <svg
