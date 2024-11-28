@@ -34,6 +34,8 @@ const CartListClient = () => {
   const [selectedTotal, setSelectedTotal] = useState(0);
   const pageSize = 5;
 
+  const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
+
   const calculateTotal = (item: any) => {
     return item.quantity * (item.variant.sale_price || item.variant.price);
   };
@@ -57,27 +59,25 @@ const CartListClient = () => {
     newQuantity: number,
     operation: string
   ) => {
-    console.log(item);
+    const maxQuantity = item.variant.inventory_stock.quantity;
+
+    if (newQuantity > maxQuantity) {
+      message.warning(`Số lượng không được vượt quá ${maxQuantity}`);
+      newQuantity = 1; 
+    }
+
+    setQuantities((prev) => ({
+      ...prev,
+      [item.id]: newQuantity, 
+    }));
     const updatedItem = { ...item, quantity: Math.max(1, newQuantity) };
     dispatch({ type: "UPDATE", payload: updatedItem });
     try {
       if (operation === "increase") {
-        if (newQuantity>item.variant.inventory_stock.quantity) {
-          message.warning(
-            `Số lượng không được vượt quá ${item.variant.inventory_stock.quantity}`
-          );
-          return false;
-        }
         await instance.patch(`cart/${item.id}/increase`);
       } else if (operation === "decrease") {
         await instance.patch(`cart/${item.id}/decrease`);
       }else{
-        if (newQuantity>item.variant.inventory_stock.quantity) {
-          message.warning(
-            `Số lượng không được vượt quá ${item.variant.inventory_stock.quantity}`
-          );
-          return false;
-        }
         await instance.patch(`cart/${item.id}`,{quantity:newQuantity});
       }
     } catch (error) {
@@ -157,7 +157,6 @@ const CartListClient = () => {
   };
 
   const cancelDeleteOneProduct: PopconfirmProps["onCancel"] = (e) => {
-    console.log(e);
     message.error("Huỷ xoá");
   };
   // const cancelDeleteSelectProduct: PopconfirmProps["onCancel"] = (e) => {
@@ -253,9 +252,12 @@ const CartListClient = () => {
             min={1}
             max={record.variant?.inventory_stock?.quantity}
             value={quantity}
-            onChange={(e) =>
-              handleQuantityChange(record, Number(e.target.value),'null')
-            }
+            onChange={(e) => {
+              const value = Number(e.target.value);
+              if (!isNaN(value)) {
+                handleQuantityChange(record, value, 'null');
+              }
+            }}
             className="w-10 p-[7px] border border-input outline-none text-center"
           />
           <button
@@ -351,7 +353,6 @@ const CartListClient = () => {
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
-
   localStorage.setItem("id_cart", JSON.stringify(selectedRowKeys));
   localStorage.setItem("final_total", JSON.stringify(selectedTotal));
   return (

@@ -30,6 +30,7 @@ use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\Client\OderCheckController;
 use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\client\ChatbotController;
+use App\Http\Controllers\Client\EventSpinController;
 use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\client\SpinController;
 use App\Http\Controllers\GoogleAuthController;
@@ -119,6 +120,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         // Lấy tất cả thông tin user
         Route::get('/users', [UserController::class, 'index']);
         // Cập nhật role của user
+
         Route::patch('/users/{id}/role', [UserController::class, 'updateRole']);
         Route::get('/user/{id}', [UserController::class, 'show']);
 
@@ -130,7 +132,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('thong-ke/thong-ke-theo-ngay', [StatisticalController::class, 'thongKeNgay'])->name('thongKeNgay');
         Route::get('thong-ke/so-luong-bien-the-duoi-10', [StatisticalController::class, 'listSoLuongBienTheDuoi10']);
         Route::get('thong-ke/so-luong-bien-the-da-het', [StatisticalController::class, 'listSoLuongBienTheDaHet']);
-        
+
 
         // QL danh mục
         Route::apiResource('category', CategoryController::class);
@@ -177,7 +179,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
         //QL Event
         Route::get('/admin/events/coupons', [EventController::class, 'getEventCoupons']);
-
         Route::post('/admin/events', [EventController::class, 'createEvent']);
         Route::get('/admin/showEvent/{id}', [EventController::class, 'showEvent']);
 
@@ -194,10 +195,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::post('admin/order-update_much', [\App\Http\Controllers\Admin\OrderController::class, 'updateMuch']);
 
         // Nhập hàng
+
+        Route::get('/productsWithInventoryImports', [InventoryImportController::class, 'productsWithInventoryImports']);
+        Route::get('/getAllProductNoImport', [InventoryImportController::class, 'getAllProductNoImport']);
         Route::post('/import-orders', [InventoryImportController::class, 'import']);
         Route::post('/import-multiple-orders', [InventoryImportController::class, 'importMultiple']);
         Route::get('/list-import', [InventoryImportController::class, 'index']);
         Route::get('/list-stock', [InventoryStockController::class, 'index']);
+
 
         // Nhà cung cấp
         Route::get('/suppliers', [SupplierController::class, 'index']);
@@ -278,6 +283,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/reset-daily-spins', [SpinController::class, 'resetDailySpins']);
     Route::post('/claim-coupon/{eventId}/{couponId}', [CouponUserController::class, 'claimCoupon']);
     Route::get('/event-coupons', [OderCheckController::class, 'getEventCoupons']);
+    //quản lý lịch sử quay của người dùng
+    Route::get('spin-history', [EventSpinController::class, 'getSpinHistoryByEvent']);
+    //lịch sử quay của người dùng
+
+    Route::get('user-spin-history', [EventSpinController::class, 'getUserSpinHistoryByEvent']);
+    //lịch sử quay của người dùng
+
+    Route::post('spinEvent/events', [EventSpinController::class, 'spinEvent']);
 
     //Review client
     Route::post('ratings/review', [ReviewController::class, 'review'])->name('ratings.review');

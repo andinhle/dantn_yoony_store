@@ -11,10 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('event_coupon', function (Blueprint $table) {
+        Schema::create('event_spins', function (Blueprint $table) {
             $table->id();
             $table->foreignId('event_id')->constrained()->onDelete('cascade');
-            $table->foreignId('coupon_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('coupon_id')->nullable()->constrained('coupons')->onDelete('set null'); 
+            $table->timestamp('spin_time')->useCurrent();
+            $table->string('status')->default('pending');
             $table->timestamps();
         });
     }
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('event_coupon');
+        Schema::dropIfExists('event_spins');
     }
 };

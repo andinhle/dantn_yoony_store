@@ -2,13 +2,16 @@ import { Outlet } from "react-router-dom";
 import ProductProvider from "../../providers/ProductProvider";
 import AttributeProvider from "../../providers/AttributeProvider";
 import AttributeValueProvider from "../../providers/AttributeValueProvider";
+import InventoryProvider from "../../providers/InventoryProvider";
 
 const LayoutProductAdmin = () => {
   return (
     <ProductProvider>
       <AttributeValueProvider>
         <AttributeProvider>
-          <Outlet />
+          <InventoryProvider>
+            <Outlet />
+          </InventoryProvider>
         </AttributeProvider>
       </AttributeValueProvider>
     </ProductProvider>
