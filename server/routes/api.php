@@ -201,6 +201,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         // Nhập hàng
         Route::put('/updateVariant', [InventoryImportController::class, 'updateVariant']);
         Route::put('/UpdateMultiple', [InventoryImportController::class, 'UpdateMultiple']);
+        Route::post('/import-inventory', [InventoryImportController::class, 'importExcel']);
 
         Route::get('/productsWithInventoryImports', [InventoryImportController::class, 'productsWithInventoryImports']);
         Route::get('/getAllProductNoImport', [InventoryImportController::class, 'getAllProductNoImport']);
