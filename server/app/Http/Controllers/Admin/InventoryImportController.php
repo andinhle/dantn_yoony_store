@@ -7,8 +7,10 @@ use App\Http\Requests\Inventory\InventoryImportRequest;
 use App\Http\Requests\Inventory\UpdateInventoryImportRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\InventoryImport;
+use App\Models\InventoryImportHistory;
 use App\Models\InventoryStock;
 use App\Models\Product;
+use App\Models\Supplier;
 use App\Models\Variant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -436,10 +438,44 @@ class InventoryImportController extends Controller
             ], 500);
         }
     }
+
+
+    public function storeInventoryHistory($inventoryImportId)
+    {
+        $inventoryImport = InventoryImport::findOrFail($inventoryImportId);
+
+        $variant = Variant::findOrFail($inventoryImport->variant_id);
+
+        $supplier = Supplier::findOrFail($inventoryImport->supplier_id);
+
+         InventoryImportHistory::create([
+            'variant_id' => $variant->id,
+            'supplier_id' => $supplier->id,
+            'quantity' => $inventoryImport->quantity,
+            'import_price' => $inventoryImport->import_price,
+            'price' => $variant->price,
+            'sale_price' => $variant->sale_price,
+            'end_sale' => $variant->end_sale,
+
+        ]);
+
+    }
+
+    public function getInventoryHistory()
+    {
+        $inventoryHistory = InventoryImportHistory::with(['variant', 'supplier'])->get();
+
+        if ($inventoryHistory->isEmpty()) {
+            return response()->json([
+                'message' => 'Không có dữ liệu lịch sử nhập hàng.'
+            ], 404);
+        }
+
+        return response()->json($inventoryHistory);
+    }
+
+
 }
-
-
-
 
 
 
