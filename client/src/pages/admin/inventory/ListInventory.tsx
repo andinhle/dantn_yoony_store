@@ -223,7 +223,7 @@ const ListInventory = () => {
             </button>
           </div>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto ">
           <Table className="border-b border-[#E4E7EB]">
             <Table.Head className="text-center">
               <Table.HeadCell
@@ -372,7 +372,7 @@ const ListInventory = () => {
           align="end"
         />
       </div>
-      <ModalInventoryImport isModalOpen={isModalOpen} handleCancel={handleCancel}  />
+      <ModalInventoryImport isModalOpen={isModalOpen} findNewestUpdateTime={findNewestUpdateTime} handleCancel={handleCancel}  />
     </div>
   );
 };

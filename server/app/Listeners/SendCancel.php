@@ -23,19 +23,25 @@ class SendCancel implements ShouldQueue
      */
     public function handle(OrderCanceled $event): void
     {
+        
+        // Log::info('order', (array) $event->order);
+        // Log::info($event->order);
         $orderData = json_decode($event->order); // Nếu đã dispatch là đối tượng
+        // Log::info('order', (array) $orderData->code);
 
-        Log::info('order', (array) $event->order->items);
-        $user = $event->order->user;
-        $user['order_code'] = $orderData->code;
+        $user = $orderData->user;
+        Log::info('order', (array)$orderData);
+
         Mail::send('orderCanceled', [
-            'order' =>  $event->order,
-            'variant' =>  $event->order->items
+            'order' =>  $orderData,
+            'variant' =>  $orderData->items
         ], function($message) use ($user) 
         {
             $message->to($user->email, $user->name)
                 ->from('yoony_store@gmail.com', 'Yoony Store')
-                ->subject('Xác nhận hủy đơn hàng '. $user->order_code .' từ CTY CP YOONY STORE VIỆT NAM');
+                ->subject('Xác nhận hủy đơn hàng '
+                . $user->code 
+                .' từ CTY CP YOONY STORE VIỆT NAM');
         });
     }
 }
