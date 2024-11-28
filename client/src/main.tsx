@@ -51,7 +51,8 @@ import { StrictMode } from "react";
 import Whistlist from "./components/User/Manager/Wishlist/Wishlist.tsx";
 import BannerList from "./pages/admin/banner/BannerAdmin.tsx";
 import AddressesUser from "./components/User/Manager/Addresses/AddressesUser.tsx";
-import ListVariant from "./pages/admin/varriant/Listvariant.tsx";
+import ListInventory from "./pages/admin/inventory/ListInventory.tsx";
+import ListVariant from "./pages/admin/varriant/ListVariant.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -115,6 +116,7 @@ createRoot(document.getElementById("root")!).render(
                   <Route index element={<ProductList />} />
                   <Route path="add" element={<AddOrUpdateProduct />} />
                   <Route path="variants" element={<ListVariant />} />
+                  <Route path="inventory" element={<ListInventory />} />
                   <Route path="update/:id" element={<AddOrUpdateProduct />} />
                 </Route>
                 <Route path="orders" element={<Orders />} />

@@ -143,7 +143,7 @@ const NavMenuUser = () => {
           <li>
             <Popover
               placement="bottomRight"
-              title={"Thông báo mói nhận"}
+              title={"Thông báo mới nhận"}
               content={<ShowNotificationUser />}
             >
               <Link

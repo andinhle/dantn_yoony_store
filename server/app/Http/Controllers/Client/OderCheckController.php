@@ -83,40 +83,40 @@ class OderCheckController extends Controller
     }
 }
 
-    
+
     private function maskName($name)
     {
         if (empty($name)) return '';
-        
+
         $length = mb_strlen($name);
         if ($length <= 4) {
             return str_repeat('*', $length);
         }
-        
+
         return str_repeat('*', $length - 4) . mb_substr($name, -4);
     }
-    
+
     private function maskTel($tel)
     {
         if (empty($tel)) return '';
-        
+
         $length = strlen($tel);
         if ($length <= 3) {
             return str_repeat('*', $length);
         }
-        
+
         return str_repeat('*', $length - 3) . substr($tel, -3);
     }
-    
+
     private function maskAddress($address)
     {
        if (empty($address)) return '';
-       
+
        $length = mb_strlen($address);
        if ($length <= 15) {
            return str_repeat('*', $length);
        }
-       
+
        return str_repeat('*', $length - 15) . mb_substr($address, -15);
     }
 
@@ -127,13 +127,12 @@ class OderCheckController extends Controller
         // Lấy thông tin người dùng
         $user = $request->user();
 
-        // Truy vấn các coupon đã nhận của người dùng với loại là 'event'
         $eventCoupons = CouponUser::where('user_id', $user->id)
-            ->whereNull('used_at') // Kiểm tra xem coupon chưa được sử dụng
+            ->whereNull('used_at') 
             ->join('coupons', 'coupon_users.coupon_id', '=', 'coupons.id')
             ->where('coupons.type', 'event')
             ->select('coupon_users.coupon_id', 'coupons.*', \DB::raw('COUNT(coupon_users.coupon_id) as total_count')) // Đếm số lượng coupon
-            ->groupBy('coupon_users.coupon_id') // Nhóm theo coupon_id
+            ->groupBy('coupon_users.coupon_id')
             ->get();
 
         return response()->json([
