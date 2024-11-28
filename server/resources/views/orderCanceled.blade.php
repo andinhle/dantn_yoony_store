@@ -62,14 +62,14 @@
             <tbody>
                 @foreach ($variant as $item)
                     <tr>
-                        <td>{{ $item->variant->product->name }}</td>
+                        <td>{{ $item->product_name }}</td>
                         <td>{{ $item->quantity }}</td>
-                        <td>{{ number_format($item->variant->sale_price ?: $item->variant->price) }}</td>
+                        <td>{{ number_format($item->unit_price) }}</td>
                     </tr>
                 @endforeach    
             </tbody>
         </table>
-        <p><span style="color:red;">Lý do huỷ:</span></p>
+        <p><span style="color:red;">Lý do huỷ: {{ $order->reason }}</span></p>
         <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi. Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi.</p>
 
         <div class="footer">

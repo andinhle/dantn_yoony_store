@@ -124,18 +124,7 @@ class InventoryImportController extends Controller
             $variantData = $request->variants[0]; // Chỉ xử lý một variant duy nhất
 
             // 1. Cập nhật thông tin variant (giá bán, giá sale, end_sale)
-            $variant = Variant::findOrFail($variantData['variant_id']);
 
-            if (isset($variantData['price'])) {
-                $variant->price = $variantData['price'];
-            }
-            if (isset($variantData['sale_price'])) {
-                $variant->sale_price = $variantData['sale_price'];
-            }
-            if (isset($variantData['end_sale'])) {
-                $variant->end_sale = $variantData['end_sale'];
-            }
-            $variant->save();
 
             // 2. Tạo hoặc cập nhật bản ghi nhập hàng
             $import = InventoryImport::firstOrNew([
@@ -177,7 +166,6 @@ class InventoryImportController extends Controller
         }
     }
 
-
     public function importMultiple(InventoryImportRequest $request)
     {
         $validatedData = $request->validated();
@@ -196,19 +184,6 @@ class InventoryImportController extends Controller
                 }
 
                 // 1. Cập nhật thông tin variant
-                if (isset($variantData['price'])) {
-                    $variant->price = $variantData['price'];
-                }
-
-                if (isset($variantData['sale_price'])) {
-                    $variant->sale_price = $variantData['sale_price'];
-                }
-
-                if (isset($variantData['end_sale'])) {
-                    $variant->end_sale = $variantData['end_sale'];
-                }
-
-                $variant->save();
 
                 // 2. Cập nhật hoặc tạo mới stock
                 $stock = InventoryStock::firstOrNew([
@@ -254,5 +229,44 @@ class InventoryImportController extends Controller
         }
     }
 
+
+
+    public function updateVariantPrices(Request $request, $variantId)
+    {
+        $validatedData = $request->validate([
+            'price' => 'required|integer|min:0',
+            'sale_price' => 'nullable|integer|min:0|lt:price',
+            'end_sale' => 'nullable|date|after_or_equal:now',
+        ], [
+            'price.required' => 'Giá sản phẩm là bắt buộc.',
+            'price.integer' => 'Giá sản phẩm phải là số nguyên.',
+            'price.min' => 'Giá sản phẩm phải lớn hơn hoặc bằng 0.',
+            'sale_price.integer' => 'Giá khuyến mãi phải là số nguyên.',
+            'sale_price.min' => 'Giá khuyến mãi phải lớn hơn hoặc bằng 0.',
+            'sale_price.lt' => 'Giá khuyến mãi phải nhỏ hơn giá bán.',
+            'end_sale.date' => 'Ngày kết thúc khuyến mãi không hợp lệ.',
+            'end_sale.after_or_equal' => 'Ngày kết thúc khuyến mãi phải từ hôm nay trở đi.',
+        ]);
+
+        try {
+            $variant = Variant::findOrFail($variantId);
+
+            $variant->update([
+                'price' => $validatedData['price'],
+                'sale_price' => $validatedData['sale_price'] ?? null,
+                'end_sale' => $validatedData['end_sale'] ?? null,
+            ]);
+
+            return response()->json([
+                'message' => 'Cập nhật giá sản phẩm thành công!',
+                'variant' => $variant,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Cập nhật không thành công.',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
 }
