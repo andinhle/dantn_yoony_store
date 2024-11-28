@@ -195,7 +195,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::post('admin/order-update_much', [\App\Http\Controllers\Admin\OrderController::class, 'updateMuch']);
 
         // Nhập hàng
-        Route::put('/variants/{id}/update-prices', [InventoryImportController::class, 'updateVariantPrices']);
+        Route::put('/updateVariant', [InventoryImportController::class, 'updateVariant']);
+        Route::put('/UpdateMultiple', [InventoryImportController::class, 'UpdateMultiple']);
+
         Route::get('/productsWithInventoryImports', [InventoryImportController::class, 'productsWithInventoryImports']);
         Route::get('/getAllProductNoImport', [InventoryImportController::class, 'getAllProductNoImport']);
         Route::post('/import-orders', [InventoryImportController::class, 'import']);
