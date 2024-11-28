@@ -77,6 +77,8 @@ const CardProductAll = ({
     }
   };
 
+  console.log(variants);
+
   return (
     <div className="min-h-[355px] group max-w-[220px] w-full bg-util rounded-lg overflow-hidden shadow-[0px_1px_4px_0px_rgba(255,_138,_0,_0.25)] cursor-pointer">
       <div className="relative z-40 overflow-hidden">
@@ -144,7 +146,7 @@ const CardProductAll = ({
               </>
             ) : (
               <span className="text-primary font-medium">
-                {variants[0]?.price
+                {Math.min(...variants.map(variant=>variant.price))
                   .toLocaleString("vi-VN", {
                     useGrouping: true,
                     maximumFractionDigits: 0,
