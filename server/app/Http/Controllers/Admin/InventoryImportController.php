@@ -118,145 +118,81 @@ class InventoryImportController extends Controller
     }
 
 
-  public function import(InventoryImportRequest $request)
-{
-    try {
-        DB::beginTransaction();
-
-        // Lấy thông tin variant duy nhất từ request
-        $variantData = $request->variants[0]; // Chỉ xử lý một variant duy nhất
-
-        // 1. Cập nhật thông tin variant (giá bán, giá sale, end_sale)
-        $variant = Variant::find($variantData['variant_id']);
-
-        if (!$variant) {
-            throw new \Exception("Biến thể với ID {$variantData['variant_id']} không tồn tại.");
-        }
-
-        if (isset($variantData['price'])) {
-            $variant->price = $variantData['price'];
-        }
-
-        if (isset($variantData['sale_price'])) {
-            $variant->sale_price = $variantData['sale_price'];
-        }
-
-        if (isset($variantData['end_sale'])) {
-            $variant->end_sale = $variantData['end_sale'];
-        }
-
-        $variant->save();
-
-        // 2. Tìm và cập nhật bản ghi nhập hàng (InventoryImport)
-        $import = InventoryImport::where('variant_id', $variantData['variant_id'])->first();
-
-        if ($import) {
-            // Cập nhật thông tin nhập
-            $import->supplier_id = $variantData['supplier_id'];
-            $import->quantity = $variantData['quantity']; // Thay đổi số lượng
-            $import->import_price = $variantData['import_price']; // Cập nhật giá nhập
-        } else {
-            // Nếu chưa có, tạo bản ghi mới
-            $import = new InventoryImport([
-                'variant_id' => $variantData['variant_id'],
-                'supplier_id' => $variantData['supplier_id'],
-                'quantity' => $variantData['quantity'],
-                'import_price' => $variantData['import_price']
-            ]);
-        }
-
-        $import->save();
-
-        // 3. Cập nhật hoặc tạo mới stock
-        $stock = InventoryStock::firstOrNew([
-            'variant_id' => $variantData['variant_id']
-        ]);
-
-        $stock->quantity = ($stock->quantity ?? 0) + $variantData['quantity'];
-        $stock->save();
-
-        DB::commit();
-
-        return response()->json([
-            'message' => 'Nhập hàng thành công!',
-            'import' => $import,
-            'stock' => $stock
-        ], 201);
-    } catch (\Exception $e) {
-        DB::rollBack();
-
-        return response()->json([
-            'error' => 'Có lỗi xảy ra.',
-            'message' => $e->getMessage()
-        ], 500);
-    }
-}
-    public function importMultiple(InventoryImportRequest $request)
+    public function import(InventoryImportRequest $request)
     {
-        $validatedData = $request->validated();
-
         try {
             DB::beginTransaction();
 
-            $updateResults = [];
+            // Lấy thông tin variant duy nhất từ request
+            $variantData = $request->variants[0]; // Chỉ xử lý một variant duy nhất
 
-            foreach ($validatedData['variants'] as $variantData) {
-                // Kiểm tra và lấy thông tin variant
-                $variant = Variant::find($variantData['variant_id']);
+            // 1. Cập nhật thông tin variant (giá bán, giá sale, end_sale)
+            $variant = Variant::find($variantData['variant_id']);
 
-                if (!$variant) {
-                    throw new \Exception("Biến thể với ID {$variantData['variant_id']} không tồn tại.");
-                }
-
-                // 1. Cập nhật thông tin variant
-                if (isset($variantData['price'])) {
-                    $variant->price = $variantData['price'];
-                }
-
-                if (isset($variantData['sale_price'])) {
-                    $variant->sale_price = $variantData['sale_price'];
-                }
-
-                if (isset($variantData['end_sale'])) {
-                    $variant->end_sale = $variantData['end_sale'];
-                }
-
-                $variant->save();
-
-                // 2. Cập nhật hoặc tạo mới stock
-                $stock = InventoryStock::firstOrNew([
-                    'variant_id' => $variantData['variant_id']
-                ]);
-
-                $stock->quantity = ($stock->quantity ?? 0) + $variantData['quantity'];
-                $stock->save();
-
-                // 3. Cập nhật giá nhập nếu cần
-                $import = InventoryImport::firstOrNew([
-                    'variant_id' => $variantData['variant_id']
-                ]);
-
-                $import->fill([
-                'quantity' => $variantData['quantity'], // Cập nhật số lượng mới
-                    'import_price' => $variantData['import_price'],
-                    'supplier_id' => $variantData['supplier_id']
-                ])->save();
-
-                // 4. Lưu kết quả
-                $updateResults[] = [
-                    'updated_variant' => $variant,
-                    'updated_stock' => $stock,
-                    'updated_import' => $import
-                ];
+            if (!$variant) {
+                throw new \Exception("Biến thể với ID {$variantData['variant_id']} không tồn tại.");
             }
+
+            if (isset($variantData['price'])) {
+                $variant->price = $variantData['price'];
+            }
+
+            if (isset($variantData['sale_price'])) {
+                $variant->sale_price = $variantData['sale_price'];
+            }
+
+            if (isset($variantData['end_sale'])) {
+                $variant->end_sale = $variantData['end_sale'];
+            }
+
+            $variant->save();
+
+            // 2. Tìm và cập nhật bản ghi nhập hàng (InventoryImport)
+            $import = InventoryImport::where('variant_id', $variantData['variant_id'])->first();
+
+            if ($import) {
+                // Cập nhật thông tin nhập
+                $import->supplier_id = $variantData['supplier_id'];
+                $import->quantity = $variantData['quantity']; // Thay đổi số lượng
+                $import->import_price = $variantData['import_price']; // Cập nhật giá nhập
+            } else {
+                // Nếu chưa có, tạo bản ghi mới
+                $import = new InventoryImport([
+                    'variant_id' => $variantData['variant_id'],
+                    'supplier_id' => $variantData['supplier_id'],
+                    'quantity' => $variantData['quantity'],
+                    'import_price' => $variantData['import_price']
+                ]);
+            }
+
+            $import->save();
+
+            // 3. Cập nhật hoặc tạo mới stock
+            $stock = InventoryStock::firstOrNew([
+                'variant_id' => $variantData['variant_id']
+            ]);
+
+            $stock->quantity = ($stock->quantity ?? 0) + $variantData['quantity'];
+            $stock->save();
+
+            // 4. Lưu lịch sử nhập hàng
+            InventoryImportHistory::create([
+                'variant_id' => $variant->id,
+                'supplier_id' => $variantData['supplier_id'],
+                'quantity' => $variantData['quantity'],
+                'import_price' => $variantData['import_price'],
+                'price' => $variant->price,
+                'sale_price' => $variant->sale_price,
+                'end_sale' => $variant->end_sale,
+            ]);
 
             DB::commit();
 
             return response()->json([
-                'message' => 'Cập nhật thành công!',
-                'results' => $updateResults
-            ], 200);
-
+                'message' => 'Nhập hàng thành công!',
+                'import' => $import,
+                'stock' => $stock
+            ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -266,6 +202,100 @@ class InventoryImportController extends Controller
             ], 500);
         }
     }
+
+public function importMultiple(InventoryImportRequest $request)
+{
+    $validatedData = $request->validated();
+
+    try {
+        DB::beginTransaction();
+
+        $updateResults = [];
+        $historyData = []; // Mảng để lưu lịch sử
+
+        foreach ($validatedData['variants'] as $variantData) {
+            // Kiểm tra và lấy thông tin variant
+            $variant = Variant::find($variantData['variant_id']);
+
+            if (!$variant) {
+                throw new \Exception("Biến thể với ID {$variantData['variant_id']} không tồn tại.");
+            }
+
+            // 1. Cập nhật thông tin variant
+            if (isset($variantData['price'])) {
+                $variant->price = $variantData['price'];
+            }
+
+            if (isset($variantData['sale_price'])) {
+                $variant->sale_price = $variantData['sale_price'];
+            }
+
+            if (isset($variantData['end_sale'])) {
+                $variant->end_sale = $variantData['end_sale'];
+            }
+
+            $variant->save();
+
+            // 2. Cập nhật hoặc tạo mới stock
+            $stock = InventoryStock::firstOrNew([
+                'variant_id' => $variantData['variant_id']
+            ]);
+
+            $stock->quantity = ($stock->quantity ?? 0) + $variantData['quantity'];
+            $stock->save();
+
+            // 3. Cập nhật giá nhập nếu cần
+            $import = InventoryImport::firstOrNew([
+                'variant_id' => $variantData['variant_id']
+            ]);
+
+            $import->fill([
+                'quantity' => $variantData['quantity'],
+                'import_price' => $variantData['import_price'],
+                'supplier_id' => $variantData['supplier_id']
+            ])->save();
+
+            // 4. Thêm lịch sử nhập hàng
+            $historyData[] = [
+                'variant_id' => $variant->id,
+                'supplier_id' => $variantData['supplier_id'],
+                'quantity' => $variantData['quantity'],
+                'import_price' => $variantData['import_price'],
+                'price' => $variant->price,
+                'sale_price' => $variant->sale_price,
+                'end_sale' => $variant->end_sale,
+                'created_at' => now(),
+                'updated_at' => now()
+            ];
+
+            // 5. Lưu kết quả
+            $updateResults[] = [
+                'updated_variant' => $variant,
+                'updated_stock' => $stock,
+                'updated_import' => $import
+            ];
+        }
+
+        // Lưu lịch sử vào bảng `inventory_import_history`
+        InventoryImportHistory::insert($historyData);
+
+        DB::commit();
+
+        return response()->json([
+            'message' => 'nhập hàng nhiều thành công!',
+            'results' => $updateResults
+        ], 200);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        return response()->json([
+            'error' => 'Có lỗi xảy ra.',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
+
 
 
 
