@@ -14,7 +14,6 @@ class ProductResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // Lấy giá bán min và max từ các variant
         $minSalePrice = $this->variants->flatMap(function ($variant) {
             return $variant->pluck('price');
         })->min();
@@ -23,7 +22,6 @@ class ProductResource extends JsonResource
             return $variant->pluck('price');
         })->max();
 
-        // Lấy giá nhập min và max từ các variant
         $minImportPrice = $this->variants->flatMap(function ($variant) {
             return $variant->inventoryImports->pluck('import_price');
         })->min();
@@ -31,23 +29,33 @@ class ProductResource extends JsonResource
         $maxImportPrice = $this->variants->flatMap(function ($variant) {
             return $variant->inventoryImports->pluck('import_price');
         })->max();
-        // Lấy quantity min và max từ các inventoryStock
+
         $quantities = $this->variants->flatMap(function ($variant) {
-            return $variant->inventoryStock ? [$variant->inventoryStock->quantity] : []; // Lấy quantity nếu có
+            return $variant->inventoryStock ? [$variant->inventoryStock->quantity] : [];
         });
 
         $minQuantity = $quantities->min();
         $maxQuantity = $quantities->max();
-        return [
 
+        // Xây dựng phạm vi giá trị
+        $quantityRange = $minQuantity === $maxQuantity ? $minQuantity : $minQuantity . ' - ' . $maxQuantity;
+        $priceRange = $minSalePrice === $maxSalePrice
+            ? number_format($minSalePrice, 0, ',', '.')
+            : number_format($minSalePrice, 0, ',', '.') . ' - ' . number_format($maxSalePrice, 0, ',', '.');
+
+        $importPriceRange = $minImportPrice === $maxImportPrice
+            ? number_format($minImportPrice, 0, ',', '.')
+            : number_format($minImportPrice, 0, ',', '.') . ' - ' . number_format($maxImportPrice, 0, ',', '.');
+
+        // Trả về dữ liệu
+        return [
             'id' => $this->id,
-            'quantity_range' => ($minQuantity !== null && $maxQuantity !== null) ? $minQuantity . ' - ' . $maxQuantity : 'N/A',
+            'quantity_range' => $quantityRange,
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
-            // Hiển thị price range của giá bán và giá nhập
-            'price_range' => number_format($minSalePrice,0, ',', '.') . ' - ' . number_format($maxSalePrice,0, ',', '.'),
-            'import_price_range' => number_format($minImportPrice,0, ',', '.') . ' - ' . number_format($maxImportPrice,0, ',', '.'),
+            'price_range' => $priceRange,
+            'import_price_range' => $importPriceRange,
             'images' => json_decode($this->images, associative: true),
             'category_id' => $this->category_id,
             'category' => new CategoryResource($this->whenLoaded('category')),

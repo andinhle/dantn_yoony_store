@@ -185,7 +185,6 @@ class InventoryImportController extends Controller
 
                 // 1. Cập nhật thông tin variant
 
-
                 // 2. Cập nhật hoặc tạo mới stock
                 $stock = InventoryStock::firstOrNew([
                     'variant_id' => $variantData['variant_id']
