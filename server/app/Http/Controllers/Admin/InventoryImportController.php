@@ -493,17 +493,38 @@ public function importMultiple(InventoryImportRequest $request)
 
     public function getInventoryHistory()
     {
-        $inventoryHistory = InventoryImportHistory::with(['variant', 'supplier'])->get();
 
-        if ($inventoryHistory->isEmpty()) {
-            return response()->json([
-                'message' => 'Không có dữ liệu lịch sử nhập hàng.'
-            ], 404);
-        }
+        $products = Product::with([
+            'category',
+            'variants.attributeValues.attribute',
+            'variants.inventoryStock',
+            'variants.inventoryImports.supplier',
+        ])
+        ->whereHas('variants', function ($query) {
+            $query->doesntHave('inventoryImports');
+        })
+        ->paginate(10);
 
-        return response()->json($inventoryHistory);
+        return ProductResource::collection($products);
+
     }
 
+    public function getDetailImport($variantId)
+    {
+        // Lấy chi tiết nhập hàng theo variant_id
+        $products = Product::with([
+            'category',
+            'variants.attributeValues.attribute',
+            'variants.inventoryStock',
+            'variants.inventoryImports.supplier',
+        ])
+        ->whereHas('variants.inventoryImports', function ($query) use ($variantId) {
+            $query->where('variant_id', $variantId);
+        })
+        ->paginate(10);
+
+        return ProductResource::collection($products);
+    }
 
 }
 
