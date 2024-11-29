@@ -36,7 +36,10 @@ class Variant extends Model
         return $this->hasMany(InventoryImport::class); // Quan hệ với InventoryImport
     }
 
-  
+    public function inventoryImportHistories()
+    {
+        return $this->hasMany(InventoryImportHistory::class);
+    }
 
     public function orderItems()
     {

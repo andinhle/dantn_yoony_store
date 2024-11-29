@@ -40,13 +40,13 @@ class HomeController extends Controller
                 ->where('is_active', 1)
                 ->firstOrFail();
 
-                $variant = $product->variants->first();
+                // $variant = $product->variants->first();
 
-                if ($variant) {
-                    event(new CheckExpiredSalePrices($variant));
-                } else {
-                    Log::warning('Không tìm thấy variant cho sản phẩm: ' . $slug);
-                }
+                // if ($variant) {
+                //     event(new CheckExpiredSalePrices($variant));
+                // } else {
+                //     Log::warning('Không tìm thấy variant cho sản phẩm: ' . $slug);
+                // }
 
             $relatedProducts = Product::with('category', 'variants.attributeValues.attribute')
                 ->where('category_id', $product->category_id)

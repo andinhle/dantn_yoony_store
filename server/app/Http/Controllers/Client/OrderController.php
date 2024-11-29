@@ -90,10 +90,10 @@ class OrderController extends Controller
             
             $data = Order::query()
             ->with([
-                'items',
+                'items.variant.product.category',
                 'coupons.coupon',
                 'user',
-                
+    
             ])
             ->where('user_id', Auth::id())
             ->where('code', $code) 
