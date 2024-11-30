@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom"
 import type { Orders } from "../../../interfaces/IOrders";
 import instance from "../../../instance/instance";
 import { toast } from "react-toastify";
-import { Button, Checkbox, Input, Select, Space } from 'antd';
+import { Button, Checkbox, Input, Select} from 'antd';
 import { DatePicker } from 'antd';
 import isBetween from 'dayjs/plugin/isBetween';
 import dayjs from "dayjs";
+import axios from "axios";
 dayjs.extend(isBetween);
 const Orders = () => {
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]); // Mảng lưu các mã đơn hàng được chọn
@@ -52,6 +53,7 @@ const Orders = () => {
     } else {
       setSelectedOrders(selectedOrders.filter((order) => order !== normalizedId));
     }
+
   };
 
   // Lọc danh sách đơn hàng theo mã sản phẩm
@@ -119,7 +121,6 @@ const Orders = () => {
     setLoading(true);
     try {
       const response = await instance.get("admin/orders");
-
       // Kiểm tra nếu phản hồi không hợp lệ
       if (
         !response ||
@@ -156,8 +157,18 @@ const Orders = () => {
   };
   const handleUpdateStatus = async () => {
     if (selectedOrders.length === 0 || !selectedStatus) {
-      // Nếu không có đơn hàng được chọn hoặc không có trạng thái, không thực hiện gì
-      alert("Vui lòng chọn đơn hàng và trạng thái.");
+      toast.warning("Vui lòng chọn đơn hàng và trạng thái.");
+      return;
+    }
+
+    if (!Array.isArray(selectedOrders)) {
+      setErrorMessage("Danh sách đơn hàng không hợp lệ.");
+      return;
+    }
+
+    // Kiểm tra các phần tử trong selectedOrders
+    if (!selectedOrders.every((id) => typeof id === "string" || typeof id === "number")) {
+      setErrorMessage("Danh sách đơn hàng chứa ID không hợp lệ.");
       return;
     }
 
@@ -165,24 +176,34 @@ const Orders = () => {
     setErrorMessage(""); // Reset error message
 
     try {
-      // Gửi yêu cầu API để cập nhật trạng thái của các đơn hàng
-      const response = await instance.patch("admin/order-update-much", {
-        orderIds: selectedOrders, // Danh sách ID các đơn hàng cần cập nhật
-        status: selectedStatus, // Trạng thái mới
+      console.log("Selected Orders:", selectedOrders); // Log giá trị để kiểm tra
+      console.log("Selected Status:", selectedStatus); // Log giá trị để kiểm tra
+
+      const response = await instance.post("admin/order-update_much", {
+        ids: selectedOrders,
+        status: selectedStatus,
       });
 
       if (response.status === 200) {
-        // Cập nhật thành công
-        alert("Cập nhật trạng thái thành công!");
-        // Có thể gọi lại API để làm mới danh sách đơn hàng hoặc thực hiện các hành động khác
+        toast.success("Cập nhật trạng thái thành công!");
+        fetchOrders();
+        setSelectedStatus("");
+        setSelectedOrders([]);
       }
     } catch (error) {
       console.error("Đã có lỗi khi cập nhật trạng thái:", error);
-      setErrorMessage("Đã có lỗi xảy ra khi cập nhật trạng thái.");
+
+      // Kiểm tra lỗi từ API
+      if (axios.isAxiosError(error) && error.response) {
+        setErrorMessage(error.response.data.message || "Đã có lỗi xảy ra khi cập nhật trạng thái.");
+      } else {
+        setErrorMessage("Đã có lỗi xảy ra.");
+      }
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -354,4 +375,7 @@ const Orders = () => {
   )
 }
 export default Orders
+
+
+
 

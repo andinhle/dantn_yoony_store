@@ -198,6 +198,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         //lưu lịch sử nhập hàng
         Route::post('/inventory-history/{inventoryImportId}', [InventoryImportController::class, 'storeInventoryHistory']);
         Route::get('/inventory-history', [InventoryImportController::class, 'getInventoryHistory']);
+        //chi tiết của sản phẩm nhập hàng
+        Route::get('/import-detail/{variantId}', [ProductController::class, 'getDetailImport']);
 
         // Nhập hàng
         Route::put('/updateVariant', [InventoryImportController::class, 'updateVariant']);
