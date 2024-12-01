@@ -410,4 +410,41 @@ class OrderController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    public function confirmDelivered(Request $request, $code)
+    {
+        try {
+            $order = Order::where('code', $code)->first();
+    
+            if (!$order) {
+                return response()->json(['message' => 'Không tìm thấy đơn hàng với mã: ' . $code], 404);
+            }
+    
+            if ($order->status_order !== Order::STATUS_ORDER_SHIPPING) {
+                return response()->json(['message' => 'Chỉ các đơn hàng đang vận chuyển mới có thể chuyển sang trạng thái "Đã giao hàng".'], 400);
+            }
+    
+            if ($order->user_id !== auth()->id() && !auth()->user()->isAdmin()) {
+                return response()->json(['message' => 'Bạn không có quyền thực hiện hành động này.'], 403);
+            }
+    
+            // Cập nhật trạng thái sang "delivered"
+            $order->update([
+                'status_order' => Order::STATUS_ORDER_DELIVERED,
+                'completed_at' => now(),
+            ]);
+    
+            return response()->json(['message' => 'Đơn hàng với mã ' . $code . ' đã được chuyển sang trạng thái "Đã giao hàng".']);
+    
+        } catch (\Exception $e) {
+            \Log::error('Lỗi xác nhận đơn hàng: ' . $e->getMessage(), ['code' => $code]);
+    
+            return response()->json([
+                'message' => 'Đã xảy ra lỗi trong quá trình xử lý. Vui lòng thử lại sau.',
+                'error' => $e->getMessage() 
+            ], 500);
+        }
+    }
+    
+
 }

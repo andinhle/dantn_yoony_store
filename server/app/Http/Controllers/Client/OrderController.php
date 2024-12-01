@@ -32,34 +32,34 @@ class OrderController extends Controller
 
     private function generateOrderCode()
     {
-    $date = date('Ymd');
-    $lastOrder = Order::whereDate('created_at', today())->orderBy('code', 'desc')->first();
-    
-    if ($lastOrder && preg_match('/ORD-' . $date . '-(\d{3})$/', $lastOrder->code, $matches)) {
-        $increment = intval($matches[1]) + 1; 
-    } else {
-        $increment = 1; 
-    }
-    
-    return 'ORD-' . $date . '-' . str_pad($increment, 3, '0', STR_PAD_LEFT);
+        $date = date('Ymd');
+        $lastOrder = Order::whereDate('created_at', today())->orderBy('code', 'desc')->first();
+
+        if ($lastOrder && preg_match('/ORD-' . $date . '-(\d{3})$/', $lastOrder->code, $matches)) {
+            $increment = intval($matches[1]) + 1;
+        } else {
+            $increment = 1;
+        }
+
+        return 'ORD-' . $date . '-' . str_pad($increment, 3, '0', STR_PAD_LEFT);
     }
 
-    public function getOrder(Request $request) 
+    public function getOrder(Request $request)
     {
         try {
             $query = Order::query()
                 ->with(['items.variant.product'])
                 ->where('user_id', Auth::id())
                 ->orderBy('created_at', 'desc');
-    
+
             // Thêm điều kiện status nếu được chọn
             if (isset($request->status)) {
                 $query->where('status_order', '=', $request->status);
             }
-    
+
             // Phân trang với 10 items mỗi trang
             $orders = $query->paginate(10);
-    
+
             return response()->json([
                 'data' => $orders->items(),
                 'meta' => [
@@ -70,43 +70,43 @@ class OrderController extends Controller
                 ],
                 'status' => 'success'
             ]);
-    
+
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
                 'message' => $th->getMessage()
             ]);
-    
+
             return response()->json([
                 'message' => 'Lỗi tải trang',
                 'status' => 'error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function getOrderDetail($code)
     {
         try {
-            
+
             $data = Order::query()
-            ->with([
-                'items.variant.product.category',
-                'coupons.coupon',
-                'user',
-    
-            ])
-            ->where('user_id', Auth::id())
-            ->where('code', $code) 
-            ->firstOrFail();
-            
-            
+                ->with([
+                    'items.variant.product.category',
+                    'coupons.coupon',
+                    'user',
+
+                ])
+                ->where('user_id', Auth::id())
+                ->where('code', $code)
+                ->firstOrFail();
+
+
 
             foreach ($data->items as &$item) {
                 if (isset($item['order_item_attribute'])) {
                     $item['order_item_attribute'] = json_decode($item['order_item_attribute'], true);
                 }
                 if (isset($item['product_image'])) {
-                    
+
                     $item['product_image'] = stripslashes(trim($item['product_image'], '"'));
                 }
             }
@@ -124,16 +124,16 @@ class OrderController extends Controller
             //         }
             //         $product['images'] = $images;
             //     }
-            
+
             // }}
 
             $data['email'] = Auth::user()->email;
 
-            
+
             return response()->json([
                 'data' => $data,
                 'status' => 'success'
-            ],Response::HTTP_OK);
+            ], Response::HTTP_OK);
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
@@ -146,15 +146,15 @@ class OrderController extends Controller
 
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-        
+
     }
 
-    public function canceledOrder(Request $request ,$id)
+    public function canceledOrder(Request $request, $id)
     {
         try {
             $order = Order::query()
-            ->with(['items', 'user',])
-            ->findOrFail($id);
+                ->with(['items', 'user',])
+                ->findOrFail($id);
 
 
             $request->validate([
@@ -170,7 +170,7 @@ class OrderController extends Controller
 
             foreach ($order->items as $value) {
                 $inventoryStock = InventoryStock::query()->where('variant_id', $value->variant_id)->first();
-            
+
                 if ($inventoryStock) {
                     $inventoryStock->update([
                         'quantity' => $inventoryStock->quantity + $value->quantity
@@ -198,13 +198,51 @@ class OrderController extends Controller
                 'line' => $th->getLine(),
                 'message' => $th->getMessage()
             ]);
-    
+
             return response()->json([
                 'message' => 'Lỗi tải trang',
                 'status' => 'error',
-    
+
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
     }
+
+
+    //xác nhận giao hàng
+    public function confirmDelivered(Request $request, $code)
+    {
+        try {
+            $order = Order::where('code', $code)->first();
+
+            if (!$order) {
+                return response()->json(['message' => 'Không tìm thấy đơn hàng với mã: ' . $code], 404);
+            }
+
+            if ($order->status_order !== Order::STATUS_ORDER_SHIPPING) {
+                return response()->json(['message' => 'Chỉ các đơn hàng đang vận chuyển mới có thể chuyển sang trạng thái "Đã giao hàng".'], 400);
+            }
+
+            if ($order->user_id !== auth()->id() && !auth()->user()->isAdmin()) {
+                return response()->json(['message' => 'Bạn không có quyền thực hiện hành động này.'], 403);
+            }
+
+            $order->update([
+                'status_order' => Order::STATUS_ORDER_DELIVERED,
+                'completed_at' => now(),
+            ]);
+
+            return response()->json(['message' => 'Đơn hàng với mã ' . $code . ' đã được chuyển sang trạng thái "Đã giao hàng".']);
+
+        } catch (\Exception $e) {
+            \Log::error('Lỗi xác nhận đơn hàng: ' . $e->getMessage(), ['code' => $code]);
+
+            return response()->json([
+                'message' => 'Đã xảy ra lỗi trong quá trình xử lý. Vui lòng thử lại sau.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
 }
