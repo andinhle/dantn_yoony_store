@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\UserRoleUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -31,15 +32,18 @@ class UserController extends Controller
     {
         try {
             $role = $request->input('role');
-
+             
             $user = User::find($id);
-
+             
             if (!$user) {
                 return response()->json(['message' => 'Người dùng không tồn tại.'], 404);
             }
-
+             
             $user->role = $role;
             $user->save();
+            
+            // Broadcast event
+            event(new UserRoleUpdated($user));
 
             return response()->json([
                 'message' => 'Cập nhật quyền thành công.',
@@ -52,6 +56,4 @@ class UserController extends Controller
             ], 500);
         }
     }
-
-
 }
