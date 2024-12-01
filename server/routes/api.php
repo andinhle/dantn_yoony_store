@@ -318,4 +318,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::put('/user/update', [AuthController::class, 'updateProfile']);
     //user_profile
     Route::get('/user/profile', [AuthController::class, 'getProfile']);
+
+    //xác nhận giao hàng
+    Route::post('/orders/{code}/confirm-delivered', [OrderController::class, 'confirmDelivered'])->name('orders.confirmDelivered');
 });
