@@ -21,7 +21,7 @@ const AddAttributeValue = () => {
     setValue,
     reset,
   } = useForm<IAttributeValue>();
-  //Thêm giá trị thuộc tính biến thể
+  
   const onSubmit = async (dataForm: IAttributeValue) => {
     try {
       const {data:{data:response}} = await instance.post("attribute-value", dataForm);

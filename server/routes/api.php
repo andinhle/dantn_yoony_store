@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\admin\EventController;
+use App\Http\Controllers\Admin\FilterStockController;
 use App\Http\Controllers\Admin\InventoryImportController;
 use App\Http\Controllers\Admin\InventoryStockController;
 use App\Http\Controllers\Admin\ModelController;
@@ -94,10 +95,6 @@ Route::get('/first-question', [HomeController::class, 'getListFirstQuestion']);
 Route::get('/question-by-answer/{id}', [HomeController::class, 'getQuestionByAnswer']);
 Route::get('/answer-by-question/{id}', [HomeController::class, 'getAnswerByQuestion']);
 
-// Thông báo
-Route::get('/notification/{id}', [NotificationController::class, 'getUserNotifications']);
-Route::patch('/notification/{id}/read', [NotificationController::class, 'markAsRead']);
-
 // Quyền khi đăng nhập
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/user', function (Request $request) {
@@ -113,6 +110,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/change-password', [AuthController::class, 'changePassword']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    // Thông báo
+    Route::get('/notification', [NotificationController::class, 'getUserNotifications']);
+    Route::patch('/notification/{id}/read', [NotificationController::class, 'markAsRead']);
 
     // Admin
     Route::middleware(['admin'])->group(function () {
@@ -169,7 +170,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         // QL sản phẩm
         Route::get('/product/{slug}', [ProductController::class, 'findBySlug']);
         Route::apiResource('products', ProductController::class);
-        Route::get('/listDelete', [ProductController::class, 'listDelete']);
+        Route::post('/products/restore-multiple', [ProductController::class, 'restoreMultiple']);
+        Route::get('listDelete', [ProductController::class, 'listDelete']);
 
         Route::patch('product/{id}/is_featured', [ProductController::class, 'updateIsFeatured'])->name('category.updateIsFeatured');
         // Route::patch('product/{id}/is_good_deal', [ProductController::class, 'updateIsGoodDeal'])->name('category.updateIsGoodDeal');
@@ -220,6 +222,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::post('/store-supplier', [SupplierController::class, 'store']);
         Route::put('/update-supplier/{id}', [SupplierController::class, 'update']);
         Route::delete('/delete-supplier/{id}', [SupplierController::class, 'delete']);
+
+        // filter stock
+        Route::get('/filter-stock', [FilterStockController::class, 'getCategoryFilter']);
+        Route::post('/filter-stock', [FilterStockController::class, 'filterStock']);
     });
     // Admin & Manage
     Route::middleware(['manage'])->group(function () {
@@ -259,7 +265,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/list-wishlists', [HomeController::class, 'getWishlists']);
     Route::get('/list-wishlists-check', [HomeController::class, 'getWishlistsCheck']);
     Route::post('/toogle-wishlists', [HomeController::class, 'toggleWishlist']);
-
 
 
     // Order
@@ -314,4 +319,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::put('/user/update', [AuthController::class, 'updateProfile']);
     //user_profile
     Route::get('/user/profile', [AuthController::class, 'getProfile']);
+
+    //xác nhận giao hàng
+    Route::post('/orders/{code}/confirm-delivered', [OrderController::class, 'confirmDelivered'])->name('orders.confirmDelivered');
 });

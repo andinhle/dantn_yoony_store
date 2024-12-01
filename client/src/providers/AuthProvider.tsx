@@ -93,12 +93,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const login = async (userData: IUser) => {
     try {
-      localStorage.setItem(USER_INFO_KEY, JSON.stringify(userData));
+      // Safari strict cookie policy check
+      if (!navigator.cookieEnabled) {
+        message.warning('Vui lòng cho phép cookie');
+        return;
+      }
+  
+      // Explicit try-catch for localStorage
+      try {
+        localStorage.setItem(USER_INFO_KEY, JSON.stringify(userData));
+      } catch (storageError) {
+        console.error('localStorage error:', storageError);
+        message.error('Lỗi lưu thông tin người dùng');
+      }
+  
       setUser(userData);
       await fetchWishlists();
     } catch (error) {
-      console.error('Error during login process:', error);
-      message.error('Có lỗi xảy ra trong quá trình đăng nhập');
+      console.error('Login process error:', error);
+      message.error('Đăng nhập thất bại');
     }
   };
 

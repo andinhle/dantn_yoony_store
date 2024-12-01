@@ -26,6 +26,12 @@ class StatisticalController extends Controller
                     'endDate' => now()->endOfDay()->format('d M Y'),
                 ],
                 [
+                    'label' => '1 Tuần',
+                    'value' => 'one_week',
+                    'startDate' => now()->startOfWeek()->format('d M Y'),
+                    'endDate' => now()->endOfWeek()->format('d M Y'),
+                ],
+                [
                     'label' => '1 Tháng',
                     'value' => 'one_month',
                     'startDate' => now()->startOfMonth()->format('d M Y'),
@@ -58,7 +64,7 @@ class StatisticalController extends Controller
                     'endDate' => now()->addDay()->format('d M Y'),
                 ],
             ];
-
+    
             return response()->json($ranges);
         } catch (\Exception $e) {
             return response()->json([
