@@ -21,7 +21,7 @@ class User extends Authenticatable
         'provider_id',
         'provider_token',
         'remember_token',
-        'role', 
+        'role',
     ];
 
     protected $hidden = [
@@ -39,7 +39,8 @@ class User extends Authenticatable
         return $this->hasMany(Wishlist::class, 'user_id', 'id');
     }
 
-    public function coupons() {
+    public function coupons()
+    {
         return $this->belongsToMany(Coupon::class, 'coupon_user');
     }
 
@@ -53,4 +54,10 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Address::class);
     }
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
 }
