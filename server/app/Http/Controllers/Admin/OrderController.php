@@ -160,25 +160,115 @@ class OrderController extends Controller
        
         $status = $request->input('status');
 
-
         switch ($status) {
             case Order::STATUS_ORDER_PENDING:
-            case Order::STATUS_ORDER_CONFIRMED:
-            case Order::STATUS_ORDER_PREPARING_GOODS:
-            case Order::STATUS_ORDER_SHIPPING:
-            case Order::STATUS_ORDER_DELIVERED:
-            case Order::STATUS_ORDER_CANCELED:
                 $order->status_order = $status;
                 $order->save();
-
+        
                 $notification = Notification::create([
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
-                    'content' => 'Đơn hàng '. $order->code .' đã được cập nhật trạng thái thành ' . Order::STATUS_ORDER[$order->status_order],
+                    'order_code' => $order->code,
+                    'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #ff9800;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
-
+        
                 event(new OrderStatusUpdated($notification, $order->user_id));
-
+        
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Trạng thái đơn hàng đã được cập nhật.',
+                    'order' => $order,
+                    'notification' => $notification
+                ]);
+            case Order::STATUS_ORDER_CONFIRMED:
+                $order->status_order = $status;
+                $order->save();
+        
+                $notification = Notification::create([
+                    'user_id' => $order->user_id,
+                    'order_id' => $order->id,
+                    'order_code' => $order->code,
+                    'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #4caf50;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
+                ]);
+        
+                event(new OrderStatusUpdated($notification, $order->user_id));
+        
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Trạng thái đơn hàng đã được cập nhật.',
+                    'order' => $order,
+                    'notification' => $notification
+                ]);
+            case Order::STATUS_ORDER_PREPARING_GOODS:
+                $order->status_order = $status;
+                $order->save();
+        
+                $notification = Notification::create([
+                    'user_id' => $order->user_id,
+                    'order_id' => $order->id,
+                    'order_code' => $order->code,
+                    'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
+                ]);
+        
+                event(new OrderStatusUpdated($notification, $order->user_id));
+        
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Trạng thái đơn hàng đã được cập nhật.',
+                    'order' => $order,
+                    'notification' => $notification
+                ]);
+            case Order::STATUS_ORDER_SHIPPING:
+                $order->status_order = $status;
+                $order->save();
+        
+                $notification = Notification::create([
+                    'user_id' => $order->user_id,
+                    'order_id' => $order->id,
+                    'order_code' => $order->code,
+                    'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #03a9f4;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
+                ]);
+        
+                event(new OrderStatusUpdated($notification, $order->user_id));
+        
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Trạng thái đơn hàng đã được cập nhật.',
+                    'order' => $order,
+                    'notification' => $notification
+                ]);
+            case Order::STATUS_ORDER_DELIVERED:
+                $order->status_order = $status;
+                $order->save();
+        
+                $notification = Notification::create([
+                    'user_id' => $order->user_id,
+                    'order_id' => $order->id,
+                    'order_code' => $order->code,
+                    'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #8bc34a;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
+                ]);
+        
+                event(new OrderStatusUpdated($notification, $order->user_id));
+        
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Trạng thái đơn hàng đã được cập nhật.',
+                    'order' => $order,
+                    'notification' => $notification
+                ]);
+            case Order::STATUS_ORDER_CANCELED:
+                $order->status_order = $status;
+                $order->save();
+        
+                $notification = Notification::create([
+                    'user_id' => $order->user_id,
+                    'order_id' => $order->id,
+                    'order_code' => $order->code,
+                    'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #f44336;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
+                ]);
+        
+                event(new OrderStatusUpdated($notification, $order->user_id));
+        
                 return response()->json([
                     'success' => true,
                     'message' => 'Trạng thái đơn hàng đã được cập nhật.',
@@ -191,6 +281,7 @@ class OrderController extends Controller
                     'message' => 'Trạng thái không hợp lệ.'
                 ], 400);
         }
+        
 
        } catch (\Throwable $th) {
         Log::error(__CLASS__ . '@' . __FUNCTION__, [

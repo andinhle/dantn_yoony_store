@@ -17,10 +17,9 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    // ProductController.php
-    public function index()
-    {
-        $products = Product::with(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock'])->paginate(5);
+public function index()
+{
+    $products = Product::with(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock'])->paginate(15);
 
         return ProductResource::collection($products);
     }
@@ -151,19 +150,25 @@ class ProductController extends Controller
     public function destroy(string $id)
     {
         try {
-            $product = Product::findOrFail($id);
+            $product = Product::with('category')->findOrFail($id);
+            $productData = $product->toArray();
+            if (isset($productData['images'])) {
+                $productData['images'] = json_decode($productData['images'], true); 
+            }
             $product->delete();
-            return response()->json(['message' => 'Product xóa thành công'], $product);
+            return response()->json([
+                'message' => 'Product xóa thành công',
+                'data' => $productData 
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Xóa product thất bại', 'error' => $e->getMessage()], 500);
         }
     }
 
     //updateIsFeatured
-    public function updateIsFeatured(Request $request, string $id)
-    {
-        $product = Product::findOrFail($id);
-        $product->update(['is_featured' => $request->is_featured]);
+    public function updateIsFeatured(Request $request, string $id){
+        $product = Product::with('category')->findOrFail($id);
+        $product->update(['is_featured'=>$request->is_featured]);
 
         return response()->json([
             'message' => 'Cập nhật is_featured thành công!',
@@ -183,10 +188,11 @@ class ProductController extends Controller
     // }
 
     //updateIsActive
-    public function updateIsActive(Request $request, string $id)
-    {
-        $product = Product::findOrFail($id);
-        $product->update(['is_active' => $request->is_active]);
+  
+    public function updateIsActive(Request $request, string $id){
+        $product = Product::with('category')->findOrFail($id);
+        $product->update(['is_active'=>$request->is_active]);
+
 
         return response()->json([
             'message' => 'Cập nhật is_active thành công!',
@@ -214,15 +220,6 @@ class ProductController extends Controller
         return response()->json(['message' => 'Xóa vĩnh viễn Sản Phẩm thành công!'], 200);
     }
 
-    //danh sách xóa cứng
-    public function listDelete()
-    {
-        $products = Product::onlyTrashed()
-            ->with(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock'])
-            ->paginate(5);
-
-        return ProductResource::collection($products);
-    }
 
     //khôi phục nhiều
     public function restoreMultiple(Request $request)
@@ -241,6 +238,14 @@ class ProductController extends Controller
             'message' => 'Khôi phục nhiều sản phẩm thành công!',
             'so_luong' => $restoredCount
         ], 200);
+    }
+     public function listDelete()
+    {
+        $products = Product::onlyTrashed()
+            ->with(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock'])
+            ->paginate(10);
+
+        return ProductResource::collection($products);
     }
 
 }

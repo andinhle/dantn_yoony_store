@@ -2,12 +2,10 @@ import BannerFixedChild from "../../components/User/Banner/BannerFixedChild";
 import BannerHome from "../../components/User/Banner/BannerHome";
 import BlogHome from "../../components/User/Blogs/BlogsHome";
 import CategorysList from "../../components/User/Categorys/CategorysList";
-import NotificationsUser from "../../components/User/notifications/NotificationsUser";
 import ProductClothes from "../../components/User/Products/ProductClothes";
 import ProductFeature from "../../components/User/Products/ProductFeature";
 import ProductGlasses from "../../components/User/Products/ProductGlasses";
 import ProductUniForm from "../../components/User/Products/ProductUniForm";
-// import CardPolicyList from "../../components/User/Banner/CardPolicyList";
 import VoucherList from "../../components/User/Voucher/VoucherList";
 
 const MainContentUser = () => {
@@ -17,7 +15,6 @@ const MainContentUser = () => {
           <BannerHome />
           <BannerFixedChild />
       </div>
-      {/* <NotificationsUser /> */}
       <VoucherList />
       <CategorysList />
       <ProductFeature />

@@ -195,8 +195,8 @@ class HomeController extends Controller
                 ->paginate(10);
 
             return response()->json([
-                'category' => new CategoryResource($category),
-                'products' => ProductResource::collection($products),
+                // 'category' => new CategoryResource($category),
+                'data' => ProductResource::collection($products),
             ], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Không tìm thấy danh mục.'], 404);

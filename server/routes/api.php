@@ -95,10 +95,6 @@ Route::get('/first-question', [HomeController::class, 'getListFirstQuestion']);
 Route::get('/question-by-answer/{id}', [HomeController::class, 'getQuestionByAnswer']);
 Route::get('/answer-by-question/{id}', [HomeController::class, 'getAnswerByQuestion']);
 
-// Thông báo
-Route::get('/notification/{id}', [NotificationController::class, 'getUserNotifications']);
-Route::patch('/notification/{id}/read', [NotificationController::class, 'markAsRead']);
-
 // Quyền khi đăng nhập
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/user', function (Request $request) {
@@ -114,6 +110,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/change-password', [AuthController::class, 'changePassword']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    // Thông báo
+    Route::get('/notification', [NotificationController::class, 'getUserNotifications']);
+    Route::patch('/notification/{id}/read', [NotificationController::class, 'markAsRead']);
 
     // Admin
     Route::middleware(['admin'])->group(function () {
@@ -170,9 +170,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         // QL sản phẩm
         Route::get('/product/{slug}', [ProductController::class, 'findBySlug']);
         Route::apiResource('products', ProductController::class);
-        Route::get('/listDelete', [ProductController::class, 'listDelete']);
         Route::post('/products/restore-multiple', [ProductController::class, 'restoreMultiple']);
-
+        Route::get('listDelete', [ProductController::class, 'listDelete']);
 
         Route::patch('product/{id}/is_featured', [ProductController::class, 'updateIsFeatured'])->name('category.updateIsFeatured');
         // Route::patch('product/{id}/is_good_deal', [ProductController::class, 'updateIsGoodDeal'])->name('category.updateIsGoodDeal');
@@ -201,7 +200,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::post('/inventory-history/{inventoryImportId}', [InventoryImportController::class, 'storeInventoryHistory']);
         Route::get('/inventory-history', [InventoryImportController::class, 'getInventoryHistory']);
         //chi tiết của sản phẩm nhập hàng
-        Route::get('/import-detail/{variantId}', [ProductController::class, 'getDetailImport']);
+        Route::get('/import-detail/{id}', [InventoryImportController::class, 'getDetailImport']);
 
         // Nhập hàng
         Route::put('/updateVariant', [InventoryImportController::class, 'updateVariant']);
@@ -265,7 +264,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/list-wishlists', [HomeController::class, 'getWishlists']);
     Route::get('/list-wishlists-check', [HomeController::class, 'getWishlistsCheck']);
     Route::post('/toogle-wishlists', [HomeController::class, 'toggleWishlist']);
-
 
 
     // Order
