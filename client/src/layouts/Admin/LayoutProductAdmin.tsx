@@ -4,6 +4,7 @@ import AttributeProvider from "../../providers/AttributeProvider";
 import AttributeValueProvider from "../../providers/AttributeValueProvider";
 import InventoryProvider from "../../providers/InventoryProvider";
 import SupplierProvider from "../../providers/SupplierProvider";
+import TrashProvider from "../../providers/TrashProvider";
 
 const LayoutProductAdmin = () => {
   return (
@@ -12,7 +13,9 @@ const LayoutProductAdmin = () => {
         <AttributeProvider>
           <InventoryProvider>
             <SupplierProvider>
-              <Outlet />
+              <TrashProvider>
+                <Outlet />
+              </TrashProvider>
             </SupplierProvider>
           </InventoryProvider>
         </AttributeProvider>

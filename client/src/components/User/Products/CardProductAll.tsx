@@ -77,10 +77,9 @@ const CardProductAll = ({
     }
   };
 
-  console.log(variants);
 
   return (
-    <div className="min-h-[355px] group max-w-[220px] w-full bg-util rounded-lg overflow-hidden shadow-[0px_1px_4px_0px_rgba(255,_138,_0,_0.25)] cursor-pointer">
+    <div className=" group max-w-[220px] w-full bg-util rounded-lg overflow-hidden shadow-[0px_1px_4px_0px_rgba(255,_138,_0,_0.25)] cursor-pointer">
       <div className="relative z-40 overflow-hidden">
         <Link to={`/${category}/${slugify(nameProduct)}`}>
           <img
@@ -162,13 +161,13 @@ const CardProductAll = ({
             modules={[FreeMode]}
             className="mySwiper px-5 z-50"
           >
-            {colorVariantsImages.map((colorVariantImage, index: number) => (
+            {colorVariantsImages?.map((colorVariantImage, index: number) => (
               <SwiperSlide
                 key={index + 1}
                 className="!w-7 !h-7 rounded-full border border-input overflow-hidden"
               >
                 <img
-                  src={colorVariantImage?.representativeImage}
+                  src={colorVariantImage?.representativeImage || imageProduct}
                   alt={`Image ${index + 1}`}
                 />
               </SwiperSlide>

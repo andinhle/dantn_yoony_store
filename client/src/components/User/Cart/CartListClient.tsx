@@ -204,7 +204,7 @@ const CartListClient = () => {
       dataIndex: "variant",
       align: "center",
       render: (variant, record) => (
-        <span>
+        <p className="text-nowrap">
           {(variant.sale_price || variant.price)
             .toLocaleString("vi-VN", {
               useGrouping: true,
@@ -212,7 +212,7 @@ const CartListClient = () => {
             })
             .replace(/,/g, ".")}{" "}
           VNĐ
-        </span>
+        </p>
       ),
     },
     {
@@ -298,7 +298,7 @@ const CartListClient = () => {
       dataIndex: "id",
       align: "center",
       render: (id, record) => (
-        <span>{calculateTotal(record).toLocaleString()} VNĐ</span>
+        <p className="text-nowrap">{calculateTotal(record).toLocaleString()} VNĐ</p>
       ),
     },
     {
