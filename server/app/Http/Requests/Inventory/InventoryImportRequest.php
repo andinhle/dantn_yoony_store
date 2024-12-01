@@ -27,9 +27,7 @@ class InventoryImportRequest extends FormRequest
             'variants.*.variant_id' => 'required|exists:variants,id',
             'variants.*.quantity' => 'required|integer|min:1',
             'variants.*.import_price' => 'required|numeric|min:0',
-            'variants.*.price' => 'required|numeric|min:0',
-            'variants.*.sale_price' => 'nullable|numeric|min:0|lt:variants.*.price',
-            'variants.*.end_sale' => 'nullable|date|after:now',
+
         ];
     }
 

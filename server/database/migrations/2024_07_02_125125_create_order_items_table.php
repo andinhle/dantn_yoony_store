@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('product_name');
             $table->string('product_image');
             $table->json('order_item_attribute');
+            
             $table->timestamps();
         });
     }

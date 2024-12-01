@@ -194,15 +194,16 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::patch('admin/order-cancelation/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'canceledOrder']);
         Route::post('admin/order-update_much', [\App\Http\Controllers\Admin\OrderController::class, 'updateMuch']);
 
-        //lưu lịch sử nhập hàng
-        Route::post('/inventory-history/{inventoryImportId}', [InventoryImportController::class, 'storeInventoryHistory']);
-        Route::get('/inventory-history', [InventoryImportController::class, 'getInventoryHistory']);
-        //chi tiết của sản phẩm nhập hàng
-        Route::get('/import-detail/{variantId}', [ProductController::class, 'getDetailImport']);
+        //lịch sử nhập hàng
+        Route::get('checkAvailableStock', [InventoryImportController::class, 'checkAvailableStock']);
+        //tìm hàng theo mã
+        Route::get('/search-by-batch-number/{batchNumber}', [InventoryImportController::class, 'searchByBatchNumber']);
+        //xóa đơn nhập
+        Route::delete('/deleteImport/{id}', [InventoryImportController::class, 'deleteImport']);
 
         // Nhập hàng
-        Route::put('/updateVariant', [InventoryImportController::class, 'updateVariant']);
-        Route::put('/UpdateMultiple', [InventoryImportController::class, 'UpdateMultiple']);
+        // Route::put('/updateVariant', [InventoryImportController::class, 'updateVariant']);
+        // Route::put('/UpdateMultiple', [InventoryImportController::class, 'UpdateMultiple']);
         Route::post('/import-inventory', [InventoryImportController::class, 'importExcel']);
 
         Route::get('/productsWithInventoryImports', [InventoryImportController::class, 'productsWithInventoryImports']);
