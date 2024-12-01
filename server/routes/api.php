@@ -171,6 +171,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('/product/{slug}', [ProductController::class, 'findBySlug']);
         Route::apiResource('products', ProductController::class);
         Route::get('/listDelete', [ProductController::class, 'listDelete']);
+        Route::post('/products/restore-multiple', [ProductController::class, 'restoreMultiple']);
+
 
         Route::patch('product/{id}/is_featured', [ProductController::class, 'updateIsFeatured'])->name('category.updateIsFeatured');
         // Route::patch('product/{id}/is_good_deal', [ProductController::class, 'updateIsGoodDeal'])->name('category.updateIsGoodDeal');

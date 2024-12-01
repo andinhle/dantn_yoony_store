@@ -17,67 +17,67 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-   // ProductController.php
-public function index()
-{
-    $products = Product::with(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock'])->paginate(5);
+    // ProductController.php
+    public function index()
+    {
+        $products = Product::with(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock'])->paginate(5);
 
-    return ProductResource::collection($products);
-}
+        return ProductResource::collection($products);
+    }
 
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(StoreProductRequest $request)
-{
-    try {
-        // Tạo Product
-        $product = Product::create([
-            'name' => $request->name,
-            'slug' => $request->slug,
-            'description' => $request->description,
-            'images' => json_encode($request->images),
-            'category_id' => $request->category_id,
-            'is_featured' => $request->is_featured ?? false,
-            'is_active' => $request->is_active ?? true,
-        ]);
-
-        foreach ($request->variants as $variantData) {
-            $variant = Variant::create([
-                'price' => $variantData['price'],
-                'sale_price' => $variantData['sale_price'],
-                'end_sale' => $variantData['end_sale'] ?? null,
-                'image' => $variantData['image'] ?? null,
-                'product_id' => $product->id,
+    {
+        try {
+            // Tạo Product
+            $product = Product::create([
+                'name' => $request->name,
+                'slug' => $request->slug,
+                'description' => $request->description,
+                'images' => json_encode($request->images),
+                'category_id' => $request->category_id,
+                'is_featured' => $request->is_featured ?? false,
+                'is_active' => $request->is_active ?? true,
             ]);
 
-            if (isset($variantData['quantity'])) {
-                InventoryStock::create([
-                    'variant_id' => $variant->id,
-                    'quantity' => $variantData['quantity'],
+            foreach ($request->variants as $variantData) {
+                $variant = Variant::create([
+                    'price' => $variantData['price'],
+                    'sale_price' => $variantData['sale_price'],
+                    'end_sale' => $variantData['end_sale'] ?? null,
+                    'image' => $variantData['image'] ?? null,
+                    'product_id' => $product->id,
                 ]);
-            }
 
-            if (isset($variantData['attribute_values'])) {
-                foreach ($variantData['attribute_values'] as $attributeValueId) {
-                    $variant->attributeValues()->attach($attributeValueId);
+                if (isset($variantData['quantity'])) {
+                    InventoryStock::create([
+                        'variant_id' => $variant->id,
+                        'quantity' => $variantData['quantity'],
+                    ]);
+                }
+
+                if (isset($variantData['attribute_values'])) {
+                    foreach ($variantData['attribute_values'] as $attributeValueId) {
+                        $variant->attributeValues()->attach($attributeValueId);
+                    }
                 }
             }
-        }
 
-        return new ProductResource($product->load('category', 'variants.attributeValues.attribute', 'variants.inventoryStock',));
-    } catch (\Exception $e) {
-        return response()->json(['message' => 'Thêm Product thất bại', 'error' => $e->getMessage()], 500);
+            return new ProductResource($product->load('category', 'variants.attributeValues.attribute', 'variants.inventoryStock', ));
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Thêm Product thất bại', 'error' => $e->getMessage()], 500);
+        }
     }
-}
 
     /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
-        $product = Product::with('category','variants.attributeValues.attribute', 'variants.inventoryStock')->findOrFail($id);
+        $product = Product::with('category', 'variants.attributeValues.attribute', 'variants.inventoryStock')->findOrFail($id);
         return new ProductResource($product);
     }
 
@@ -104,7 +104,7 @@ public function index()
                     [
                         'price' => $variantData['price'],
                         'sale_price' => $variantData['sale_price'],
-                        'end_sale' => $variantData['end_sale']?? null,
+                        'end_sale' => $variantData['end_sale'] ?? null,
                         'image' => $variantData['image'] ?? null,
                     ]
                 );
@@ -134,7 +134,7 @@ public function index()
     public function findBySlug(string $slug): JsonResponse
     {
         try {
-            $product = Product::with('category','variants.attributeValues.attribute', 'variants.inventoryStock')
+            $product = Product::with('category', 'variants.attributeValues.attribute', 'variants.inventoryStock')
                 ->where('slug', $slug)
                 ->firstOrFail();
 
@@ -153,16 +153,17 @@ public function index()
         try {
             $product = Product::findOrFail($id);
             $product->delete();
-            return response()->json(['message' => 'Product xóa thành công']);
+            return response()->json(['message' => 'Product xóa thành công'], $product);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Xóa product thất bại', 'error' => $e->getMessage()], 500);
         }
     }
 
     //updateIsFeatured
-    public function updateIsFeatured(Request $request, string $id){
+    public function updateIsFeatured(Request $request, string $id)
+    {
         $product = Product::findOrFail($id);
-        $product->update(['is_featured'=>$request->is_featured]);
+        $product->update(['is_featured' => $request->is_featured]);
 
         return response()->json([
             'message' => 'Cập nhật is_featured thành công!',
@@ -182,9 +183,10 @@ public function index()
     // }
 
     //updateIsActive
-    public function updateIsActive(Request $request, string $id){
+    public function updateIsActive(Request $request, string $id)
+    {
         $product = Product::findOrFail($id);
-        $product->update(['is_active'=>$request->is_active]);
+        $product->update(['is_active' => $request->is_active]);
 
         return response()->json([
             'message' => 'Cập nhật is_active thành công!',
@@ -202,24 +204,43 @@ public function index()
         return response()->json(['message' => 'Khôi phục Sản Phẩm thành công!'], 200);
     }
 
-     //xóa cứng
-     public function hardDelete(string $id)
-     {
-         $category = Product::withTrashed()->findOrFail($id);
+    //xóa cứng
+    public function hardDelete(string $id)
+    {
+        $category = Product::withTrashed()->findOrFail($id);
 
-         $category->forceDelete();
+        $category->forceDelete();
 
-         return response()->json(['message' => 'Xóa vĩnh viễn Sản Phẩm thành công!'], 200);
-     }
+        return response()->json(['message' => 'Xóa vĩnh viễn Sản Phẩm thành công!'], 200);
+    }
 
+    //danh sách xóa cứng
+    public function listDelete()
+    {
+        $products = Product::onlyTrashed()
+            ->with(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock'])
+            ->paginate(5);
 
-     public function listDelete()
-{
-    $products = Product::onlyTrashed()
-        ->with(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock'])
-        ->paginate(5);
+        return ProductResource::collection($products);
+    }
 
-    return ProductResource::collection($products);
-}
+    //khôi phục nhiều
+    public function restoreMultiple(Request $request)
+    {
+        $ids = $request->input('ids');
+
+        if (empty($ids) || !is_array($ids)) {
+            return response()->json(['message' => 'Danh sách ID không hợp lệ'], 400);
+        }
+
+        $restoredCount = Product::withTrashed()
+            ->whereIn('id', $ids)
+            ->restore();
+
+        return response()->json([
+            'message' => 'Khôi phục nhiều sản phẩm thành công!',
+            'so_luong' => $restoredCount
+        ], 200);
+    }
 
 }
