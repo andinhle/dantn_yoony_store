@@ -312,7 +312,6 @@ const VouchersAdmin = () => {
                       type="number"
                       className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
                       placeholder="Giá trị đơn tối thiểu"
-                      defaultValue={undefined}
                       {...register("min_order_value")}
                       min={0}
                       style={{ pointerEvents: "auto" }}
@@ -334,7 +333,6 @@ const VouchersAdmin = () => {
                       placeholder="Giá trị đơn tối đa"
                       {...register("max_order_value")}
                       min={0}
-                      defaultValue={undefined}
                       style={{ pointerEvents: "auto" }}
                     />
                     <span className="text-sm text-red-400">

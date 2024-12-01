@@ -20,7 +20,7 @@ class ProductController extends Controller
    // ProductController.php
 public function index()
 {
-    $products = Product::with(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock'])->paginate(5);
+    $products = Product::with(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock'])->paginate(15);
 
     return ProductResource::collection($products);
 }
@@ -151,9 +151,16 @@ public function index()
     public function destroy(string $id)
     {
         try {
-            $product = Product::findOrFail($id);
+            $product = Product::with('category')->findOrFail($id);
+            $productData = $product->toArray();
+            if (isset($productData['images'])) {
+                $productData['images'] = json_decode($productData['images'], true); 
+            }
             $product->delete();
-            return response()->json(['message' => 'Product xóa thành công']);
+            return response()->json([
+                'message' => 'Product xóa thành công',
+                'data' => $productData 
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Xóa product thất bại', 'error' => $e->getMessage()], 500);
         }
@@ -161,7 +168,7 @@ public function index()
 
     //updateIsFeatured
     public function updateIsFeatured(Request $request, string $id){
-        $product = Product::findOrFail($id);
+        $product = Product::with('category')->findOrFail($id);
         $product->update(['is_featured'=>$request->is_featured]);
 
         return response()->json([
@@ -183,7 +190,7 @@ public function index()
 
     //updateIsActive
     public function updateIsActive(Request $request, string $id){
-        $product = Product::findOrFail($id);
+        $product = Product::with('category')->findOrFail($id);
         $product->update(['is_active'=>$request->is_active]);
 
         return response()->json([
@@ -214,12 +221,12 @@ public function index()
 
 
      public function listDelete()
-{
-    $products = Product::onlyTrashed()
-        ->with(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock'])
-        ->paginate(5);
+    {
+        $products = Product::onlyTrashed()
+            ->with(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock'])
+            ->paginate(10);
 
-    return ProductResource::collection($products);
-}
+        return ProductResource::collection($products);
+    }
 
 }

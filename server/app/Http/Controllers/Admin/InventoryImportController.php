@@ -509,21 +509,11 @@ public function importMultiple(InventoryImportRequest $request)
 
     }
 
-    public function getDetailImport($variantId)
+    public function getDetailImport(string $id)
     {
-        // Lấy chi tiết nhập hàng theo variant_id
-        $products = Product::with([
-            'category',
-            'variants.attributeValues.attribute',
-            'variants.inventoryStock',
-            'variants.inventoryImports.supplier',
-        ])
-        ->whereHas('variants.inventoryImports', function ($query) use ($variantId) {
-            $query->where('variant_id', $variantId);
-        })
-        ->paginate(10);
-
-        return ProductResource::collection($products);
+        $product = Product::with('category','variants.attributeValues.attribute', 'variants.inventoryStock','variants.inventoryImports.supplier'
+        )->findOrFail($id);
+        return new ProductResource($product);
     }
 
 }

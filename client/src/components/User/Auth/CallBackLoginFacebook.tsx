@@ -28,8 +28,8 @@ const CallBackLoginFacebook = () => {
                   secure: true,
                   sameSite: "strict",
                 });
-                localStorage.setItem("userInfor", JSON.stringify(responseLoginInfor.user));
                 login(responseLoginInfor.user);
+                localStorage.setItem("userInfor", JSON.stringify(responseLoginInfor.user));
                 message.success("Đăng nhập thành công!");
                 navigate("/");
               }
