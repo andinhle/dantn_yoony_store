@@ -592,14 +592,12 @@ const UserOrderDetail = () => {
                       <td className="py-4">
                         <div className="flex gap-3 w-fit items-center">
                           <img
-                            src={
-                              item?.product_image
-                            }
+                            src={item?.product_image}
                             className="w-14 h-14 object-cover rounded-lg"
                           />
                           <div className="space-y-1">
                             <Link
-                              to={`/${item.variant.product.category?.slug}/${item.variant.product.slug}`}
+                              to={`/${item?.variant?.product?.category?.slug}/${item?.variant?.product?.slug}`}
                               className="line-clamp-1 text-sm hover:text-primary"
                             >
                               {item.product_name}
@@ -658,10 +656,12 @@ const UserOrderDetail = () => {
                         </span>
                       </span>
                       <span className="block mr-2 text-primary">
-                        {Number(orderDetails?.coupons.length) >= 1
-                          ? `-${Number(
-                              orderDetails?.coupons[0].discount_amount
-                            ).toLocaleString()}đ`
+                        {orderDetails?.coupons?.length >= 1
+                          ? orderDetails?.coupons[0]?.coupon.discount_type === "percentage"
+                            ? `-${Math.abs(orderDetails?.coupons[0]?.discount_amount)}%`
+                            : `-${Number(
+                                orderDetails?.coupons[0]?.discount_amount
+                              ).toLocaleString()}đ`
                           : "0đ"}
                       </span>
                     </p>

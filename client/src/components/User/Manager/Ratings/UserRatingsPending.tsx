@@ -32,7 +32,7 @@ const UserRatingsPending = ({listRatingsPending}:Props) => {
                 </div>
                 <div className="flex flex-col justify-end">
                   <NavLink to={`rating-detail/${ratingPending.code}`} end className="py-1 px-3 bg-primary text-util rounded-md hover:text-util">
-                    Đánh giá ngay
+                    <p className="text-nowrap">Đánh giá ngay</p>
                   </NavLink>
                 </div>
               </div>

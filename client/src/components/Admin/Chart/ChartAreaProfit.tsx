@@ -5,11 +5,11 @@ import instance from "../../../instance/instance";
 
 type TimelinePeriod =
   | "one_day"
+  | "one_week"
   | "one_month"
   | "six_months"
   | "one_year"
   | "last_year"
-  | "ytd"
   | "all";
 
 interface TimelineButton {
@@ -27,7 +27,6 @@ const ChartAreaProfit: React.FC = () => {
     (async()=>{
       try {
         const {data}=await instance.get('thong-ke/ngay-thong-ke')
-        console.log(data)
         setDataDateFilter(data)
       } catch (error) {
         console.log(error)

@@ -22,6 +22,8 @@ class Kernel extends ConsoleKernel
         // $schedule->command('sale:check-expired')
         //          ->everyMinute()
         //          ->appendOutputTo(storage_path('logs/sale-expired.log'));
+      //  $schedule->command('order:update-status')->daily();
+        $schedule->command('order:update-status')->hourly();    
     }
 
     /**

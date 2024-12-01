@@ -22,11 +22,7 @@ const NotificationsUser = () => {
       channel.unsubscribe();
     };
   }, []);
-  console.log(eventData);
-  return <div>
-    Message
-    <pre>{JSON.stringify(eventData, null, 2)}</pre>
-  </div>;
+  return JSON.stringify(eventData, null, 2);
 };
 
 export default NotificationsUser;

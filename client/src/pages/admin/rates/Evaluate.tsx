@@ -287,10 +287,7 @@ const Rates = () => {
                                     <div>
                                         <p className="text-sm truncate whitespace-nowrap overflow-hidden text-ellipsis">
                                             {expandedContent === review.id
-                                                ? review.content
-                                                : review.content.length > 50
-                                                    ? `${review.content.slice(0, 50)}...`
-                                                    : review.content}
+                                                && review.content}
                                         </p>
                                     </div>
                                     <div className="flex items-center space-x-3">
