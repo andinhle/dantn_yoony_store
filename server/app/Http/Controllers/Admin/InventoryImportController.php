@@ -507,7 +507,7 @@ class InventoryImportController extends Controller
     public function deleteImport($id)
     {
         try {
-            $inventoryImport = InventoryImport::find($id);
+            $inventoryImport = InventoryImport::with(['supplier'])->find($id);
 
             if (!$inventoryImport) {
                 return response()->json([
@@ -540,4 +540,63 @@ class InventoryImportController extends Controller
             ], 500);
         }
     }
+
+    public function getByVariantId($variantId)
+{
+    try {
+        $records = InventoryImport::with([ 'supplier'])
+            ->where('variant_id', $variantId)
+            ->get();
+
+        if ($records->isEmpty()) {
+            return response()->json([
+                'message' => 'Không tìm thấy bản ghi nào liên quan đến variant_id: ' . $variantId,
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Danh sách các bản ghi liên quan đến variant_id: ' . $variantId,
+            'data' => $records
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Có lỗi xảy ra.',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
+
+
+public function deleteHistoryRecord($id)
+{
+    try {
+        $history = InventoryImportHistory::find($id);
+
+        if (!$history) {
+            return response()->json([
+                'message' => 'Không tìm thấy bản ghi với ID: ' . $id
+            ], 404);
+        }
+
+        if ($history->status !== 'Hết hàng') {
+            return response()->json([
+                'message' => 'Bản ghi không thể xóa vì trạng thái không phải là "Hết hàng".'
+            ], 400);
+        }
+
+        $history->delete();
+
+        return response()->json([
+            'message' => 'Bản ghi đã được xóa thành công.',
+            'deleted_record' => $history
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Có lỗi xảy ra khi xóa bản ghi.',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
+
 }
