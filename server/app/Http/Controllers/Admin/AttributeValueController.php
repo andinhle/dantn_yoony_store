@@ -116,19 +116,16 @@ class AttributeValueController extends Controller
         }
     }
 
-    public function destroy(AttributeValue $attributeValue)
+    public function destroy($id)
     {
         try {
-
-
-            $idExits = AttributeValue::where('id', $attributeValue->id)->exists();
-            if(!$idExits){
+            $model = AttributeValue::query()->findOrFail($id);
+            if(!$model){
                 return response()->json([
                     'status' => 'error',
                     'messages' =>  'Vui lòng thử lại'
                 ], Response::HTTP_NOT_FOUND);
             }
-            $model = AttributeValue::query()->findOrFail($attributeValue->id);
 
             $model->delete();
 

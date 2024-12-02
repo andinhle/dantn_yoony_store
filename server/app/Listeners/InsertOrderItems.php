@@ -58,10 +58,8 @@ class InsertOrderItems
             ->where('variant_id', $value->variant_id)
             ->decrement('quantity', $value->quantity); 
             
-            // $variantIds[] = $value->variant->id;
 
             $remainingQuantity = $value->quantity;
-            // $totalCost = 0;
 
             $stocks = InventoryImport::query()
             ->where('variant_id', $value->variant_id)
@@ -69,8 +67,7 @@ class InsertOrderItems
             ->orderBy('id', 'asc')
             ->get();
 
-            $totalQuantity = $stocks->sum('quantity');
-            $tutolCosts = [];
+            $totalCost = 0;
 
             foreach ($stocks as $stock) {
                 // Kiểm tra nếu còn đủ hàng
@@ -82,17 +79,17 @@ class InsertOrderItems
                 $quantityAvailable = $stock->quantity;
                 $unitPrice = $stock->import_price;
 
-        
                 if ($quantityAvailable > 0) {
                     // Nếu còn hàng trong kho
                     if ($quantityAvailable >= $remainingQuantity) {
 
 
                         $stock->quantity -= $remainingQuantity;
-                        $quantityToPurchase = 0; // Đã mua xong
+                        $totalCost += $remainingQuantity * $unitPrice;
+                        $remainingQuantity = 0; // Đã mua xong
 
                     } else {
-
+                        $totalCost += $quantityAvailable * $unitPrice;
                         $remainingQuantity -= $quantityAvailable;
                         $stock->quantity = 0;
                     }
@@ -100,17 +97,17 @@ class InsertOrderItems
 
 
                     $stock->save();
+                    if($stock->quantity === 0){
+                        $stock->delete();
+                    }
                 }
-
-                $tutolCosts[] = $stock->import_price * $stock->quantity;
                 
                 
             }
-            \Log::info('tutolCosst', (array) $tutolCosts);
-            $tutolCost = array_sum($tutolCosts);
-            $unitCost = $tutolCost / $totalQuantity;
+            \Log::info('tutolCosst', (array) $totalCost);
+            $unitCost = $totalCost / $value->quantity;
             $orderItem['unit_cost'] = $unitCost;
-            $orderItem['profit'] = $orderItem['unit_cost'] - $orderItem['unit_price'];
+            $orderItem['profit'] = ($orderItem['unit_price'] - $orderItem['unit_cost']) * $value->quantity;
             $orderItems[] = $orderItem;
 
         }           
