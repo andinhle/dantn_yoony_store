@@ -75,6 +75,7 @@ const ListInventory = () => {
     })();
   }, [page]);
 
+
   function findNewestUpdateTime(variants: IVariants[]): string | null {
     let newestUpdate = "";
 
@@ -87,22 +88,30 @@ const ListInventory = () => {
 
     return newestUpdate || null;
   }
-
+  const [idProduct, setIdProduct] = useState<number>();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpenShowDetail, setIsModalOpenShowDetail] = useState(false);
   const [isModalOpenHistory, setIsModalOpenHistory] = useState(false);
 
   const showModal = () => {
     setIsModalOpen(true);
   };
+
+  const showModalDetail = (id: number) => {
+    setIsModalOpenShowDetail(true);
+    setIdProduct(id);
+  };
   const showModalHistory = () => {
     setIsModalOpenHistory(true);
   };
   const handleCancel = () => {
+    setIsModalOpenShowDetail(false);
     setIsModalOpen(false);
   };
 
   const handleCancelHistory = () => {
     setIsModalOpenHistory(false);
+    setIsModalOpenShowDetail(false);
   };
 
   return (
@@ -188,7 +197,7 @@ const ListInventory = () => {
                   strokeLinejoin="round"
                 />
               </svg>
-              Thêm mới
+              Nhập hàng
             </button>
             <ButtonExport
               data={inventorys}
@@ -343,20 +352,51 @@ const ListInventory = () => {
                       </Table.Cell>
                       <Table.Cell className="text-center text-nowrap">
                         <div className="flex gap-2 justify-center">
-                          <button className="bg-util shadow py-2 px-3 rounded-md">
+                          <button
+                            className="bg-util shadow py-2 px-3 rounded-md text-primary"
+                            onClick={() => showModalDetail(inventory.id!)}
+                          >
                             <svg
-                              className="size-5"
-                              fill="none"
-                              viewBox="0 0 20 20"
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              className="size-6"
+                              color={"currentColor"}
+                              fill={"none"}
                             >
                               <path
-                                stroke="#1FD178"
+                                d="M11 22C10.1818 22 9.40019 21.6698 7.83693 21.0095C3.94564 19.3657 2 18.5438 2 17.1613C2 16.7742 2 10.0645 2 7M11 22L11 11.3548M11 22C11.7248 22 12.293 21.7409 13.5 21.2226M20 7V11"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                strokeMiterlimit="10"
+                              />
+                              <path
+                                d="M15 17.5H22M18.5 21L18.5 14"
+                                stroke="currentColor"
                                 strokeWidth="1.5"
-                                d="M11.05 3l-6.842 7.242c-.258.275-.508.816-.558 1.191l-.308 2.7c-.109.975.591 1.642 1.558 1.475l2.683-.458c.375-.067.9-.342 1.159-.625l6.841-7.242c1.184-1.25 1.717-2.675-.125-4.416C13.625 1.142 12.233 1.75 11.05 3zM9.908 4.208A5.105 5.105 0 0014.45 8.5M2.5 18.333h15"
-                              ></path>
+                                strokeLinecap="round"
+                              />
+                              <path
+                                d="M7.32592 9.69138L4.40472 8.27785C2.80157 7.5021 2 7.11423 2 6.5C2 5.88577 2.80157 5.4979 4.40472 4.72215L7.32592 3.30862C9.12883 2.43621 10.0303 2 11 2C11.9697 2 12.8712 2.4362 14.6741 3.30862L17.5953 4.72215C19.1984 5.4979 20 5.88577 20 6.5C20 7.11423 19.1984 7.5021 17.5953 8.27785L14.6741 9.69138C12.8712 10.5638 11.9697 11 11 11C10.0303 11 9.12883 10.5638 7.32592 9.69138Z"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <path
+                                d="M5 12L7 13"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <path
+                                d="M16 4L6 9"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
                             </svg>
                           </button>
                         </div>
@@ -383,6 +423,8 @@ const ListInventory = () => {
         />
       </div>
       <ModalInventoryImport
+        idProduct={idProduct!}
+        isModalOpenShowDetail={isModalOpenShowDetail}
         setIsModalOpen={setIsModalOpen}
         isModalOpen={isModalOpen}
         findNewestUpdateTime={findNewestUpdateTime}

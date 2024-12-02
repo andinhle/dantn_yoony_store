@@ -13,6 +13,7 @@ class Notification extends Model
         'user_id',
         'order_id',
         'content',
-        'is_read'
+        'is_read',
+        'order_code'
     ];
 }

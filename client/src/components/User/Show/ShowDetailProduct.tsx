@@ -144,11 +144,23 @@ const ShowDetailProduct: React.FC = () => {
       const groups = generateAttributeGroups(processedVariants);
       setAttributeGroups(groups);
 
-      setImageProducts([
-        productData.images?.[0] || "",
-        ...processedVariants.map((v) => v.image).filter(Boolean),
-      ]);
+      // Check if there's only one variant, handle images accordingly
+      let allImages = productData.images || [];
 
+      if (processedVariants.length === 1) {
+        // If only one variant, include the images from the variant as well
+        allImages = [...allImages, processedVariants[0]?.image].filter(Boolean); // Remove any null or undefined images
+      } else {
+        // Otherwise, include images from each variant
+        allImages = [
+          productData.images?.[0] || "",
+          ...processedVariants.map((v) => v.image).filter(Boolean),
+        ];
+      }
+
+      setImageProducts(allImages);
+
+      // Set selected image
       setSelectedImage(
         productData.images?.[0] || processedVariants[0]?.image || ""
       );
@@ -176,6 +188,7 @@ const ShowDetailProduct: React.FC = () => {
         values: Set<string>;
         images: Set<string>;
         type: "select" | "color" | "button" | "radio";
+        availableValues: Set<string>; // New field
       };
     } = {};
 
@@ -188,6 +201,7 @@ const ShowDetailProduct: React.FC = () => {
             values: new Set(),
             images: new Set(),
             type: type,
+            availableValues: new Set(),
           };
         }
 
@@ -198,12 +212,20 @@ const ShowDetailProduct: React.FC = () => {
       });
     });
 
+    variants.forEach((variant) => {
+      Object.entries(variant.attributes).forEach(([key, attrDetails]) => {
+        const { value } = attrDetails;
+        attributeMap[key].availableValues.add(value);
+      });
+    });
+
     return Object.entries(attributeMap).map(
-      ([name, { values, images, type }]) => ({
+      ([name, { values, images, type, availableValues }]) => ({
         name,
         values: Array.from(values),
         images: Array.from(images),
         type,
+        availableValues: Array.from(availableValues),
       })
     );
   };
@@ -224,22 +246,32 @@ const ShowDetailProduct: React.FC = () => {
       }
     }
   };
+  const getAvailableAttributeValues = (attributeName: string) => {
+    const currentSelectedAttributes = { ...selectedAttributes };
+  
+    const matchingVariants = variants.filter((variant) => 
+      Object.entries(currentSelectedAttributes).every(
+        ([key, selectedValue]) => 
+          key === attributeName || 
+          variant.attributes[key]?.value === selectedValue
+      )
+    );
+  
+    const availableValues = new Set(
+      matchingVariants.map(
+        (variant) => variant.attributes[attributeName]?.value
+      ).filter(Boolean)
+    );
+  
+    return availableValues;
+  };
 
-  const isAttributeAvailable = (
-    attributeName: string,
+  const isAttributeValueAvailable = (
+    attributeName: string, 
     value: string
   ): boolean => {
-    return variants.some((variant) => {
-      for (const [key, selectedValue] of Object.entries(selectedAttributes)) {
-        if (
-          key !== attributeName &&
-          variant.attributes[key]?.value !== selectedValue
-        ) {
-          return false;
-        }
-      }
-      return variant.attributes[attributeName]?.value === value;
-    });
+    const availableValues = getAvailableAttributeValues(attributeName);
+    return availableValues.has(value);
   };
 
   useEffect(() => {
@@ -264,6 +296,9 @@ const ShowDetailProduct: React.FC = () => {
     if (!selectedVariant) {
       message.error("Vui lòng chọn đầy đủ thuộc tính sản phẩm");
       return false;
+    }
+    if (!selectedVariant?.quantity) {
+      return message.warning("Hết hàng vui lòng chọn phân loại khác");
     }
 
     const existingCartItems = carts.filter(
@@ -356,7 +391,7 @@ const ShowDetailProduct: React.FC = () => {
     value: string,
     index: number
   ) => {
-    const isAvailable = isAttributeAvailable(group.name, value);
+    const isAvailable = isAttributeValueAvailable(group.name, value);
     const isSelected = selectedAttributes[group.name] === value;
     switch (group.type) {
       case "color":
@@ -612,30 +647,57 @@ const ShowDetailProduct: React.FC = () => {
               <Rate disabled allowHalf value={average_rating} />
             </div>
             {selectedVariant ? (
-              <div className="py-1 px-3 bg-[#3CD139]/10 text-[#3CD139] rounded-full flex gap-1 w-fit text-sm">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  className="size-5"
-                  color={"currentColor"}
-                  fill={"none"}
-                >
-                  <path
-                    d="M12 22C11.1818 22 10.4002 21.6646 8.83693 20.9939C4.94564 19.3243 3 18.4895 3 17.0853L3 7.7475M12 22C12.8182 22 13.5998 21.6646 15.1631 20.9939C19.0544 19.3243 21 18.4895 21 17.0853V7.7475M12 22L12 12.1707M21 7.7475C21 8.35125 20.1984 8.7325 18.5953 9.495L15.6741 10.8844C13.8712 11.7419 12.9697 12.1707 12 12.1707M21 7.7475C21 7.14376 20.1984 6.7625 18.5953 6M3 7.7475C3 8.35125 3.80157 8.7325 5.40472 9.495L8.32592 10.8844C10.1288 11.7419 11.0303 12.1707 12 12.1707M3 7.7475C3 7.14376 3.80157 6.7625 5.40472 6M6.33203 13.311L8.32591 14.2594"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M12 2V4M16 3L14.5 5M8 3L9.5 5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                Còn hàng: {selectedVariant?.quantity}
-              </div>
+              selectedVariant?.quantity ? (
+                <div className="py-1 px-3 bg-[#3CD139]/10 text-[#3CD139] rounded-full flex gap-1 w-fit text-sm">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="size-5"
+                    color={"currentColor"}
+                    fill={"none"}
+                  >
+                    <path
+                      d="M12 22C11.1818 22 10.4002 21.6646 8.83693 20.9939C4.94564 19.3243 3 18.4895 3 17.0853L3 7.7475M12 22C12.8182 22 13.5998 21.6646 15.1631 20.9939C19.0544 19.3243 21 18.4895 21 17.0853V7.7475M12 22L12 12.1707M21 7.7475C21 8.35125 20.1984 8.7325 18.5953 9.495L15.6741 10.8844C13.8712 11.7419 12.9697 12.1707 12 12.1707M21 7.7475C21 7.14376 20.1984 6.7625 18.5953 6M3 7.7475C3 8.35125 3.80157 8.7325 5.40472 9.495L8.32592 10.8844C10.1288 11.7419 11.0303 12.1707 12 12.1707M3 7.7475C3 7.14376 3.80157 6.7625 5.40472 6M6.33203 13.311L8.32591 14.2594"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M12 2V4M16 3L14.5 5M8 3L9.5 5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  Còn hàng: {selectedVariant?.quantity}
+                </div>
+              ) : (
+                <div className="py-1 px-3 bg-primary/10 text-primary rounded-full flex gap-1 w-fit text-sm">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="size-5"
+                    color={"currentColor"}
+                    fill={"none"}
+                  >
+                    <path
+                      d="M12 22C11.1818 22 10.4002 21.6708 8.83693 21.0123C4.94564 19.3734 3 18.5539 3 17.1754V7.54234M12 22C12.8182 22 13.5998 21.6708 15.1631 21.0123C19.0544 19.3734 21 18.5539 21 17.1754V7.54234M12 22V12.0292M21 7.54234C21 8.15478 20.1984 8.54152 18.5953 9.315L15.6741 10.7244C13.8712 11.5943 12.9697 12.0292 12 12.0292M21 7.54234C21 6.9299 20.1984 6.54316 18.5953 5.76969L17 5M3 7.54234C3 8.15478 3.80157 8.54152 5.40472 9.315L8.32592 10.7244C10.1288 11.5943 11.0303 12.0292 12 12.0292M3 7.54234C3 6.9299 3.80157 6.54317 5.40472 5.76969L7 5M6 13.0263L8 14.0234"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M10 2L12 4M12 4L14 6M12 4L10 6M12 4L14 2"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  Hết hàng
+                </div>
+              )
             ) : (
               <div className="py-1 px-3 bg-primary/10 text-primary rounded-full flex gap-1 w-fit text-sm">
                 <svg

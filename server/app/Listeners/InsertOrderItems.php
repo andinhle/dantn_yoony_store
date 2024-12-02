@@ -30,42 +30,92 @@ class InsertOrderItems
 
         $orderId = $event->order->id;
         $objectData =$event->order->items;
-        \Log::info( $objectData );
+        // \Log::info( $objectData );
         
         $orderItems = [];
         
         foreach ($objectData as $value) {
-                // Log::info($value->variant->product->images[0]);
+            // Log::info($value->variant->product->images[0]);
 
-                if($value->variant->image){
-                    $productImage = $value->variant->image;
-                }else {
-                    $urls = json_decode($value->variant->product->images);
-                    $productImage = $urls[0]; // Lấy URL đầu tiên
-                }
+            if($value->variant->image){
+                $productImage = $value->variant->image;
+            }else {
+                $urls = json_decode($value->variant->product->images);
+                $productImage = $urls[0]; // Lấy URL đầu tiên
+            }
 
-                $orderItem['order_id'] = $orderId;
-                $orderItem['variant_id'] = $value->variant->id;
-                $orderItem['order_item_attribute'] = json_encode($value->variant->attribute_values);
-                $orderItem['product_name'] = $value->variant->product->name;
-                $orderItem['product_image'] = json_encode($productImage) ;
-                $orderItem['quantity'] = $value->quantity;
-                $orderItem['unit_price'] = $value->variant->sale_price ?: $value->variant->price;
-                $orderItem['total_price'] = $value->quantity * ($value->variant->sale_price ?: $value->variant->price);
+            $orderItem['order_id'] = $orderId;
+            $orderItem['variant_id'] = $value->variant->id;
+            $orderItem['order_item_attribute'] = json_encode($value->variant->attribute_values);
+            $orderItem['product_name'] = $value->variant->product->name;
+            $orderItem['product_image'] = json_encode($productImage) ;
+            $orderItem['quantity'] = $value->quantity;
+            $orderItem['unit_price'] = $value->variant->sale_price ?: $value->variant->price;
+            $orderItem['total_price'] = $value->quantity * ($value->variant->sale_price ?: $value->variant->price);
 
-                $orderItems[] = $orderItem;
-                
+            
             InventoryStock::query()
             ->where('variant_id', $value->variant_id)
             ->decrement('quantity', $value->quantity); 
             
-            $variantIds[] = $value->variant->id;
+            // $variantIds[] = $value->variant->id;
 
-            
+            $remainingQuantity = $value->quantity;
+            // $totalCost = 0;
+
+            $stocks = InventoryImport::query()
+            ->where('variant_id', $value->variant_id)
+            ->where('quantity', '>', 0)
+            ->orderBy('id', 'asc')
+            ->get();
+
+            $totalQuantity = $stocks->sum('quantity');
+            $tutolCosts = [];
+
+            foreach ($stocks as $stock) {
+                // Kiểm tra nếu còn đủ hàng
+                if ($remainingQuantity <= 0) {
+                    break; // Nếu đã mua đủ, thoát khỏi vòng lặp
+                }
+        
+                // Tính số lượng sẽ trừ
+                $quantityAvailable = $stock->quantity;
+                $unitPrice = $stock->import_price;
+
+        
+                if ($quantityAvailable > 0) {
+                    // Nếu còn hàng trong kho
+                    if ($quantityAvailable >= $remainingQuantity) {
+
+
+                        $stock->quantity -= $remainingQuantity;
+                        $quantityToPurchase = 0; // Đã mua xong
+
+                    } else {
+
+                        $remainingQuantity -= $quantityAvailable;
+                        $stock->quantity = 0;
+                    }
+                        
+
+
+                    $stock->save();
+                }
+
+                $tutolCosts[] = $stock->import_price * $stock->quantity;
+                
+                
+            }
+            \Log::info('tutolCosst', (array) $tutolCosts);
+            $tutolCost = array_sum($tutolCosts);
+            $unitCost = $tutolCost / $totalQuantity;
+            $orderItem['unit_cost'] = $unitCost;
+            $orderItem['profit'] = $orderItem['unit_cost'] - $orderItem['unit_price'];
+            $orderItems[] = $orderItem;
+
         }           
-        InventoryImport::query()
-        ->where('variant_id', $value->variant_id)
-        ->
         OrderItem::insert($orderItems);
+
+
     }
 }
