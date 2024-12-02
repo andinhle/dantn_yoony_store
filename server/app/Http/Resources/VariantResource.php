@@ -23,9 +23,9 @@ class VariantResource extends JsonResource
             'quantity' => optional($this->inventoryStock)->quantity,
             'image' => $this->image,
             'attribute_values' => AttributeValueResource::collection($this->whenLoaded('attributeValues')),
+            'inventoryImports' => InventoryImportResource::collection($this->whenLoaded('inventoryImports')),
+            'has_inventory_imports' => $this->inventoryImports->isNotEmpty(),
             'updated_at'=>$this->updated_at,
-            'inventoryImports' => new InventoryImportResource(resource: $this->inventoryImports->first()),            
-            'has_inventory_imports' => $this->inventoryImports->isNotEmpty(), 
 
         ];
     }

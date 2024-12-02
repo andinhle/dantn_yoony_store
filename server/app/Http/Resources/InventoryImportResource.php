@@ -18,7 +18,8 @@ class InventoryImportResource extends JsonResource
             'id' => $this->id,
             'import_price' => $this->import_price,
             'quantity' => $this->quantity,
-            'supplier' => new SupplierResource($this->whenLoaded('supplier')), 
+            'batch_number' => $this->batch_number,
+            'supplier' => new SupplierResource($this->whenLoaded('supplier')),
         ];
     }
 }
