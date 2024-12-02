@@ -160,6 +160,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
         Route::apiResource('attribute-value', AttributeValueController::class);
         Route::get('/attribute-values/{id}', [AttributeValueController::class, 'getByAttributeId']);
+        Route::put('/attribute-values/{attributeValue}', [AttributeValueController::class, 'update']);
 
         // QL banner
         Route::apiResource('banners', BannerController::class);
