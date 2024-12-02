@@ -15,23 +15,17 @@ class InventoryImportHistory extends Model
         'supplier_id',
         'quantity',
         'import_price',
-        'price',
-        'sale_price',
-        'end_sale',
-        'image',
-        'supplier_name',
-        'supplier_phone',
-        'supplier_email',
-        'supplier_address',
+        'batch_number',
+        'status'
     ];
     public function variant()
     {
-        return $this->belongsTo(Variant::class);
+        return $this->belongsTo(Variant::class, 'variant_id');
     }
 
-    // Quan hệ với bảng suppliers
+    // Quan hệ với bảng `supplier`
     public function supplier()
     {
-        return $this->belongsTo(Supplier::class);
+        return $this->belongsTo(Supplier::class, 'supplier_id');
     }
 }
