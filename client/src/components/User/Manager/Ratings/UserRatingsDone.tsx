@@ -47,12 +47,12 @@ const UserRatingsDone = () => {
         const { data } = await instance.get("reviews/reviewed-orders");
         setRatingDoneLists(data.data);
         setMeta(data.pagination);
-        console.log(data);
+        // console.log(data);
       } catch (error) {
         console.log(error);
       }
     })();
-  }, []);
+  }, [page]);
 
   return (
     <div className="space-y-5">

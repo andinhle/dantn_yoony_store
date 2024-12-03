@@ -13,7 +13,7 @@ export interface IVariants{
     attribute_values:IAttributeValue[],
     product:IProduct,
     total_revenue?:number,
-    inventoryImports: InventoryImport;
+    inventoryImports: InventoryImport[];
     updated_at?:string
 }
 

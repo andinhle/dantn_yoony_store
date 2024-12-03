@@ -310,11 +310,11 @@ const ListInventory = () => {
                   </Table.Cell>
                 </Table.Row>
               ) : (
-                inventorys.map((inventory) => {
+                inventorys.map((inventory,index) => {
                   return (
                     <Table.Row>
                       <Table.Cell className="text-center">
-                        {inventory.id}
+                        {index+1}
                       </Table.Cell>
                       <Table.Cell className="text-center">
                         <div className="flex gap-2.5">
@@ -326,9 +326,9 @@ const ListInventory = () => {
                           <div className="max-w-[300px] space-y-0.5">
                             <Link
                               to={`/${inventory.category?.slug}/${inventory.slug}`}
-                              className="text-left hover:text-primary/90 font-medium text-nowrap text-ellipsis overflow-hidden"
+                              className="text-left hover:text-primary/90 font-medium"
                             >
-                              {inventory.name}
+                              <p className="text-nowrap text-ellipsis overflow-hidden">{inventory.name}</p>
                             </Link>
                             <p className="text-left text-nowrap text-ellipsis overflow-hidden text-sm text-secondary/50">
                               Cập nhật:{" "}

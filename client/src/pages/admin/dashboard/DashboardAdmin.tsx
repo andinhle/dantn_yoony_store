@@ -45,7 +45,7 @@ const DashboardAdmin = () => {
           </div>
           <div>
             <h5 className="font-medium">
-              Lợi nhuận{" "}
+              Doanh thu{" "}
               <span className="text-primary">
                 / <span className="text-sm">Ngày</span>
               </span>

@@ -5,11 +5,12 @@ import instance from "../../../instance/instance";
 import { ICategory } from "../../../interfaces/ICategory";
 import { IAttribute } from "../../../interfaces/IAttribute";
 import queryString from "query-string";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { IProduct } from "../../../interfaces/IProduct";
 import { debounce } from "lodash";
 import { LoadingOverlay } from "@achmadk/react-loading-overlay";
 import RenderProductFilter from "./RenderProductFilter";
+import { IMeta } from "../../../interfaces/IMeta";
 
 interface IPrice {
   min: number;
@@ -46,6 +47,9 @@ const FilterProducts = () => {
   const [parsedSearch, setParsedSearch] = useState<any>();
   const [dataResponse, setDataResponse] = useState<IProduct[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = parseInt(searchParams.get("page") || "1");
+  const [meta, setMeta] = useState<IMeta>();
   const location = useLocation();
 
   const fetchProducts = useCallback(
@@ -68,17 +72,19 @@ const FilterProducts = () => {
             : undefined,
         };
 
+        setSearchParams({ page: String(page) });
         const {
-          data: { data: response },
+          data,
         } = await instance.post("products/filter", cleanParams);
-        setDataResponse(response);
+        setDataResponse(data.data);
+        setMeta(data)
       } catch (error) {
         console.error("Error fetching products:", error);
       } finally {
         setIsLoading(false);
       }
     },
-    [setDataResponse, setIsLoading]
+    [setDataResponse, setIsLoading,page]
   );
 
   const debouncedFetchProducts = useCallback(debounce(fetchProducts, 500), [
@@ -441,7 +447,7 @@ const FilterProducts = () => {
             }}
             className="flex justify-between items-center"
           >
-            <RenderProductFilter datas={dataResponse} />
+            <RenderProductFilter datas={dataResponse} setSearchParams={setSearchParams} page={page} meta={meta!} />
           </LoadingOverlay>
         </div>
       </div>
