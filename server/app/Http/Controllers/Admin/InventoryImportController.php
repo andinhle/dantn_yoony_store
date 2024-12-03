@@ -469,6 +469,11 @@ class InventoryImportController extends Controller
                 }
 
                 $result[] = [
+                    'product' => [
+                        'name' => $product->variant->product->name ?? 'N/A',
+                        'images' => json_decode($product->variant->product->images, true) ?? []
+                    ],
+                    'id' => $product->id,
                     'quantity_import_history' => $product->quantity,
                     'quantity_available' => $quantityAvailable,
                     'import_price' => $product->import_price,

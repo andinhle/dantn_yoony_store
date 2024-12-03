@@ -19,7 +19,9 @@ class ProductController extends Controller
      */
 public function index()
 {
-    $products = Product::with(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock'])->paginate(15);
+    $products = Product::with(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock'])
+    ->orderBy('created_at', 'desc')
+    ->paginate(15);
 
         return ProductResource::collection($products);
     }
