@@ -390,7 +390,19 @@ class OrderController extends Controller
                 case Order::STATUS_ORDER_PREPARING_GOODS:
                 case Order::STATUS_ORDER_SHIPPING:
                 case Order::STATUS_ORDER_DELIVERED:
+                    if($request->status === 'pending'| 'confirmed' | 'preparing_goods' | 'shipping' | 'delivered' | 'canceled'){
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Trạng thái không hợp lệ.'
+                        ], 400);
+                    }
                 case Order::STATUS_ORDER_CANCELED:
+                    // if($request->status === 'pending'| 'confirmed' | 'preparing_goods' | 'shipping' | 'delivered' | 'canceled' | 'delivered'){
+                    //     return response()->json([
+                    //         'success' => false,
+                    //         'message' => 'Trạng thái không hợp lệ.'
+                    //     ], 400);
+                    // }
                     Order::query()->whereIn('id',  $ids)->update([
                                     'status_order' => $request->status,
                 ]);

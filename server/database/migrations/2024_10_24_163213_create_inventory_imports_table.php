@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('variant_id')->constrained('variants')->cascadeOnDelete();
             $table->foreignId('supplier_id')->constrained('suppliers')->cascadeOnDelete();
             $table->string('batch_number')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }
