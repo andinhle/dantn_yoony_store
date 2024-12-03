@@ -34,6 +34,7 @@ const CartListClient = () => {
   const [selectedTotal, setSelectedTotal] = useState(0);
   const pageSize = 5;
 
+  // console.log(carts);
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
 
   const calculateTotal = (item: any) => {

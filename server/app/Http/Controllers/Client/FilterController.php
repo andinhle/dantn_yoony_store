@@ -69,22 +69,33 @@ class FilterController extends Controller
                 });
             }
         }
+
         // Sắp xếp sản phẩm mới nhất
         if ($request->has('newest') && $request->input(key: 'newest')) {
             $query->orderBy('created_at', 'desc');
         }
 
-        //lọc giá tăng dần, giảm dần
-        if ($request->has('sort_price')) {
-            $sortOrder = $request->input('sort_price') == 'asc' ? 'asc' : 'desc';
-            $query->addSelect(['min_variant_price' => Variant::selectRaw('MIN(price)')->whereColumn('product_id', 'products.id')])->orderBy('min_variant_price', $sortOrder);
-        }
+        // sản phẩm nổi bật
+        if ($request->has('feature') && $request->input('feature')) {
+            $query->where('is_feature', 1);
+        }        
 
+// Lọc giá tăng dần, giảm dần
+    if ($request->has('sort_price')) {
+        $sortOrder = $request->input('sort_price') == 'asc' ? 'asc' : 'desc';
+
+        // Thêm subquery vào `addSelect` để lấy giá trị `price` thấp nhất từ `variants`
+        $query->addSelect(['min_variant_price' => Variant::selectRaw('MIN(price)')
+            ->whereColumn('product_id', 'products.id')]);
+
+        // Đảm bảo điều kiện sắp xếp áp dụng sau khi các điều kiện khác đã được áp dụng
+        $query->orderBy('min_variant_price', $sortOrder);
+    }
 
         Log::info('Thông số truy vấn sql:', [$query->toSql(), $query->getBindings()]);
 
         // Lấy kết quả
-        $products = $query->with(['category', 'variants.attributeValues.attribute'])->paginate(8);
+        $products = $query->with(['category', 'variants.attributeValues.attribute'])->paginate(12);
 
         $products->each(function ($product) {
             if (!empty($product->images)) {

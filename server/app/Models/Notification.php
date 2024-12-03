@@ -14,6 +14,7 @@ class Notification extends Model
         'order_id',
         'content',
         'is_read',
-        'order_code'
+        'order_code',
+        'status'
     ];
 }
