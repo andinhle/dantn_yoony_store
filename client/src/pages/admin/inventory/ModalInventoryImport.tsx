@@ -1,4 +1,4 @@
-import { Avatar, ConfigProvider, Input, Modal, Select } from "antd";
+import { Avatar, ConfigProvider, Input, Modal, Popconfirm, Select } from "antd";
 import { Table } from "flowbite-react";
 import React, { useContext, useEffect, useState } from "react";
 import instance from "../../../instance/instance";
@@ -8,24 +8,34 @@ import dayjs from "dayjs";
 import { IVariants } from "../../../interfaces/IVariants";
 import ButtonSubmit from "../../../components/Admin/ButtonSubmit";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
-import { DatePicker } from "antd";
 import { IAttributeValue } from "../../../interfaces/IAttributeValue";
 import { LoadingOverlay } from "@achmadk/react-loading-overlay";
 import { Checkbox } from "antd";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import slugify from "react-slugify";
+import { ISupplier } from "../../../interfaces/ISupplier";
 type Props = {
   isModalOpen: boolean;
   handleCancel: () => void;
   findNewestUpdateTime: (variants: IVariants[]) => void;
   setIsModalOpen: (isModalOpen: boolean) => void;
-  idProduct:number
-  isModalOpenShowDetail:boolean
+  idProduct: number;
+  isModalOpenShowDetail: boolean;
 };
 
 type FormValues = {
-  variants: IVariants[];
+  variants: Array<
+    IVariants & {
+      newImport?: {
+        import_price: number;
+        quantity: number;
+        supplier: {
+          id: number;
+        };
+      };
+    }
+  >;
 };
 
 const ModalInventoryImport = ({
@@ -34,7 +44,7 @@ const ModalInventoryImport = ({
   handleCancel,
   setIsModalOpen,
   idProduct,
-  isModalOpenShowDetail
+  isModalOpenShowDetail,
 }: Props) => {
   const { Search } = Input;
   const [valSearch, SetValSearch] = useState<string>("");
@@ -72,7 +82,7 @@ const ModalInventoryImport = ({
           data: { data: response },
         },
       } = await instance.get("suppliers");
-      return response.map((supplier) => ({
+      return response.map((supplier: ISupplier) => ({
         label: supplier.name,
         value: supplier.id,
       }));
@@ -106,16 +116,18 @@ const ModalInventoryImport = ({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const {data:{data:response}} = await instance.get(`import-detail/${idProduct}`);
-        
+        const {
+          data: { data: response },
+        } = await instance.get(`import-detail/${idProduct}`);
+
         // Đặt inventorys và chọn sản phẩm
         setInventorys([response]);
         setSelectedProductId(response.id);
-        
+
         // Cập nhật variants và mở rộng
         if (response && response.variants && response.variants.length > 0) {
           setInventoryItem(response.variants);
-          
+
           // Reset form với variants mới
           reset({
             variants: response.variants,
@@ -129,7 +141,7 @@ const ModalInventoryImport = ({
         setSelectedProductId(null);
       }
     };
-  
+
     // Kiểm tra điều kiện để fetch
     if (idProduct && (isModalOpen || isModalOpenShowDetail)) {
       fetchData();
@@ -138,17 +150,8 @@ const ModalInventoryImport = ({
     }
   }, [idProduct, isModalOpen, isModalOpenShowDetail]);
 
-  const { control, handleSubmit, register, setValue, reset, watch } = useForm<FormValues>({
-    defaultValues: {
-      variants: inventoryItem.map((item) => {
-        const modifiedItem = { ...item };
-        if (modifiedItem.inventoryImports && !isExpandAll) {
-          modifiedItem.inventoryImports.quantity = 0;
-        }
-        return modifiedItem;
-      }),
-    },
-  });
+  const { control, handleSubmit, register, setValue, reset, watch, getValues } =
+    useForm<FormValues>();
 
   const { fields } = useFieldArray({
     control,
@@ -191,64 +194,6 @@ const ModalInventoryImport = ({
       })
       .join(", ");
   };
-
-  const onSave = (index: number) => async (data: FormValues) => {
-    setLoading(true);
-    const variant = data.variants[index];
-    try {
-      const savedVariantData = {
-        variant_id: variant.id,
-        supplier_id: variant.inventoryImports?.supplier?.id || null,
-        price: variant.price || null,
-        sale_price: variant.sale_price || null,
-        end_sale: variant.end_sale
-          ? dayjs(variant.end_sale).format("YYYY-MM-DD HH:mm:ss")
-          : null,
-        quantity: variant.inventoryImports?.quantity || null,
-        import_price: variant.inventoryImports?.import_price || null,
-      };
-      const { data } = await instance.post("import-orders", {
-        variants: [savedVariantData],
-      });
-      if (data) {
-        toast.success("Nhập vào kho thành công !");
-        await fetchNoInventory();
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onUpdateVariantProduct =
-    (index: number) => async (data: FormValues) => {
-      setLoading(true);
-      const variant = data.variants[index];
-      try {
-        const savedVariantData = {
-          variant_id: variant.id,
-          supplier_id: variant.inventoryImports?.supplier?.id || null,
-          price: variant.price || null,
-          sale_price: variant.sale_price || null,
-          end_sale: variant.end_sale
-            ? dayjs(variant.end_sale).format("YYYY-MM-DD HH:mm:ss")
-            : null,
-          import_price: variant.inventoryImports?.import_price || null,
-        };
-        const { data } = await instance.put("updateVariant", {
-          variants: [savedVariantData],
-        });
-        if (data) {
-          toast.success("Cập nhật thành công !");
-          await fetchNoInventory();
-        }
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
   // Hàm kiểm tra xem một variant đã được chọn chưa
   const isVariantSelected = (variant: IVariants) => {
@@ -295,37 +240,34 @@ const ModalInventoryImport = ({
       toast.warning("Vui lòng chọn ít nhất một variant.");
       return;
     }
-  
+
     setLoading(true);
     try {
       // Lọc các variant phải có đủ thông tin
-      const importVariants = selectedVariants.filter(variant => 
-        variant.inventoryImports?.import_price && 
-        variant.price && 
-        variant.inventoryImports?.quantity && 
-        variant.inventoryImports?.supplier?.id
-      ).map((variant) => ({
-        variant_id: variant.id,
-        supplier_id: variant.inventoryImports?.supplier?.id || null,
-        price: variant.price || null,
-        sale_price: variant.sale_price || null,
-        quantity: variant.inventoryImports?.quantity || null,
-        end_sale: variant.end_sale
-          ? dayjs(variant.end_sale).format("YYYY-MM-DD")
-          : null,
-        import_price: variant.inventoryImports?.import_price || null,
-      }));
-  
+      const importVariants = selectedVariants
+        .filter(
+          (variant) =>
+            variant.inventoryImports?.import_price &&
+            variant.inventoryImports?.quantity &&
+            variant.inventoryImports?.supplier?.id
+        )
+        .map((variant) => ({
+          variant_id: variant.id,
+          supplier_id: variant.inventoryImports?.supplier?.id || null,
+          quantity: variant.inventoryImports?.quantity || null,
+          import_price: variant.inventoryImports?.import_price || null,
+        }));
+
       // Kiểm tra số lượng variant hợp lệ
       if (importVariants.length === 0) {
         toast.warning("Không có variant nào đủ thông tin để nhập kho.");
         return;
       }
-  
+
       const { data } = await instance.post("import-multiple-orders", {
         variants: importVariants,
       });
-  
+
       if (data) {
         // Thông báo số lượng variant được nhập
         toast.success(`Nhập kho thành công ${importVariants.length} biến thể!`);
@@ -340,37 +282,199 @@ const ModalInventoryImport = ({
     }
   };
 
+  // Hàm xóa lần nhập
+
   const onImportInventory = async (dataForm: FormValues) => {
     setLoading(true);
     try {
-      const updatedVariants = dataForm.variants
-        .filter((_, index) => selectedVariantIndices.includes(index))
-        .map((variant) => {
-          return {
-            variant_id: variant.id,
-            supplier_id: variant.inventoryImports?.supplier?.id || null,
-            price: variant.price || null,
-            sale_price: variant.sale_price || null,
-            quantity: variant.inventoryImports?.quantity || null,
-            end_sale: variant.end_sale
-              ? dayjs(variant.end_sale).format("YYYY-MM-DD")
-              : null,
-            import_price: variant.inventoryImports?.import_price || null,
-          };
+      const validVariants = dataForm.variants
+        .filter((variant) => {
+          const newImport = variant.newImport;
+          return (
+            newImport?.import_price &&
+            newImport?.quantity &&
+            newImport?.supplier?.id
+          );
+        })
+        .map((variant) => ({
+          variant_id: variant.id,
+          supplier_id: variant.newImport?.supplier.id,
+          quantity: variant.newImport?.quantity,
+          import_price: variant.newImport?.import_price,
+        }));
+
+      // Kiểm tra nếu không có variant nào hợp lệ
+      if (validVariants.length === 0) {
+        toast.warning("Không có variant nào đủ thông tin để nhập kho");
+        return;
+      }
+
+      // Kiểm tra và validate dữ liệu trước khi gửi
+      const invalidVariants = validVariants.filter(
+        (variant) =>
+          !variant.variant_id ||
+          !variant.supplier_id ||
+          (variant.quantity || 0) <= 0 ||
+          (variant.import_price || 0) <= 0
+      );
+
+      if (invalidVariants.length > 0) {
+        toast.error(`Có ${invalidVariants.length} variant không hợp lệ`);
+        return;
+      }
+
+      try {
+        const { data, status } = await instance.post("import-multiple-orders", {
+          variants: validVariants,
         });
-      console.log({ variants: updatedVariants });
-      const { data } = await instance.post("import-multiple-orders", {
-        variants: updatedVariants,
-      });
-      if (data) {
-        toast.success("Nhập tất cả vào kho thành công !");
+
+        // Kiểm tra response từ API
+        if (status !== 200 || !data) {
+          throw new Error("Nhập kho không thành công");
+        }
+
+        // Lấy thông tin import records từ response
+        const importRecords = data.importedRecords || [];
+
+        // Cập nhật trực tiếp vào form state
+        const currentVariants = getValues("variants");
+        const updatedVariants = currentVariants.map((variant) => {
+          // Tìm variant tương ứng trong validVariants
+          const matchedValidVariant = validVariants.find(
+            (validVariant) => validVariant.variant_id === variant.id
+          );
+
+          if (matchedValidVariant) {
+            // Tìm import record tương ứng
+            const matchedImportRecord = importRecords.find(
+              (record) => record.variant_id === variant.id
+            );
+
+            const newImportRecord = {
+              id: matchedImportRecord?.id, // Lấy ID từ response
+              import_price: variant.newImport?.import_price,
+              quantity: variant.newImport?.quantity,
+              supplier: {
+                id: variant.newImport?.supplier.id,
+                name: optionsSupplier.find(
+                  (sup) => sup.value === variant.newImport?.supplier.id
+                )?.label,
+              },
+              created_at:
+                matchedImportRecord?.created_at || new Date().toISOString(),
+            };
+
+            return {
+              ...variant,
+              quantity:
+                (variant.quantity || 0) + (variant.newImport?.quantity || 0),
+              inventoryImports: [
+                ...(variant.inventoryImports || []),
+                newImportRecord,
+              ],
+              newImport: null, // Reset newImport
+            };
+          }
+          return variant;
+        });
+
+        // Cập nhật form và state
+        reset({ variants: updatedVariants });
+
+        // Cập nhật inventorys
+        const updatedInventorys = inventorys.map((product) => ({
+          ...product,
+          variants: product.variants.map((variant) => {
+            const matchedUpdatedVariant = updatedVariants.find(
+              (v) => v.id === variant.id
+            );
+            return matchedUpdatedVariant || variant;
+          }),
+        }));
+
+        setInventorys(updatedInventorys);
+
+        toast.success(`Nhập kho thành công ${validVariants.length} biến thể!`);
+
+        // Làm mới danh sách sản phẩm chưa nhập kho
         await fetchNoInventory();
-        window.location.reload();
+      } catch (apiError) {
+        console.error("API Error:", apiError);
+        toast.error(
+          apiError.response?.data?.message || "Có lỗi xảy ra khi nhập kho"
+        );
       }
     } catch (error) {
-      console.log(error);
+      console.error("Unexpected Error:", error);
+      toast.error("Có lỗi không xác định xảy ra");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const apiDeleteImportRecord = async (importRecordId: number) => {
+    try {
+      await instance.delete(`deleteImport/${importRecordId}`);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const handleDeleteImportRecord = async (
+    importRecordId: number,
+    variantIndex: number
+  ) => {
+    try {
+      const currentVariants = getValues("variants");
+      const currentRecord = currentVariants[
+        variantIndex
+      ].inventoryImports?.find((record) => record.id === importRecordId);
+
+      if (!currentRecord) {
+        toast.warning("Không tìm thấy lần nhập kho");
+        return;
+      }
+
+      // Gọi API xóa
+      await apiDeleteImportRecord(importRecordId);
+
+      // Cập nhật form state
+      const updatedVariants = [...currentVariants];
+      updatedVariants[variantIndex] = {
+        ...updatedVariants[variantIndex],
+        // Xóa bản ghi nhập kho
+        inventoryImports: updatedVariants[variantIndex].inventoryImports.filter(
+          (record) => record.id !== importRecordId
+        ),
+        // Giảm số lượng tồn kho
+        quantity:
+          (updatedVariants[variantIndex].quantity || 0) -
+          (currentRecord.quantity || 0),
+      };
+
+      // Cập nhật lại form
+      reset({ variants: updatedVariants });
+
+      // Cập nhật state inventorys
+      const updatedInventorys = inventorys.map((product) => ({
+        ...product,
+        variants: product.variants.map((variant) => {
+          if (variant.id === updatedVariants[variantIndex].id) {
+            return {
+              ...variant,
+              quantity: updatedVariants[variantIndex].quantity,
+              inventoryImports: updatedVariants[variantIndex].inventoryImports,
+            };
+          }
+          return variant;
+        }),
+      }));
+
+      setInventorys(updatedInventorys);
+
+      toast.success("Xóa lần nhập kho thành công");
+    } catch (error) {
+      console.error("Lỗi xóa lần nhập kho:", error);
+      toast.error("Xóa lần nhập kho thất bại");
     }
   };
 
@@ -410,7 +514,7 @@ const ModalInventoryImport = ({
     };
 
     reader.readAsBinaryString(file);
-  }
+  };
 
   const processExcelData = (data: any[]): IProduct[] => {
     const headers = data[0];
@@ -424,15 +528,11 @@ const ModalInventoryImport = ({
 
     const variantColumns = {
       id: headers.indexOf("ID Variant"),
-      price: headers.indexOf("Giá Bán"),
-      salePrice: headers.indexOf("Giá Sale"),
-      quantity: headers.indexOf("Số Lượng Tồn"),
       inventoryImportPrice: headers.indexOf("Giá Nhập"),
       inventoryImportQuantity: headers.indexOf("Số Lượng Nhập"),
       supplierId: headers.indexOf("Nhà Cung Cấp ID"),
     };
 
-    
     const dynamicAttributeColumns = headers.reduce((acc, header, index) => {
       const match = header.match(/^(.*) \(Tên\)$/);
       if (match) {
@@ -467,8 +567,6 @@ const ModalInventoryImport = ({
       // Tạo variant
       const variant: IVariants = {
         id: rowData[variantColumns.id],
-        price: rowData[variantColumns.price],
-        sale_price: rowData[variantColumns.salePrice],
         quantity: rowData[variantColumns.quantity] || 0,
         attribute_values: dynamicAttributeColumns.map((attr) => ({
           id: null,
@@ -488,7 +586,7 @@ const ModalInventoryImport = ({
           },
         },
       };
-      console.log('Headers:', processedData);
+      console.log("Headers:", processedData);
       // Thêm variant vào sản phẩm
       product.variants.push(variant);
 
@@ -500,6 +598,43 @@ const ModalInventoryImport = ({
   };
 
   const modalWidth = isExpandAll ? 1240 : 750;
+
+  const watchVariants = watch("variants");
+
+  const calculateTotalQuantity = (item: IVariants) => {
+    // Tìm variant hiện tại trong watchVariants
+    const currentVariant = watchVariants.find((v) => v.id === item.id);
+
+    if (!currentVariant) return item.quantity || "rỗng";
+
+    // Số lượng gốc
+    const baseQuantity = item.quantity || 0;
+
+    // Số lượng nhập từ form
+    const formImportQuantity = currentVariant.newImport?.quantity || 0;
+
+    // Tổng số lượng từ các bản ghi nhập kho đã lưu
+    const savedImportedQuantity =
+      currentVariant.inventoryImports?.reduce(
+        (total, record) => total + (record.quantity || 0),
+        0
+      ) || 0;
+
+    // Tính toán tổng số lượng
+    const totalQuantity =
+      baseQuantity + formImportQuantity + savedImportedQuantity;
+
+    return totalQuantity > 0 ? totalQuantity : "rỗng";
+  };
+
+  const [expandedVariantId, setExpandedVariantId] = useState<number | null>(
+    null
+  );
+
+  const toggleVariantDetails = (variantId: number) => {
+    setExpandedVariantId(expandedVariantId === variantId ? null : variantId);
+  };
+
   return (
     <div>
       <Modal
@@ -512,8 +647,8 @@ const ModalInventoryImport = ({
           <div className="flex items-center justify-between gap-5">
             <button
               className="font-medium flex items-center gap-1.5"
-              onClick={()=>{
-                setIsModalOpen(!isModalOpen)
+              onClick={() => {
+                setIsModalOpen(!isModalOpen);
               }}
             >
               <svg
@@ -551,7 +686,7 @@ const ModalInventoryImport = ({
                 <Search
                   placeholder="Tên hàng hoá"
                   allowClear
-                  style={{ width: "300px"}}
+                  style={{ width: "300px" }}
                   size="middle"
                   onChange={(e) => {
                     SetValSearch(e.target.value);
@@ -669,12 +804,14 @@ const ModalInventoryImport = ({
                                   src={inventory.images[0]}
                                   size={45}
                                 />
-                                <div className="max-w-[300px] space-y-0.5">
+                                <div className="max-w-[350px] min-w-[350px] space-y-0.5">
                                   <Link
                                     to={`/${inventory.category?.slug}/${inventory.slug}`}
-                                    className="text-left hover:text-primary/90 font-medium text-nowrap text-ellipsis overflow-hidden"
+                                    className="text-left hover:text-primary/90 font-medium"
                                   >
-                                    {inventory.name}
+                                    <p className="text-nowrap text-ellipsis overflow-hidden">
+                                      {inventory.name}
+                                    </p>
                                   </Link>
                                   <p className="text-left text-nowrap text-ellipsis overflow-hidden text-sm text-secondary/50">
                                     Cập nhật:{" "}
@@ -702,7 +839,7 @@ const ModalInventoryImport = ({
                           {selectedProductId === inventory.id &&
                             inventoryItem.length !== 0 && (
                               <Table.Row>
-                                <Table.Cell colSpan={4}>
+                                <Table.Cell colSpan={3}>
                                   <LoadingOverlay
                                     active={isLoading}
                                     spinner
@@ -758,8 +895,9 @@ const ModalInventoryImport = ({
                                         {fields.map((item, index) => {
                                           return (
                                             <div
-                                              className="border border-[#f1f1f1] p-3 rounded-md space-y-3 bg-util"
                                               key={item.id}
+                                              data-variant-index={index}
+                                              className="border border-[#f1f1f1] p-3 rounded-md space-y-3 bg-util"
                                             >
                                               <div className="flex items-center justify-between">
                                                 <div className="text-sm flex items-center gap-3">
@@ -791,21 +929,43 @@ const ModalInventoryImport = ({
                                                   </p>
                                                   <p className="text-primary/85">
                                                     ( SL:{" "}
-                                                    {item.quantity +
-                                                      watch(
-                                                        `variants.${index}.inventoryImports.quantity`
-                                                      ) || "rỗng"}{" "}
+                                                    {calculateTotalQuantity(
+                                                      item
+                                                    )}
                                                     )
                                                   </p>
                                                 </div>
-                                                {watch(
-                                                  `variants.${index}.inventoryImports.quantity`
-                                                ) ? (
+                                                <div className="flex gap-2 items-center">
                                                   <button
                                                     type="button"
-                                                    onClick={handleSubmit(
-                                                      onSave(index)
-                                                    )}
+                                                    onClick={() =>
+                                                      toggleVariantDetails(
+                                                        item.id
+                                                      )
+                                                    }
+                                                    className="px-4 py-2 text-primary"
+                                                  >
+                                                    Chi tiết
+                                                  </button>
+                                                  <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                      e.preventDefault();
+                                                      const dataForm =
+                                                        getValues();
+                                                      const singleVariantForm =
+                                                        {
+                                                          variants: [
+                                                            dataForm.variants[
+                                                              index
+                                                            ],
+                                                          ],
+                                                        };
+
+                                                      onImportInventory(
+                                                        singleVariantForm
+                                                      );
+                                                    }}
                                                     className="bg-primary py-1 text-util px-3 rounded-sm flex items-center gap-1"
                                                   >
                                                     <svg
@@ -852,110 +1012,44 @@ const ModalInventoryImport = ({
                                                     </svg>
                                                     Nhập
                                                   </button>
-                                                ) : (
-                                                  <button
-                                                    type="button"
-                                                    onClick={handleSubmit(
-                                                      onUpdateVariantProduct(
-                                                        index
-                                                      )
-                                                    )}
-                                                    className="bg-primary py-1 text-util px-3 rounded-sm flex items-center gap-1"
-                                                  >
-                                                    <svg
-                                                      xmlns="http://www.w3.org/2000/svg"
-                                                      viewBox="0 0 24 24"
-                                                      className="size-4"
-                                                      color={"currentColor"}
-                                                      fill={"none"}
-                                                    >
-                                                      <path
-                                                        d="M11 22C10.1818 22 9.40019 21.6698 7.83693 21.0095C3.94564 19.3657 2 18.5438 2 17.1613C2 16.7742 2 10.0645 2 7M11 22L11 11.3548M11 22C11.3404 22 11.6463 21.9428 12 21.8285M20 7V11.5"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                      <path
-                                                        d="M18 18.0005L18.9056 17.0949M22 18C22 15.7909 20.2091 14 18 14C15.7909 14 14 15.7909 14 18C14 20.2091 15.7909 22 18 22C20.2091 22 22 20.2091 22 18Z"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                      <path
-                                                        d="M7.32592 9.69138L4.40472 8.27785C2.80157 7.5021 2 7.11423 2 6.5C2 5.88577 2.80157 5.4979 4.40472 4.72215L7.32592 3.30862C9.12883 2.43621 10.0303 2 11 2C11.9697 2 12.8712 2.4362 14.6741 3.30862L17.5953 4.72215C19.1984 5.4979 20 5.88577 20 6.5C20 7.11423 19.1984 7.5021 17.5953 8.27785L14.6741 9.69138C12.8712 10.5638 11.9697 11 11 11C10.0303 11 9.12883 10.5638 7.32592 9.69138Z"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                      <path
-                                                        d="M5 12L7 13"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                      <path
-                                                        d="M16 4L6 9"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                    </svg>
-                                                    Cập nhật
-                                                  </button>
-                                                )}
+                                                </div>
                                               </div>
                                               <div className="grid grid-cols-3 gap-3">
                                                 <input
                                                   type="number"
                                                   placeholder="Giá nhập"
                                                   {...register(
-                                                    `variants.${index}.inventoryImports.import_price`,
-                                                    { valueAsNumber: true }
+                                                    `variants.${index}.newImport.import_price`,
+                                                    {
+                                                      valueAsNumber: true,
+                                                      validate: {
+                                                        positive: (value) =>
+                                                          !value ||
+                                                          value > 0 ||
+                                                          "Giá nhập phải lớn hơn 0",
+                                                      },
+                                                    }
                                                   )}
-                                                  defaultValue={
-                                                    item.inventoryImports
-                                                      ?.import_price
-                                                  }
                                                   min={0}
-                                                  id="import-price"
-                                                  className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-[#f1f1f1] rounded-[5px] w-full focus:!shadow-none"
+                                                  className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-[#e9e9e9] rounded-[5px] w-full focus:!shadow-none"
                                                 />
-                                                <Controller
-                                                  name={`variants.${index}.inventoryImports.quantity`}
-                                                  control={control}
-                                                  defaultValue={0}
-                                                  render={({
-                                                    field: {
-                                                      onChange,
-                                                      value,
-                                                      ...field
-                                                    },
-                                                  }) => (
-                                                    <input
-                                                      type="number"
-                                                      {...field}
-                                                      value={value ?? 0}
-                                                      onChange={(e) => {
-                                                        const inputValue =
-                                                          e.target.value;
-                                                        const parsedValue =
-                                                          inputValue === ""
-                                                            ? 0
-                                                            : Number(
-                                                                inputValue
-                                                              );
-                                                        onChange(parsedValue);
-                                                      }}
-                                                      min={0}
-                                                      placeholder="Số lượng"
-                                                      className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-[#f1f1f1] rounded-[5px] w-full focus:!shadow-none"
-                                                    />
+                                                <input
+                                                  type="number"
+                                                  placeholder="Số lượng"
+                                                  {...register(
+                                                    `variants.${index}.newImport.quantity`,
+                                                    {
+                                                      valueAsNumber: true,
+                                                      validate: {
+                                                        positive: (value) =>
+                                                          !value ||
+                                                          value > 0 ||
+                                                          "Số lượng phải lớn hơn 0",
+                                                      },
+                                                    }
                                                   )}
+                                                  min={0}
+                                                  className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-[#e9e9e9] rounded-[5px] w-full focus:!shadow-none"
                                                 />
                                                 <ConfigProvider
                                                   theme={{
@@ -964,115 +1058,180 @@ const ModalInventoryImport = ({
                                                     },
                                                     components: {
                                                       Select: {
-                                                        colorBorder:
-                                                          "#f1f1f1",
+                                                        colorBorder: "#f1f1f1",
                                                         colorPrimaryHover:
                                                           "#f1f1f1",
+                                                        activeBorderColor:
+                                                          "#ffcc93",
                                                       },
                                                     },
                                                   }}
                                                 >
                                                   <Select
-                                                    defaultValue={
-                                                      item.inventoryImports
-                                                        ?.supplier?.id || null
-                                                    }
                                                     allowClear
                                                     showSearch
-                                                    id={`supplier`}
                                                     style={{
                                                       width: "100%",
-                                                      height: "35px",
-                                                      boxShadow: "none",
+                                                      height: 35,
                                                     }}
-                                                    placeholder={`Nhà cung cấp`}
-                                                    optionFilterProp="label"
-                                                    filterSort={(
-                                                      optionA,
-                                                      optionB
-                                                    ) =>
-                                                      (optionA?.label ?? "")
-                                                        .toLowerCase()
-                                                        .localeCompare(
-                                                          (
-                                                            optionB?.label ?? ""
-                                                          ).toLowerCase()
-                                                        )
-                                                    }
+                                                    placeholder="Nhà cung cấp"
+                                                    options={optionsSupplier}
                                                     onChange={(value) => {
                                                       setValue(
-                                                        `variants.${index}.inventoryImports.supplier.id`,
+                                                        `variants.${index}.newImport.supplier.id`,
                                                         value
                                                       );
                                                     }}
-                                                    options={optionsSupplier}
                                                   />
                                                 </ConfigProvider>
-                                                <input
-                                                  type="text"
-                                                  placeholder="Giá bán"
-                                                  {...register(
-                                                    `variants.${index}.price`,
-                                                    { valueAsNumber: true }
-                                                  )}
-                                                  defaultValue={item.price}
-                                                  min={0}
-                                                  id="sell-price"
-                                                  className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-[#f1f1f1] rounded-[5px] w-full focus:!shadow-none"
-                                                />
-                                                <input
-                                                  type="text"
-                                                  placeholder="Giá sale"
-                                                  {...register(
-                                                    `variants.${index}.sale_price`,
-                                                    { valueAsNumber: true }
-                                                  )}
-                                                  defaultValue={item.sale_price}
-                                                  id="sale-price"
-                                                  className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-[#f1f1f1] rounded-[5px] w-full focus:!shadow-none"
-                                                />
-                                                <Controller
-                                                  name={`variants.${index}.end_sale`}
-                                                  control={control}
-                                                  render={({ field }) => (
-                                                    <ConfigProvider
-                                                      theme={{
-                                                        token: {
-                                                          colorPrimary:
-                                                            "#ff9900",
-                                                          colorInfoHover:
-                                                            "#fff5e5",
-                                                          controlItemBgActiveHover:
-                                                            "#fff5e5",
-                                                        },
-                                                      }}
-                                                    >
-                                                      <DatePicker
-                                                        placeholder="Sale kết thúc sau"
-                                                        showTime
-                                                        {...field}
-                                                        value={
-                                                          field.value
-                                                            ? dayjs(field.value)
-                                                            : null
-                                                        }
-                                                        onChange={(date) => {
-                                                          field.onChange(
-                                                            date
-                                                              ? date.toISOString()
-                                                              : null
-                                                          );
-                                                        }}
-                                                        className="h-[35px] text-secondary w-full border-[#f1f1f1]"
-                                                      />
-                                                    </ConfigProvider>
-                                                  )}
-                                                />
                                               </div>
+                                              {/* Danh sách các lần nhập trước */}
+                                              {expandedVariantId ===
+                                                item.id && (
+                                                <div>
+                                                  <h4 className="font-medium text-secondary mb-2">
+                                                    Kho hàng
+                                                  </h4>
+                                                  {item.inventoryImports &&
+                                                  item.inventoryImports.length >
+                                                    0 ? (
+                                                    <div className="overflow-x-auto">
+                                                      <table className="w-full">
+                                                        <thead>
+                                                          <tr className="bg-[#F4F7FA]">
+                                                            <th className="p-2 text-left text-sm font-normal">
+                                                              Ngày Nhập
+                                                            </th>
+                                                            <th className="p-2 text-left text-sm font-normal">
+                                                              Giá Nhập
+                                                            </th>
+                                                            <th className="p-2 text-center text-sm font-normal">
+                                                              Số Lượng Còn Lại
+                                                            </th>
+                                                            <th className="p-2 text-center text-sm font-normal">
+                                                              Nhà Cung Cấp
+                                                            </th>
+                                                            <th className="p-2 text-center text-sm font-normal">
+                                                              Hành động
+                                                            </th>
+                                                          </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                          {item.inventoryImports.map(
+                                                            (importRecord) => (
+                                                              <tr
+                                                                key={
+                                                                  importRecord.id
+                                                                }
+                                                                className="transition-colors bg-util"
+                                                              >
+                                                                <td className="p-2 text-sm">
+                                                                  {dayjs(
+                                                                    importRecord.created_at
+                                                                  ).format(
+                                                                    "DD/MM/YYYY HH:mm"
+                                                                  )}
+                                                                </td>
+                                                                <td className="p-2 text-sm">
+                                                                  {new Intl.NumberFormat(
+                                                                    "vi-VN",
+                                                                    {
+                                                                      style:
+                                                                        "currency",
+                                                                      currency:
+                                                                        "VND",
+                                                                    }
+                                                                  ).format(
+                                                                    importRecord.import_price
+                                                                  )}
+                                                                </td>
+                                                                <td className="p-2 text-sm text-center">
+                                                                  {
+                                                                    importRecord.quantity
+                                                                  }
+                                                                </td>
+                                                                <td className="p-2 text-sm text-center">
+                                                                  {importRecord
+                                                                    .supplier
+                                                                    ?.name ||
+                                                                    "Chưa xác định"}
+                                                                </td>
+                                                                <td className="p-2">
+                                                                  <div className="flex items-center gap-2 justify-center">
+                                                                    <Popconfirm
+                                                                      title="Xác nhận xóa lần nhập này?"
+                                                                      onConfirm={() =>
+                                                                        handleDeleteImportRecord(
+                                                                          importRecord.id,
+                                                                          index
+                                                                        )
+                                                                      }
+                                                                      okText="Xóa"
+                                                                      cancelText="Hủy"
+                                                                    >
+                                                                      <button
+                                                                        type="button"
+                                                                        className="text-red-500 p-2 bg-util shadow-sm rounded-full"
+                                                                      >
+                                                                        <svg
+                                                                          xmlns="http://www.w3.org/2000/svg"
+                                                                          viewBox="0 0 24 24"
+                                                                          className="size-4"
+                                                                          color={
+                                                                            "currentColor"
+                                                                          }
+                                                                          fill={
+                                                                            "none"
+                                                                          }
+                                                                        >
+                                                                          <path
+                                                                            d="M19.5 5.5L18.8803 15.5251C18.7219 18.0864 18.6428 19.3671 18.0008 20.2879C17.6833 20.7431 17.2747 21.1273 16.8007 21.416C15.8421 22 14.559 22 11.9927 22C9.42312 22 8.1383 22 7.17905 21.4149C6.7048 21.1257 6.296 20.7408 5.97868 20.2848C5.33688 19.3626 5.25945 18.0801 5.10461 15.5152L4.5 5.5"
+                                                                            stroke="currentColor"
+                                                                            strokeWidth="1.5"
+                                                                            strokeLinecap="round"
+                                                                          />
+                                                                          <path
+                                                                            d="M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C14.215 2.3321 14.1231 2.27454 14.027 2.2247C13.5939 2 13.0741 2 12.0345 2C10.9688 2 10.436 2 9.99568 2.23412C9.8981 2.28601 9.80498 2.3459 9.71729 2.41317C9.32164 2.7167 9.10063 3.20155 8.65861 4.17126L8.05292 5.5"
+                                                                            stroke="currentColor"
+                                                                            strokeWidth="1.5"
+                                                                            strokeLinecap="round"
+                                                                          />
+                                                                          <path
+                                                                            d="M9.5 16.5L9.5 10.5"
+                                                                            stroke="currentColor"
+                                                                            strokeWidth="1.5"
+                                                                            strokeLinecap="round"
+                                                                          />
+                                                                          <path
+                                                                            d="M14.5 16.5L14.5 10.5"
+                                                                            stroke="currentColor"
+                                                                            strokeWidth="1.5"
+                                                                            strokeLinecap="round"
+                                                                          />
+                                                                        </svg>
+                                                                      </button>
+                                                                    </Popconfirm>
+                                                                  </div>
+                                                                </td>
+                                                              </tr>
+                                                            )
+                                                          )}
+                                                        </tbody>
+                                                      </table>
+                                                    </div>
+                                                  ) : (
+                                                    <p className="text-secondary/50 italic">
+                                                      Kho rỗng
+                                                    </p>
+                                                  )}
+                                                </div>
+                                              )}
                                             </div>
                                           );
                                         })}
-                                        <ButtonSubmit content="Nhập tất cả lựa chọn" />
+                                        {selectedVariantIndices.length > 0 && (
+                                          <ButtonSubmit content="Nhập tất cả lựa chọn" />
+                                        )}
                                       </form>
                                     </div>
                                   </LoadingOverlay>
@@ -1107,7 +1266,10 @@ const ModalInventoryImport = ({
                     </Checkbox>
                   </ConfigProvider>
                   {selectedVariants.length > 0 && (
-                    <button onClick={handleImportSelectedVariants} className="bg-primary text-util py-1.5 rounded-sm px-3.5">
+                    <button
+                      onClick={handleImportSelectedVariants}
+                      className="bg-primary text-util py-1.5 rounded-sm px-3.5"
+                    >
                       Nhập kho ({selectedVariants.length} biến thể)
                     </button>
                   )}
@@ -1138,13 +1300,6 @@ const ModalInventoryImport = ({
                           {attr.attribute.name}
                         </Table.HeadCell>
                       ))}
-
-                    <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
-                      Giá Bán
-                    </Table.HeadCell>
-                    <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
-                      Giá Sale
-                    </Table.HeadCell>
                     <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
                       Số Lượng Nhập
                     </Table.HeadCell>
@@ -1262,20 +1417,6 @@ const ModalInventoryImport = ({
                               )}
 
                               {/* Thông tin giá và số lượng */}
-                              <Table.Cell className="text-nowrap">
-                                {new Intl.NumberFormat("vi-VN", {
-                                  style: "currency",
-                                  currency: "VND",
-                                }).format(firstVariant.price)}
-                              </Table.Cell>
-                              <Table.Cell className="text-nowrap">
-                                {firstVariant.sale_price
-                                  ? new Intl.NumberFormat("vi-VN", {
-                                      style: "currency",
-                                      currency: "VND",
-                                    }).format(firstVariant.sale_price)
-                                  : "Không có"}
-                              </Table.Cell>
                               <Table.Cell className="text-nowrap text-center">
                                 {importQuantity}
                               </Table.Cell>

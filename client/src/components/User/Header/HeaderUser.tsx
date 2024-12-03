@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import SearchBar from "./SearchBar";
 import NavMenuUser from "./NavMenuUser";
-import NotificationsProvider from "../../../providers/NotificationsProvider";
 const HeaderUser = () => {
   return (
     <header className="h-[60px] lg:h-[65px] flex items-center border-b border-primary/25 sticky top-0 z-[60] bg-util/80 backdrop-blur">
@@ -16,9 +15,7 @@ const HeaderUser = () => {
           </Link>
         </div>
         <SearchBar />
-        <NotificationsProvider>
-          <NavMenuUser />
-        </NotificationsProvider>
+        <NavMenuUser />
         <div className="lg:hidden flex gap-5 items-center ">
           <svg
             xmlns="http://www.w3.org/2000/svg"

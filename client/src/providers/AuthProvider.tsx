@@ -10,6 +10,7 @@ import Cookies from "js-cookie";
 import { message } from "antd";
 import { ProductWishlist } from "../components/User/Manager/Wishlist/Wishlist";
 import instance from "../instance/instance";
+import { NotificationsContext } from "../contexts/NotificationsContext";
 
 interface AuthContextType {
   user: IUser | null;
@@ -38,7 +39,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<IUser | null>(null);
   const [wishlists, setWishlists] = useState<ProductWishlist[]>([]);
-
+  const {dispatch}=useContext(NotificationsContext)
   useEffect(() => {
     checkAuthStatus();
     const intervalId = setInterval(checkAuthStatus, 500);
@@ -91,6 +92,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  const callNotification=async () => {
+    try {
+      const {
+        data: { data: response },
+      } = await instance.get(`notification`);
+      if (response) {
+        dispatch({
+          type: "LIST",
+          payload: response,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   const login = async (userData: IUser) => {
     try {
       // Safari strict cookie policy check
@@ -109,6 +126,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   
       setUser(userData);
       await fetchWishlists();
+      await callNotification()
     } catch (error) {
       console.error('Login process error:', error);
       message.error('Đăng nhập thất bại');

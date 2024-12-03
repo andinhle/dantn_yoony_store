@@ -46,8 +46,6 @@ const ProductList = () => {
 
           // Thông tin variant
           "ID Variant": variant.id,
-          "Giá Bán": variant.price,
-          "Giá Sale": variant.sale_price || "",
           "Số Lượng Tồn": variant.quantity,
 
           // Thông tin nhập hàng
@@ -80,8 +78,6 @@ const ProductList = () => {
       "Slug",
       "Hình Ảnh",
       "ID Variant",
-      "Giá Bán",
-      "Giá Sale",
       "Số Lượng Tồn",
       "Giá Nhập",
       "Số Lượng Nhập",
@@ -199,6 +195,7 @@ const ProductList = () => {
       }
     }
   };
+  
   return (
     <div className="space-y-5 bg-util p-5 rounded-md">
       <div className="flex justify-between">

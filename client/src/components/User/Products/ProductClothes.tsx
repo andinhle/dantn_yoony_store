@@ -17,7 +17,6 @@ const ProductClothes = () => {
     (async () => {
       try {
         const { data:{data:response} } = await instance.get(`home/product/category/${1}`);
-        console.log(response);
         setProductClothes(response)
       } catch (error) {
         if (axios.isAxiosError(error)) {

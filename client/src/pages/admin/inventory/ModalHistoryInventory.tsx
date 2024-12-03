@@ -1,10 +1,34 @@
-import { Modal } from "antd";
+import { Avatar, ConfigProvider, Modal, Pagination } from "antd";
 import { Table } from "flowbite-react";
-
+import { useEffect, useState } from "react";
+import { IProduct } from "../../../interfaces/IProduct";
+import { IVariants } from "../../../interfaces/IVariants";
+import { ISupplier } from "../../../interfaces/ISupplier";
+import instance from "../../../instance/instance";
+import dayjs from "dayjs";
+import { IMeta } from "../../../interfaces/IMeta";
+import { useSearchParams } from "react-router-dom";
+import { DatePicker } from "antd";
+import { toast } from "react-toastify";
+import axios from "axios";
 type Props = {
   isModalOpenHistory: boolean;
   handleCancelHistory: () => void;
   setIsModalOpenHistory: (isModalOpenHistory: boolean) => void;
+};
+
+const { RangePicker } = DatePicker;
+type IHistoryInventory = {
+  id?:number
+  product: IProduct;
+  quantity_import_history: number;
+  quantity_available: number;
+  import_price: number;
+  status: "Hết hàng" | "Còn hàng";
+  variant: IVariants;
+  supplier: ISupplier;
+  created_at: string;
+  updated_at: string;
 };
 
 const ModalHistoryInventory = ({
@@ -12,16 +36,117 @@ const ModalHistoryInventory = ({
   handleCancelHistory,
   setIsModalOpenHistory,
 }: Props) => {
+  const [historyInventorys, setHistoryInventory] = useState<
+    IHistoryInventory[]
+  >([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = parseInt(searchParams.get("page") || "1");
+  const [meta, setMeta] = useState<IMeta>();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setSearchParams({ page: String(page) });
+        const { data } = await instance.get("checkAvailableStock");
+        setHistoryInventory(data.data);
+        setMeta(data.pagination);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, [isModalOpenHistory]);
+
+  const handleRemoveHistoryInventory=async(idHistory:number)=>{
+    try {
+      const {data}=await instance.delete(`deleteHistoryRecord/${idHistory}`)
+      if (data) {
+        toast.success('Xoá lịch sử thành công')
+        setHistoryInventory(historyInventorys.filter((historyInventory:IHistoryInventory)=>{
+          return historyInventory.id !== data?.deleted_record?.id
+        }))
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message);
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Đã xảy ra lỗi không mong muốn");
+      }
+    }
+  }
+
+  const checkStatus = (status: string) => {
+    switch (status) {
+      case "Còn hàng":
+        return (
+          <div className="py-1 px-3 bg-[#3CD139]/10 text-[#3CD139] rounded-full flex gap-1 w-fit text-sm">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="size-5"
+              color={"currentColor"}
+              fill={"none"}
+            >
+              <path
+                d="M12 22C11.1818 22 10.4002 21.6646 8.83693 20.9939C4.94564 19.3243 3 18.4895 3 17.0853L3 7.7475M12 22C12.8182 22 13.5998 21.6646 15.1631 20.9939C19.0544 19.3243 21 18.4895 21 17.0853V7.7475M12 22L12 12.1707M21 7.7475C21 8.35125 20.1984 8.7325 18.5953 9.495L15.6741 10.8844C13.8712 11.7419 12.9697 12.1707 12 12.1707M21 7.7475C21 7.14376 20.1984 6.7625 18.5953 6M3 7.7475C3 8.35125 3.80157 8.7325 5.40472 9.495L8.32592 10.8844C10.1288 11.7419 11.0303 12.1707 12 12.1707M3 7.7475C3 7.14376 3.80157 6.7625 5.40472 6M6.33203 13.311L8.32591 14.2594"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M12 2V4M16 3L14.5 5M8 3L9.5 5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+            Còn hàng
+          </div>
+        );
+      case "Hết hàng":
+        return (
+          <div className="py-1 px-3 bg-primary/10 text-primary rounded-full flex gap-1 w-fit text-sm">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="size-5"
+              color={"currentColor"}
+              fill={"none"}
+            >
+              <path
+                d="M12 22C11.1818 22 10.4002 21.6708 8.83693 21.0123C4.94564 19.3734 3 18.5539 3 17.1754V7.54234M12 22C12.8182 22 13.5998 21.6708 15.1631 21.0123C19.0544 19.3734 21 18.5539 21 17.1754V7.54234M12 22V12.0292M21 7.54234C21 8.15478 20.1984 8.54152 18.5953 9.315L15.6741 10.7244C13.8712 11.5943 12.9697 12.0292 12 12.0292M21 7.54234C21 6.9299 20.1984 6.54316 18.5953 5.76969L17 5M3 7.54234C3 8.15478 3.80157 8.54152 5.40472 9.315L8.32592 10.7244C10.1288 11.5943 11.0303 12.0292 12 12.0292M3 7.54234C3 6.9299 3.80157 6.54317 5.40472 5.76969L7 5M6 13.0263L8 14.0234"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M10 2L12 4M12 4L14 6M12 4L10 6M12 4L14 2"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+            Hết hàng
+          </div>
+        );
+
+      default:
+        break;
+    }
+  };
   return (
     <div>
       <Modal
         open={isModalOpenHistory}
-        width={750}
+        width={1200}
         onCancel={handleCancelHistory}
         footer={[]}
       >
         <div className="space-y-7">
-          <div className="flex items-center justify-between gap-5">
+          <div className="flex items-center gap-5">
             <button
               className="font-medium flex items-center gap-1.5"
               onClick={() => setIsModalOpenHistory(!isModalOpenHistory)}
@@ -50,6 +175,15 @@ const ModalHistoryInventory = ({
               </svg>
               Lịch sử nhập hàng
             </button>
+            <ConfigProvider
+              theme={{
+                token: {
+                  colorPrimary: "#ff9900",
+                },
+              }}
+            >
+              <RangePicker placeholder={["Ngày bắt đầu", "Ngày kết thúc"]} />
+            </ConfigProvider>
           </div>
           <div className={"min-h-[80vh] overflow-x-auto"}>
             <Table className="border-b border-[#E4E7EB]">
@@ -62,23 +196,38 @@ const ModalHistoryInventory = ({
                 >
                   STT
                 </Table.HeadCell>
-                <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
+                <Table.HeadCell
+                  style={{ width: "25%" }}
+                  className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap"
+                >
                   Hàng hoá
                 </Table.HeadCell>
                 <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
-                  Giá bán
+                  Giá nhập
                 </Table.HeadCell>
                 <Table.HeadCell className="bg-[#F4F7FA] text-center text-secondary/75 text-sm font-medium capitalize text-nowrap">
-                  Giá vốn
+                  Số lượng nhập
                 </Table.HeadCell>
                 <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
-                  Tồn kho
+                  Số lượng còn lại
+                </Table.HeadCell>
+                <Table.HeadCell className="bg-[#F4F7FA] text-center text-secondary/75 text-sm font-medium capitalize text-nowrap">
+                  Trạng thái
+                </Table.HeadCell>
+                <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
+                  Nhà cung cấp
+                </Table.HeadCell>
+                <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
+                  Ngày nhập
+                </Table.HeadCell>
+                <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
+                  Hành động
                 </Table.HeadCell>
               </Table.Head>
               <Table.Body className="divide-y">
-                {/* {inventorys.length === 0 ? (
+                {historyInventorys.length === 0 ? (
                   <Table.Row>
-                    <Table.Cell colSpan={6}>
+                    <Table.Cell colSpan={9}>
                       <div className="flex flex-col items-center text-secondary/20 space-y-2 justify-center min-h-[50vh]">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -106,443 +255,136 @@ const ModalHistoryInventory = ({
                             </g>
                           </g>
                         </svg>
-                        <p>Không có hàng hoá nào</p>
+                        <p>Không có lần nhập hàng nào </p>
                       </div>
                     </Table.Cell>
                   </Table.Row>
                 ) : (
-                  inventorys.map((inventory, index) => {
+                  historyInventorys.map((historyInventory, index) => {
                     return (
-                      <>
-                        <Table.Row
-                          className="hover:cursor-pointer"
-                          onClick={() => handleToggleVariants(inventory.id!)}
-                        >
-                          <Table.Cell className="text-center">
-                            {index + 1}
-                          </Table.Cell>
-                          <Table.Cell className="text-center">
-                            <div className="flex gap-2.5">
-                              <Avatar
-                                shape="square"
-                                src={inventory.images[0]}
-                                size={45}
-                              />
-                              <div className="max-w-[300px] space-y-0.5">
-                                <Link
-                                  to={`/${inventory.category?.slug}/${inventory.slug}`}
-                                  className="text-left hover:text-primary/90 font-medium text-nowrap text-ellipsis overflow-hidden"
-                                >
-                                  {inventory.name}
-                                </Link>
-                                <p className="text-left text-nowrap text-ellipsis overflow-hidden text-sm text-secondary/50">
-                                  Cập nhật:{" "}
-                                  <span className="text-primary/75">
-                                    {dayjs(
-                                      findNewestUpdateTime(inventory.variants)
-                                    ).format("DD-MM-YYYY")}
-                                  </span>
-                                </p>
-                              </div>
+                      <Table.Row
+                        className="hover:cursor-pointer"
+                        key={index + 1}
+                      >
+                        <Table.Cell className="text-center">
+                          {index + 1}
+                        </Table.Cell>
+                        <Table.Cell className="text-center">
+                          <div className="flex gap-2.5">
+                            <Avatar
+                              shape="square"
+                              src={historyInventory.product.images[0]}
+                              size={45}
+                            />
+                            <div className="max-w-[200px] min-w-[200px] space-y-0.5">
+                              <p className="text-nowrap text-ellipsis overflow-hidden">
+                                {historyInventory.product.name}
+                              </p>
+                              <p className="text-left text-nowrap text-ellipsis overflow-hidden text-sm text-secondary/50">
+                                Phân loại:{" "}
+                                <span className="text-primary/75">
+                                  {historyInventory.variant.attribute_values
+                                    .map((attribute_value) => {
+                                      return attribute_value.value;
+                                    })
+                                    .join(" | ")}
+                                </span>
+                              </p>
                             </div>
-                          </Table.Cell>
-                          <Table.Cell className="text-center text-nowrap">
-                            {inventory.price_range}đ
-                          </Table.Cell>
-                          <Table.Cell className="text-center text-nowrap">
-                            {inventory.import_price_range === "0 - 0"
-                              ? "Chưa nhập"
-                              : `${inventory.import_price_range}đ`}
-                          </Table.Cell>
-                          <Table.Cell className="text-center text-nowrap">
-                            {inventory.quantity_range}
-                          </Table.Cell>
-                        </Table.Row>
-                        {selectedProductId === inventory.id &&
-                          inventoryItem.length !== 0 && (
-                            <Table.Row>
-                              <Table.Cell colSpan={4}>
-                                <LoadingOverlay
-                                  active={isLoading}
-                                  spinner
-                                  text="Đang nhập hàng ..."
-                                  styles={{
-                                    overlay: (base) => ({
-                                      ...base,
-                                      background: "rgba(255, 255, 255, 0.75)",
-                                      backdropFilter: "blur(4px)",
-                                    }),
-                                    spinner: (base) => ({
-                                      ...base,
-                                      width: "40px",
-                                      "& svg circle": {
-                                        stroke: "rgba(255, 153, 0,5)",
-                                        strokeWidth: "3px",
-                                      },
-                                    }),
-                                  }}
-                                >
-                                  <div className="border border-[#f1f1f1] rounded-md p-3 space-y-4">
-                                    <div className="flex items-center justify-between border-b border-dashed border-[#f1f1f1] pb-3">
-                                      <h4 className="font-medium text-secondary">
-                                        Nhập thông tin hàng hoá
-                                      </h4>
-                                      <div className="flex items-center gap-2">
-                                        <ConfigProvider
-                                          theme={{
-                                            token: {
-                                              colorPrimary: "#ff9900",
-                                            },
-                                          }}
-                                        >
-                                          <Checkbox
-                                            checked={
-                                              selectedVariantIndices.length ===
-                                              fields.length
-                                            }
-                                            onChange={handleSelectAll}
-                                          >
-                                            Chọn tất cả
-                                          </Checkbox>
-                                        </ConfigProvider>
-                                      </div>
-                                    </div>
-                                    <form
-                                      action=""
-                                      className="space-y-3"
-                                      onSubmit={handleSubmit(onImportInventory)}
-                                    >
-                                      {fields.map((item, index) => {
-                                        return (
-                                          <div
-                                            className="border border-[#f1f1f1] p-3 rounded-md space-y-3 bg-util"
-                                            key={item.id}
-                                          >
-                                            <div className="flex items-center justify-between">
-                                              <div className="text-sm flex items-center gap-3">
-                                                <ConfigProvider
-                                                  theme={{
-                                                    token: {
-                                                      colorPrimary: "#ff9900",
-                                                    },
-                                                  }}
-                                                >
-                                                  <Checkbox
-                                                    checked={selectedVariantIndices.includes(
-                                                      index
-                                                    )}
-                                                    onChange={() =>
-                                                      handleCheckboxChange(
-                                                        index
-                                                      )
-                                                    }
-                                                  />
-                                                </ConfigProvider>
-                                                <span className="text-primary">
-                                                  Phân loại:{" "}
-                                                </span>
-                                                <p className="text-secondary/50">
-                                                  {renderAttributes(
-                                                    item.attribute_values
-                                                  )}
-                                                </p>
-                                                <p className="text-primary/85">
-                                                  ( SL:{" "}
-                                                  {item.quantity +
-                                                    watch(
-                                                      `variants.${index}.inventoryImports.quantity`
-                                                    ) || "rỗng"}{" "}
-                                                  )
-                                                </p>
-                                              </div>
-                                              {watch(
-                                                `variants.${index}.inventoryImports.quantity`
-                                              ) ? (
-                                                <button
-                                                  type="button"
-                                                  onClick={handleSubmit(
-                                                    onSave(index)
-                                                  )}
-                                                  className="bg-primary py-1 text-util px-3 rounded-sm flex items-center gap-1"
-                                                >
-                                                  <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 24 24"
-                                                    className="size-4"
-                                                    color={"currentColor"}
-                                                    fill={"none"}
-                                                  >
-                                                    <path
-                                                      d="M11 22C10.1818 22 9.40019 21.6698 7.83693 21.0095C3.94564 19.3657 2 18.5438 2 17.1613C2 16.7742 2 10.0645 2 7M11 22L11 11.3548M11 22C11.7248 22 12.293 21.7409 13.5 21.2226M20 7V11"
-                                                      stroke="currentColor"
-                                                      strokeWidth="1.5"
-                                                      strokeLinecap="round"
-                                                      strokeLinejoin="round"
-                                                    />
-                                                    <path
-                                                      d="M15 17.5H22M18.5 21L18.5 14"
-                                                      stroke="currentColor"
-                                                      strokeWidth="1.5"
-                                                      strokeLinecap="round"
-                                                    />
-                                                    <path
-                                                      d="M7.32592 9.69138L4.40472 8.27785C2.80157 7.5021 2 7.11423 2 6.5C2 5.88577 2.80157 5.4979 4.40472 4.72215L7.32592 3.30862C9.12883 2.43621 10.0303 2 11 2C11.9697 2 12.8712 2.4362 14.6741 3.30862L17.5953 4.72215C19.1984 5.4979 20 5.88577 20 6.5C20 7.11423 19.1984 7.5021 17.5953 8.27785L14.6741 9.69138C12.8712 10.5638 11.9697 11 11 11C10.0303 11 9.12883 10.5638 7.32592 9.69138Z"
-                                                      stroke="currentColor"
-                                                      strokeWidth="1.5"
-                                                      strokeLinecap="round"
-                                                      strokeLinejoin="round"
-                                                    />
-                                                    <path
-                                                      d="M5 12L7 13"
-                                                      stroke="currentColor"
-                                                      strokeWidth="1.5"
-                                                      strokeLinecap="round"
-                                                      strokeLinejoin="round"
-                                                    />
-                                                    <path
-                                                      d="M16 4L6 9"
-                                                      stroke="currentColor"
-                                                      strokeWidth="1.5"
-                                                      strokeLinecap="round"
-                                                      strokeLinejoin="round"
-                                                    />
-                                                  </svg>
-                                                  Nhập
-                                                </button>
-                                              ) : (
-                                                <button
-                                                  type="button"
-                                                  onClick={handleSubmit(
-                                                    onUpdateVariantProduct(
-                                                      index
-                                                    )
-                                                  )}
-                                                  className="bg-primary py-1 text-util px-3 rounded-sm flex items-center gap-1"
-                                                >
-                                                  <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 24 24"
-                                                    className="size-4"
-                                                    color={"currentColor"}
-                                                    fill={"none"}
-                                                  >
-                                                    <path
-                                                      d="M11 22C10.1818 22 9.40019 21.6698 7.83693 21.0095C3.94564 19.3657 2 18.5438 2 17.1613C2 16.7742 2 10.0645 2 7M11 22L11 11.3548M11 22C11.3404 22 11.6463 21.9428 12 21.8285M20 7V11.5"
-                                                      stroke="currentColor"
-                                                      strokeWidth="1.5"
-                                                      strokeLinecap="round"
-                                                      strokeLinejoin="round"
-                                                    />
-                                                    <path
-                                                      d="M18 18.0005L18.9056 17.0949M22 18C22 15.7909 20.2091 14 18 14C15.7909 14 14 15.7909 14 18C14 20.2091 15.7909 22 18 22C20.2091 22 22 20.2091 22 18Z"
-                                                      stroke="currentColor"
-                                                      strokeWidth="1.5"
-                                                      strokeLinecap="round"
-                                                      strokeLinejoin="round"
-                                                    />
-                                                    <path
-                                                      d="M7.32592 9.69138L4.40472 8.27785C2.80157 7.5021 2 7.11423 2 6.5C2 5.88577 2.80157 5.4979 4.40472 4.72215L7.32592 3.30862C9.12883 2.43621 10.0303 2 11 2C11.9697 2 12.8712 2.4362 14.6741 3.30862L17.5953 4.72215C19.1984 5.4979 20 5.88577 20 6.5C20 7.11423 19.1984 7.5021 17.5953 8.27785L14.6741 9.69138C12.8712 10.5638 11.9697 11 11 11C10.0303 11 9.12883 10.5638 7.32592 9.69138Z"
-                                                      stroke="currentColor"
-                                                      strokeWidth="1.5"
-                                                      strokeLinecap="round"
-                                                      strokeLinejoin="round"
-                                                    />
-                                                    <path
-                                                      d="M5 12L7 13"
-                                                      stroke="currentColor"
-                                                      strokeWidth="1.5"
-                                                      strokeLinecap="round"
-                                                      strokeLinejoin="round"
-                                                    />
-                                                    <path
-                                                      d="M16 4L6 9"
-                                                      stroke="currentColor"
-                                                      strokeWidth="1.5"
-                                                      strokeLinecap="round"
-                                                      strokeLinejoin="round"
-                                                    />
-                                                  </svg>
-                                                  Cập nhật
-                                                </button>
-                                              )}
-                                            </div>
-                                            <div className="grid grid-cols-3 gap-3">
-                                              <input
-                                                type="number"
-                                                placeholder="Giá nhập"
-                                                {...register(
-                                                  `variants.${index}.inventoryImports.import_price`,
-                                                  { valueAsNumber: true }
-                                                )}
-                                                defaultValue={
-                                                  item.inventoryImports
-                                                    ?.import_price
-                                                }
-                                                min={0}
-                                                id="import-price"
-                                                className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-t-0 border-r-0 border-l-0 border-b border-[#f1f1f1] rounded-[5px] w-full focus:!shadow-none"
-                                              />
-                                              <Controller
-                                                name={`variants.${index}.inventoryImports.quantity`}
-                                                control={control}
-                                                defaultValue={0}
-                                                render={({
-                                                  field: {
-                                                    onChange,
-                                                    value,
-                                                    ...field
-                                                  },
-                                                }) => (
-                                                  <input
-                                                    type="number"
-                                                    {...field}
-                                                    value={value ?? 0}
-                                                    onChange={(e) => {
-                                                      const inputValue =
-                                                        e.target.value;
-                                                      const parsedValue =
-                                                        inputValue === ""
-                                                          ? 0
-                                                          : Number(inputValue);
-                                                      onChange(parsedValue);
-                                                    }}
-                                                    min={0}
-                                                    placeholder="Số lượng"
-                                                    className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-t-0 border-r-0 border-l-0 border-b border-[#f1f1f1] rounded-[5px] w-full focus:!shadow-none"
-                                                  />
-                                                )}
-                                              />
-                                              <ConfigProvider
-                                                theme={{
-                                                  token: {
-                                                    colorPrimary: "#ff9900",
-                                                  },
-                                                  components: {
-                                                    Select: {
-                                                      colorBorder:
-                                                        "transparent",
-                                                      colorPrimaryHover:
-                                                        "transparent",
-                                                    },
-                                                  },
-                                                }}
-                                              >
-                                                <Select
-                                                  defaultValue={
-                                                    item.inventoryImports
-                                                      ?.supplier?.id || null
-                                                  }
-                                                  allowClear
-                                                  showSearch
-                                                  id={`supplier`}
-                                                  style={{
-                                                    width: "100%",
-                                                    height: "35px",
-                                                    border: "none",
-                                                    borderBottom:
-                                                      "1px solid #f1f1f1",
-                                                    boxShadow: "none",
-                                                  }}
-                                                  placeholder={`Nhà cung cấp`}
-                                                  optionFilterProp="label"
-                                                  filterSort={(
-                                                    optionA,
-                                                    optionB
-                                                  ) =>
-                                                    (optionA?.label ?? "")
-                                                      .toLowerCase()
-                                                      .localeCompare(
-                                                        (
-                                                          optionB?.label ?? ""
-                                                        ).toLowerCase()
-                                                      )
-                                                  }
-                                                  onChange={(value) => {
-                                                    setValue(
-                                                      `variants.${index}.inventoryImports.supplier.id`,
-                                                      value
-                                                    );
-                                                  }}
-                                                  options={optionsSupplier}
-                                                />
-                                              </ConfigProvider>
-                                              <input
-                                                type="text"
-                                                placeholder="Giá bán"
-                                                {...register(
-                                                  `variants.${index}.price`,
-                                                  { valueAsNumber: true }
-                                                )}
-                                                defaultValue={item.price}
-                                                min={0}
-                                                id="sell-price"
-                                                className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-t-0 border-r-0 border-l-0 border-b border-[#f1f1f1] rounded-[5px] w-full focus:!shadow-none"
-                                              />
-                                              <input
-                                                type="text"
-                                                placeholder="Giá sale"
-                                                {...register(
-                                                  `variants.${index}.sale_price`,
-                                                  { valueAsNumber: true }
-                                                )}
-                                                defaultValue={item.sale_price}
-                                                id="sale-price"
-                                                className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-t-0 border-r-0 border-l-0 border-b border-[#f1f1f1] rounded-[5px] w-full focus:!shadow-none"
-                                              />
-                                              <Controller
-                                                name={`variants.${index}.end_sale`}
-                                                control={control}
-                                                render={({ field }) => (
-                                                  <ConfigProvider
-                                                    theme={{
-                                                      token: {
-                                                        colorPrimary: "#ff9900",
-                                                        colorInfoHover:
-                                                          "#fff5e5",
-                                                        controlItemBgActiveHover:
-                                                          "#fff5e5",
-                                                      },
-                                                    }}
-                                                  >
-                                                    <DatePicker
-                                                      placeholder="Sale kết thúc sau"
-                                                      showTime
-                                                      {...field}
-                                                      value={
-                                                        field.value
-                                                          ? dayjs(field.value)
-                                                          : null
-                                                      }
-                                                      onChange={(date) => {
-                                                        field.onChange(
-                                                          date
-                                                            ? date.toISOString()
-                                                            : null
-                                                        );
-                                                      }}
-                                                      className="h-[35px] text-secondary w-full border-t-0 border-r-0 border-l-0 border-b border-[#f1f1f1]"
-                                                    />
-                                                  </ConfigProvider>
-                                                )}
-                                              />
-                                            </div>
-                                          </div>
-                                        );
-                                      })}
-                                      <ButtonSubmit content="Nhập tất cả lựa chọn" />
-                                    </form>
-                                  </div>
-                                </LoadingOverlay>
-                              </Table.Cell>
-                            </Table.Row>
+                          </div>
+                        </Table.Cell>
+                        <Table.Cell className="text-center text-nowrap">
+                          {historyInventory.import_price}đ
+                        </Table.Cell>
+                        <Table.Cell className="text-center text-nowrap">
+                          {historyInventory.quantity_import_history}
+                        </Table.Cell>
+                        <Table.Cell className="text-center text-nowrap text-primary">
+                          {historyInventory.quantity_available}
+                        </Table.Cell>
+                        <Table.Cell className="text-center text-nowrap">
+                          {checkStatus(historyInventory.status)}
+                        </Table.Cell>
+                        <Table.Cell className="text-center text-nowrap">
+                          {historyInventory.supplier.name}
+                        </Table.Cell>
+                        <Table.Cell className="text-center text-nowrap">
+                          {dayjs(historyInventory.created_at).format(
+                            "DD-MM-YYYY"
                           )}
-                      </>
+                        </Table.Cell>
+                        <Table.Cell className="text-center text-nowrap">
+                          <button
+                            className="bg-util shadow py-1.5 px-3 rounded-md"
+                            onClick={() => {
+                              swal({
+                                title: "Xoá lịch sử",
+                                text: "Sau khi xoá không thể khôi phục!",
+                                icon: "warning",
+                                buttons: ["Hủy", "Xoá"],
+                                dangerMode: true,
+                                className: "my-swal",
+                              }).then((willRemove) => {
+                                if (willRemove) {
+                                  handleRemoveHistoryInventory(historyInventory.id!);
+                                }
+                              });
+                            }}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              className="size-5"
+                              color={"#F31260"}
+                              fill={"none"}
+                            >
+                              <path
+                                d="M19.5 5.5L18.8803 15.5251C18.7219 18.0864 18.6428 19.3671 18.0008 20.2879C17.6833 20.7431 17.2747 21.1273 16.8007 21.416C15.8421 22 14.559 22 11.9927 22C9.42312 22 8.1383 22 7.17905 21.4149C6.7048 21.1257 6.296 20.7408 5.97868 20.2848C5.33688 19.3626 5.25945 18.0801 5.10461 15.5152L4.5 5.5"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                              />
+                              <path
+                                d="M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C14.215 2.3321 14.1231 2.27454 14.027 2.2247C13.5939 2 13.0741 2 12.0345 2C10.9688 2 10.436 2 9.99568 2.23412C9.8981 2.28601 9.80498 2.3459 9.71729 2.41317C9.32164 2.7167 9.10063 3.20155 8.65861 4.17126L8.05292 5.5"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                              />
+                              <path
+                                d="M9.5 16.5L9.5 10.5"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                              />
+                              <path
+                                d="M14.5 16.5L14.5 10.5"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                          </button>
+                        </Table.Cell>
+                      </Table.Row>
                     );
                   })
-                )} */}
+                )}
               </Table.Body>
             </Table>
           </div>
+          <Pagination
+            current={page}
+            onChange={(page) => {
+              setSearchParams({ page: String(page) });
+            }}
+            total={meta?.total || 0}
+            pageSize={meta?.per_page || 10}
+            showSizeChanger={false}
+            showTotal={(total, range) =>
+              `${range[0]}-${range[1]} của ${total} mục`
+            }
+            align="end"
+          />
         </div>
       </Modal>
     </div>

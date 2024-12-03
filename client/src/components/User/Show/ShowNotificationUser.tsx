@@ -3,9 +3,29 @@ import { Link } from "react-router-dom";
 import HTMLReactParser from "html-react-parser";
 import Pusher from "pusher-js";
 import { NotificationsContext } from "../../../contexts/NotificationsContext";
+import instance from "../../../instance/instance";
+
 const ShowNotificationUser = () => {
   const { notifications, dispatch } = useContext(NotificationsContext);
   const userData = JSON.parse(localStorage.getItem("userInfor")!);
+  useEffect(() => {
+    (async () => {
+      try {
+        const {
+          data: { data: response },
+        } = await instance.get(`notification`);
+        if (response) {
+          dispatch({
+            type: "LIST",
+            payload: response,
+          });
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  )()
+  }, [])
   useEffect(() => {
     Pusher.logToConsole = true;
 

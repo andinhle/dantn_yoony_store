@@ -47,6 +47,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+//create cart
+Route::post('/addcartMultil/{id_user}', [CartController::class, 'addCartMultil']);
+Route::get('/variant/{id_variant}', [CartController::class, 'getVariant'])->name('variant.get');
+
 // Đăng ký đăng nhập
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -156,6 +160,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
         Route::apiResource('attribute-value', AttributeValueController::class);
         Route::get('/attribute-values/{id}', [AttributeValueController::class, 'getByAttributeId']);
+        Route::put('/attribute-values/{attributeValue}', [AttributeValueController::class, 'update']);
 
         // QL banner
         Route::apiResource('banners', BannerController::class);
