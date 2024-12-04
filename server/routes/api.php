@@ -207,10 +207,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('/search-by-batch-number/{batchNumber}', [InventoryImportController::class, 'searchByBatchNumber']);
         //xóa đơn nhập
         Route::delete('/deleteImport/{id}', [InventoryImportController::class, 'deleteImport']);
+        Route::post('/inventory-imports/{id}/restore', [InventoryImportController::class, 'restoreImport']);
+        //lịch sử nhập hàng trước nhập hàng
         Route::get('/inventory-import/variant/{variantId}', [InventoryImportController::class, 'getByVariantId']);
         //xóa lịch sử nhập hàng
-
         Route::delete('/deleteHistoryRecord/{id}', [InventoryImportController::class, 'deleteHistoryRecord']);
+        // ví dụ ?from_date=2024-12-01&to_date=2024-12-10
+        Route::get('/checkDateHistore', [InventoryImportController::class, 'checkDateHistore']);
 
         // Nhập hàng
         // Route::put('/updateVariant', [InventoryImportController::class, 'updateVariant']);
