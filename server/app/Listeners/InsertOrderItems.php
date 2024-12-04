@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Events\OrderShipped;
 use App\Models\InventoryImport;
 use App\Models\InventoryStock;
+use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemAttribute;
 use App\Models\OrderItemAttributeValue;
@@ -30,7 +31,7 @@ class InsertOrderItems
 
         $orderId = $event->order->id;
         $objectData =$event->order->items;
-        // \Log::info( $objectData );
+        \Log::info('orser', (array) $event->order );
         
         $orderItems = [];
         
@@ -113,6 +114,14 @@ class InsertOrderItems
         }           
         OrderItem::insert($orderItems);
 
+        $orderProfit = OrderItem::query()
+        ->where('order_id', $orderId)
+        ->sum('profit');
 
+        $profit = $orderProfit - ($event->order->grand_total - $event->order->final_total);
+
+        Order::query()->where('id', $orderId)->update([
+            'profit' => $profit
+        ]);
     }
 }
