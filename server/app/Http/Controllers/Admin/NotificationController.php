@@ -8,14 +8,14 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class NotificationController extends Controller
-{public function getUserNotifications()
+{
+    public function getUserNotifications($userId)
     {
         try {
-            $user = auth()->user();
-            $notifications = Notification::where('user_id', $user->id)
+            $notifications = Notification::where('user_id', $userId)
                 ->orderBy('created_at', 'desc')
                 ->get();
-    
+
             return response()->json([
                 'success' => true,
                 'data' => $notifications

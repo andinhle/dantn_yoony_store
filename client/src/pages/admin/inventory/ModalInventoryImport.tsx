@@ -62,7 +62,6 @@ const ModalInventoryImport = ({
 
   const [isLoading, setLoading] = useState<boolean>(false);
   const [selectedVariants, setSelectedVariants] = useState<IVariants[]>([]);
-
   const handleCheckboxChange = (index: number) => {
     setSelectedVariantIndices((prev) =>
       prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
@@ -243,40 +242,92 @@ const ModalInventoryImport = ({
 
     setLoading(true);
     try {
-      // Lọc các variant phải có đủ thông tin
-      const importVariants = selectedVariants
-        .filter(
-          (variant) =>
-            variant.inventoryImports?.import_price &&
-            variant.inventoryImports?.quantity &&
-            variant.inventoryImports?.supplier?.id
-        )
-        .map((variant) => ({
-          variant_id: variant.id,
-          supplier_id: variant.inventoryImports?.supplier?.id || null,
-          quantity: variant.inventoryImports?.quantity || null,
-          import_price: variant.inventoryImports?.import_price || null,
-        }));
+      // Tìm và báo cáo các variant không đủ thông tin
+      const invalidVariants = selectedVariants.filter(
+        (variant) =>
+          !variant.inventoryImports?.import_price ||
+          !variant.inventoryImports?.quantity ||
+          !variant.inventoryImports?.supplier?.id
+      );
 
-      // Kiểm tra số lượng variant hợp lệ
-      if (importVariants.length === 0) {
-        toast.warning("Không có variant nào đủ thông tin để nhập kho.");
+      // Hiển thị chi tiết các variant không hợp lệ
+      if (invalidVariants.length > 0) {
+        const invalidVariantDetails = invalidVariants.map((variant) => {
+          const missingFields = [];
+
+          if (!variant.inventoryImports?.import_price) {
+            missingFields.push("Giá nhập");
+          }
+
+          if (!variant.inventoryImports?.quantity) {
+            missingFields.push("Số lượng");
+          }
+
+          if (!variant.inventoryImports?.supplier?.id) {
+            missingFields.push("Nhà cung cấp");
+          }
+
+          return {
+            id: variant.id,
+            missingFields: missingFields.join(", "),
+            attributes: variant.attribute_values
+              .map((attr) => `${attr.attribute.name}: ${attr.value}`)
+              .join(", "),
+          };
+        });
+
+        // Tạo thông báo chi tiết
+        const errorMessage = invalidVariantDetails
+          .map(
+            (variant) =>
+              `Variant ID ${variant.id} (${variant.attributes}): Thiếu ${variant.missingFields}`
+          )
+          .join("\n");
+
+        toast.warning(
+          <div>
+            <p>Có {invalidVariants.length} variant không đủ thông tin:</p>
+            <pre
+              style={{
+                maxHeight: "200px",
+                overflowY: "auto",
+                whiteSpace: "pre-wrap",
+                wordWrap: "break-word",
+              }}
+            >
+              {errorMessage}
+            </pre>
+          </div>,
+          {
+            autoClose: false,
+            closeOnClick: false,
+          }
+        );
+        setLoading(false);
         return;
       }
+      // Lọc các variant hợp lệ
+      const importVariants = selectedVariants.map((variant) => ({
+        variant_id: variant.id,
+        supplier_id: variant.inventoryImports?.supplier?.id || null,
+        quantity: variant.inventoryImports?.quantity || null,
+        import_price: variant.inventoryImports?.import_price || null,
+      }));
 
       const { data } = await instance.post("import-multiple-orders", {
         variants: importVariants,
       });
 
       if (data) {
-        // Thông báo số lượng variant được nhập
         toast.success(`Nhập kho thành công ${importVariants.length} biến thể!`);
         await fetchNoInventory();
         window.location.reload();
       }
     } catch (error) {
       console.error("Lỗi nhập kho:", error);
-      toast.error("Có lỗi xảy ra khi nhập kho.");
+      toast.error(
+        error.response?.data?.message || "Có lỗi xảy ra khi nhập kho."
+      );
     } finally {
       setLoading(false);
     }
@@ -412,69 +463,25 @@ const ModalInventoryImport = ({
     }
   };
 
-  const apiDeleteImportRecord = async (importRecordId: number) => {
-    try {
-      await instance.delete(`deleteImport/${importRecordId}`);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  const handleDeleteImportRecord = async (
-    importRecordId: number,
-    variantIndex: number
-  ) => {
-    try {
-      const currentVariants = getValues("variants");
-      const currentRecord = currentVariants[
-        variantIndex
-      ].inventoryImports?.find((record) => record.id === importRecordId);
+  const [variantDetails, setVariantDetails] = useState<IVariants[]>([]);
 
-      if (!currentRecord) {
-        toast.warning("Không tìm thấy lần nhập kho");
-        return;
+  const handleDeleteImportRecord = async (importId: number) => {
+    try {
+      const {
+        data: { data: response },
+      } = await instance.delete(`deleteImport/${importId}`);
+      console.log(response);
+      // Cập nhật state
+      if (response) {
+        setVariantDetails(
+          variantDetails.filter((variantDetail) => {
+            return variantDetail?.inventory_import?.id !== importId;
+          })
+        );
       }
-
-      // Gọi API xóa
-      await apiDeleteImportRecord(importRecordId);
-
-      // Cập nhật form state
-      const updatedVariants = [...currentVariants];
-      updatedVariants[variantIndex] = {
-        ...updatedVariants[variantIndex],
-        // Xóa bản ghi nhập kho
-        inventoryImports: updatedVariants[variantIndex].inventoryImports.filter(
-          (record) => record.id !== importRecordId
-        ),
-        // Giảm số lượng tồn kho
-        quantity:
-          (updatedVariants[variantIndex].quantity || 0) -
-          (currentRecord.quantity || 0),
-      };
-
-      // Cập nhật lại form
-      reset({ variants: updatedVariants });
-
-      // Cập nhật state inventorys
-      const updatedInventorys = inventorys.map((product) => ({
-        ...product,
-        variants: product.variants.map((variant) => {
-          if (variant.id === updatedVariants[variantIndex].id) {
-            return {
-              ...variant,
-              quantity: updatedVariants[variantIndex].quantity,
-              inventoryImports: updatedVariants[variantIndex].inventoryImports,
-            };
-          }
-          return variant;
-        }),
-      }));
-
-      setInventorys(updatedInventorys);
-
-      toast.success("Xóa lần nhập kho thành công");
+      toast.success("Xóa lô nhập hàng thành công");
     } catch (error) {
-      console.error("Lỗi xóa lần nhập kho:", error);
-      toast.error("Xóa lần nhập kho thất bại");
+      console.error("Lỗi khi xóa lô nhập hàng:", error);
     }
   };
 
@@ -631,8 +638,38 @@ const ModalInventoryImport = ({
     null
   );
 
-  const toggleVariantDetails = (variantId: number) => {
-    setExpandedVariantId(expandedVariantId === variantId ? null : variantId);
+  const toggleVariantDetails = async (item: any) => {
+    const originalVariant = inventoryItem.find((v) =>
+      v.attribute_values.every(
+        (attr, index) => attr.value === item.attribute_values[index]?.value
+      )
+    );
+
+    if (originalVariant) {
+      const newExpandedId = expandedVariantId === item.id ? null : item.id;
+      setExpandedVariantId(newExpandedId);
+
+      if (newExpandedId !== null) {
+        try {
+          const {
+            data: { data: response },
+          } = await instance.get(
+            `inventory-import/variant/${originalVariant.id}`
+          );
+          setVariantDetails(response);
+          console.log(response);
+        } catch (error) {
+          console.log(error);
+          setVariantDetails(null);
+        }
+      } else {
+        setVariantDetails(null);
+      }
+    } else {
+      console.log("Không tìm thấy variant");
+      setExpandedVariantId(null);
+      setVariantDetails(null);
+    }
   };
 
   return (
@@ -787,460 +824,488 @@ const ModalInventoryImport = ({
                       </Table.Cell>
                     </Table.Row>
                   ) : (
-                    inventorys.map((inventory, index) => {
-                      return (
-                        <>
-                          <Table.Row
-                            className="hover:cursor-pointer"
-                            onClick={() => handleToggleVariants(inventory.id!)}
-                          >
-                            <Table.Cell className="text-center">
-                              {index + 1}
-                            </Table.Cell>
-                            <Table.Cell className="text-center">
-                              <div className="flex gap-2.5">
-                                <Avatar
-                                  shape="square"
-                                  src={inventory.images[0]}
-                                  size={45}
-                                />
-                                <div className="max-w-[350px] min-w-[350px] space-y-0.5">
-                                  <Link
-                                    to={`/${inventory.category?.slug}/${inventory.slug}`}
-                                    className="text-left hover:text-primary/90 font-medium"
-                                  >
-                                    <p className="text-nowrap text-ellipsis overflow-hidden">
-                                      {inventory.name}
+                    inventorys
+                      .filter((item) => {
+                        return item.name
+                          .toLowerCase()
+                          .includes(valSearch.toLowerCase());
+                      })
+                      .map((inventory, index) => {
+                        return (
+                          <>
+                            <Table.Row
+                              className="hover:cursor-pointer"
+                              onClick={() =>
+                                handleToggleVariants(inventory.id!)
+                              }
+                            >
+                              <Table.Cell className="text-center">
+                                {index + 1}
+                              </Table.Cell>
+                              <Table.Cell className="text-center">
+                                <div className="flex gap-2.5">
+                                  <Avatar
+                                    shape="square"
+                                    src={inventory.images[0]}
+                                    size={45}
+                                  />
+                                  <div className="max-w-[350px] min-w-[350px] space-y-0.5">
+                                    <Link
+                                      to={`/${inventory.category?.slug}/${inventory.slug}`}
+                                      className="text-left hover:text-primary/90 font-medium"
+                                    >
+                                      <p className="text-nowrap text-ellipsis overflow-hidden">
+                                        {inventory.name}
+                                      </p>
+                                    </Link>
+                                    <p className="text-left text-nowrap text-ellipsis overflow-hidden text-sm text-secondary/50">
+                                      Cập nhật:{" "}
+                                      <span className="text-primary/75">
+                                        {dayjs(
+                                          findNewestUpdateTime(
+                                            inventory.variants
+                                          )
+                                        ).format("DD-MM-YYYY")}
+                                      </span>
                                     </p>
-                                  </Link>
-                                  <p className="text-left text-nowrap text-ellipsis overflow-hidden text-sm text-secondary/50">
-                                    Cập nhật:{" "}
-                                    <span className="text-primary/75">
-                                      {dayjs(
-                                        findNewestUpdateTime(inventory.variants)
-                                      ).format("DD-MM-YYYY")}
-                                    </span>
-                                  </p>
+                                  </div>
                                 </div>
-                              </div>
-                            </Table.Cell>
-                            <Table.Cell className="text-center text-nowrap">
-                              {inventory.price_range}đ
-                            </Table.Cell>
-                            <Table.Cell className="text-center text-nowrap">
-                              {inventory.import_price_range === "0 - 0"
-                                ? "Chưa nhập"
-                                : `${inventory.import_price_range}đ`}
-                            </Table.Cell>
-                            <Table.Cell className="text-center text-nowrap">
-                              {inventory.quantity_range}
-                            </Table.Cell>
-                          </Table.Row>
-                          {selectedProductId === inventory.id &&
-                            inventoryItem.length !== 0 && (
-                              <Table.Row>
-                                <Table.Cell colSpan={3}>
-                                  <LoadingOverlay
-                                    active={isLoading}
-                                    spinner
-                                    text="Đang nhập hàng ..."
-                                    styles={{
-                                      overlay: (base) => ({
-                                        ...base,
-                                        background: "rgba(255, 255, 255, 0.75)",
-                                        backdropFilter: "blur(4px)",
-                                      }),
-                                      spinner: (base) => ({
-                                        ...base,
-                                        width: "40px",
-                                        "& svg circle": {
-                                          stroke: "rgba(255, 153, 0,5)",
-                                          strokeWidth: "3px",
-                                        },
-                                      }),
-                                    }}
-                                  >
-                                    <div className="border border-[#f1f1f1] rounded-md p-3 space-y-4">
-                                      <div className="flex items-center justify-between border-b border-dashed border-[#f1f1f1] pb-3">
-                                        <h4 className="font-medium text-secondary">
-                                          Nhập thông tin hàng hoá
-                                        </h4>
-                                        <div className="flex items-center gap-2">
-                                          <ConfigProvider
-                                            theme={{
-                                              token: {
-                                                colorPrimary: "#ff9900",
-                                              },
-                                            }}
-                                          >
-                                            <Checkbox
-                                              checked={
-                                                selectedVariantIndices.length ===
-                                                fields.length
-                                              }
-                                              onChange={handleSelectAll}
+                              </Table.Cell>
+                              <Table.Cell className="text-center text-nowrap">
+                                {inventory.price_range}đ
+                              </Table.Cell>
+                              <Table.Cell className="text-center text-nowrap">
+                                {inventory.import_price_range === "0 - 0"
+                                  ? "Chưa nhập"
+                                  : `${inventory.import_price_range}đ`}
+                              </Table.Cell>
+                              <Table.Cell className="text-center text-nowrap">
+                                {inventory.quantity_range}
+                              </Table.Cell>
+                            </Table.Row>
+                            {selectedProductId === inventory.id &&
+                              inventoryItem.length !== 0 && (
+                                <Table.Row>
+                                  <Table.Cell colSpan={3}>
+                                    <LoadingOverlay
+                                      active={isLoading}
+                                      spinner
+                                      text="Đang nhập hàng ..."
+                                      styles={{
+                                        overlay: (base) => ({
+                                          ...base,
+                                          background:
+                                            "rgba(255, 255, 255, 0.75)",
+                                          backdropFilter: "blur(4px)",
+                                        }),
+                                        spinner: (base) => ({
+                                          ...base,
+                                          width: "40px",
+                                          "& svg circle": {
+                                            stroke: "rgba(255, 153, 0,5)",
+                                            strokeWidth: "3px",
+                                          },
+                                        }),
+                                      }}
+                                    >
+                                      <div className="border border-[#f1f1f1] rounded-md p-3 space-y-4">
+                                        <div className="flex items-center justify-between border-b border-dashed border-[#f1f1f1] pb-3">
+                                          <h4 className="font-medium text-secondary">
+                                            Nhập thông tin hàng hoá
+                                          </h4>
+                                          <div className="flex items-center gap-2">
+                                            <ConfigProvider
+                                              theme={{
+                                                token: {
+                                                  colorPrimary: "#ff9900",
+                                                },
+                                              }}
                                             >
-                                              Chọn tất cả
-                                            </Checkbox>
-                                          </ConfigProvider>
+                                              <Checkbox
+                                                checked={
+                                                  selectedVariantIndices.length ===
+                                                  fields.length
+                                                }
+                                                onChange={handleSelectAll}
+                                              >
+                                                Chọn tất cả
+                                              </Checkbox>
+                                            </ConfigProvider>
+                                          </div>
                                         </div>
-                                      </div>
-                                      <form
-                                        action=""
-                                        className="space-y-3"
-                                        onSubmit={handleSubmit(
-                                          onImportInventory
-                                        )}
-                                      >
-                                        {fields.map((item, index) => {
-                                          return (
-                                            <div
-                                              key={item.id}
-                                              data-variant-index={index}
-                                              className="border border-[#f1f1f1] p-3 rounded-md space-y-3 bg-util"
-                                            >
-                                              <div className="flex items-center justify-between">
-                                                <div className="text-sm flex items-center gap-3">
+                                        <form
+                                          action=""
+                                          className="space-y-3"
+                                          onSubmit={handleSubmit(
+                                            onImportInventory
+                                          )}
+                                        >
+                                          {fields.map((item, index) => {
+                                            return (
+                                              <div
+                                                key={item?.id}
+                                                data-variant-index={index}
+                                                className="border border-[#f1f1f1] p-3 rounded-md space-y-3 bg-util"
+                                              >
+                                                <div className="flex items-center justify-between">
+                                                  <div className="text-sm flex items-center gap-3">
+                                                    <ConfigProvider
+                                                      theme={{
+                                                        token: {
+                                                          colorPrimary:
+                                                            "#ff9900",
+                                                        },
+                                                      }}
+                                                    >
+                                                      <Checkbox
+                                                        checked={selectedVariantIndices.includes(
+                                                          index
+                                                        )}
+                                                        onChange={() =>
+                                                          handleCheckboxChange(
+                                                            index
+                                                          )
+                                                        }
+                                                      />
+                                                    </ConfigProvider>
+                                                    <span className="text-primary">
+                                                      Phân loại:{" "}
+                                                    </span>
+                                                    <p className="text-secondary/50">
+                                                      {renderAttributes(
+                                                        item.attribute_values
+                                                      )}
+                                                    </p>
+                                                    <p className="text-primary/85">
+                                                      ( SL:{" "}
+                                                      {calculateTotalQuantity(
+                                                        item
+                                                      )}
+                                                      )
+                                                    </p>
+                                                  </div>
+                                                  <div className="flex gap-2 items-center">
+                                                    <button
+                                                      type="button"
+                                                      onClick={() =>
+                                                        toggleVariantDetails(
+                                                          item
+                                                        )
+                                                      }
+                                                      className="px-4 py-2 text-primary"
+                                                    >
+                                                      Chi tiết
+                                                    </button>
+                                                    <button
+                                                      type="button"
+                                                      onClick={(e) => {
+                                                        e.preventDefault();
+                                                        const dataForm =
+                                                          getValues();
+                                                        const singleVariantForm =
+                                                          {
+                                                            variants: [
+                                                              dataForm.variants[
+                                                                index
+                                                              ],
+                                                            ],
+                                                          };
+
+                                                        onImportInventory(
+                                                          singleVariantForm
+                                                        );
+                                                      }}
+                                                      className="bg-primary py-1 text-util px-3 rounded-sm flex items-center gap-1"
+                                                    >
+                                                      <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 24 24"
+                                                        className="size-4"
+                                                        color={"currentColor"}
+                                                        fill={"none"}
+                                                      >
+                                                        <path
+                                                          d="M11 22C10.1818 22 9.40019 21.6698 7.83693 21.0095C3.94564 19.3657 2 18.5438 2 17.1613C2 16.7742 2 10.0645 2 7M11 22L11 11.3548M11 22C11.7248 22 12.293 21.7409 13.5 21.2226M20 7V11"
+                                                          stroke="currentColor"
+                                                          strokeWidth="1.5"
+                                                          strokeLinecap="round"
+                                                          strokeLinejoin="round"
+                                                        />
+                                                        <path
+                                                          d="M15 17.5H22M18.5 21L18.5 14"
+                                                          stroke="currentColor"
+                                                          strokeWidth="1.5"
+                                                          strokeLinecap="round"
+                                                        />
+                                                        <path
+                                                          d="M7.32592 9.69138L4.40472 8.27785C2.80157 7.5021 2 7.11423 2 6.5C2 5.88577 2.80157 5.4979 4.40472 4.72215L7.32592 3.30862C9.12883 2.43621 10.0303 2 11 2C11.9697 2 12.8712 2.4362 14.6741 3.30862L17.5953 4.72215C19.1984 5.4979 20 5.88577 20 6.5C20 7.11423 19.1984 7.5021 17.5953 8.27785L14.6741 9.69138C12.8712 10.5638 11.9697 11 11 11C10.0303 11 9.12883 10.5638 7.32592 9.69138Z"
+                                                          stroke="currentColor"
+                                                          strokeWidth="1.5"
+                                                          strokeLinecap="round"
+                                                          strokeLinejoin="round"
+                                                        />
+                                                        <path
+                                                          d="M5 12L7 13"
+                                                          stroke="currentColor"
+                                                          strokeWidth="1.5"
+                                                          strokeLinecap="round"
+                                                          strokeLinejoin="round"
+                                                        />
+                                                        <path
+                                                          d="M16 4L6 9"
+                                                          stroke="currentColor"
+                                                          strokeWidth="1.5"
+                                                          strokeLinecap="round"
+                                                          strokeLinejoin="round"
+                                                        />
+                                                      </svg>
+                                                      Nhập
+                                                    </button>
+                                                  </div>
+                                                </div>
+                                                <div className="grid grid-cols-3 gap-3">
+                                                  <input
+                                                    type="number"
+                                                    placeholder="Giá nhập"
+                                                    {...register(
+                                                      `variants.${index}.newImport.import_price`,
+                                                      {
+                                                        valueAsNumber: true,
+                                                        validate: {
+                                                          positive: (value) =>
+                                                            !value ||
+                                                            value > 0 ||
+                                                            "Giá nhập phải lớn hơn 0",
+                                                        },
+                                                      }
+                                                    )}
+                                                    min={0}
+                                                    className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-[#e9e9e9] rounded-[5px] w-full focus:!shadow-none"
+                                                  />
+                                                  <input
+                                                    type="number"
+                                                    placeholder="Số lượng"
+                                                    {...register(
+                                                      `variants.${index}.newImport.quantity`,
+                                                      {
+                                                        valueAsNumber: true,
+                                                        validate: {
+                                                          positive: (value) =>
+                                                            !value ||
+                                                            value > 0 ||
+                                                            "Số lượng phải lớn hơn 0",
+                                                        },
+                                                      }
+                                                    )}
+                                                    min={0}
+                                                    className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-[#e9e9e9] rounded-[5px] w-full focus:!shadow-none"
+                                                  />
                                                   <ConfigProvider
                                                     theme={{
                                                       token: {
                                                         colorPrimary: "#ff9900",
                                                       },
+                                                      components: {
+                                                        Select: {
+                                                          colorBorder:
+                                                            "#f1f1f1",
+                                                          colorPrimaryHover:
+                                                            "#f1f1f1",
+                                                          activeBorderColor:
+                                                            "#ffcc93",
+                                                        },
+                                                      },
                                                     }}
                                                   >
-                                                    <Checkbox
-                                                      checked={selectedVariantIndices.includes(
-                                                        index
-                                                      )}
-                                                      onChange={() =>
-                                                        handleCheckboxChange(
-                                                          index
-                                                        )
-                                                      }
+                                                    <Select
+                                                      allowClear
+                                                      showSearch
+                                                      style={{
+                                                        width: "100%",
+                                                        height: 35,
+                                                      }}
+                                                      placeholder="Nhà cung cấp"
+                                                      options={optionsSupplier}
+                                                      onChange={(value) => {
+                                                        setValue(
+                                                          `variants.${index}.newImport.supplier.id`,
+                                                          value
+                                                        );
+                                                      }}
                                                     />
                                                   </ConfigProvider>
-                                                  <span className="text-primary">
-                                                    Phân loại:{" "}
-                                                  </span>
-                                                  <p className="text-secondary/50">
-                                                    {renderAttributes(
-                                                      item.attribute_values
-                                                    )}
-                                                  </p>
-                                                  <p className="text-primary/85">
-                                                    ( SL:{" "}
-                                                    {calculateTotalQuantity(
-                                                      item
-                                                    )}
-                                                    )
-                                                  </p>
                                                 </div>
-                                                <div className="flex gap-2 items-center">
-                                                  <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                      toggleVariantDetails(
-                                                        item.id
-                                                      )
-                                                    }
-                                                    className="px-4 py-2 text-primary"
-                                                  >
-                                                    Chi tiết
-                                                  </button>
-                                                  <button
-                                                    type="button"
-                                                    onClick={(e) => {
-                                                      e.preventDefault();
-                                                      const dataForm =
-                                                        getValues();
-                                                      const singleVariantForm =
-                                                        {
-                                                          variants: [
-                                                            dataForm.variants[
-                                                              index
-                                                            ],
-                                                          ],
-                                                        };
-
-                                                      onImportInventory(
-                                                        singleVariantForm
-                                                      );
-                                                    }}
-                                                    className="bg-primary py-1 text-util px-3 rounded-sm flex items-center gap-1"
-                                                  >
-                                                    <svg
-                                                      xmlns="http://www.w3.org/2000/svg"
-                                                      viewBox="0 0 24 24"
-                                                      className="size-4"
-                                                      color={"currentColor"}
-                                                      fill={"none"}
-                                                    >
-                                                      <path
-                                                        d="M11 22C10.1818 22 9.40019 21.6698 7.83693 21.0095C3.94564 19.3657 2 18.5438 2 17.1613C2 16.7742 2 10.0645 2 7M11 22L11 11.3548M11 22C11.7248 22 12.293 21.7409 13.5 21.2226M20 7V11"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                      <path
-                                                        d="M15 17.5H22M18.5 21L18.5 14"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                      />
-                                                      <path
-                                                        d="M7.32592 9.69138L4.40472 8.27785C2.80157 7.5021 2 7.11423 2 6.5C2 5.88577 2.80157 5.4979 4.40472 4.72215L7.32592 3.30862C9.12883 2.43621 10.0303 2 11 2C11.9697 2 12.8712 2.4362 14.6741 3.30862L17.5953 4.72215C19.1984 5.4979 20 5.88577 20 6.5C20 7.11423 19.1984 7.5021 17.5953 8.27785L14.6741 9.69138C12.8712 10.5638 11.9697 11 11 11C10.0303 11 9.12883 10.5638 7.32592 9.69138Z"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                      <path
-                                                        d="M5 12L7 13"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                      <path
-                                                        d="M16 4L6 9"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                    </svg>
-                                                    Nhập
-                                                  </button>
-                                                </div>
-                                              </div>
-                                              <div className="grid grid-cols-3 gap-3">
-                                                <input
-                                                  type="number"
-                                                  placeholder="Giá nhập"
-                                                  {...register(
-                                                    `variants.${index}.newImport.import_price`,
-                                                    {
-                                                      valueAsNumber: true,
-                                                      validate: {
-                                                        positive: (value) =>
-                                                          !value ||
-                                                          value > 0 ||
-                                                          "Giá nhập phải lớn hơn 0",
-                                                      },
-                                                    }
-                                                  )}
-                                                  min={0}
-                                                  className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-[#e9e9e9] rounded-[5px] w-full focus:!shadow-none"
-                                                />
-                                                <input
-                                                  type="number"
-                                                  placeholder="Số lượng"
-                                                  {...register(
-                                                    `variants.${index}.newImport.quantity`,
-                                                    {
-                                                      valueAsNumber: true,
-                                                      validate: {
-                                                        positive: (value) =>
-                                                          !value ||
-                                                          value > 0 ||
-                                                          "Số lượng phải lớn hơn 0",
-                                                      },
-                                                    }
-                                                  )}
-                                                  min={0}
-                                                  className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-[#e9e9e9] rounded-[5px] w-full focus:!shadow-none"
-                                                />
-                                                <ConfigProvider
-                                                  theme={{
-                                                    token: {
-                                                      colorPrimary: "#ff9900",
-                                                    },
-                                                    components: {
-                                                      Select: {
-                                                        colorBorder: "#f1f1f1",
-                                                        colorPrimaryHover:
-                                                          "#f1f1f1",
-                                                        activeBorderColor:
-                                                          "#ffcc93",
-                                                      },
-                                                    },
-                                                  }}
-                                                >
-                                                  <Select
-                                                    allowClear
-                                                    showSearch
-                                                    style={{
-                                                      width: "100%",
-                                                      height: 35,
-                                                    }}
-                                                    placeholder="Nhà cung cấp"
-                                                    options={optionsSupplier}
-                                                    onChange={(value) => {
-                                                      setValue(
-                                                        `variants.${index}.newImport.supplier.id`,
-                                                        value
-                                                      );
-                                                    }}
-                                                  />
-                                                </ConfigProvider>
-                                              </div>
-                                              {/* Danh sách các lần nhập trước */}
-                                              {expandedVariantId ===
-                                                item.id && (
-                                                <div>
-                                                  <h4 className="font-medium text-secondary mb-2">
-                                                    Kho hàng
-                                                  </h4>
-                                                  {item.inventoryImports &&
-                                                  item.inventoryImports.length >
-                                                    0 ? (
-                                                    <div className="overflow-x-auto">
-                                                      <table className="w-full">
-                                                        <thead>
-                                                          <tr className="bg-[#F4F7FA]">
-                                                            <th className="p-2 text-left text-sm font-normal">
-                                                              Ngày Nhập
-                                                            </th>
-                                                            <th className="p-2 text-left text-sm font-normal">
-                                                              Giá Nhập
-                                                            </th>
-                                                            <th className="p-2 text-center text-sm font-normal">
-                                                              Số Lượng Còn Lại
-                                                            </th>
-                                                            <th className="p-2 text-center text-sm font-normal">
-                                                              Nhà Cung Cấp
-                                                            </th>
-                                                            <th className="p-2 text-center text-sm font-normal">
-                                                              Hành động
-                                                            </th>
-                                                          </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                          {item.inventoryImports.map(
-                                                            (importRecord) => (
-                                                              <tr
-                                                                key={
-                                                                  importRecord.id
-                                                                }
-                                                                className="transition-colors bg-util"
-                                                              >
-                                                                <td className="p-2 text-sm">
-                                                                  {dayjs(
-                                                                    importRecord.created_at
-                                                                  ).format(
-                                                                    "DD/MM/YYYY HH:mm"
-                                                                  )}
-                                                                </td>
-                                                                <td className="p-2 text-sm">
-                                                                  {new Intl.NumberFormat(
-                                                                    "vi-VN",
-                                                                    {
-                                                                      style:
-                                                                        "currency",
-                                                                      currency:
-                                                                        "VND",
-                                                                    }
-                                                                  ).format(
-                                                                    importRecord.import_price
-                                                                  )}
-                                                                </td>
-                                                                <td className="p-2 text-sm text-center">
-                                                                  {
-                                                                    importRecord.quantity
+                                                {/* Danh sách các lần nhập trước */}
+                                                {expandedVariantId ===
+                                                  item.id && (
+                                                  <div className="mt-4">
+                                                    <h4 className="font-medium text-secondary mb-2">
+                                                      Kho hàng
+                                                    </h4>
+                                                    {variantDetails?.length >
+                                                      0 ||
+                                                    (item.inventoryImports &&
+                                                      item.inventoryImports
+                                                        .length > 0) ? (
+                                                      <div className="overflow-x-auto">
+                                                        <table className="w-full">
+                                                          <thead>
+                                                            <tr className="bg-[#F4F7FA]">
+                                                              <th className="p-2 text-left text-sm font-normal">
+                                                                Ngày Nhập
+                                                              </th>
+                                                              <th className="p-2 text-left text-sm font-normal">
+                                                                Giá Nhập
+                                                              </th>
+                                                              <th className="p-2 text-center text-sm font-normal">
+                                                                Số Lượng Nhập
+                                                              </th>
+                                                              <th className="p-2 text-center text-sm font-normal">
+                                                                Còn Lại
+                                                              </th>
+                                                              <th className="p-2 text-center text-sm font-normal">
+                                                                Nhà Cung Cấp
+                                                              </th>
+                                                              <th className="p-2 text-center text-sm font-normal">
+                                                                Hành động
+                                                              </th>
+                                                            </tr>
+                                                          </thead>
+                                                          <tbody>
+                                                            {variantDetails?.map(
+                                                              (
+                                                                importItem: any
+                                                              ) => (
+                                                                <tr
+                                                                  key={
+                                                                    importItem
+                                                                      .inventory_import
+                                                                      .id
                                                                   }
-                                                                </td>
-                                                                <td className="p-2 text-sm text-center">
-                                                                  {importRecord
-                                                                    .supplier
-                                                                    ?.name ||
-                                                                    "Chưa xác định"}
-                                                                </td>
-                                                                <td className="p-2">
-                                                                  <div className="flex items-center gap-2 justify-center">
-                                                                    <Popconfirm
-                                                                      title="Xác nhận xóa lần nhập này?"
-                                                                      onConfirm={() =>
-                                                                        handleDeleteImportRecord(
-                                                                          importRecord.id,
-                                                                          index
-                                                                        )
+                                                                  className="transition-colors bg-util"
+                                                                >
+                                                                  <td className="p-2 text-sm">
+                                                                    {dayjs(
+                                                                      importItem
+                                                                        .inventory_import
+                                                                        .created_at
+                                                                    ).format(
+                                                                      "DD/MM/YYYY HH:mm"
+                                                                    )}
+                                                                  </td>
+                                                                  <td className="p-2 text-sm">
+                                                                    {new Intl.NumberFormat(
+                                                                      "vi-VN",
+                                                                      {
+                                                                        style:
+                                                                          "currency",
+                                                                        currency:
+                                                                          "VND",
                                                                       }
-                                                                      okText="Xóa"
-                                                                      cancelText="Hủy"
-                                                                    >
-                                                                      <button
-                                                                        type="button"
-                                                                        className="text-red-500 p-2 bg-util shadow-sm rounded-full"
+                                                                    ).format(
+                                                                      importItem
+                                                                        .inventory_import
+                                                                        .import_price
+                                                                    )}
+                                                                  </td>
+                                                                  <td className="p-2 text-sm text-center">
+                                                                    {
+                                                                      importItem
+                                                                        .inventory_import
+                                                                        .quantity
+                                                                    }
+                                                                  </td>
+                                                                  <td className="p-2 text-sm text-center">
+                                                                    {
+                                                                      importItem.quantity_imported
+                                                                    }
+                                                                  </td>
+                                                                  <td className="p-2 text-sm text-center">
+                                                                    <p className="text-nowrap text-ellipsis overflow-hidden">
+                                                                      {importItem
+                                                                        .inventory_import
+                                                                        .supplier
+                                                                        ?.name ||
+                                                                        "Chưa xác định"}
+                                                                    </p>
+                                                                  </td>
+                                                                  <td className="p-2">
+                                                                    <div className="flex items-center gap-2 justify-center">
+                                                                      <Popconfirm
+                                                                        title="Xác nhận đưa vào thùng rác lần nhập này?"
+                                                                        onConfirm={() =>
+                                                                          handleDeleteImportRecord(
+                                                                            importItem
+                                                                              .inventory_import
+                                                                              .id
+                                                                          )
+                                                                        }
+                                                                        okText="Thùng rác"
+                                                                        cancelText="Hủy"
                                                                       >
-                                                                        <svg
-                                                                          xmlns="http://www.w3.org/2000/svg"
-                                                                          viewBox="0 0 24 24"
-                                                                          className="size-4"
-                                                                          color={
-                                                                            "currentColor"
-                                                                          }
-                                                                          fill={
-                                                                            "none"
-                                                                          }
+                                                                        <button
+                                                                          type="button"
+                                                                          className="text-primary p-2 bg-util shadow-sm rounded-full"
                                                                         >
-                                                                          <path
-                                                                            d="M19.5 5.5L18.8803 15.5251C18.7219 18.0864 18.6428 19.3671 18.0008 20.2879C17.6833 20.7431 17.2747 21.1273 16.8007 21.416C15.8421 22 14.559 22 11.9927 22C9.42312 22 8.1383 22 7.17905 21.4149C6.7048 21.1257 6.296 20.7408 5.97868 20.2848C5.33688 19.3626 5.25945 18.0801 5.10461 15.5152L4.5 5.5"
-                                                                            stroke="currentColor"
-                                                                            strokeWidth="1.5"
-                                                                            strokeLinecap="round"
-                                                                          />
-                                                                          <path
-                                                                            d="M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C14.215 2.3321 14.1231 2.27454 14.027 2.2247C13.5939 2 13.0741 2 12.0345 2C10.9688 2 10.436 2 9.99568 2.23412C9.8981 2.28601 9.80498 2.3459 9.71729 2.41317C9.32164 2.7167 9.10063 3.20155 8.65861 4.17126L8.05292 5.5"
-                                                                            stroke="currentColor"
-                                                                            strokeWidth="1.5"
-                                                                            strokeLinecap="round"
-                                                                          />
-                                                                          <path
-                                                                            d="M9.5 16.5L9.5 10.5"
-                                                                            stroke="currentColor"
-                                                                            strokeWidth="1.5"
-                                                                            strokeLinecap="round"
-                                                                          />
-                                                                          <path
-                                                                            d="M14.5 16.5L14.5 10.5"
-                                                                            stroke="currentColor"
-                                                                            strokeWidth="1.5"
-                                                                            strokeLinecap="round"
-                                                                          />
-                                                                        </svg>
-                                                                      </button>
-                                                                    </Popconfirm>
-                                                                  </div>
-                                                                </td>
-                                                              </tr>
-                                                            )
-                                                          )}
-                                                        </tbody>
-                                                      </table>
-                                                    </div>
-                                                  ) : (
-                                                    <p className="text-secondary/50 italic">
-                                                      Kho rỗng
-                                                    </p>
-                                                  )}
-                                                </div>
-                                              )}
-                                            </div>
-                                          );
-                                        })}
-                                        {selectedVariantIndices.length > 0 && (
-                                          <ButtonSubmit content="Nhập tất cả lựa chọn" />
-                                        )}
-                                      </form>
-                                    </div>
-                                  </LoadingOverlay>
-                                </Table.Cell>
-                              </Table.Row>
-                            )}
-                        </>
-                      );
-                    })
+                                                                          <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            viewBox="0 0 24 24"
+                                                                            className="size-4"
+                                                                            color={
+                                                                              "currentColor"
+                                                                            }
+                                                                            fill={
+                                                                              "none"
+                                                                            }
+                                                                          >
+                                                                            <path
+                                                                              d="M4.47461 6.10018L5.31543 18.1768C5.40886 19.3365 6.28178 21.5536 8.51889 21.8022C10.756 22.0507 15.2503 21.9951 16.0699 21.9951C16.8895 21.9951 19.0128 21.4136 19.0128 19.0059C19.0128 16.5756 16.9833 15.9419 15.7077 15.9635H12.0554M12.0554 15.9635C12.0607 15.7494 12.1515 15.5372 12.3278 15.3828L14.487 13.4924M12.0554 15.9635C12.0497 16.1919 12.1412 16.4224 12.33 16.5864L14.487 18.4609M19.4701 5.82422L19.0023 13.4792"
+                                                                              stroke="currentColor"
+                                                                              strokeWidth="1.5"
+                                                                              strokeLinecap="round"
+                                                                              strokeLinejoin="round"
+                                                                            />
+                                                                            <path
+                                                                              d="M3 5.49561H21M16.0555 5.49561L15.3729 4.08911C14.9194 3.15481 14.6926 2.68766 14.3015 2.39631C14.2148 2.33168 14.1229 2.2742 14.0268 2.22442C13.5937 2 13.0739 2 12.0343 2C10.9686 2 10.4358 2 9.99549 2.23383C9.89791 2.28565 9.80479 2.34547 9.7171 2.41265C9.32145 2.7158 9.10044 3.20004 8.65842 4.16854L8.05273 5.49561"
+                                                                              stroke="currentColor"
+                                                                              strokeWidth="1.5"
+                                                                              strokeLinecap="round"
+                                                                              strokeLinejoin="round"
+                                                                            />
+                                                                          </svg>
+                                                                        </button>
+                                                                      </Popconfirm>
+                                                                    </div>
+                                                                  </td>
+                                                                </tr>
+                                                              )
+                                                            )}
+                                                          </tbody>
+                                                        </table>
+                                                      </div>
+                                                    ) : (
+                                                      <p className="text-secondary/50 italic">
+                                                        Kho rỗng
+                                                      </p>
+                                                    )}
+                                                  </div>
+                                                )}
+                                              </div>
+                                            );
+                                          })}
+                                          {selectedVariantIndices.length >
+                                            0 && (
+                                            <ButtonSubmit content="Nhập tất cả lựa chọn" />
+                                          )}
+                                        </form>
+                                      </div>
+                                    </LoadingOverlay>
+                                  </Table.Cell>
+                                </Table.Row>
+                              )}
+                          </>
+                        );
+                      })
                   )}
                 </Table.Body>
               </Table>
@@ -1312,131 +1377,139 @@ const ModalInventoryImport = ({
                   </Table.Head>
                   <Table.Body className="divide-y">
                     {/* Nhóm các variant theo sản phẩm */}
-                    {inventorys.map((product) => {
-                      // Nhóm các variant có cùng thuộc tính
-                      const groupedVariants = product.variants.reduce(
-                        (acc, variant) => {
-                          // Tạo key từ các thuộc tính
-                          const key = variant.attribute_values
-                            .map(
-                              (attr) => `${attr.attribute.name}:${attr.value}`
-                            )
-                            .join("|");
+                    {inventorys
+                      .filter((item) => {
+                        return item.name
+                          .toLowerCase()
+                          .includes(valSearch.toLowerCase());
+                      })
+                      .map((product) => {
+                        // Nhóm các variant có cùng thuộc tính
+                        const groupedVariants = product.variants.reduce(
+                          (acc, variant) => {
+                            // Tạo key từ các thuộc tính
+                            const key = variant.attribute_values
+                              .map(
+                                (attr) => `${attr.attribute.name}:${attr.value}`
+                              )
+                              .join("|");
 
-                          if (!acc[key]) {
-                            acc[key] = [];
-                          }
-                          acc[key].push(variant);
-                          return acc;
-                        },
-                        {} as Record<string, IVariants[]>
-                      );
+                            if (!acc[key]) {
+                              acc[key] = [];
+                            }
+                            acc[key].push(variant);
+                            return acc;
+                          },
+                          {} as Record<string, IVariants[]>
+                        );
 
-                      return Object.entries(groupedVariants).map(
-                        ([key, variants], groupIndex) => {
-                          const firstVariant = variants[0];
-                          // const totalQuantity = variants.reduce(
-                          //   (sum, v) => sum + v.quantity,
-                          //   0
-                          // );
-                          const totalImportPrice = variants.reduce(
-                            (sum, v) =>
-                              sum + (v.inventoryImports?.import_price || 0),
-                            0
-                          );
-                          const importQuantity = variants.reduce(
-                            (sum, v) =>
-                              sum + (v.inventoryImports?.quantity || 0),
-                            0
-                          );
-                          const isGroupSelected = variants.every((v) =>
-                            isVariantSelected(v)
-                          );
-                          return (
-                            <Table.Row key={`${product.id}-${groupIndex}`}>
-                              {/* Thông tin sản phẩm (chỉ render 1 lần) */}
-                              <Table.Cell>
-                                <ConfigProvider
-                                  theme={{
-                                    token: {
-                                      colorPrimary: "#ff9900",
-                                    },
-                                  }}
-                                >
-                                  <Checkbox
-                                    checked={isGroupSelected}
-                                    onChange={() => handleGroupSelect(variants)}
-                                  />
-                                </ConfigProvider>
-                              </Table.Cell>
-                              {groupIndex === 0 && (
-                                <>
-                                  <Table.Cell
-                                    rowSpan={
-                                      Object.keys(groupedVariants).length
-                                    }
-                                    className="text-nowrap"
+                        return Object.entries(groupedVariants).map(
+                          ([key, variants], groupIndex) => {
+                            const firstVariant = variants[0];
+                            // const totalQuantity = variants.reduce(
+                            //   (sum, v) => sum + v.quantity,
+                            //   0
+                            // );
+                            const totalImportPrice = variants.reduce(
+                              (sum, v) =>
+                                sum + (v.inventoryImports?.import_price || 0),
+                              0
+                            );
+                            const importQuantity = variants.reduce(
+                              (sum, v) =>
+                                sum + (v.inventoryImports?.quantity || 0),
+                              0
+                            );
+                            const isGroupSelected = variants.every((v) =>
+                              isVariantSelected(v)
+                            );
+                            return (
+                              <Table.Row key={`${product.id}-${groupIndex}`}>
+                                {/* Thông tin sản phẩm (chỉ render 1 lần) */}
+                                <Table.Cell>
+                                  <ConfigProvider
+                                    theme={{
+                                      token: {
+                                        colorPrimary: "#ff9900",
+                                      },
+                                    }}
                                   >
-                                    {product.id}
-                                  </Table.Cell>
-                                  <Table.Cell
-                                    rowSpan={
-                                      Object.keys(groupedVariants).length
-                                    }
-                                    className="text-nowrap"
-                                  >
-                                    {product.name}
-                                  </Table.Cell>
-                                  <Table.Cell
-                                    rowSpan={
-                                      Object.keys(groupedVariants).length
-                                    }
-                                    className="text-nowrap flex justify-center"
-                                  >
-                                    <Avatar
-                                      shape="square"
-                                      size="large"
-                                      src={product.images[0]}
+                                    <Checkbox
+                                      checked={isGroupSelected}
+                                      onChange={() =>
+                                        handleGroupSelect(variants)
+                                      }
                                     />
-                                  </Table.Cell>
-                                </>
-                              )}
-                              <Table.Cell className="text-nowrap text-center">
-                                {variants.map((v) => v.id).join(", ")}
-                              </Table.Cell>
-                              {/* Render các thuộc tính */}
-                              {firstVariant.attribute_values.map(
-                                (attr, attrIndex) => (
-                                  <Table.Cell
-                                    key={attrIndex}
-                                    className="text-nowrap text-center"
-                                  >
-                                    {attr.value}
-                                  </Table.Cell>
-                                )
-                              )}
+                                  </ConfigProvider>
+                                </Table.Cell>
+                                {groupIndex === 0 && (
+                                  <>
+                                    <Table.Cell
+                                      rowSpan={
+                                        Object.keys(groupedVariants).length
+                                      }
+                                      className="text-nowrap"
+                                    >
+                                      {product.id}
+                                    </Table.Cell>
+                                    <Table.Cell
+                                      rowSpan={
+                                        Object.keys(groupedVariants).length
+                                      }
+                                      className="text-nowrap"
+                                    >
+                                      {product.name}
+                                    </Table.Cell>
+                                    <Table.Cell
+                                      rowSpan={
+                                        Object.keys(groupedVariants).length
+                                      }
+                                      className="text-nowrap flex justify-center"
+                                    >
+                                      <Avatar
+                                        shape="square"
+                                        size="large"
+                                        src={product.images[0]}
+                                      />
+                                    </Table.Cell>
+                                  </>
+                                )}
+                                <Table.Cell className="text-nowrap text-center">
+                                  {variants.map((v) => v.id).join(", ")}
+                                </Table.Cell>
+                                {/* Render các thuộc tính */}
+                                {firstVariant.attribute_values.map(
+                                  (attr, attrIndex) => (
+                                    <Table.Cell
+                                      key={attrIndex}
+                                      className="text-nowrap text-center"
+                                    >
+                                      {attr.value}
+                                    </Table.Cell>
+                                  )
+                                )}
 
-                              {/* Thông tin giá và số lượng */}
-                              <Table.Cell className="text-nowrap text-center">
-                                {importQuantity}
-                              </Table.Cell>
-                              <Table.Cell className="text-nowrap">
-                                {totalImportPrice > 0
-                                  ? new Intl.NumberFormat("vi-VN", {
-                                      style: "currency",
-                                      currency: "VND",
-                                    }).format(totalImportPrice)
-                                  : "Không có"}
-                              </Table.Cell>
-                              <Table.Cell className="text-nowrap text-center">
-                                {firstVariant.inventoryImports?.supplier?.id ||
-                                  "Chưa có"}
-                              </Table.Cell>
-                            </Table.Row>
-                          );
-                        }
-                      );
-                    })}
+                                {/* Thông tin giá và số lượng */}
+                                <Table.Cell className="text-nowrap text-center">
+                                  {importQuantity}
+                                </Table.Cell>
+                                <Table.Cell className="text-nowrap">
+                                  {totalImportPrice > 0
+                                    ? new Intl.NumberFormat("vi-VN", {
+                                        style: "currency",
+                                        currency: "VND",
+                                      }).format(totalImportPrice)
+                                    : "Không có"}
+                                </Table.Cell>
+                                <Table.Cell className="text-nowrap text-center">
+                                  {firstVariant.inventoryImports?.supplier
+                                    ?.id || "Chưa có"}
+                                </Table.Cell>
+                              </Table.Row>
+                            );
+                          }
+                        );
+                      })}
                   </Table.Body>
                 </Table>
               </>

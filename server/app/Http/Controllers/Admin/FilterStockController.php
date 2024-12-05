@@ -17,6 +17,7 @@ class FilterStockController extends Controller
         $data = $categories->map(function ($category) {
             return [
                 'name' => $category->name,
+                'slug' => $category->slug,
             ];
         });
 
@@ -37,7 +38,7 @@ class FilterStockController extends Controller
 
         if (!empty($categories)) {
             $query->whereHas('category', function ($q) use ($categories) {
-                $q->whereIn('name', $categories);
+                $q->whereIn('slug', $categories);
             });
         }
         // Xử lý các bộ lọc tồn kho
@@ -61,7 +62,6 @@ class FilterStockController extends Controller
                                 ->havingRaw('SUM(quantity) > ?', [500]);
                         });
                         break;
-
                     case 'conhang': // Còn hàng trong kho (SL > 0)
                         $query->whereHas('variants.inventoryStock', function ($q) {
                             $q->select('variant_id')
@@ -70,7 +70,6 @@ class FilterStockController extends Controller
                                 ->havingRaw('SUM(quantity) > ?', [0]);
                         });
                         break;
-
                     case 'tonkho0': // Hết hàng trong kho (SL = 0)
                         $query->whereHas('variants.inventoryStock', function ($q) {
                             $q->select('variant_id')

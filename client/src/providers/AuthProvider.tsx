@@ -1,6 +1,7 @@
 import {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -11,6 +12,7 @@ import { message } from "antd";
 import { ProductWishlist } from "../components/User/Manager/Wishlist/Wishlist";
 import instance from "../instance/instance";
 import { NotificationsContext } from "../contexts/NotificationsContext";
+import CartContext from "../contexts/CartContext";
 
 interface AuthContextType {
   user: IUser | null;
@@ -33,13 +35,15 @@ const METHOD_PAYMENT_KEY = "methodPayment";
 const ORDER_DATA_KEY = "orderData";
 const VOUCHER_KEY = "selected_voucher";
 const CALLBACK_KEY="callback_processed"
+const CARTLOCAL_KEY="cartLocal"
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<IUser | null>(null);
   const [wishlists, setWishlists] = useState<ProductWishlist[]>([]);
-  const {dispatch}=useContext(NotificationsContext)
+  const { dispatch: dispatchNotification } = useContext(NotificationsContext);
+  const { dispatch: dispatchCart } = useContext(CartContext);
   useEffect(() => {
     checkAuthStatus();
     const intervalId = setInterval(checkAuthStatus, 500);
@@ -81,57 +85,101 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const fetchWishlists = async () => {
+  const fetchWishlists = useCallback(async () => {
     try {
       const { data } = await instance.get("list-wishlists-check");
       setWishlists(data.wishlists);
-      localStorage.setItem(WISHLIST_KEY, JSON.stringify(data.wishlists));
+      localStorage.setItem(
+        WISHLIST_KEY, 
+        JSON.stringify(data.wishlists)
+      );
     } catch (error) {
-      console.log(error);
-      message.error('Có lỗi xảy ra khi tải danh sách wishlist');
+      console.error('Wishlist fetch error:', error);
+      message.error('Không thể tải danh sách yêu thích');
     }
-  };
+  }, []);
 
-  const callNotification=async () => {
+  // Fetch notifications
+  const callNotification = useCallback(async (idUser:number) => {
     try {
-      const {
-        data: { data: response },
-      } = await instance.get(`notification`);
+      const { data: { data: response } } = await instance.get(`notification/${idUser}`);
       if (response) {
-        dispatch({
+        dispatchNotification({
           type: "LIST",
           payload: response,
         });
       }
     } catch (error) {
-      console.log(error);
+      console.error('Notification fetch error:', error);
     }
-  }
+  }, [dispatchNotification]);
 
-  const login = async (userData: IUser) => {
+
+  const addCartLocal = useCallback(async (idUser: number) => {
     try {
-      // Safari strict cookie policy check
+      const existingCart = JSON.parse(
+        localStorage.getItem(CARTLOCAL_KEY) || '[]'
+      );
+
+      if (existingCart.length === 0) return;
+
+      const formattedCart = existingCart.map(item => ({
+        variant_id: item.variant_id,
+        quantity: item.quantity
+      }));
+
+      const { data } = await instance.post(
+        `addcartMultil/${idUser}`,
+        { local_cart: formattedCart }
+      );
+
+      dispatchCart({
+        type: "ADD",
+        payload: data.data
+      });
+
+      localStorage.removeItem(CARTLOCAL_KEY);
+    } catch (error) {
+      console.error('Cart sync error:', error);
+      localStorage.removeItem(CARTLOCAL_KEY);
+    }
+  }, [dispatchCart]);
+
+  const login = useCallback(async (userData: IUser) => {
+    try {
+      // Kiểm tra cookie
       if (!navigator.cookieEnabled) {
         message.warning('Vui lòng cho phép cookie');
         return;
       }
-  
-      // Explicit try-catch for localStorage
+
+      // Lưu thông tin người dùng
       try {
-        localStorage.setItem(USER_INFO_KEY, JSON.stringify(userData));
+        localStorage.setItem(
+          USER_INFO_KEY, 
+          JSON.stringify(userData)
+        );
       } catch (storageError) {
         console.error('localStorage error:', storageError);
         message.error('Lỗi lưu thông tin người dùng');
+        return;
       }
-  
+      // Cập nhật state
       setUser(userData);
-      await fetchWishlists();
-      await callNotification()
+
+      // Thực hiện các tác vụ song song
+      await Promise.all([
+        fetchWishlists(),
+        callNotification(userData.id!),
+        addCartLocal(userData.id!)
+      ]);
+      message.success('Đăng nhập thành công');
     } catch (error) {
       console.error('Login process error:', error);
       message.error('Đăng nhập thất bại');
     }
-  };
+  }, [fetchWishlists, callNotification, addCartLocal]);
+
 
   const logout = () => {
     Cookies.remove(AUTH_COOKIE_NAME);
@@ -144,6 +192,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     localStorage.removeItem(ID_CART_KEY);
     localStorage.removeItem(ORDER_DATA_KEY);
     localStorage.removeItem(VOUCHER_KEY);
+    localStorage.removeItem(CARTLOCAL_KEY);
     setUser(null);
     setWishlists([]);
     message.success("Đăng xuất thành công !");
