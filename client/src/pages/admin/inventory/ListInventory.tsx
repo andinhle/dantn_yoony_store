@@ -18,7 +18,8 @@ import { IMeta } from "../../../interfaces/IMeta";
 import ModalInventoryImport from "./ModalInventoryImport";
 import ModalHistoryInventory from "./ModalHistoryInventory";
 import ButtonExport from "../../../components/Admin/Button/ButtonExport";
-const plainOptionsCategory = ["Apple", "Pear", "Orange"];
+import { IProduct } from "../../../interfaces/IProduct";
+import { ICategory } from "../../../interfaces/ICategory";
 const plainOptionsInventory = [
   "Dưới định mức tồn (SL: 50)",
   "Vượt định mức tồn (SL: 500)",
@@ -35,9 +36,12 @@ const ListInventory = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parseInt(searchParams.get("page") || "1");
   const [meta, setMeta] = useState<IMeta>();
-
   const { inventorys, dispatch } = useContext(InventoryContext);
-
+  const [idProduct, setIdProduct] = useState<number>();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpenShowDetail, setIsModalOpenShowDetail] = useState(false);
+  const [isModalOpenHistory, setIsModalOpenHistory] = useState(false);
+  const [categoryFilter, setcategoryFilter] = useState<ICategory[]>([]);
   const onChangeCategories = (list: string[]) => {
     setCheckedListCategory(list);
   };
@@ -75,7 +79,6 @@ const ListInventory = () => {
     })();
   }, [page]);
 
-
   function findNewestUpdateTime(variants: IVariants[]): string | null {
     let newestUpdate = "";
 
@@ -88,10 +91,6 @@ const ListInventory = () => {
 
     return newestUpdate || null;
   }
-  const [idProduct, setIdProduct] = useState<number>();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isModalOpenShowDetail, setIsModalOpenShowDetail] = useState(false);
-  const [isModalOpenHistory, setIsModalOpenHistory] = useState(false);
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -113,6 +112,24 @@ const ListInventory = () => {
     setIsModalOpenHistory(false);
     setIsModalOpenShowDetail(false);
   };
+
+  const getFilterCategoryInventory = async () => {
+    try {
+      const { data } = await instance.get("filter-stock");
+      setcategoryFilter(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getFilterCategoryInventory();
+  }, []);
+
+  const plainOptionsCategory = categoryFilter.map((item) => ({
+    label: item.name,
+    value: item.slug,
+  }));
 
   return (
     <div className="grid grid-cols-12 gap-5 min-h-screen">
@@ -242,7 +259,7 @@ const ListInventory = () => {
             </button>
           </div>
         </div>
-        <div className="overflow-x-auto ">
+        <div className="overflow-x-auto listinventory-scroll">
           <Table className="border-b border-[#E4E7EB]">
             <Table.Head className="text-center">
               <Table.HeadCell
@@ -265,14 +282,14 @@ const ListInventory = () => {
               <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
                 Tồn kho
               </Table.HeadCell>
-              <Table.HeadCell
+              {/* <Table.HeadCell
                 className="bg-[#F4F7FA] text-secondary/75 text-sm font-medium capitalize text-nowrap"
                 style={{
                   width: "20%",
                 }}
               >
                 Hành động
-              </Table.HeadCell>
+              </Table.HeadCell> */}
             </Table.Head>
             <Table.Body className="divide-y">
               {inventorys.length === 0 ? (
@@ -310,11 +327,11 @@ const ListInventory = () => {
                   </Table.Cell>
                 </Table.Row>
               ) : (
-                inventorys.map((inventory,index) => {
+                inventorys.map((inventory, index) => {
                   return (
                     <Table.Row>
                       <Table.Cell className="text-center">
-                        {index+1}
+                        {index + 1}
                       </Table.Cell>
                       <Table.Cell className="text-center">
                         <div className="flex gap-2.5">
@@ -328,7 +345,9 @@ const ListInventory = () => {
                               to={`/${inventory.category?.slug}/${inventory.slug}`}
                               className="text-left hover:text-primary/90 font-medium"
                             >
-                              <p className="text-nowrap text-ellipsis overflow-hidden">{inventory.name}</p>
+                              <p className="text-nowrap text-ellipsis overflow-hidden">
+                                {inventory.name}
+                              </p>
                             </Link>
                             <p className="text-left text-nowrap text-ellipsis overflow-hidden text-sm text-secondary/50">
                               Cập nhật:{" "}
@@ -350,7 +369,7 @@ const ListInventory = () => {
                       <Table.Cell className="text-center text-nowrap">
                         {inventory.quantity_range}
                       </Table.Cell>
-                      <Table.Cell className="text-center text-nowrap">
+                      {/* <Table.Cell className="text-center text-nowrap">
                         <div className="flex gap-2 justify-center">
                           <button
                             className="bg-util shadow py-2 px-3 rounded-md text-primary"
@@ -400,7 +419,7 @@ const ListInventory = () => {
                             </svg>
                           </button>
                         </div>
-                      </Table.Cell>
+                      </Table.Cell> */}
                     </Table.Row>
                   );
                 })

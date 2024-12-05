@@ -379,6 +379,11 @@ a:hover .number-cart{
   background-color: #FAFAFA;
 }
 
+.listinventory-scroll::-webkit-scrollbar-thumb{
+  background-color: #ffebce;
+}
+
+
 .ant-steps-item-description{
   font-size: 12px !important;
 }

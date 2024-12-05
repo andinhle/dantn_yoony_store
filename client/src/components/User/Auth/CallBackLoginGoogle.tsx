@@ -35,7 +35,6 @@ const CallBackLoginGoogle = () => {
                         localStorage.setItem("userInfor", JSON.stringify(responseLoginInfor.user));
                       
                         login(responseLoginInfor.user);
-                        message.success("Đăng nhập thành công!"); 
                         navigate("/"); 
                     }
                 } catch (error) {
