@@ -1,4 +1,4 @@
-import { Select } from "antd";
+import { ConfigProvider, Select } from "antd";
 import { Label, ToggleSwitch } from "flowbite-react";
 import JoditEditor from "jodit-react";
 import {
@@ -675,15 +675,23 @@ const FormAddOrUpdateProduct = () => {
                         name={`variants.${index}.end_sale`}
                         control={control}
                         render={({ field }) => (
-                          <DatePicker
-                            placeholder="Sale kết thúc sau"
-                            showTime
-                            value={field.value ? dayjs(field.value) : null}
-                            onChange={(date, dateString) => {
-                              field.onChange(dateString);
+                          <ConfigProvider
+                            theme={{
+                              token: {
+                                colorPrimary: "#ff9900",
+                              },
                             }}
-                            className="h-[35px] w-full"
-                          />
+                          >
+                            <DatePicker
+                              placeholder="Sale kết thúc sau"
+                              showTime
+                              value={field.value ? dayjs(field.value) : null}
+                              onChange={(date, dateString) => {
+                                field.onChange(dateString);
+                              }}
+                              className="h-[35px] w-full"
+                            />
+                          </ConfigProvider>
                         )}
                       />
                     </div>

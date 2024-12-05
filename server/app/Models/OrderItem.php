@@ -16,7 +16,10 @@ class OrderItem extends Model
         'unit_price',
         'total_price',
         'product_name',
-        'product_image'
+        'product_image',
+        'variant_id',
+        'unit_cost',
+        'profit'
     ];
 
     

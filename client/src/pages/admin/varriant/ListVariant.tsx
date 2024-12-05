@@ -9,6 +9,9 @@ import { Input } from "antd";
 import Highlighter from "react-highlight-words";
 import { IAttribute } from "../../../interfaces/IAttribute";
 import { useForm } from "react-hook-form";
+import { IAttributeValue } from "../../../interfaces/IAttributeValue";
+import { toast } from "react-toastify";
+import axios from "axios";
 const ListVariant = () => {
   const { attributes, dispatch } = useContext(AttributeContext);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -18,6 +21,78 @@ const ListVariant = () => {
   const { Search } = Input;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [attribute, setAttribute] = useState<IAttribute>();
+  const [editingValueId, setEditingValueId] = useState<number | null>(null);
+  const [editingValue, setEditingValue] = useState<string>("");
+  const [idAttribute, setIdAttribute] = useState<number>()
+
+  const handleEditValue = (valueAttribute: IAttributeValue) => {
+    setEditingValueId(valueAttribute.id!);
+    setEditingValue(valueAttribute.value!);
+  };
+
+  const handleUpdateValue = async () => {
+    try {
+      const { data } = await instance.put(`attribute-value/${editingValueId}`, {
+        value: editingValue,
+      });
+
+      if (data) {
+        toast.success("Sửa giá trị thuộc tính thành công");
+        if (attribute?.attribute_values) {
+          const updatedValues = attribute.attribute_values.map((value) =>
+            value.id === editingValueId
+              ? { ...value, value: editingValue }
+              : value
+          );
+
+          setAttribute({
+            ...attribute,
+            attribute_values: updatedValues,
+          });
+        }
+        setEditingValueId(null);
+        setEditingValue("");
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật giá trị:", error);
+    }
+  };
+
+  const handleRemoveAttibuteValue = async (idAttributeValue: number) => {
+    try {
+      const { data } = await instance.delete();
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message);
+      } else if (error instanceof Error) {
+        console.log(error.message);
+      } else {
+        console.log("Đã xảy ra lỗi không mong muốn");
+      }
+    }
+  };
+  const handleRemoveAttibute = async (idAttribute: number) => {
+    try {
+      const { data } = await instance.delete(`attribute/${idAttribute}`);
+      if (data) {
+        dispatch({
+          type:'DELETE',
+          payload:idAttribute
+        })
+        toast.success('Xoá thuộc tính thành công')
+      }
+    } catch (error) {
+      console.log(error);
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.messages);
+      } else if (error instanceof Error) {
+        console.log(error.message);
+      } else {
+        console.log("Đã xảy ra lỗi không mong muốn");
+      }
+    }
+  };
+
   const {
     register,
     handleSubmit,
@@ -26,13 +101,6 @@ const ListVariant = () => {
     reset,
     formState: { errors },
   } = useForm<IAttribute>();
-  const handleOk = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  };
 
   useEffect(() => {
     (async () => {
@@ -53,19 +121,43 @@ const ListVariant = () => {
   }, []);
   const handleShowDetailAttribute = async (idAttribute: number) => {
     try {
+      setIdAttribute(idAttribute)
       setIsModalOpen(true);
       const {
         data: { data: response },
       } = await instance.get(`admin/attribute/${idAttribute}`);
       setAttribute(response);
       reset({
-        name:response.name,
-        type:response.type
-      })
+        name: response.name,
+        type: response.type,
+      });
     } catch (error) {
+      setIdAttribute(undefined)
       console.log(error);
     }
   };
+  const handleUpdateAttribute = async(dataForm:IAttribute) => {
+    try {
+      const {data:{data:response}}=await instance.put(`attribute/${idAttribute}`,dataForm)
+      if (response) {
+        dispatch({
+          type:'UPDATE',
+          payload:response
+        })
+        toast.success('Sửa thuộc tính thành công')
+        setIsModalOpen(false);
+      }
+    } catch (error) {
+      setIsModalOpen(false);
+      setIdAttribute(undefined)
+      console.log(error);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="bg-util p-5 rounded-md space-y-5">
       <div className="w-fit">
@@ -157,7 +249,23 @@ const ListVariant = () => {
                               ></path>
                             </svg>
                           </button>
-                          <button className="bg-util shadow py-1.5 px-3 rounded-md">
+                          <button
+                            className="bg-util shadow py-1.5 px-3 rounded-md"
+                            onClick={() => {
+                              swal({
+                                title: "Xoá thuộc tính",
+                                text: "Sau khi xoá thuộc tính không thể khôi phục!",
+                                icon: "warning",
+                                buttons: ["Hủy", "Xoá"],
+                                dangerMode: true,
+                                className: "my-swal",
+                              }).then((willRemove) => {
+                                if (willRemove) {
+                                  handleRemoveAttibute(attribute.id!);
+                                }
+                              });
+                            }}
+                          >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               viewBox="0 0 24 24"
@@ -201,7 +309,7 @@ const ListVariant = () => {
         <Modal
           title="Chi tiết thuộc tính"
           open={isModalOpen}
-          onOk={handleOk}
+          onOk={handleSubmit(handleUpdateAttribute)}
           onCancel={handleCancel}
           okText="Cập nhật"
           cancelText="Trở lại"
@@ -216,8 +324,8 @@ const ListVariant = () => {
                 {...register("name", {
                   required: "Bắt buộc !",
                   minLength: {
-                    value: 8,
-                    message: "Tối thiếu 8 kí tự",
+                    value: 3,
+                    message: "Tối thiếu 3 kí tự",
                   },
                 })}
                 className="block focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-input rounded-[5px] w-full focus:!shadow-none"
@@ -238,7 +346,7 @@ const ListVariant = () => {
                 }}
               >
                 <Select
-                  {...register('type')}
+                  {...register("type")}
                   onChange={(value) => setValue("type", value)}
                   showSearch
                   value={watch("type")}
@@ -336,9 +444,59 @@ const ListVariant = () => {
                         return (
                           <Table.Row key={valueAttribute?.id}>
                             <Table.Cell>{index + 1}</Table.Cell>
-                            <Table.Cell>{valueAttribute.value}</Table.Cell>
                             <Table.Cell>
-                              <button>ok</button>
+                              {editingValueId === valueAttribute.id ? (
+                                <Input
+                                  value={editingValue}
+                                  onChange={(e) =>
+                                    setEditingValue(e.target.value)
+                                  }
+                                  className="h-[35px] border border-[#f1f1f1] rounded-sm"
+                                  placeholder="Nhập giá trị thuộc tính"
+                                />
+                              ) : (
+                                valueAttribute.value
+                              )}
+                            </Table.Cell>
+                            <Table.Cell>
+                              <div className="flex gap-2">
+                                {editingValueId === valueAttribute.id ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={handleUpdateValue}
+                                      className="text-util bg-primary py-1 rounded-sm px-2 text-sm"
+                                    >
+                                      Lưu
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingValueId(null)}
+                                      className="text-red-500"
+                                    >
+                                      Hủy
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <button
+                                      type="button"
+                                      className="text-util bg-primary py-1 rounded-sm px-2 text-sm"
+                                      onClick={() =>
+                                        handleEditValue(valueAttribute)
+                                      }
+                                    >
+                                      Sửa
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="text-red-500"
+                                    >
+                                      Xoá
+                                    </button>
+                                  </>
+                                )}
+                              </div>
                             </Table.Cell>
                           </Table.Row>
                         );

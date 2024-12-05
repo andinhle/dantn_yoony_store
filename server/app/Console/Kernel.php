@@ -18,10 +18,12 @@ class Kernel extends ConsoleKernel
         
         $schedule->command('sale:check-expired')->everyMinute(); // Cấu hình để cron job chạy mỗi phút
 
-        // Nếu bạn cần chạy command mỗi giây, sử dụng cách này:
-        $schedule->command('sale:check-expired')
-                 ->everyMinute()
-                 ->appendOutputTo(storage_path('logs/sale-expired.log'));
+        // // Nếu bạn cần chạy command mỗi giây, sử dụng cách này:
+        // $schedule->command('sale:check-expired')
+        //          ->everyMinute()
+        //          ->appendOutputTo(storage_path('logs/sale-expired.log'));
+      //  $schedule->command('order:update-status')->daily();
+        $schedule->command('order:update-status')->hourly();    
     }
 
     /**

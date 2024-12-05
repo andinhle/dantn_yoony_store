@@ -11,7 +11,7 @@ class SupplierController extends Controller
 {
     public function index()
     {
-        $supplier = Supplier::paginate(10);
+        $supplier = Supplier::orderBy('created_at', 'desc')->paginate(10);
         return response()->json([
             'data' => $supplier
         ]);
@@ -37,10 +37,10 @@ class SupplierController extends Controller
 
     public function show(string $id)
     {
-        $supplier = Supplier::where('id', $id)->get();
+        $supplier = Supplier::where('id', $id)->first();
         return response()->json([
             'data' => $supplier
-        ]);
+        ]);   
     }
 
     public function update(StoreSupplierRequest $request, string $id)

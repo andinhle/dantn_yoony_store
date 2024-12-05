@@ -18,7 +18,7 @@ class NotificationController extends Controller
 
             return response()->json([
                 'success' => true,
-                'notifications' => $notifications
+                'data' => $notifications
             ]);
             
         } catch (\Exception $e) {

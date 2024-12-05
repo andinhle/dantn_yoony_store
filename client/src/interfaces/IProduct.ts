@@ -19,4 +19,5 @@ export interface IProduct{
     variants:IVariants[],
     total_revenue?:number,
     updated_at?:string
+    created_at?:string
 }
