@@ -326,11 +326,7 @@ class CartController extends Controller
                     ->where('user_id', $id_user)
                     ->first();
 
-                if ($existingCart) {
-                    // Cập nhật số lượng nếu sản phẩm đã tồn tại
-                    $existingCart->quantity += $quantity;
-                    $existingCart->save();
-                } else {
+                if (!$existingCart) {
                     // Thêm mới sản phẩm vào giỏ hàng
                     Cart::create([
                         'user_id' => $id_user,
@@ -338,6 +334,7 @@ class CartController extends Controller
                         'quantity' => $quantity,
                     ]);
                 }
+                
             }
 
             // Lấy lại danh sách giỏ hàng sau khi cập nhật

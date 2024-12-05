@@ -1,51 +1,10 @@
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { Link } from "react-router-dom";
 import HTMLReactParser from "html-react-parser";
-import Pusher from "pusher-js";
 import { NotificationsContext } from "../../../contexts/NotificationsContext";
-import instance from "../../../instance/instance";
 
 const ShowNotificationUser = () => {
-  const { notifications, dispatch } = useContext(NotificationsContext);
-  const userData = JSON.parse(localStorage.getItem("userInfor")!);
-  useEffect(() => {
-    (async () => {
-      try {
-        const {
-          data: { data: response },
-        } = await instance.get(`notification`);
-        if (response) {
-          dispatch({
-            type: "LIST",
-            payload: response,
-          });
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    }
-  )()
-  }, [])
-  useEffect(() => {
-    Pusher.logToConsole = true;
-
-    const pusher = new Pusher(import.meta.env.VITE_PUSHER_APP_KEY, {
-      cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-      encrypted: true,
-    });
-
-    const channel = pusher.subscribe("notifications." + userData.id);
-    channel.bind("order-status-updated", (data: any) => {
-      dispatch({
-        type: "ADD",
-        payload: data.notification,
-      });
-    });
-    return () => {
-      channel.unbind_all();
-      channel.unsubscribe();
-    };
-  }, []);
+  const { notifications } = useContext(NotificationsContext);
   return (
     <div className="px-2 py-5">
       {notifications.length === 0 ? (
