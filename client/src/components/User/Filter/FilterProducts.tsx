@@ -57,7 +57,7 @@ const FilterProducts = () => {
       try {
         setIsLoading(true);
         await new Promise((resolve) => setTimeout(resolve, 1000));
-
+  
         const cleanParams = {
           ...params,
           name: params.name || undefined,
@@ -72,10 +72,15 @@ const FilterProducts = () => {
             : undefined,
         };
 
-        setSearchParams({ page: String(page) });
+        const currentPage = searchParams.get("page") || "1";
+        setSearchParams({ 
+          ...Object.fromEntries(searchParams), 
+          page: currentPage 
+        });
+  
         const {
           data,
-        } = await instance.post("products/filter", cleanParams);
+        } = await instance.post(`products/filter?page=${currentPage}`, cleanParams);
         setDataResponse(data.data);
         setMeta(data)
       } catch (error) {
@@ -84,7 +89,7 @@ const FilterProducts = () => {
         setIsLoading(false);
       }
     },
-    [setDataResponse, setIsLoading,page]
+    [setDataResponse, setIsLoading, searchParams]
   );
 
   const debouncedFetchProducts = useCallback(debounce(fetchProducts, 500), [
@@ -100,7 +105,7 @@ const FilterProducts = () => {
       price: sliderValue,
     };
 
-    debouncedFetchProducts(params);
+    debouncedFetchProducts(params, page);
   }, [
     parsedSearch?.q,
     selectedCategories,
@@ -108,6 +113,7 @@ const FilterProducts = () => {
     selectedRating,
     sliderValue,
     debouncedFetchProducts,
+    page,
   ]);
 
   // Initial filter data fetch
@@ -170,7 +176,7 @@ const FilterProducts = () => {
   const handleResetFilters = () => {
     setSelectedCategories([]);
     setSelectedAttributes({});
-    setSelectedRating(undefined)
+    setSelectedRating(undefined);
     // setSliderValue([dataFilter.price.min, dataFilter.price.max]);
     setSliderValue(undefined);
     handleFiltersChange();
@@ -447,7 +453,12 @@ const FilterProducts = () => {
             }}
             className="flex justify-between items-center"
           >
-            <RenderProductFilter datas={dataResponse} setSearchParams={setSearchParams} page={page} meta={meta!} />
+            <RenderProductFilter
+              datas={dataResponse}
+              setSearchParams={setSearchParams}
+              page={page}
+              meta={meta!}
+            />
           </LoadingOverlay>
         </div>
       </div>

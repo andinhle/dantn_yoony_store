@@ -4,19 +4,23 @@ import { NotificationsContext, Props } from "../contexts/NotificationsContext";
 import NotificationsReducer from "../reducer/NotificationsReducer";
 import instance from "../instance/instance";
 import isAuthenticated from "../components/Middleware/isAuthenticated";
+import Pusher from "pusher-js";
 const NotificationsProvider = (props: Props) => {
   const [notifications, dispatch] = useReducer(
     NotificationsReducer,
     [] as IProduct[]
   );
-  const [isLoggedIn, setIsLoggedIn] = useState(isAuthenticated());
-  
+  // const [isLoggedIn, setIsLoggedIn] = useState(isAuthenticated());
+
+  const userData = JSON.parse(localStorage.getItem("userInfor")!);
   useEffect(() => {
-    (async () => {
+    if (!userData?.id) return;
+  
+    const fetchNotifications = async () => {
       try {
         const {
           data: { data: response },
-        } = await instance.get(`notification`);
+        } = await instance.get(`notification/${userData.id!}`);
         if (response) {
           dispatch({
             type: "LIST",
@@ -26,9 +30,30 @@ const NotificationsProvider = (props: Props) => {
       } catch (error) {
         console.log(error);
       }
-    }
-  )()
-  }, [])
+    };
+  
+    Pusher.logToConsole = true;
+  
+    const pusher = new Pusher(import.meta.env.VITE_PUSHER_APP_KEY, {
+      cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+      encrypted: true,
+    });
+  
+    const channel = pusher.subscribe(`notifications.${userData.id}`);
+    channel.bind("order-status-updated", (data: any) => {
+      dispatch({
+        type: "ADD",
+        payload: data.notification,
+      });
+    });
+  
+    fetchNotifications();
+  
+    return () => {
+      channel.unbind_all();
+      channel.unsubscribe();
+    };
+  }, [userData?.id]); // Chỉ phụ thuộc vào user ID
   return (
     <NotificationsContext.Provider value={{ notifications, dispatch }}>
       {props.children}

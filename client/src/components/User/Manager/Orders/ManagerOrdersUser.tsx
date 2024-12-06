@@ -667,7 +667,7 @@ const ManagerOrdersUser = () => {
               <Table.HeadCell className="bg-primary text-util text-sm font-normal capitalize text-nowrap">
                 Phương thức
               </Table.HeadCell>
-              <Table.HeadCell className="bg-primary text-util text-sm font-normal capitalize text-nowrap">
+              <Table.HeadCell className="bg-primary text-util text-sm font-normal capitalize text-nowrap text-center">
                 Tình trạng
               </Table.HeadCell>
               <Table.HeadCell className="bg-primary text-util text-sm font-normal capitalize text-nowrap !rounded-r-sm">

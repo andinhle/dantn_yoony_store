@@ -12,6 +12,7 @@ import { toast } from "react-toastify";
 import instance from "../../../instance/instance";
 import { Link } from "react-router-dom";
 import { ICart } from "../../../interfaces/ICart";
+import isAuthenticated from "../../Middleware/isAuthenticated";
 interface CartItem {
   id: string;
   variant: {
@@ -33,7 +34,8 @@ const CartListClient = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTotal, setSelectedTotal] = useState(0);
   const pageSize = 5;
-
+  const [isLoggedIn, setIsLoggedIn] = useState(isAuthenticated());
+  const existingCart = JSON.parse(localStorage.getItem("cartLocal")!) || [];
   // console.log(carts);
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
 
@@ -64,13 +66,14 @@ const CartListClient = () => {
 
     if (newQuantity > maxQuantity) {
       message.warning(`Số lượng không được vượt quá ${maxQuantity}`);
-      newQuantity = 1; 
+      newQuantity = 1;
     }
 
     setQuantities((prev) => ({
       ...prev,
-      [item.id]: newQuantity, 
+      [item.id]: newQuantity,
     }));
+
     const updatedItem = { ...item, quantity: Math.max(1, newQuantity) };
     dispatch({ type: "UPDATE", payload: updatedItem });
     try {
@@ -78,8 +81,8 @@ const CartListClient = () => {
         await instance.patch(`cart/${item.id}/increase`);
       } else if (operation === "decrease") {
         await instance.patch(`cart/${item.id}/decrease`);
-      }else{
-        await instance.patch(`cart/${item.id}`,{quantity:newQuantity});
+      } else {
+        await instance.patch(`cart/${item.id}`, { quantity: newQuantity });
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -125,6 +128,7 @@ const CartListClient = () => {
       }
     }
   };
+
   useEffect(() => {
     const totalPages = Math.ceil(carts.length / pageSize);
     if (currentPage > totalPages) {
@@ -157,6 +161,97 @@ const CartListClient = () => {
     }
   };
 
+  const confirmDeleteOneProductLocal = async (id: number) => {
+    const dataCart = existingCart.filter((cart) => cart.id !== id);
+    localStorage.setItem("cartLocal", JSON.stringify(dataCart));
+    dispatch({ type: "DELETE", payload: id });
+    message.success("Xoá sản phẩm khỏi giỏ hàng thành công!");
+  };
+
+  const confirmDeleteSelectProductLocal: PopconfirmProps["onConfirm"] = async (
+    pagination: TablePaginationConfig
+  ) => {
+    const existingCart: ICart[] = JSON.parse(
+      localStorage.getItem("cartLocal") || "[]"
+    );
+    const updatedCart = existingCart.filter(
+      (cart) => !selectedRowKeys.includes(cart.id)
+    );
+    localStorage.setItem("cartLocal", JSON.stringify(updatedCart));
+    dispatch({
+      type: "REMOVE_SELECTED",
+      payload: selectedRowKeys,
+    });
+    setCurrentPage(pagination.current || 1);
+    setSelectedRowKeys([]);
+    message.success("Xoá sản phẩm khỏi giỏ hàng thành công!");
+  };
+  const handleQuantityChangeLocal = (
+    item: CartItem,
+    newQuantity: number,
+    operation: string = "null"
+  ) => {
+    // Lấy giỏ hàng từ localStorage
+    const existingCart: CartItem[] = JSON.parse(
+      localStorage.getItem("cartLocal") || "[]"
+    );
+
+    // Kiểm tra số lượng tồn kho
+    const maxQuantity = item.variant?.inventory_stock?.quantity || 0;
+
+    // Xác định số lượng cuối cùng
+    let finalQuantity = newQuantity;
+
+    switch (operation) {
+      case "increase":
+        finalQuantity = Math.min(newQuantity, maxQuantity);
+        break;
+      case "decrease":
+        finalQuantity = Math.max(1, newQuantity);
+        break;
+      default:
+        // Khi nhập trực tiếp
+        if (newQuantity > maxQuantity) {
+          message.warning(`Số lượng không được vượt quá ${maxQuantity}`);
+          finalQuantity = maxQuantity;
+        } else if (newQuantity < 1) {
+          finalQuantity = 1;
+        }
+        break;
+    }
+
+    // Tìm index của sản phẩm trong giỏ hàng
+    const itemIndex = existingCart.findIndex(
+      (cartItem) => cartItem.variant.id === item.variant.id
+    );
+
+    // Nếu sản phẩm đã tồn tại trong giỏ hàng
+    if (itemIndex !== -1) {
+      // Cập nhật số lượng
+      existingCart[itemIndex] = {
+        ...existingCart[itemIndex],
+        quantity: finalQuantity,
+      };
+    }
+
+    // Cập nhật localStorage
+    localStorage.setItem("cartLocal", JSON.stringify(existingCart));
+
+    // Cập nhật state giỏ hàng
+    dispatch({
+      type: "UPDATE",
+      payload: {
+        ...item,
+        quantity: finalQuantity,
+      },
+    });
+
+    // Hiển thị thông báo nếu số lượng bị điều chỉnh
+    if (finalQuantity !== newQuantity) {
+      message.warning(`Số lượng đã được điều chỉnh về ${finalQuantity}`);
+    }
+  };
+
   const cancelDeleteOneProduct: PopconfirmProps["onCancel"] = (e) => {
     message.error("Huỷ xoá");
   };
@@ -182,19 +277,23 @@ const CartListClient = () => {
             >
               {variant.product?.name}
             </Link>
-            <div className="flex gap-2 text-secondary/50">
-              <span>
-                Size:{" "}
-                {variant.attribute_values.find(
-                  (item: IAttributeValue) => item.attribute.slug === "size"
-                )?.value || "N/A"}
-              </span>
-              <span>
-                Màu:{" "}
-                {variant.attribute_values.find(
-                  (item: IAttributeValue) => item.attribute.slug === "color"
-                )?.value || "N/A"}
-              </span>
+            <div className="flex gap-2 text-secondary/50 items-center">
+              {variant.attribute_values.map(
+                (attribute_value: IAttributeValue, index) => {
+                  return (
+                    <>
+                      <div className="text-[13px]">
+                        <span>{attribute_value?.attribute?.name}</span>
+                        {": "}
+                        <span>{attribute_value?.value}</span>
+                      </div>
+                      {index < variant.attribute_values.length - 1 && (
+                        <span className="text-[13px]">|</span>
+                      )}
+                    </>
+                  );
+                }
+              )}
             </div>
           </div>
         </div>
@@ -220,86 +319,166 @@ const CartListClient = () => {
       title: "Số lượng",
       dataIndex: "quantity",
       align: "center",
-      render: (quantity, record) => (
-        <div className="flex items-center w-fit mx-auto">
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              handleQuantityChange(
-                record,
-                quantity > 1 ? quantity - 1 : 1,
-                "decrease"
-              );
-            }}
-            className="p-3 border-input rounded-es-sm rounded-ss-sm text-[#929292] border-s border-b border-t"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              className="size-3"
-              color={"currentColor"}
-              fill={"none"}
+      render: (quantity, record) => {
+        return !isLoggedIn ? (
+          <div className="flex items-center w-fit mx-auto">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                handleQuantityChangeLocal(
+                  record,
+                  record.quantity > 1 ? record.quantity - 1 : 1,
+                  "decrease"
+                );
+              }}
+              className="p-3 border-input rounded-es-sm rounded-ss-sm text-[#929292] border-s border-b border-t"
             >
-              <path
-                d="M20 12L4 12"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <input
-            min={1}
-            max={record.variant?.inventory_stock?.quantity}
-            value={quantity}
-            onChange={(e) => {
-              const value = Number(e.target.value);
-              if (!isNaN(value)) {
-                handleQuantityChange(record, value, 'null');
-              }
-            }}
-            className="w-10 p-[7px] border border-input outline-none text-center"
-          />
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              handleQuantityChange(record, quantity + 1, "increase");
-            }}
-            className="p-3 border-input rounded-ee-sm rounded-se-sm text-[#929292] border-e border-t border-b"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              className="size-3"
-              color={"currentColor"}
-              fill={"none"}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className="size-3"
+                color={"currentColor"}
+                fill={"none"}
+              >
+                <path
+                  d="M20 12L4 12"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+            <input
+              min={1}
+              max={record.variant?.inventory_stock?.quantity}
+              value={record.quantity}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                if (!isNaN(value)) {
+                  handleQuantityChangeLocal(record, value);
+                }
+              }}
+              className="w-10 p-[7px] border border-input outline-none text-center"
+            />
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                handleQuantityChangeLocal(
+                  record,
+                  record.quantity + 1,
+                  "increase"
+                );
+              }}
+              className="p-3 border-input rounded-ee-sm rounded-se-sm text-[#929292] border-e border-t border-b"
             >
-              <path
-                d="M12 4V20"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M4 12H20"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
-      ),
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className="size-3"
+                color={"currentColor"}
+                fill={"none"}
+              >
+                <path
+                  d="M12 4V20"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M4 12H20"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center w-fit mx-auto">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                handleQuantityChange(
+                  record,
+                  quantity > 1 ? quantity - 1 : 1,
+                  "decrease"
+                );
+              }}
+              className="p-3 border-input rounded-es-sm rounded-ss-sm text-[#929292] border-s border-b border-t"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className="size-3"
+                color={"currentColor"}
+                fill={"none"}
+              >
+                <path
+                  d="M20 12L4 12"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+            <input
+              min={1}
+              max={record.variant?.inventory_stock?.quantity}
+              value={quantity}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                if (!isNaN(value)) {
+                  handleQuantityChange(record, value, "null");
+                }
+              }}
+              className="w-10 p-[7px] border border-input outline-none text-center"
+            />
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                handleQuantityChange(record, quantity + 1, "increase");
+              }}
+              className="p-3 border-input rounded-ee-sm rounded-se-sm text-[#929292] border-e border-t border-b"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className="size-3"
+                color={"currentColor"}
+                fill={"none"}
+              >
+                <path
+                  d="M12 4V20"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M4 12H20"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+        );
+      },
     },
     {
       title: "Tổng",
       dataIndex: "id",
       align: "center",
       render: (id, record) => (
-        <p className="text-nowrap">{calculateTotal(record).toLocaleString()} VNĐ</p>
+        <p className="text-nowrap">
+          {calculateTotal(record).toLocaleString()} VNĐ
+        </p>
       ),
     },
     {
@@ -311,7 +490,11 @@ const CartListClient = () => {
           type="button"
           className="p-1.5 bg-uitl shadow rounded-md"
           onClick={() => {
-            confirmDeleteOneProduct(id);
+            if (isLoggedIn) {
+              confirmDeleteOneProduct(id);
+            } else {
+              confirmDeleteOneProductLocal(id);
+            }
           }}
         >
           <svg
@@ -350,10 +533,12 @@ const CartListClient = () => {
       ),
     },
   ];
+
   const paginatedData = carts.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
+
   localStorage.setItem("id_cart", JSON.stringify(selectedRowKeys));
   localStorage.setItem("final_total", JSON.stringify(selectedTotal));
   return (
@@ -383,8 +568,8 @@ const CartListClient = () => {
             theme={{
               token: {
                 colorPrimary: "#ff9900",
-                colorInfoHover:"#fff5e5",
-                controlItemBgActiveHover:"#fff5e5",
+                colorInfoHover: "#fff5e5",
+                controlItemBgActiveHover: "#fff5e5",
               },
             }}
           >
@@ -402,7 +587,11 @@ const CartListClient = () => {
             <Popconfirm
               title="Xoá các sản phẩm đã chọn"
               description="Bạn có chắc chắn xoá không?"
-              onConfirm={confirmDeleteSelectProduct}
+              onConfirm={(pagination) =>
+                isLoggedIn
+                  ? confirmDeleteSelectProduct(pagination)
+                  : confirmDeleteSelectProductLocal(pagination)
+              }
               // onCancel={cancelDeleteSelectProduct}
               okText="Xoá"
               cancelText="Huỷ"
@@ -970,7 +1159,7 @@ const CartListClient = () => {
             } w-full block rounded-sm`}
           >
             <Link
-              to={"/check-out"}
+              to={`${!isLoggedIn ? "/auth/login" : "/check-out"}`}
               className={`text-center flex justify-center py-2 text-util`}
             >
               TIẾN HÀNH ĐẶT HÀNG

@@ -116,7 +116,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Thông báo
-    Route::get('/notification', [NotificationController::class, 'getUserNotifications']);
+    Route::get('/notification/{id}', [NotificationController::class, 'getUserNotifications']);
     Route::patch('/notification/{id}/read', [NotificationController::class, 'markAsRead']);
 
     // Admin
@@ -125,64 +125,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         // Lấy tất cả thông tin user
         Route::get('/users', [UserController::class, 'index']);
         // Cập nhật role của user
-
         Route::patch('/users/{id}/role', [UserController::class, 'updateRole']);
         Route::get('/user/{id}', [UserController::class, 'show']);
 
-        //Thống kê
-        Route::get('thong-ke/doanh-thu', [StatisticalController::class, 'doanhThu']);
-        Route::get('thong-ke/san-pham', [StatisticalController::class, 'thongKeSanPham']);
-        Route::get('thong-ke/don-hang', [StatisticalController::class, 'thongKeDonHang']);
-        Route::get('thong-ke/ngay-thong-ke', [StatisticalController::class, 'NgayThongKe']);
-        Route::get('thong-ke/thong-ke-theo-ngay', [StatisticalController::class, 'thongKeNgay'])->name('thongKeNgay');
-        Route::get('thong-ke/so-luong-bien-the-duoi-10', [StatisticalController::class, 'listSoLuongBienTheDuoi10']);
-        Route::get('thong-ke/so-luong-bien-the-da-het', [StatisticalController::class, 'listSoLuongBienTheDaHet']);
-
-
-        // QL danh mục
-        Route::apiResource('category', CategoryController::class);
-        Route::patch('category/{id}/is-active', [CategoryController::class, 'updateIsActive'])->name('category.updateIsActive');
-        Route::post('category/delete-much', [CategoryController::class, 'deleteMuch'])->name('category.deleteMuch');
-        Route::patch('category/restore/{id}', [CategoryController::class, 'restore'])->name('category.restore');
-        Route::delete('category/hard-delete/{id}', [CategoryController::class, 'hardDelete'])->name('category.hardDelete');
-        Route::get('category/{id}/product-count', [CategoryController::class, 'countProducts']);
-
-
-        // QL mã giảm giá
-        Route::apiResource('coupon', CouponController::class);
-        Route::patch('coupon/{id}/status', [CouponController::class, 'updateStatus'])->name('coupon.updateStatus');
-        Route::patch('coupon/{id}/is_featured', [CouponController::class, 'updateIsFeatured'])->name('coupon.updateIsFeatured');
-
-        // QL thuộc tính
-        Route::apiResource('attribute', AttributeController::class);
-        Route::get('admin/attribute/{id}', [AttributeController::class, 'getAttributeDetail']);
-        Route::put('attributes/{id}/type', [AttributeController::class, 'updateType']);
-
-        Route::apiResource('attribute-value', AttributeValueController::class);
-        Route::get('/attribute-values/{id}', [AttributeValueController::class, 'getByAttributeId']);
-        Route::put('/attribute-values/{attributeValue}', [AttributeValueController::class, 'update']);
-
         // QL banner
-        Route::apiResource('banners', BannerController::class);
-        Route::patch('banners/{id}/is-active', [BannerController::class, 'updateIsActive'])->name('blogs.updateIsActive');
         // Route::put('createBannerMultiple', [BannerController::class, 'createBannerMultiple']);
         // Route::post('updateBannerMultiple', [BannerController::class, 'updateBannerMultiple']);
-
-        // QL blog
-        Route::apiResource('blogs', BlogController::class);
-        Route::patch('blogs/{id}/is-active', [BlogController::class, 'updateIsActive'])->name('blogs.updateIsActive');
-
-        // QL sản phẩm
-        Route::get('/product/{slug}', [ProductController::class, 'findBySlug']);
-        Route::apiResource('products', ProductController::class);
-        Route::post('/products/restore-multiple', [ProductController::class, 'restoreMultiple']);
-        Route::get('listDelete', [ProductController::class, 'listDelete']);
-
-        Route::patch('product/{id}/is_featured', [ProductController::class, 'updateIsFeatured'])->name('category.updateIsFeatured');
-        // Route::patch('product/{id}/is_good_deal', [ProductController::class, 'updateIsGoodDeal'])->name('category.updateIsGoodDeal');
-        Route::patch('product/{id}/is_active', [ProductController::class, 'updateIsActive'])->name('category.updateIsActive');
-        Route::patch('product/restore/{id}', [ProductController::class, 'restore'])->name('product.restore');
-        Route::delete('product/hard-delete/{id}', [ProductController::class, 'hardDelete'])->name('product.hardDelete');
 
         //QL Event
         Route::get('/admin/events/coupons', [EventController::class, 'getEventCoupons']);
@@ -207,10 +155,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('/search-by-batch-number/{batchNumber}', [InventoryImportController::class, 'searchByBatchNumber']);
         //xóa đơn nhập
         Route::delete('/deleteImport/{id}', [InventoryImportController::class, 'deleteImport']);
+        Route::post('/inventory-imports/{id}/restore', [InventoryImportController::class, 'restoreImport']);
+        //lịch sử nhập hàng trước nhập hàng
         Route::get('/inventory-import/variant/{variantId}', [InventoryImportController::class, 'getByVariantId']);
         //xóa lịch sử nhập hàng
-
         Route::delete('/deleteHistoryRecord/{id}', [InventoryImportController::class, 'deleteHistoryRecord']);
+        // ví dụ ?from_date=2024-12-01&to_date=2024-12-10
+        Route::get('/checkDateHistore', [InventoryImportController::class, 'checkDateHistore']);
 
         // Nhập hàng
         // Route::put('/updateVariant', [InventoryImportController::class, 'updateVariant']);
@@ -248,6 +199,42 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
             Route::delete('delete-answer/{id}', [FaqController::class, 'deleteAnswer']);
         });
 
+        //Thống kê
+        Route::get('thong-ke/doanh-thu', [StatisticalController::class, 'doanhThu']);
+        Route::get('thong-ke/san-pham', [StatisticalController::class, 'thongKeSanPham']);
+        Route::get('thong-ke/don-hang', [StatisticalController::class, 'thongKeDonHang']);
+        Route::get('thong-ke/ngay-thong-ke', [StatisticalController::class, 'NgayThongKe']);
+        Route::get('thong-ke/thong-ke-theo-ngay', [StatisticalController::class, 'thongKeNgay'])->name('thongKeNgay');
+        Route::get('thong-ke/so-luong-bien-the-duoi-10', [StatisticalController::class, 'listSoLuongBienTheDuoi10']);
+        Route::get('thong-ke/so-luong-bien-the-da-het', [StatisticalController::class, 'listSoLuongBienTheDaHet']);
+
+        // QL danh mục
+        Route::apiResource('category', CategoryController::class);
+        Route::patch('category/{id}/is-active', [CategoryController::class, 'updateIsActive'])->name('category.updateIsActive');
+        Route::post('category/delete-much', [CategoryController::class, 'deleteMuch'])->name('category.deleteMuch');
+        Route::patch('category/restore/{id}', [CategoryController::class, 'restore'])->name('category.restore');
+        Route::delete('category/hard-delete/{id}', [CategoryController::class, 'hardDelete'])->name('category.hardDelete');
+        Route::get('category/{id}/product-count', [CategoryController::class, 'countProducts']);
+
+        // QL thuộc tính
+        Route::apiResource('attribute', AttributeController::class);
+        Route::get('admin/attribute/{id}', [AttributeController::class, 'getAttributeDetail']);
+        Route::put('attributes/{id}/type', [AttributeController::class, 'updateType']);
+        Route::apiResource('attribute-value', AttributeValueController::class);
+        Route::get('/attribute-values/{id}', [AttributeValueController::class, 'getByAttributeId']);
+        Route::put('/attribute-values/{attributeValue}', [AttributeValueController::class, 'update']);
+
+        // QL sản phẩm
+        Route::get('/product/{slug}', [ProductController::class, 'findBySlug']);
+        Route::apiResource('products', ProductController::class);
+        Route::post('/products/restore-multiple', [ProductController::class, 'restoreMultiple']);
+        Route::get('listDelete', [ProductController::class, 'listDelete']);
+        Route::patch('product/{id}/is_featured', [ProductController::class, 'updateIsFeatured'])->name('category.updateIsFeatured');
+        // Route::patch('product/{id}/is_good_deal', [ProductController::class, 'updateIsGoodDeal'])->name('category.updateIsGoodDeal');
+        Route::patch('product/{id}/is_active', [ProductController::class, 'updateIsActive'])->name('category.updateIsActive');
+        Route::patch('product/restore/{id}', [ProductController::class, 'restore'])->name('product.restore');
+        Route::delete('product/hard-delete/{id}', [ProductController::class, 'hardDelete'])->name('product.hardDelete');
+
         // QL banner
         Route::apiResource('banners', BannerController::class);
         Route::patch('banners/{id}/is-active', [BannerController::class, 'updateIsActive'])->name('blogs.updateIsActive');
@@ -263,6 +250,11 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('ratings/by-product', [RatingController::class, 'getRatingByProduct']);
         Route::get('ratings/filter', [RatingController::class, 'filterRating']);
         Route::get('ratings/{id}', [RatingController::class, 'getOneRatingById'])->name('ratings.getOne');
+        
+        // QL mã giảm giá
+        Route::apiResource('coupon', CouponController::class);
+        Route::patch('coupon/{id}/status', [CouponController::class, 'updateStatus'])->name('coupon.updateStatus');
+        Route::patch('coupon/{id}/is_featured', [CouponController::class, 'updateIsFeatured'])->name('coupon.updateIsFeatured');
     });
 
     // Giỏ hàng_user

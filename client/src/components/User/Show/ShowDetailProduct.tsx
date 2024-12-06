@@ -19,6 +19,8 @@ import { Tooltip } from "@mui/material";
 import RatingProduct from "./RatingProduct";
 import { LoadingOverlay } from "@achmadk/react-loading-overlay";
 import isAuthenticated from "../../Middleware/isAuthenticated";
+import { ICart } from "../../../interfaces/ICart";
+import { toast } from "react-toastify";
 interface IAttribute {
   value: string;
   type: "select" | "color" | "button" | "radio";
@@ -298,8 +300,9 @@ const ShowDetailProduct: React.FC = () => {
       message.error("Vui lòng chọn đầy đủ thuộc tính sản phẩm");
       return false;
     }
-    if (!selectedVariant?.quantity) {
-      return message.warning("Hết hàng vui lòng chọn phân loại khác");
+    if (!selectedVariant?.quantity || selectedVariant.quantity <= 0) {
+      message.warning("Hết hàng vui lòng chọn phân loại khác");
+      return false;
     }
 
     const existingCartItems = carts.filter(
@@ -360,30 +363,100 @@ const ShowDetailProduct: React.FC = () => {
     }
   };
 
-  const addCartLocal=()=>{
-    console.log('ok');
-  }
+  const addCartLocal = async () => {
+    const existingCart: ICart[] = JSON.parse(
+      localStorage.getItem("cartLocal") || "[]"
+    );
 
-  const addOrder = async () => {
+    if (!selectedVariant) {
+      message.error("Vui lòng chọn đầy đủ thuộc tính sản phẩm");
+      return false;
+    }
+
+    if (!selectedVariant?.quantity || selectedVariant.quantity <= 0) {
+      message.warning("Hết hàng vui lòng chọn phân loại khác");
+      return false;
+    }
+
+    // Tìm số lượng hiện tại của variant này trong giỏ hàng
+    const existingItemIndex = existingCart.findIndex(
+      (item) => item.variant_id === selectedVariant?.id
+    );
+
+    // Tính tổng số lượng hiện tại trong giỏ hàng
+    const currentQuantityInCart =
+      existingItemIndex !== -1 ? existingCart[existingItemIndex].quantity : 0;
+
+    // Tính tổng số lượng sau khi thêm
+    const totalQuantity = currentQuantityInCart + quantity;
+
+    // Kiểm tra tổng số lượng có vượt quá số lượng trong kho không
+    if (totalQuantity > selectedVariant?.quantity) {
+      message.warning(
+        `Số lượng không được vượt quá ${selectedVariant.quantity}`
+      );
+      return false;
+    }
+
     try {
-      if (!validateCartQuantity(quantity, selectedVariant, carts)) {
-        return;
-      }
-      const {
-        data: { data: response },
-      } = await instance.post("cart", {
-        quantity,
+      const { data: variantDetail } = await instance.get(
+        `variant/${selectedVariant?.id}`
+      );
+
+      // Chuẩn bị payload mới
+      const newCartItem: ICart = {
+        id:selectedVariant?.id,
         variant_id: selectedVariant?.id,
-        user_id: 1,
-      });
+        quantity: totalQuantity,
+        variant: variantDetail,
+      };
+
+      let updatedCart: ICart[];
+      if (existingItemIndex !== -1) {
+        updatedCart = existingCart.map((item, index) =>
+          index === existingItemIndex ? newCartItem : item
+        );
+      } else {
+        updatedCart = [...existingCart, newCartItem];
+      }
+
+      localStorage.setItem("cartLocal", JSON.stringify(updatedCart));
+      setQuantity(1);
+      toast.success("Đã thêm sản phẩm vào giỏ hàng");
       dispatch({
         type: "ADD",
-        payload: response,
+        payload: {
+          ...newCartItem,
+          quantity: quantity,
+          additive: existingItemIndex !== -1,
+        },
       });
     } catch (error) {
-      console.log(error);
+      console.error("Lỗi khi thêm sản phẩm:", error);
+      toast.error("Thêm sản phẩm thất bại");
     }
   };
+
+  // const addOrder = async () => {
+  //   try {
+  //     if (!validateCartQuantity(quantity, selectedVariant, carts)) {
+  //       return;
+  //     }
+  //     const {
+  //       data: { data: response },
+  //     } = await instance.post("cart", {
+  //       quantity,
+  //       variant_id: selectedVariant?.id,
+  //       user_id: 1,
+  //     });
+  //     dispatch({
+  //       type: "ADD",
+  //       payload: response,
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   if (!product)
     return (
