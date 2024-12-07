@@ -42,7 +42,7 @@ interface Product {
     name: string;
     slug: string;
     description: string;
-    images: string; // Dạng JSON string
+    images: string; 
     category_id: number;
     is_active: number;
     is_featured: number;
@@ -69,8 +69,8 @@ const Rates = () => {
     const [reviews, setReviews] = useState<Irates[]>([]);
     const [selectedView, setSelectedView] = useState<"product" | "user">("product");
     const [loading, setLoading] = useState<boolean>(true);
-    const [isHidden, setIsHidden] = useState<boolean>(false); // Trạng thái ẩn/hiện
-    const [expandedContent, setExpandedContent] = useState(null); // Trạng thái mở rộng nội dung
+    const [isHidden, setIsHidden] = useState<boolean>(false); 
+    const [expandedContent, setExpandedContent] = useState(null); 
     useEffect(() => {
         const fetchReviews = async () => {
             setLoading(true);
@@ -184,7 +184,7 @@ const Rates = () => {
             )
         },
     ];
-    // Cột bảng cho Ant Design Table
+    // Cột bảng cho bảng Ant Design (bảng phụ)
     const columns = [
         {
             title: "STT",
