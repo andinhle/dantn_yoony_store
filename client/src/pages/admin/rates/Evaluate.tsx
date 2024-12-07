@@ -242,7 +242,8 @@ const Rates = () => {
     const [showTable, setShowTable] = useState(false); // Quản lý trạng thái ẩn/hiện
 
     const handleToggleTable = () => {
-        setShowTable((prev) => !prev); // Đảo trạng thái show table 
+        setShowTable((prev) => !prev); 
+        // Đảo trạng thái show table 
     };
     return (
         <>
