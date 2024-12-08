@@ -8,7 +8,7 @@ import {
 } from "antd";
 import type { CheckboxProps } from "antd";
 import { Table } from "flowbite-react";
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import InventoryContext from "../../../contexts/InventoryContext";
 import instance from "../../../instance/instance";
 import dayjs from "dayjs";
@@ -20,12 +20,7 @@ import ModalHistoryInventory from "./ModalHistoryInventory";
 import ButtonExport from "../../../components/Admin/Button/ButtonExport";
 import { IProduct } from "../../../interfaces/IProduct";
 import { ICategory } from "../../../interfaces/ICategory";
-const plainOptionsInventory = [
-  "Dưới định mức tồn (SL: 50)",
-  "Vượt định mức tồn (SL: 500)",
-  "Còn hàng trong kho",
-  "Hết hàng trong kho",
-];
+import { LoadingOverlay } from "@achmadk/react-loading-overlay";
 const ListInventory = () => {
   const [valSearch, SetValSearch] = useState<string>("");
   const { Search } = Input;
@@ -33,6 +28,7 @@ const ListInventory = () => {
   const [checkedListInventory, setCheckedListInventory] = useState<string[]>(
     []
   );
+  const [isLoading, setLoading] = useState<boolean>(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parseInt(searchParams.get("page") || "1");
   const [meta, setMeta] = useState<IMeta>();
@@ -48,6 +44,36 @@ const ListInventory = () => {
   const onChangeInventory = (list: string[]) => {
     setCheckedListInventory(list);
   };
+  const stockFilterInventory = [
+    {
+      label: "Dưới định mức tồn (SL: 50)",
+      value: "duoi50",
+    },
+    {
+      label: "Vượt định mức tồn (SL: 500)",
+      value: "tren500",
+    },
+    {
+      label: "Còn hàng trong kho",
+      value: "conhang",
+    },
+    {
+      label: "Hết hàng trong kho",
+      value: "tonkho0",
+    },
+  ];
+
+  const plainOptionsInventory = stockFilterInventory.map((item) => ({
+    label: item.label,
+    value: item.value,
+  }));
+
+  const plainOptionsCategory = categoryFilter.map((item) => ({
+    label: item.name,
+    value: item.slug,
+  }));
+
+  console.log(checkedListInventory);
 
   const checkAll = plainOptionsInventory.length === checkedListInventory.length;
   const indeterminate =
@@ -55,7 +81,11 @@ const ListInventory = () => {
     checkedListInventory.length < plainOptionsInventory.length;
 
   const onCheckAllChange: CheckboxProps["onChange"] = (e) => {
-    setCheckedListInventory(e.target.checked ? plainOptionsInventory : []);
+    setCheckedListInventory(
+      e.target.checked
+        ? plainOptionsInventory.map((option) => option.value)
+        : []
+    );
   };
 
   // list danh sách nhập hàng rồi
@@ -126,10 +156,31 @@ const ListInventory = () => {
     getFilterCategoryInventory();
   }, []);
 
-  const plainOptionsCategory = categoryFilter.map((item) => ({
-    label: item.name,
-    value: item.slug,
-  }));
+  const fetchFilteredInventory = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data } = await instance.post("filter-stock", {
+        search: valSearch,
+        categories: checkedListCategory,
+        filter: checkedListInventory,
+      });
+      
+      if (data) {
+        dispatch({
+          type: 'LIST',
+          payload: data,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching filtered inventory:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [valSearch, checkedListCategory, checkedListInventory, dispatch]);
+  
+  useEffect(() => {
+    fetchFilteredInventory();
+  }, [fetchFilteredInventory]);
 
   return (
     <div className="grid grid-cols-12 gap-5 min-h-screen">
@@ -259,117 +310,137 @@ const ListInventory = () => {
             </button>
           </div>
         </div>
-        <div className="overflow-x-auto listinventory-scroll">
-          <Table className="border-b border-[#E4E7EB]">
-            <Table.Head className="text-center">
-              <Table.HeadCell
-                style={{
-                  width: "5%",
-                }}
-                className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap"
-              >
-                STT
-              </Table.HeadCell>
-              <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
-                Hàng hoá
-              </Table.HeadCell>
-              <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
-                Giá bán
-              </Table.HeadCell>
-              <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
-                Giá vốn
-              </Table.HeadCell>
-              <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
-                Tồn kho
-              </Table.HeadCell>
-              {/* <Table.HeadCell
+        <LoadingOverlay
+          active={isLoading}
+          spinner
+          text="Đang tải dữ liệu ..."
+          styles={{
+            overlay: (base) => ({
+              ...base,
+              background: "rgba(255, 255, 255, 0.75)",
+              backdropFilter: "blur(4px)",
+            }),
+            spinner: (base) => ({
+              ...base,
+              width: "40px",
+              "& svg circle": {
+                stroke: "rgba(255, 153, 0,5)",
+                strokeWidth: "3px",
+              },
+            }),
+          }}
+        >
+          <div className="overflow-x-auto listinventory-scroll">
+            <Table className="border-b border-[#E4E7EB]">
+              <Table.Head className="text-center">
+                <Table.HeadCell
+                  style={{
+                    width: "5%",
+                  }}
+                  className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap"
+                >
+                  STT
+                </Table.HeadCell>
+                <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
+                  Hàng hoá
+                </Table.HeadCell>
+                <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
+                  Giá bán
+                </Table.HeadCell>
+                <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
+                  Giá vốn
+                </Table.HeadCell>
+                <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
+                  Tồn kho
+                </Table.HeadCell>
+                <Table.HeadCell
                 className="bg-[#F4F7FA] text-secondary/75 text-sm font-medium capitalize text-nowrap"
                 style={{
                   width: "20%",
                 }}
               >
                 Hành động
-              </Table.HeadCell> */}
-            </Table.Head>
-            <Table.Body className="divide-y">
-              {inventorys.length === 0 ? (
-                <Table.Row>
-                  <Table.Cell colSpan={6}>
-                    <div className="flex flex-col items-center text-secondary/20 space-y-2 justify-center min-h-[50vh]">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="size-16"
-                        viewBox="0 0 64 41"
-                      >
-                        <g
-                          fill="none"
-                          fillRule="evenodd"
-                          transform="translate(0 1)"
+              </Table.HeadCell>
+              </Table.Head>
+              <Table.Body className="divide-y">
+                {inventorys.length === 0 ? (
+                  <Table.Row>
+                    <Table.Cell colSpan={6}>
+                      <div className="flex flex-col items-center text-secondary/20 space-y-2 justify-center min-h-[50vh]">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="size-16"
+                          viewBox="0 0 64 41"
                         >
-                          <ellipse
-                            cx="32"
-                            cy="33"
-                            fill="#f5f5f5"
-                            rx="32"
-                            ry="7"
-                          ></ellipse>
-                          <g fillRule="nonzero" stroke="#d9d9d9">
-                            <path d="M55 12.76L44.854 1.258C44.367.474 43.656 0 42.907 0H21.093c-.749 0-1.46.474-1.947 1.257L9 12.761V22h46v-9.24z"></path>
-                            <path
-                              fill="#fafafa"
-                              d="M41.613 15.931c0-1.605.994-2.93 2.227-2.931H55v18.137C55 33.26 53.68 35 52.05 35h-40.1C10.32 35 9 33.259 9 31.137V13h11.16c1.233 0 2.227 1.323 2.227 2.928v.022c0 1.605 1.005 2.901 2.237 2.901h14.752c1.232 0 2.237-1.308 2.237-2.913v-.007z"
-                            ></path>
+                          <g
+                            fill="none"
+                            fillRule="evenodd"
+                            transform="translate(0 1)"
+                          >
+                            <ellipse
+                              cx="32"
+                              cy="33"
+                              fill="#f5f5f5"
+                              rx="32"
+                              ry="7"
+                            ></ellipse>
+                            <g fillRule="nonzero" stroke="#d9d9d9">
+                              <path d="M55 12.76L44.854 1.258C44.367.474 43.656 0 42.907 0H21.093c-.749 0-1.46.474-1.947 1.257L9 12.761V22h46v-9.24z"></path>
+                              <path
+                                fill="#fafafa"
+                                d="M41.613 15.931c0-1.605.994-2.93 2.227-2.931H55v18.137C55 33.26 53.68 35 52.05 35h-40.1C10.32 35 9 33.259 9 31.137V13h11.16c1.233 0 2.227 1.323 2.227 2.928v.022c0 1.605 1.005 2.901 2.237 2.901h14.752c1.232 0 2.237-1.308 2.237-2.913v-.007z"
+                              ></path>
+                            </g>
                           </g>
-                        </g>
-                      </svg>
-                      <p>Không có hàng hoá nào</p>
-                    </div>
-                  </Table.Cell>
-                </Table.Row>
-              ) : (
-                inventorys.map((inventory, index) => {
-                  return (
-                    <Table.Row>
-                      <Table.Cell className="text-center">
-                        {index + 1}
-                      </Table.Cell>
-                      <Table.Cell className="text-center">
-                        <div className="flex gap-2.5">
-                          <Avatar
-                            shape="square"
-                            src={inventory.images[0]}
-                            size={45}
-                          />
-                          <div className="max-w-[300px] space-y-0.5">
-                            <Link
-                              to={`/${inventory.category?.slug}/${inventory.slug}`}
-                              className="text-left hover:text-primary/90 font-medium"
-                            >
-                              <p className="text-nowrap text-ellipsis overflow-hidden">
-                                {inventory.name}
+                        </svg>
+                        <p>Không có hàng hoá nào</p>
+                      </div>
+                    </Table.Cell>
+                  </Table.Row>
+                ) : (
+                  inventorys.map((inventory, index) => {
+                    return (
+                      <Table.Row>
+                        <Table.Cell className="text-center">
+                          {index + 1}
+                        </Table.Cell>
+                        <Table.Cell className="text-center">
+                          <div className="flex gap-2.5">
+                            <Avatar
+                              shape="square"
+                              src={inventory.images[0]}
+                              size={45}
+                            />
+                            <div className="max-w-[300px] space-y-0.5">
+                              <Link
+                                to={`/${inventory.category?.slug}/${inventory.slug}`}
+                                className="text-left hover:text-primary/90 font-medium"
+                              >
+                                <p className="text-nowrap text-ellipsis overflow-hidden">
+                                  {inventory.name}
+                                </p>
+                              </Link>
+                              <p className="text-left text-nowrap text-ellipsis overflow-hidden text-sm text-secondary/50">
+                                Cập nhật:{" "}
+                                <span className="text-primary/75">
+                                  {dayjs(
+                                    findNewestUpdateTime(inventory.variants)
+                                  ).format("DD-MM-YYYY")}
+                                </span>
                               </p>
-                            </Link>
-                            <p className="text-left text-nowrap text-ellipsis overflow-hidden text-sm text-secondary/50">
-                              Cập nhật:{" "}
-                              <span className="text-primary/75">
-                                {dayjs(
-                                  findNewestUpdateTime(inventory.variants)
-                                ).format("DD-MM-YYYY")}
-                              </span>
-                            </p>
+                            </div>
                           </div>
-                        </div>
-                      </Table.Cell>
-                      <Table.Cell className="text-center text-nowrap">
-                        {inventory.price_range}đ
-                      </Table.Cell>
-                      <Table.Cell className="text-center text-nowrap">
-                        {inventory.import_price_range}đ
-                      </Table.Cell>
-                      <Table.Cell className="text-center text-nowrap">
-                        {inventory.quantity_range}
-                      </Table.Cell>
-                      {/* <Table.Cell className="text-center text-nowrap">
+                        </Table.Cell>
+                        <Table.Cell className="text-center text-nowrap">
+                          {inventory.price_range}đ
+                        </Table.Cell>
+                        <Table.Cell className="text-center text-nowrap">
+                          {inventory.import_price_range}đ
+                        </Table.Cell>
+                        <Table.Cell className="text-center text-nowrap">
+                          {inventory.quantity_range}
+                        </Table.Cell>
+                        <Table.Cell className="text-center text-nowrap">
                         <div className="flex gap-2 justify-center">
                           <button
                             className="bg-util shadow py-2 px-3 rounded-md text-primary"
@@ -419,14 +490,15 @@ const ListInventory = () => {
                             </svg>
                           </button>
                         </div>
-                      </Table.Cell> */}
-                    </Table.Row>
-                  );
-                })
-              )}
-            </Table.Body>
-          </Table>
-        </div>
+                      </Table.Cell>
+                      </Table.Row>
+                    );
+                  })
+                )}
+              </Table.Body>
+            </Table>
+          </div>
+        </LoadingOverlay>
         <Pagination
           current={page}
           onChange={(page) => {

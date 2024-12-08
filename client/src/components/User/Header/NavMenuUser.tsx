@@ -306,7 +306,7 @@ const NavMenuUser = () => {
                     </ListItemText>
                   </MenuItem>
                 </Link>
-                {user.role === "admin" && (
+                {(user.role === "admin" || user.role === "manage") && (
                   <Link to={"/admin"}>
                     <MenuItem
                       onClick={handleClose}

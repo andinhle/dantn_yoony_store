@@ -784,5 +784,10 @@ public function checkDateHistore(Request $request)
         ], 500);
     }
 }
-
+public function getDetailImport(string $id)
+    {
+        $product = Product::with('category','variants.attributeValues.attribute', 'variants.inventoryStock','variants.inventoryImports.supplier'
+        )->findOrFail($id);
+        return new ProductResource($product);
+    }
 }
