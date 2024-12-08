@@ -174,6 +174,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::post('/import-multiple-orders', [InventoryImportController::class, 'importMultiple']);
         Route::get('/list-import', [InventoryImportController::class, 'index']);
         Route::get('/list-stock', [InventoryStockController::class, 'index']);
+        Route::get('/import-detail/{id}', [InventoryImportController::class, 'getDetailImport']);
 
 
         // Nhà cung cấp
@@ -207,6 +208,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('thong-ke/thong-ke-theo-ngay', [StatisticalController::class, 'thongKeNgay'])->name('thongKeNgay');
         Route::get('thong-ke/so-luong-bien-the-duoi-10', [StatisticalController::class, 'listSoLuongBienTheDuoi10']);
         Route::get('thong-ke/so-luong-bien-the-da-het', [StatisticalController::class, 'listSoLuongBienTheDaHet']);
+        Route::get('thong-ke/profit', [StatisticalController::class, 'profit']);
 
         // QL danh mục
         Route::apiResource('category', CategoryController::class);

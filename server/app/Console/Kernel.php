@@ -16,7 +16,7 @@ class Kernel extends ConsoleKernel
         // Tự động xóa token hết hạn
         $schedule->command('sanctum:prune-expired --hours=24')->daily();
         
-        $schedule->command('sale:check-expired')->everyMinute(); // Cấu hình để cron job chạy mỗi phút
+        // $schedule->command('sale:check-expired')->everyMinute(); // Cấu hình để cron job chạy mỗi phút
 
         // // Nếu bạn cần chạy command mỗi giây, sử dụng cách này:
         // $schedule->command('sale:check-expired')

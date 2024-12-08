@@ -267,7 +267,7 @@ const CartListClient = () => {
       render: (variant, record) => (
         <div className="flex gap-3 items-center w-fit">
           <img
-            src={variant.image || variant.product.images[0]}
+            src={variant?.image || variant.product?.images[0]}
             className="w-14 h-14 object-cover rounded-lg"
           />
           <div>

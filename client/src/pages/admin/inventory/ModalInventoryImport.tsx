@@ -119,6 +119,7 @@ const ModalInventoryImport = ({
           data: { data: response },
         } = await instance.get(`import-detail/${idProduct}`);
 
+        console.log(response);
         // Đặt inventorys và chọn sản phẩm
         setInventorys([response]);
         setSelectedProductId(response.id);

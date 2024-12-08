@@ -1,19 +1,20 @@
-import { ConfigProvider, Pagination } from "antd";
-import { Table } from "flowbite-react";
 import { useEffect, useState } from "react";
-import instance from "../../../instance/instance";
+import { NavLink, useSearchParams } from "react-router-dom";
 import { Orders } from "../../../interfaces/IOrders";
-import Highlighter from "react-highlight-words";
-import dayjs from "dayjs";
+import { IMeta } from "../../../interfaces/IMeta";
+import instance from "../../../instance/instance";
+import { Checkbox, ConfigProvider, Pagination } from "antd";
+import { Table } from "flowbite-react";
 import {
   checkPaymentMethod,
   status,
 } from "../../../components/User/Manager/Orders/ManagerOrdersUser";
-import { NavLink, useSearchParams } from "react-router-dom";
-import { IMeta } from "../../../interfaces/IMeta";
-const OrderListsAllAdmin = () => {
-  const [valSearch, SetValSearch] = useState<string>("");
-  const [orders, setOrders] = useState<Orders[]>([]);
+import dayjs from "dayjs";
+type Props={
+  activeTab:string
+}
+const OrderListCancel = ({activeTab}:Props) => {
+  const [ordersCanceled, setOrdersCanceled] = useState<Orders[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parseInt(searchParams.get("page") || "1");
   const [meta, setMeta] = useState<IMeta>();
@@ -24,14 +25,15 @@ const OrderListsAllAdmin = () => {
         setSearchParams({ page: String(page) });
         const {
           data: { data: response },
-        } = await instance.get("admin/orders");
-        setOrders(response.data);
+        } = await instance.get("admin/orders?status=canceled");
+        setOrdersCanceled(response.data);
         setMeta(response);
+        console.log(response);
       } catch (error) {
         console.log(error);
       }
     })();
-  }, [page]);
+  }, [activeTab]);
 
   return (
     <ConfigProvider
@@ -42,47 +44,12 @@ const OrderListsAllAdmin = () => {
       }}
     >
       <div className="space-y-5">
-        <div className="flex items-center gap-1 bg-[#F4F7FA] px-4 rounded-sm py-1 overflow-hidden">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            className="size-5 text-secondary/50"
-            color={"currentColor"}
-            fill={"none"}
-          >
-            <path
-              d="M14 14L16.5 16.5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M16.4333 18.5252C15.8556 17.9475 15.8556 17.0109 16.4333 16.4333C17.0109 15.8556 17.9475 15.8556 18.5252 16.4333L21.5667 19.4748C22.1444 20.0525 22.1444 20.9891 21.5667 21.5667C20.9891 22.1444 20.0525 22.1444 19.4748 21.5667L16.4333 18.5252Z"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-            <path
-              d="M16 9C16 5.13401 12.866 2 9 2C5.13401 2 2 5.13401 2 9C2 12.866 5.13401 16 9 16C12.866 16 16 12.866 16 9Z"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <input type="search"
-            onChange={(e)=>{
-                SetValSearch(e.target.value)
-            }}
-            placeholder="Bạn có thể tìm kiếm theo Mã đơn hàng hoặc Tên người đặt,Phương thức thanh toán"
-            className="block focus:!border-none bg-[#F4F7FA] placeholder:text-[#a3a3a3] h-[35px] text-sm border-none rounded-[5px] w-full focus:!shadow-none"
-          />
-        </div>
         <div className="overflow-x-auto rounded-lg">
           <Table className="border-b border-[#E4E7EB]">
             <Table.Head className="text-center">
               {/* <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
-                STT
-              </Table.HeadCell> */}
+            STT
+          </Table.HeadCell> */}
               <Table.HeadCell className="bg-[#F4F7FA] text-secondary/75 text-sm font-medium capitalize text-nowrap">
                 Mã đơn hàng
               </Table.HeadCell>
@@ -106,7 +73,7 @@ const OrderListsAllAdmin = () => {
               </Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y">
-              {orders.length === 0 ? (
+              {ordersCanceled.length === 0 ? (
                 <Table.Row>
                   <Table.Cell colSpan={8}>
                     <div className="flex flex-col items-center text-secondary/20 space-y-2 justify-center min-h-[50vh]">
@@ -141,41 +108,26 @@ const OrderListsAllAdmin = () => {
                   </Table.Cell>
                 </Table.Row>
               ) : (
-                orders
-                .filter(item=>{
-                    return item.code.toLowerCase().includes(valSearch.toLowerCase()) || item.name.toLowerCase().includes(valSearch.toLowerCase()) || item.payment_method.toLowerCase().includes(valSearch.toLowerCase())
-                })
-                .map((order, index) => {
+                ordersCanceled.map((order, index) => {
                   return (
                     <Table.Row
                       className="bg-white dark:border-gray-700 dark:bg-gray-800 text-center"
                       key={order.id}
                     >
-                      {/* <Table.Cell
-                        style={{ width: "5%" }}
-                        className="font-medium text-primary text-base border-[#f5f5f5] border-r "
-                      >
-                        {index + 1}
-                      </Table.Cell> */}
                       <Table.Cell>
                         <span className="border text-primary border-primary border-dashed py-1 px-2 rounded-sm bg-primary/10">
                           {order.code}
                         </span>
                       </Table.Cell>
                       <Table.Cell className="whitespace-nowrap font-medium text-center dark:text-white">
-                        <Highlighter
-                          highlightClassName="YourHighlightClass"
-                          searchWords={[valSearch.toLowerCase()]}
-                          autoEscape={true}
-                          textToHighlight={order.name}
-                        />
+                        <p>{order.name}</p>
                       </Table.Cell>
                       <Table.Cell>
                         {dayjs(order.created_at).format("DD-MM-YYYY")}
                       </Table.Cell>
-                      <Table.Cell>
+                      <Table.Cell className="whitespace-nowrap text-secondary/75">
                         <div className="flex justify-center items-center">
-                          {checkPaymentMethod(order.payment_method)}
+                          {checkPaymentMethod(order?.payment_method)}
                         </div>
                       </Table.Cell>
                       <Table.Cell>
@@ -229,4 +181,4 @@ const OrderListsAllAdmin = () => {
   );
 };
 
-export default OrderListsAllAdmin;
+export default OrderListCancel;

@@ -71,8 +71,6 @@ class OrderController extends Controller
                 ->paginate($perPage);        
             }
 
-
-
         return response()->json(
             [
                 'data' => $orders,
@@ -356,67 +354,67 @@ class OrderController extends Controller
                 return response()->json(['message' => 'Danh sách không hợp lệ!'], 400);
             }
             Log::info($ids);
-            // switch ($request->status) {
-            //     case Order::STATUS_ORDER_PENDING:
-            //         Order::query()->whereIn('id',  $ids)->update([
-            //             'status_order' => Order::STATUS_ORDER_CONFIRMED,
-            //         ]);
-            //         return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);
-            //     case Order::STATUS_ORDER_CONFIRMED:
-            //         Order::query()->whereIn('id', $ids)->update([
-            //             'status_order' => Order::STATUS_ORDER_PREPARING_GOODS
-            //         ]);
-            //         return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);
-            //     case Order::STATUS_ORDER_PREPARING_GOODS:
-            //         Order::query()->whereIn('id', $ids)->update([
-            //             'status_order' => Order::STATUS_ORDER_SHIPPING
-            //         ]);
-            //         return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);
-            //     case Order::STATUS_ORDER_SHIPPING:
-            //         Order::query()->whereIn('id', $ids)->update([
-            //             'status_order' => Order::STATUS_ORDER_DELIVERED
-            //         ]);
-            //         return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);               
-            //     default:
-            //         return response()->json([
-            //             'success' => false,
-            //             'message' => 'Trạng thái không hợp lệ.'
-            //         ], 400);
-            // }
-
             switch ($request->status) {
                 case Order::STATUS_ORDER_PENDING:
-                case Order::STATUS_ORDER_CONFIRMED:
-                case Order::STATUS_ORDER_PREPARING_GOODS:
-                case Order::STATUS_ORDER_SHIPPING:
-                case Order::STATUS_ORDER_DELIVERED:
-                    if($request->status === 'pending'| 'confirmed' | 'preparing_goods' | 'shipping' | 'delivered' | 'canceled'){
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Trạng thái không hợp lệ.'
-                        ], 400);
-                    }
-                case Order::STATUS_ORDER_CANCELED:
-                    // if($request->status === 'pending'| 'confirmed' | 'preparing_goods' | 'shipping' | 'delivered' | 'canceled' | 'delivered'){
-                    //     return response()->json([
-                    //         'success' => false,
-                    //         'message' => 'Trạng thái không hợp lệ.'
-                    //     ], 400);
-                    // }
                     Order::query()->whereIn('id',  $ids)->update([
-                                    'status_order' => $request->status,
-                ]);
-                    return response()->json([
-                        'success' => true,
-                        'message' => 'Trạng thái đơn hàng đã được cập nhật.',
-                        
+                        'status_order' => Order::STATUS_ORDER_CONFIRMED,
                     ]);
+                    return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);
+                case Order::STATUS_ORDER_CONFIRMED:
+                    Order::query()->whereIn('id', $ids)->update([
+                        'status_order' => Order::STATUS_ORDER_PREPARING_GOODS
+                    ]);
+                    return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);
+                case Order::STATUS_ORDER_PREPARING_GOODS:
+                    Order::query()->whereIn('id', $ids)->update([
+                        'status_order' => Order::STATUS_ORDER_SHIPPING
+                    ]);
+                    return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);
+                case Order::STATUS_ORDER_SHIPPING:
+                    Order::query()->whereIn('id', $ids)->update([
+                        'status_order' => Order::STATUS_ORDER_DELIVERED
+                    ]);
+                    return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);               
                 default:
                     return response()->json([
                         'success' => false,
                         'message' => 'Trạng thái không hợp lệ.'
                     ], 400);
             }
+
+            // switch ($request->status) {
+            //     case Order::STATUS_ORDER_PENDING:
+            //     case Order::STATUS_ORDER_CONFIRMED:
+            //     case Order::STATUS_ORDER_PREPARING_GOODS:
+            //     case Order::STATUS_ORDER_SHIPPING:
+            //     case Order::STATUS_ORDER_DELIVERED:
+            //         if($request->status === 'pending'| 'confirmed' | 'preparing_goods' | 'shipping' | 'delivered' | 'canceled'){
+            //             return response()->json([
+            //                 'success' => false,
+            //                 'message' => 'Trạng thái không hợp lệ.'
+            //             ], 400);
+            //         }
+            //     case Order::STATUS_ORDER_CANCELED:
+            //         // if($request->status === 'pending'| 'confirmed' | 'preparing_goods' | 'shipping' | 'delivered' | 'canceled' | 'delivered'){
+            //         //     return response()->json([
+            //         //         'success' => false,
+            //         //         'message' => 'Trạng thái không hợp lệ.'
+            //         //     ], 400);
+            //         // }
+            //         Order::query()->whereIn('id',  $ids)->update([
+            //                         'status_order' => $request->status,
+            //     ]);
+            //         return response()->json([
+            //             'success' => true,
+            //             'message' => 'Trạng thái đơn hàng đã được cập nhật.',
+                        
+            //         ]);
+            //     default:
+            //         return response()->json([
+            //             'success' => false,
+            //             'message' => 'Trạng thái không hợp lệ.'
+            //         ], 400);
+            // }
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
