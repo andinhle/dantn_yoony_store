@@ -1,5 +1,4 @@
 
-
 import { useState, useEffect } from "react";
 import { Rate, Table, TableColumnsType } from "antd";
 import { FaStar } from "react-icons/fa";
@@ -42,7 +41,7 @@ interface Product {
     name: string;
     slug: string;
     description: string;
-    images: string; 
+    images: string;
     category_id: number;
     is_active: number;
     is_featured: number;
@@ -69,8 +68,8 @@ const Rates = () => {
     const [reviews, setReviews] = useState<Irates[]>([]);
     const [selectedView, setSelectedView] = useState<"product" | "user">("product");
     const [loading, setLoading] = useState<boolean>(true);
-    const [isHidden, setIsHidden] = useState<boolean>(false); 
-    const [expandedContent, setExpandedContent] = useState(null); 
+    const [isHidden, setIsHidden] = useState<boolean>(false);
+    const [expandedContent, setExpandedContent] = useState(null);
     useEffect(() => {
         const fetchReviews = async () => {
             setLoading(true);
@@ -102,7 +101,7 @@ const Rates = () => {
         created_at: new Date(review.created_at).toLocaleDateString("vi-VN"),
         rating: review.rating,
     }));
-   
+
     const generateTableData = (filterType: "product" | "user") => {
         const uniqueValues = reviews
             .map((review) => (filterType === "product" ? review.product?.name : review.user?.name))
@@ -119,8 +118,6 @@ const Rates = () => {
             ),
         }));
     };
-
-
     const columnsAll: TableColumnsType<DataType> = [
         {
             title: "STT",
@@ -184,7 +181,6 @@ const Rates = () => {
             )
         },
     ];
-    // Cột bảng cho bảng Ant Design (bảng phụ)
     const columns = [
         {
             title: "STT",
@@ -242,7 +238,7 @@ const Rates = () => {
     const [showTable, setShowTable] = useState(false); // Quản lý trạng thái ẩn/hiện
 
     const handleToggleTable = () => {
-        setShowTable((prev) => !prev); 
+        setShowTable((prev) => !prev);
         // Đảo trạng thái show table 
     };
     return (
@@ -379,6 +375,8 @@ const Rates = () => {
             </div>
 
             {/* Hiển thị bảng đánh giá nếu không bị ẩn */}
+            {/* Hiển thị bảng đánh giá nếu không bị ẩn */}
+           
             {!isHidden && (
                 <Table
                     columns={columns}
@@ -393,5 +391,4 @@ const Rates = () => {
         </>
     );
 };
-
 export default Rates;
