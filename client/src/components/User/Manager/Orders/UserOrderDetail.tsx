@@ -13,6 +13,270 @@ import {
 } from "antd";
 import type { RadioChangeEvent } from "antd";
 import { useForm } from "react-hook-form";
+import { toast } from "react-toastify";
+export const status = (statusOrder: string) => {
+  switch (statusOrder) {
+    case "pending":
+      return (
+        <span className="bg-[#FEF6E7] text-primary px-2 py-1 rounded-sm text-xs flex items-center gap-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            className="size-4"
+            color={"currentColor"}
+            fill={"none"}
+          >
+            <path
+              d="M12 3V6"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            <path
+              d="M12 18V21"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            <path
+              d="M21 12L18 12"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            <path
+              d="M6 12L3 12"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            <path
+              d="M18.3635 5.63672L16.2422 7.75804"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            <path
+              d="M7.75804 16.2422L5.63672 18.3635"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            <path
+              d="M18.3635 18.3635L16.2422 16.2422"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            <path
+              d="M7.75804 7.75804L5.63672 5.63672"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+          Chờ xác nhận
+        </span>
+      );
+    case "confirmed":
+      return (
+        <span className="bg-[#faf3e6] text-primary px-2 py-1 rounded-sm text-xs flex items-center gap-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            className="size-4"
+            color={"currentColor"}
+            fill={"none"}
+          >
+            <path
+              d="M5 14.5C5 14.5 6.5 14.5 8.5 18C8.5 18 14.0588 8.83333 19 7"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Đã xác nhận
+        </span>
+      );
+    case "preparing_goods":
+      return (
+        <span className="bg-[#E6EFFE] text-[#5695F7] px-2 py-1 rounded-sm text-xs flex items-center gap-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            className="size-4"
+            color={"currentColor"}
+            fill={"none"}
+          >
+            <path
+              d="M12 22C11.1818 22 10.4002 21.6698 8.83693 21.0095C4.94564 19.3657 3 18.5438 3 17.1613C3 16.7742 3 10.0645 3 7M12 22C12.8182 22 13.5998 21.6698 15.1631 21.0095C19.0544 19.3657 21 18.5438 21 17.1613V7M12 22L12 11.3548"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M8.32592 9.69138L5.40472 8.27785C3.80157 7.5021 3 7.11423 3 6.5C3 5.88577 3.80157 5.4979 5.40472 4.72215L8.32592 3.30862C10.1288 2.43621 11.0303 2 12 2C12.9697 2 13.8712 2.4362 15.6741 3.30862L18.5953 4.72215C20.1984 5.4979 21 5.88577 21 6.5C21 7.11423 20.1984 7.5021 18.5953 8.27785L15.6741 9.69138C13.8712 10.5638 12.9697 11 12 11C11.0303 11 10.1288 10.5638 8.32592 9.69138Z"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M6 12L8 13"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M17 4L7 9"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Đang chuẩn bị hàng
+        </span>
+      );
+    case "shipping":
+      return (
+        <span className="bg-[#EAF9FC] text-[#32c8db] px-2 py-1 rounded-sm text-xs flex items-center gap-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            className="size-4"
+            color={"currentColor"}
+            fill={"none"}
+          >
+            <circle
+              cx="17"
+              cy="18"
+              r="2"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
+            <circle
+              cx="7"
+              cy="18"
+              r="2"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M5 17.9724C3.90328 17.9178 3.2191 17.7546 2.73223 17.2678C2.24536 16.7809 2.08222 16.0967 2.02755 15M9 18H15M19 17.9724C20.0967 17.9178 20.7809 17.7546 21.2678 17.2678C22 16.5355 22 15.357 22 13V11H17.3C16.5555 11 16.1832 11 15.882 10.9021C15.2731 10.7043 14.7957 10.2269 14.5979 9.61803C14.5 9.31677 14.5 8.94451 14.5 8.2C14.5 7.08323 14.5 6.52485 14.3532 6.07295C14.0564 5.15964 13.3404 4.44358 12.4271 4.14683C11.9752 4 11.4168 4 10.3 4H2"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M2 8H8"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M2 11H6"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M14.5 6H16.3212C17.7766 6 18.5042 6 19.0964 6.35371C19.6886 6.70742 20.0336 7.34811 20.7236 8.6295L22 11"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Đang vận chuyển
+        </span>
+      );
+    case "delivered":
+      return (
+        <span className="bg-[#DBF8F4] text-[#14D1B8] px-2 py-1 rounded-sm text-xs flex items-center gap-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            className="size-4"
+            color={"currentColor"}
+            fill={"none"}
+          >
+            <path
+              d="M21 7V12M3 7C3 10.0645 3 16.7742 3 17.1613C3 18.5438 4.94564 19.3657 8.83693 21.0095C10.4002 21.6698 11.1818 22 12 22L12 11.3548"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M15 19C15 19 15.875 19 16.75 21C16.75 21 19.5294 16 22 15"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M8.32592 9.69138L5.40472 8.27785C3.80157 7.5021 3 7.11423 3 6.5C3 5.88577 3.80157 5.4979 5.40472 4.72215L8.32592 3.30862C10.1288 2.43621 11.0303 2 12 2C12.9697 2 13.8712 2.4362 15.6741 3.30862L18.5953 4.72215C20.1984 5.4979 21 5.88577 21 6.5C21 7.11423 20.1984 7.5021 18.5953 8.27785L15.6741 9.69138C13.8712 10.5638 12.9697 11 12 11C11.0303 11 10.1288 10.5638 8.32592 9.69138Z"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M6 12L8 13"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M17 4L7 9"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Đã giao hàng
+        </span>
+      );
+    case "canceled":
+      return (
+        <span className="bg-[#FFECE3] text-[#FF7F40] px-2 py-1 rounded-sm text-xs flex items-center gap-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            className="size-4"
+            color={"currentColor"}
+            fill={"none"}
+          >
+            <path
+              d="M12 22C11.1818 22 10.4002 21.6708 8.83693 21.0123C4.94564 19.3734 3 18.5539 3 17.1754V7.54234M12 22C12.8182 22 13.5998 21.6708 15.1631 21.0123C19.0544 19.3734 21 18.5539 21 17.1754V7.54234M12 22V12.0292M21 7.54234C21 8.15478 20.1984 8.54152 18.5953 9.315L15.6741 10.7244C13.8712 11.5943 12.9697 12.0292 12 12.0292M21 7.54234C21 6.9299 20.1984 6.54316 18.5953 5.76969L17 5M3 7.54234C3 8.15478 3.80157 8.54152 5.40472 9.315L8.32592 10.7244C10.1288 11.5943 11.0303 12.0292 12 12.0292M3 7.54234C3 6.9299 3.80157 6.54317 5.40472 5.76969L7 5M6 13.0263L8 14.0234"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M10 2L12 4M12 4L14 6M12 4L10 6M12 4L14 2"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+          Đơn hàng đã bị hủy
+        </span>
+      );
+    default:
+      break;
+  }
+};
 const UserOrderDetail = () => {
   const { code_order } = useParams();
   const [orderDetails, setOrderDetails] = useState<IOrderUserClient>();
@@ -30,271 +294,7 @@ const UserOrderDetail = () => {
       } = await instance.get(`order-detail/${code_order}`);
       setOrderDetails(response);
     })();
-  }, [valueReason]);
-
-  const status = (statusOrder: string) => {
-    switch (statusOrder) {
-      case "pending":
-        return (
-          <span className="bg-[#FEF6E7] text-primary px-2 py-1 rounded-sm text-xs flex items-center gap-1">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              className="size-4"
-              color={"currentColor"}
-              fill={"none"}
-            >
-              <path
-                d="M12 3V6"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-              <path
-                d="M12 18V21"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-              <path
-                d="M21 12L18 12"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-              <path
-                d="M6 12L3 12"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-              <path
-                d="M18.3635 5.63672L16.2422 7.75804"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-              <path
-                d="M7.75804 16.2422L5.63672 18.3635"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-              <path
-                d="M18.3635 18.3635L16.2422 16.2422"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-              <path
-                d="M7.75804 7.75804L5.63672 5.63672"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
-            Chờ xác nhận
-          </span>
-        );
-      case "confirmed":
-        return (
-          <span className="bg-[#faf3e6] text-primary px-2 py-1 rounded-sm text-xs flex items-center gap-1">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              className="size-4"
-              color={"currentColor"}
-              fill={"none"}
-            >
-              <path
-                d="M5 14.5C5 14.5 6.5 14.5 8.5 18C8.5 18 14.0588 8.83333 19 7"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Đã xác nhận
-          </span>
-        );
-      case "preparing_goods":
-        return (
-          <span className="bg-[#E6EFFE] text-[#5695F7] px-2 py-1 rounded-sm text-xs flex items-center gap-1">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              className="size-4"
-              color={"currentColor"}
-              fill={"none"}
-            >
-              <path
-                d="M12 22C11.1818 22 10.4002 21.6698 8.83693 21.0095C4.94564 19.3657 3 18.5438 3 17.1613C3 16.7742 3 10.0645 3 7M12 22C12.8182 22 13.5998 21.6698 15.1631 21.0095C19.0544 19.3657 21 18.5438 21 17.1613V7M12 22L12 11.3548"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M8.32592 9.69138L5.40472 8.27785C3.80157 7.5021 3 7.11423 3 6.5C3 5.88577 3.80157 5.4979 5.40472 4.72215L8.32592 3.30862C10.1288 2.43621 11.0303 2 12 2C12.9697 2 13.8712 2.4362 15.6741 3.30862L18.5953 4.72215C20.1984 5.4979 21 5.88577 21 6.5C21 7.11423 20.1984 7.5021 18.5953 8.27785L15.6741 9.69138C13.8712 10.5638 12.9697 11 12 11C11.0303 11 10.1288 10.5638 8.32592 9.69138Z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M6 12L8 13"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M17 4L7 9"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Đang chuẩn bị hàng
-          </span>
-        );
-      case "shipping":
-        return (
-          <span className="bg-[#EAF9FC] text-[#32c8db] px-2 py-1 rounded-sm text-xs flex items-center gap-1">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              className="size-4"
-              color={"currentColor"}
-              fill={"none"}
-            >
-              <circle
-                cx="17"
-                cy="18"
-                r="2"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
-              <circle
-                cx="7"
-                cy="18"
-                r="2"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
-              <path
-                d="M5 17.9724C3.90328 17.9178 3.2191 17.7546 2.73223 17.2678C2.24536 16.7809 2.08222 16.0967 2.02755 15M9 18H15M19 17.9724C20.0967 17.9178 20.7809 17.7546 21.2678 17.2678C22 16.5355 22 15.357 22 13V11H17.3C16.5555 11 16.1832 11 15.882 10.9021C15.2731 10.7043 14.7957 10.2269 14.5979 9.61803C14.5 9.31677 14.5 8.94451 14.5 8.2C14.5 7.08323 14.5 6.52485 14.3532 6.07295C14.0564 5.15964 13.3404 4.44358 12.4271 4.14683C11.9752 4 11.4168 4 10.3 4H2"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M2 8H8"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M2 11H6"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M14.5 6H16.3212C17.7766 6 18.5042 6 19.0964 6.35371C19.6886 6.70742 20.0336 7.34811 20.7236 8.6295L22 11"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Đang vận chuyển
-          </span>
-        );
-      case "delivered":
-        return (
-          <span className="bg-[#DBF8F4] text-[#14D1B8] px-2 py-1 rounded-sm text-xs flex items-center gap-1">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              className="size-4"
-              color={"currentColor"}
-              fill={"none"}
-            >
-              <path
-                d="M21 7V12M3 7C3 10.0645 3 16.7742 3 17.1613C3 18.5438 4.94564 19.3657 8.83693 21.0095C10.4002 21.6698 11.1818 22 12 22L12 11.3548"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M15 19C15 19 15.875 19 16.75 21C16.75 21 19.5294 16 22 15"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M8.32592 9.69138L5.40472 8.27785C3.80157 7.5021 3 7.11423 3 6.5C3 5.88577 3.80157 5.4979 5.40472 4.72215L8.32592 3.30862C10.1288 2.43621 11.0303 2 12 2C12.9697 2 13.8712 2.4362 15.6741 3.30862L18.5953 4.72215C20.1984 5.4979 21 5.88577 21 6.5C21 7.11423 20.1984 7.5021 18.5953 8.27785L15.6741 9.69138C13.8712 10.5638 12.9697 11 12 11C11.0303 11 10.1288 10.5638 8.32592 9.69138Z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M6 12L8 13"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M17 4L7 9"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Đã giao hàng
-          </span>
-        );
-      case "canceled":
-        return (
-          <span className="bg-[#FFECE3] text-[#FF7F40] px-2 py-1 rounded-sm text-xs flex items-center gap-1">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              className="size-4"
-              color={"currentColor"}
-              fill={"none"}
-            >
-              <path
-                d="M12 22C11.1818 22 10.4002 21.6708 8.83693 21.0123C4.94564 19.3734 3 18.5539 3 17.1754V7.54234M12 22C12.8182 22 13.5998 21.6708 15.1631 21.0123C19.0544 19.3734 21 18.5539 21 17.1754V7.54234M12 22V12.0292M21 7.54234C21 8.15478 20.1984 8.54152 18.5953 9.315L15.6741 10.7244C13.8712 11.5943 12.9697 12.0292 12 12.0292M21 7.54234C21 6.9299 20.1984 6.54316 18.5953 5.76969L17 5M3 7.54234C3 8.15478 3.80157 8.54152 5.40472 9.315L8.32592 10.7244C10.1288 11.5943 11.0303 12.0292 12 12.0292M3 7.54234C3 6.9299 3.80157 6.54317 5.40472 5.76969L7 5M6 13.0263L8 14.0234"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M10 2L12 4M12 4L14 6M12 4L10 6M12 4L14 2"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
-            Đơn hàng đã bị hủy
-          </span>
-        );
-      default:
-        break;
-    }
-  };
+  }, [valueReason, checkStatusCurrent]);
 
   useEffect(() => {
     switch (orderDetails?.status_order) {
@@ -472,9 +472,84 @@ const UserOrderDetail = () => {
     }
   };
 
-  const checkButtonCancel = (status_order: string) => {
+  const handleConfirmOrder = async (codeOrder: string) => {
+    try {
+      await instance.post(`orders/${codeOrder}/confirm-delivered`);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const checkButtonCancel = (status_order: string, codeOrder: string) => {
     switch (status_order) {
       case "shipping":
+        return (
+          <button
+            type="button"
+            className="text-[#FF7F40] bg-primary/10 py-1.5 px-2 flex items-center flex-nowrap gap-1 rounded-sm"
+            onClick={() => {
+              swal({
+                title: "Bạn đã nhận được hàng chưa?",
+                text: "Sau khi xác nhận, bạn sẽ không thể hoàn tác !",
+                icon: "warning",
+                dangerMode: true,
+                className: "my-swal",
+                buttons: ["Trở lại", "Xác nhận"],
+              }).then((willDelete) => {
+                if (willDelete) {
+                  handleConfirmOrder(codeOrder);
+                  setCheckStatusCurrent(5);
+                  toast.success("Xác nhận đã nhận hàng thành công");
+                }
+              });
+            }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="size-6"
+              color={"currentColor"}
+              fill={"none"}
+            >
+              <path
+                d="M18 6C17.9531 4.44655 17.7797 3.51998 17.1377 2.87868C16.2581 2 14.8423 2 12.0108 2H8.0065C5.17501 2 3.75926 2 2.87963 2.87868C2 3.75736 2 5.17157 2 8V16C2 18.8284 2 20.2426 2.87963 21.1213C3.75926 22 5.17501 22 8.0065 22H12.0108C14.8423 22 16.2581 22 17.1377 21.1213C17.7797 20.48 17.9531 19.5535 18 18"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M20.2419 11.7419L21.419 10.5648C21.6894 10.2944 21.8246 10.1592 21.8969 10.0134C22.0344 9.73584 22.0344 9.41003 21.8969 9.13252C21.8246 8.98666 21.6894 8.85145 21.419 8.58104C21.1485 8.31062 21.0133 8.17542 20.8675 8.10314C20.59 7.96562 20.2642 7.96562 19.9866 8.10314C19.8408 8.17542 19.7056 8.31062 19.4352 8.58104L18.2581 9.7581M20.2419 11.7419L14.9757 17.0081L12 18L12.9919 15.0243L18.2581 9.7581M20.2419 11.7419L18.2581 9.7581"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M5 19H6L7.25 16.5L8.5 19H9.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M6 6H14"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M6 10H12"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span>Xác nhận</span>
+          </button>
+        );
       case "delivered":
       case "canceled":
         return (
@@ -551,8 +626,6 @@ const UserOrderDetail = () => {
         break;
     }
   };
-
-  console.log(orderDetails);
 
   return (
     <div className="grid grid-cols-7 gap-5">
@@ -657,8 +730,11 @@ const UserOrderDetail = () => {
                       </span>
                       <span className="block mr-2 text-primary">
                         {orderDetails?.coupons?.length >= 1
-                          ? orderDetails?.coupons[0]?.coupon.discount_type === "percentage"
-                            ? `-${Math.abs(orderDetails?.coupons[0]?.discount_amount)}%`
+                          ? orderDetails?.coupons[0]?.coupon.discount_type ===
+                            "percentage"
+                            ? `-${Math.abs(
+                                orderDetails?.coupons[0]?.discount_amount
+                              )}%`
                             : `-${Number(
                                 orderDetails?.coupons[0]?.discount_amount
                               ).toLocaleString()}đ`
@@ -682,7 +758,7 @@ const UserOrderDetail = () => {
             <h3 className="uppercase font-medium text-sm flex items-center gap-2">
               Trạng thái đơn hàng: {status(orderDetails?.status_order!)}
             </h3>
-            {checkButtonCancel(orderDetails?.status_order)}
+            {checkButtonCancel(orderDetails?.status_order!, orderDetails?.code)}
           </div>
           <div>
             {orderDetails?.status_order !== "canceled" ? (

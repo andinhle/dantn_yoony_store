@@ -1,39 +1,29 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 
 import { Autoplay } from "swiper/modules";
+import { useEffect, useState } from "react";
+import { IVoucher } from "../../../interfaces/IVouchers";
+import instance from "../../../instance/instance";
+import dayjs  from "dayjs";
 
 const VoucherList = () => {
-  const vouchers = [
-    {
-      name: "Voucher 50K",
-      desc: "Giảm 50k cho hóa đơn từ 999k",
-      timeEnd: "HSD: 2024-08-03",
-    },
-    {
-      name: "Voucher 30K",
-      desc: "Giảm 30k cho hóa đơn từ 999k",
-      timeEnd: "HSD: 2024-08-03",
-    },
-    {
-      name: "Voucher 70K",
-      desc: "Giảm 100K cho hóa đơn từ 999k",
-      timeEnd: "HSD: 2024-08-03",
-    },
-    {
-      name: "Voucher 50K",
-      desc: "Giảm 100K cho hóa đơn từ 999k",
-      timeEnd: "HSD: 2024-08-03",
-    },
-    {
-      name: "Voucher 50K",
-      desc: "Giảm 100K cho hóa đơn từ 999k",
-      timeEnd: "HSD: 2024-08-03",
-    },
-  ];
+  const [vouchers, setVouchers] = useState<IVoucher[]>([]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const {
+          data: { data: response },
+        } = await instance.get("coupon-home");
+        setVouchers(response);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, []);
   return (
     <Swiper
       slidesPerView={4}
-      spaceBetween={15}
+      spaceBetween={10}
       autoplay={{
         delay: 2000,
         disableOnInteraction: false,
@@ -78,18 +68,18 @@ const VoucherList = () => {
               className="py-2 px-0.5 hover:cursor-pointer"
               key={index + 1}
             >
-              <div className="flex gap-5 w-full md:w-fit justify-center items-center mx-auto border border-[#ffe1e1] bg-util rounded-lg py-2.5 px-4">
+              <div className="flex gap-5 w-full min-w-[250px] justify-between items-center mx-auto border border-[#ffe1e1] bg-util rounded-lg py-2.5 px-4">
                 <div className="space-y-2">
                   <div className="space-y-2">
                     <span className="text-base font-medium">
                       {voucher.name}
                     </span>
                     <p className="font-light text-xs line-clamp-1">
-                      {voucher.desc}
+                      {voucher.description}
                     </p>
                   </div>
                   <span className="mt-5 block text-[#848484] text-xs lg:text-sm">
-                    {voucher.timeEnd}
+                    HSD: {dayjs(voucher.end_date).format("DD-MM-YYYY")}
                   </span>
                 </div>
                 <div className="border h-[70px] border-dashed border-primary/50 relative">
