@@ -9,7 +9,6 @@ type TimelinePeriod =
   | "one_month"
   | "six_months"
   | "one_year"
-  | "last_year"
   | "all";
 
 interface TimelineButton {
