@@ -8,7 +8,7 @@ export default function BlogHome() {
 
     useEffect(() => {
         (async () => {
-            const { data } = await instance.get("/blogs");
+            const { data } = await instance.get("list-blogs");
             setBlog(data.data);
         })();
     }, []);
