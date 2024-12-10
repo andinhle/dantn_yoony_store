@@ -1,17 +1,24 @@
 import { ConfigProvider, Tabs } from "antd";
 import type { TabsProps } from "antd";
-import OrderListsAllAdmin from './OrderListsAllAdmin';
+import OrderListsAllAdmin from "./OrderListsAllAdmin";
+import OrderListPending from "./OrderListPending";
+import OrderListConfirmed from "./OrderListConfirmed";
+import OrderListPreparing from "./OrderListPreparing";
+import OrderListShipping from "./OrderListShipping";
+import OrderListDelivered from "./OrderListDelivered";
+import OrderListCancel from "./OrderListCancel";
+import { useState } from "react";
 
 const OrdersListAdmin = () => {
+  const [activeTab, setActiveTab] = useState("all");
   const onChange = (key: string) => {
-    console.log(key);
+    setActiveTab(key);
   };
-
   const items: TabsProps["items"] = [
     {
       key: "all",
       label: "Tất cả",
-      children: <OrderListsAllAdmin />,
+      children: <OrderListsAllAdmin activeTab={activeTab} />,
     },
     {
       key: "pending",
@@ -63,7 +70,7 @@ const OrdersListAdmin = () => {
           <span>Chờ xác nhận</span>
         </button>
       ),
-      children: "Content of Tab Pane 2",
+      children: <OrderListPending activeTab={activeTab} />,
     },
     {
       key: "confirmed",
@@ -115,7 +122,7 @@ const OrdersListAdmin = () => {
           <span>Đã xác nhận</span>
         </div>
       ),
-      children: "Content of Tab Pane 3",
+      children: <OrderListConfirmed activeTab={activeTab} />,
     },
     {
       key: "preparing_goods",
@@ -167,7 +174,7 @@ const OrdersListAdmin = () => {
           <span>Đang chuẩn bị hàng</span>
         </div>
       ),
-      children: "Content of Tab Pane 3",
+      children: <OrderListPreparing activeTab={activeTab} />,
     },
     {
       key: "shipping",
@@ -226,7 +233,7 @@ const OrdersListAdmin = () => {
           <span>Đang vận chuyển</span>
         </div>
       ),
-      children: "Content of Tab Pane 3",
+      children: <OrderListShipping activeTab={activeTab} />,
     },
     {
       key: "delivered",
@@ -278,7 +285,7 @@ const OrdersListAdmin = () => {
           <span>Đã giao hàng</span>
         </div>
       ),
-      children: "Content of Tab Pane 3",
+      children: <OrderListDelivered activeTab={activeTab} />,
     },
     {
       key: "canceled",
@@ -308,7 +315,7 @@ const OrdersListAdmin = () => {
           <span>Đơn hàng đã bị huỷ</span>
         </div>
       ),
-      children: "Content of Tab Pane 3",
+      children: <OrderListCancel activeTab={activeTab} />,
     },
   ];
   return (
