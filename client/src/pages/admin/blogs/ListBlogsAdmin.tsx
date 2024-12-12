@@ -31,7 +31,7 @@ const ListBlogsAdmin = ({ setMeta, page, setSearchParams }: Props) => {
       });
     })();
   }, []);
-  const handleRemoveBlo = async (id: number) => {
+  const handleRemoveBlog = async (id: number) => {
     try {
       await instance.delete(`blogs/${id}`);
       dispatch({
@@ -192,14 +192,14 @@ const ListBlogsAdmin = ({ setMeta, page, setSearchParams }: Props) => {
                         onClick={() => {
                           swal({
                             title: "Bạn có muốn xóa bài viết này ?",
-                            text: "Sau khi xóa sẽ không thể không phục !",
+                            text: "Sau khi xóa sẽ không thể khôi phục !",
                             icon: "warning",
                             buttons: true,
                             dangerMode: true,
                             className: "my-swal",
                           }).then((willDelete) => {
                             if (willDelete) {
-                              handleRemoveBlo(blog.id!);
+                              handleRemoveBlog(blog.id!);
                               toast.success("Xoá bài viết thành công");
                             }
                           });

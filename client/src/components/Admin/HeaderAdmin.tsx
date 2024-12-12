@@ -20,7 +20,7 @@ const HeaderAdmin = () => {
   const handleClose = () => {
     setAnchorEl(null);
   };
-
+  const userData = JSON.parse(localStorage.getItem("userInfor") || "{}");
   return (
     <div className="sticky top-0 bg-white py-[10px] px-[15px] lg:px-[30px backdrop-blur z-50 shadow-sm">
       <header className="flex justify-between items-center ">
@@ -101,9 +101,9 @@ const HeaderAdmin = () => {
           >
             <Avatar
               alt="andinhle"
-              src="../../../src/assets/images/profileH.jpg"
+              src={userData.avatar}
             />
-            <span className="text-primary hidden md:block">Le Cong Hung</span>
+            <span className="text-primary hidden md:block">{userData.name}</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -140,7 +140,7 @@ const HeaderAdmin = () => {
                   ></path>
                 </svg>
                 <ListItemText primaryTypographyProps={{ fontSize: 14 }}>
-                  Home
+                  Trang chủ
                 </ListItemText>
               </MenuItem>
               <MenuItem onClick={handleClose} className="flex gap-4">
@@ -160,7 +160,7 @@ const HeaderAdmin = () => {
                   ></path>
                 </svg>
                 <ListItemText primaryTypographyProps={{ fontSize: 14 }}>
-                  Profile
+                  Thông tin tài khoản
                 </ListItemText>
               </MenuItem>
               <MenuItem onClick={handleClose} className="flex gap-4">
@@ -180,7 +180,7 @@ const HeaderAdmin = () => {
                   ></path>
                 </svg>
                 <ListItemText primaryTypographyProps={{ fontSize: 14 }}>
-                  Setting
+                  Cài đặt
                 </ListItemText>
               </MenuItem>
               <Divider />

@@ -272,6 +272,8 @@
 															<td class="pad">
 																<div class="alignment" align="center" style="line-height:10px">
 																	<div style="max-width: 142.5px;"><img src="{{ json_decode($value->variant->product->images[0])  }}" style="display: block; height: auto; border: 0; width: 100%;" width="142.5" alt="Image" title="Image" height="auto"></div>
+																	<span>{{ json_decode($value->variant->product->images[0]) }}</span>
+																	<span>{{ $value->variant->product->images[0] }}</span>
 																</div>
 															</td>
 														</tr>

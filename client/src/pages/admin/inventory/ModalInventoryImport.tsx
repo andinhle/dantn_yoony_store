@@ -1,4 +1,4 @@
-import { Avatar, ConfigProvider, Input, Modal, Select } from "antd";
+import { Avatar, ConfigProvider, Input, Modal, Popconfirm, Select } from "antd";
 import { Table } from "flowbite-react";
 import React, { useContext, useEffect, useState } from "react";
 import instance from "../../../instance/instance";
@@ -8,24 +8,34 @@ import dayjs from "dayjs";
 import { IVariants } from "../../../interfaces/IVariants";
 import ButtonSubmit from "../../../components/Admin/ButtonSubmit";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
-import { DatePicker } from "antd";
 import { IAttributeValue } from "../../../interfaces/IAttributeValue";
 import { LoadingOverlay } from "@achmadk/react-loading-overlay";
 import { Checkbox } from "antd";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import slugify from "react-slugify";
+import { ISupplier } from "../../../interfaces/ISupplier";
 type Props = {
   isModalOpen: boolean;
   handleCancel: () => void;
   findNewestUpdateTime: (variants: IVariants[]) => void;
   setIsModalOpen: (isModalOpen: boolean) => void;
-  idProduct:number
-  isModalOpenShowDetail:boolean
+  idProduct: number;
+  isModalOpenShowDetail: boolean;
 };
 
 type FormValues = {
-  variants: IVariants[];
+  variants: Array<
+    IVariants & {
+      newImport?: {
+        import_price: number;
+        quantity: number;
+        supplier: {
+          id: number;
+        };
+      };
+    }
+  >;
 };
 
 const ModalInventoryImport = ({
@@ -34,7 +44,7 @@ const ModalInventoryImport = ({
   handleCancel,
   setIsModalOpen,
   idProduct,
-  isModalOpenShowDetail
+  isModalOpenShowDetail,
 }: Props) => {
   const { Search } = Input;
   const [valSearch, SetValSearch] = useState<string>("");
@@ -52,7 +62,6 @@ const ModalInventoryImport = ({
 
   const [isLoading, setLoading] = useState<boolean>(false);
   const [selectedVariants, setSelectedVariants] = useState<IVariants[]>([]);
-
   const handleCheckboxChange = (index: number) => {
     setSelectedVariantIndices((prev) =>
       prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
@@ -72,7 +81,7 @@ const ModalInventoryImport = ({
           data: { data: response },
         },
       } = await instance.get("suppliers");
-      return response.map((supplier) => ({
+      return response.map((supplier: ISupplier) => ({
         label: supplier.name,
         value: supplier.id,
       }));
@@ -106,16 +115,19 @@ const ModalInventoryImport = ({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const {data:{data:response}} = await instance.get(`import-detail/${idProduct}`);
-        
+        const {
+          data: { data: response },
+        } = await instance.get(`import-detail/${idProduct}`);
+
+        console.log(response);
         // Đặt inventorys và chọn sản phẩm
         setInventorys([response]);
         setSelectedProductId(response.id);
-        
+
         // Cập nhật variants và mở rộng
         if (response && response.variants && response.variants.length > 0) {
           setInventoryItem(response.variants);
-          
+
           // Reset form với variants mới
           reset({
             variants: response.variants,
@@ -129,7 +141,7 @@ const ModalInventoryImport = ({
         setSelectedProductId(null);
       }
     };
-  
+
     // Kiểm tra điều kiện để fetch
     if (idProduct && (isModalOpen || isModalOpenShowDetail)) {
       fetchData();
@@ -138,17 +150,8 @@ const ModalInventoryImport = ({
     }
   }, [idProduct, isModalOpen, isModalOpenShowDetail]);
 
-  const { control, handleSubmit, register, setValue, reset, watch } = useForm<FormValues>({
-    defaultValues: {
-      variants: inventoryItem.map((item) => {
-        const modifiedItem = { ...item };
-        if (modifiedItem.inventoryImports && !isExpandAll) {
-          modifiedItem.inventoryImports.quantity = 0;
-        }
-        return modifiedItem;
-      }),
-    },
-  });
+  const { control, handleSubmit, register, setValue, reset, watch, getValues } =
+    useForm<FormValues>();
 
   const { fields } = useFieldArray({
     control,
@@ -191,64 +194,6 @@ const ModalInventoryImport = ({
       })
       .join(", ");
   };
-
-  const onSave = (index: number) => async (data: FormValues) => {
-    setLoading(true);
-    const variant = data.variants[index];
-    try {
-      const savedVariantData = {
-        variant_id: variant.id,
-        supplier_id: variant.inventoryImports?.supplier?.id || null,
-        price: variant.price || null,
-        sale_price: variant.sale_price || null,
-        end_sale: variant.end_sale
-          ? dayjs(variant.end_sale).format("YYYY-MM-DD HH:mm:ss")
-          : null,
-        quantity: variant.inventoryImports?.quantity || null,
-        import_price: variant.inventoryImports?.import_price || null,
-      };
-      const { data } = await instance.post("import-orders", {
-        variants: [savedVariantData],
-      });
-      if (data) {
-        toast.success("Nhập vào kho thành công !");
-        await fetchNoInventory();
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onUpdateVariantProduct =
-    (index: number) => async (data: FormValues) => {
-      setLoading(true);
-      const variant = data.variants[index];
-      try {
-        const savedVariantData = {
-          variant_id: variant.id,
-          supplier_id: variant.inventoryImports?.supplier?.id || null,
-          price: variant.price || null,
-          sale_price: variant.sale_price || null,
-          end_sale: variant.end_sale
-            ? dayjs(variant.end_sale).format("YYYY-MM-DD HH:mm:ss")
-            : null,
-          import_price: variant.inventoryImports?.import_price || null,
-        };
-        const { data } = await instance.put("updateVariant", {
-          variants: [savedVariantData],
-        });
-        if (data) {
-          toast.success("Cập nhật thành công !");
-          await fetchNoInventory();
-        }
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
   // Hàm kiểm tra xem một variant đã được chọn chưa
   const isVariantSelected = (variant: IVariants) => {
@@ -295,82 +240,249 @@ const ModalInventoryImport = ({
       toast.warning("Vui lòng chọn ít nhất một variant.");
       return;
     }
-  
+
     setLoading(true);
     try {
-      // Lọc các variant phải có đủ thông tin
-      const importVariants = selectedVariants.filter(variant => 
-        variant.inventoryImports?.import_price && 
-        variant.price && 
-        variant.inventoryImports?.quantity && 
-        variant.inventoryImports?.supplier?.id
-      ).map((variant) => ({
-        variant_id: variant.id,
-        supplier_id: variant.inventoryImports?.supplier?.id || null,
-        price: variant.price || null,
-        sale_price: variant.sale_price || null,
-        quantity: variant.inventoryImports?.quantity || null,
-        end_sale: variant.end_sale
-          ? dayjs(variant.end_sale).format("YYYY-MM-DD")
-          : null,
-        import_price: variant.inventoryImports?.import_price || null,
-      }));
-  
-      // Kiểm tra số lượng variant hợp lệ
-      if (importVariants.length === 0) {
-        toast.warning("Không có variant nào đủ thông tin để nhập kho.");
+      // Tìm và báo cáo các variant không đủ thông tin
+      const invalidVariants = selectedVariants.filter(
+        (variant) =>
+          !variant.inventoryImports?.import_price ||
+          !variant.inventoryImports?.quantity ||
+          !variant.inventoryImports?.supplier?.id
+      );
+
+      // Hiển thị chi tiết các variant không hợp lệ
+      if (invalidVariants.length > 0) {
+        const invalidVariantDetails = invalidVariants.map((variant) => {
+          const missingFields = [];
+
+          if (!variant.inventoryImports?.import_price) {
+            missingFields.push("Giá nhập");
+          }
+
+          if (!variant.inventoryImports?.quantity) {
+            missingFields.push("Số lượng");
+          }
+
+          if (!variant.inventoryImports?.supplier?.id) {
+            missingFields.push("Nhà cung cấp");
+          }
+
+          return {
+            id: variant.id,
+            missingFields: missingFields.join(", "),
+            attributes: variant.attribute_values
+              .map((attr) => `${attr.attribute.name}: ${attr.value}`)
+              .join(", "),
+          };
+        });
+
+        // Tạo thông báo chi tiết
+        const errorMessage = invalidVariantDetails
+          .map(
+            (variant) =>
+              `Variant ID ${variant.id} (${variant.attributes}): Thiếu ${variant.missingFields}`
+          )
+          .join("\n");
+
+        toast.warning(
+          <div>
+            <p>Có {invalidVariants.length} variant không đủ thông tin:</p>
+            <pre
+              style={{
+                maxHeight: "200px",
+                overflowY: "auto",
+                whiteSpace: "pre-wrap",
+                wordWrap: "break-word",
+              }}
+            >
+              {errorMessage}
+            </pre>
+          </div>,
+          {
+            autoClose: false,
+            closeOnClick: false,
+          }
+        );
+        setLoading(false);
         return;
       }
-  
+      // Lọc các variant hợp lệ
+      const importVariants = selectedVariants.map((variant) => ({
+        variant_id: variant.id,
+        supplier_id: variant.inventoryImports?.supplier?.id || null,
+        quantity: variant.inventoryImports?.quantity || null,
+        import_price: variant.inventoryImports?.import_price || null,
+      }));
+
       const { data } = await instance.post("import-multiple-orders", {
         variants: importVariants,
       });
-  
+
       if (data) {
-        // Thông báo số lượng variant được nhập
         toast.success(`Nhập kho thành công ${importVariants.length} biến thể!`);
         await fetchNoInventory();
         window.location.reload();
       }
     } catch (error) {
       console.error("Lỗi nhập kho:", error);
-      toast.error("Có lỗi xảy ra khi nhập kho.");
+      toast.error(
+        error.response?.data?.message || "Có lỗi xảy ra khi nhập kho."
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  // Hàm xóa lần nhập
+
   const onImportInventory = async (dataForm: FormValues) => {
     setLoading(true);
     try {
-      const updatedVariants = dataForm.variants
-        .filter((_, index) => selectedVariantIndices.includes(index))
-        .map((variant) => {
-          return {
-            variant_id: variant.id,
-            supplier_id: variant.inventoryImports?.supplier?.id || null,
-            price: variant.price || null,
-            sale_price: variant.sale_price || null,
-            quantity: variant.inventoryImports?.quantity || null,
-            end_sale: variant.end_sale
-              ? dayjs(variant.end_sale).format("YYYY-MM-DD")
-              : null,
-            import_price: variant.inventoryImports?.import_price || null,
-          };
+      const validVariants = dataForm.variants
+        .filter((variant) => {
+          const newImport = variant.newImport;
+          return (
+            newImport?.import_price &&
+            newImport?.quantity &&
+            newImport?.supplier?.id
+          );
+        })
+        .map((variant) => ({
+          variant_id: variant.id,
+          supplier_id: variant.newImport?.supplier.id,
+          quantity: variant.newImport?.quantity,
+          import_price: variant.newImport?.import_price,
+        }));
+
+      // Kiểm tra nếu không có variant nào hợp lệ
+      if (validVariants.length === 0) {
+        toast.warning("Không có variant nào đủ thông tin để nhập kho");
+        return;
+      }
+
+      // Kiểm tra và validate dữ liệu trước khi gửi
+      const invalidVariants = validVariants.filter(
+        (variant) =>
+          !variant.variant_id ||
+          !variant.supplier_id ||
+          (variant.quantity || 0) <= 0 ||
+          (variant.import_price || 0) <= 0
+      );
+
+      if (invalidVariants.length > 0) {
+        toast.error(`Có ${invalidVariants.length} variant không hợp lệ`);
+        return;
+      }
+
+      try {
+        const { data, status } = await instance.post("import-multiple-orders", {
+          variants: validVariants,
         });
-      console.log({ variants: updatedVariants });
-      const { data } = await instance.post("import-multiple-orders", {
-        variants: updatedVariants,
-      });
-      if (data) {
-        toast.success("Nhập tất cả vào kho thành công !");
+
+        // Kiểm tra response từ API
+        if (status !== 200 || !data) {
+          throw new Error("Nhập kho không thành công");
+        }
+
+        // Lấy thông tin import records từ response
+        const importRecords = data.importedRecords || [];
+
+        // Cập nhật trực tiếp vào form state
+        const currentVariants = getValues("variants");
+        const updatedVariants = currentVariants.map((variant) => {
+          // Tìm variant tương ứng trong validVariants
+          const matchedValidVariant = validVariants.find(
+            (validVariant) => validVariant.variant_id === variant.id
+          );
+
+          if (matchedValidVariant) {
+            // Tìm import record tương ứng
+            const matchedImportRecord = importRecords.find(
+              (record) => record.variant_id === variant.id
+            );
+
+            const newImportRecord = {
+              id: matchedImportRecord?.id, // Lấy ID từ response
+              import_price: variant.newImport?.import_price,
+              quantity: variant.newImport?.quantity,
+              supplier: {
+                id: variant.newImport?.supplier.id,
+                name: optionsSupplier.find(
+                  (sup) => sup.value === variant.newImport?.supplier.id
+                )?.label,
+              },
+              created_at:
+                matchedImportRecord?.created_at || new Date().toISOString(),
+            };
+
+            return {
+              ...variant,
+              quantity:
+                (variant.quantity || 0) + (variant.newImport?.quantity || 0),
+              inventoryImports: [
+                ...(variant.inventoryImports || []),
+                newImportRecord,
+              ],
+              newImport: null, // Reset newImport
+            };
+          }
+          return variant;
+        });
+
+        // Cập nhật form và state
+        reset({ variants: updatedVariants });
+
+        // Cập nhật inventorys
+        const updatedInventorys = inventorys.map((product) => ({
+          ...product,
+          variants: product.variants.map((variant) => {
+            const matchedUpdatedVariant = updatedVariants.find(
+              (v) => v.id === variant.id
+            );
+            return matchedUpdatedVariant || variant;
+          }),
+        }));
+
+        setInventorys(updatedInventorys);
+
+        toast.success(`Nhập kho thành công ${validVariants.length} biến thể!`);
+
+        // Làm mới danh sách sản phẩm chưa nhập kho
         await fetchNoInventory();
-        window.location.reload();
+      } catch (apiError) {
+        console.error("API Error:", apiError);
+        toast.error(
+          apiError.response?.data?.message || "Có lỗi xảy ra khi nhập kho"
+        );
       }
     } catch (error) {
-      console.log(error);
+      console.error("Unexpected Error:", error);
+      toast.error("Có lỗi không xác định xảy ra");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const [variantDetails, setVariantDetails] = useState<IVariants[]>([]);
+
+  const handleDeleteImportRecord = async (importId: number) => {
+    try {
+      const {
+        data: { data: response },
+      } = await instance.delete(`deleteImport/${importId}`);
+      console.log(response);
+      // Cập nhật state
+      if (response) {
+        setVariantDetails(
+          variantDetails.filter((variantDetail) => {
+            return variantDetail?.inventory_import?.id !== importId;
+          })
+        );
+      }
+      toast.success("Xóa lô nhập hàng thành công");
+    } catch (error) {
+      console.error("Lỗi khi xóa lô nhập hàng:", error);
     }
   };
 
@@ -410,7 +522,7 @@ const ModalInventoryImport = ({
     };
 
     reader.readAsBinaryString(file);
-  }
+  };
 
   const processExcelData = (data: any[]): IProduct[] => {
     const headers = data[0];
@@ -424,15 +536,11 @@ const ModalInventoryImport = ({
 
     const variantColumns = {
       id: headers.indexOf("ID Variant"),
-      price: headers.indexOf("Giá Bán"),
-      salePrice: headers.indexOf("Giá Sale"),
-      quantity: headers.indexOf("Số Lượng Tồn"),
       inventoryImportPrice: headers.indexOf("Giá Nhập"),
       inventoryImportQuantity: headers.indexOf("Số Lượng Nhập"),
       supplierId: headers.indexOf("Nhà Cung Cấp ID"),
     };
 
-    
     const dynamicAttributeColumns = headers.reduce((acc, header, index) => {
       const match = header.match(/^(.*) \(Tên\)$/);
       if (match) {
@@ -467,8 +575,6 @@ const ModalInventoryImport = ({
       // Tạo variant
       const variant: IVariants = {
         id: rowData[variantColumns.id],
-        price: rowData[variantColumns.price],
-        sale_price: rowData[variantColumns.salePrice],
         quantity: rowData[variantColumns.quantity] || 0,
         attribute_values: dynamicAttributeColumns.map((attr) => ({
           id: null,
@@ -488,7 +594,7 @@ const ModalInventoryImport = ({
           },
         },
       };
-      console.log('Headers:', processedData);
+      console.log("Headers:", processedData);
       // Thêm variant vào sản phẩm
       product.variants.push(variant);
 
@@ -500,6 +606,73 @@ const ModalInventoryImport = ({
   };
 
   const modalWidth = isExpandAll ? 1240 : 750;
+
+  const watchVariants = watch("variants");
+
+  const calculateTotalQuantity = (item: IVariants) => {
+    // Tìm variant hiện tại trong watchVariants
+    const currentVariant = watchVariants.find((v) => v.id === item.id);
+
+    if (!currentVariant) return item.quantity || "rỗng";
+
+    // Số lượng gốc
+    const baseQuantity = item.quantity || 0;
+
+    // Số lượng nhập từ form
+    const formImportQuantity = currentVariant.newImport?.quantity || 0;
+
+    // Tổng số lượng từ các bản ghi nhập kho đã lưu
+    const savedImportedQuantity =
+      currentVariant.inventoryImports?.reduce(
+        (total, record) => total + (record.quantity || 0),
+        0
+      ) || 0;
+
+    // Tính toán tổng số lượng
+    const totalQuantity =
+      baseQuantity + formImportQuantity + savedImportedQuantity;
+
+    return totalQuantity > 0 ? totalQuantity : "rỗng";
+  };
+
+  const [expandedVariantId, setExpandedVariantId] = useState<number | null>(
+    null
+  );
+
+  const toggleVariantDetails = async (item: any) => {
+    const originalVariant = inventoryItem.find((v) =>
+      v.attribute_values.every(
+        (attr, index) => attr.value === item.attribute_values[index]?.value
+      )
+    );
+
+    if (originalVariant) {
+      const newExpandedId = expandedVariantId === item.id ? null : item.id;
+      setExpandedVariantId(newExpandedId);
+
+      if (newExpandedId !== null) {
+        try {
+          const {
+            data: { data: response },
+          } = await instance.get(
+            `inventory-import/variant/${originalVariant.id}`
+          );
+          setVariantDetails(response);
+          console.log(response);
+        } catch (error) {
+          console.log(error);
+          setVariantDetails(null);
+        }
+      } else {
+        setVariantDetails(null);
+      }
+    } else {
+      console.log("Không tìm thấy variant");
+      setExpandedVariantId(null);
+      setVariantDetails(null);
+    }
+  };
+
   return (
     <div>
       <Modal
@@ -512,8 +685,8 @@ const ModalInventoryImport = ({
           <div className="flex items-center justify-between gap-5">
             <button
               className="font-medium flex items-center gap-1.5"
-              onClick={()=>{
-                setIsModalOpen(!isModalOpen)
+              onClick={() => {
+                setIsModalOpen(!isModalOpen);
               }}
             >
               <svg
@@ -551,7 +724,7 @@ const ModalInventoryImport = ({
                 <Search
                   placeholder="Tên hàng hoá"
                   allowClear
-                  style={{ width: "300px"}}
+                  style={{ width: "300px" }}
                   size="middle"
                   onChange={(e) => {
                     SetValSearch(e.target.value);
@@ -652,436 +825,488 @@ const ModalInventoryImport = ({
                       </Table.Cell>
                     </Table.Row>
                   ) : (
-                    inventorys.map((inventory, index) => {
-                      return (
-                        <>
-                          <Table.Row
-                            className="hover:cursor-pointer"
-                            onClick={() => handleToggleVariants(inventory.id!)}
-                          >
-                            <Table.Cell className="text-center">
-                              {index + 1}
-                            </Table.Cell>
-                            <Table.Cell className="text-center">
-                              <div className="flex gap-2.5">
-                                <Avatar
-                                  shape="square"
-                                  src={inventory.images[0]}
-                                  size={45}
-                                />
-                                <div className="max-w-[300px] space-y-0.5">
-                                  <Link
-                                    to={`/${inventory.category?.slug}/${inventory.slug}`}
-                                    className="text-left hover:text-primary/90 font-medium text-nowrap text-ellipsis overflow-hidden"
-                                  >
-                                    {inventory.name}
-                                  </Link>
-                                  <p className="text-left text-nowrap text-ellipsis overflow-hidden text-sm text-secondary/50">
-                                    Cập nhật:{" "}
-                                    <span className="text-primary/75">
-                                      {dayjs(
-                                        findNewestUpdateTime(inventory.variants)
-                                      ).format("DD-MM-YYYY")}
-                                    </span>
-                                  </p>
+                    inventorys
+                      .filter((item) => {
+                        return item.name
+                          .toLowerCase()
+                          .includes(valSearch.toLowerCase());
+                      })
+                      .map((inventory, index) => {
+                        return (
+                          <>
+                            <Table.Row
+                              className="hover:cursor-pointer"
+                              onClick={() =>
+                                handleToggleVariants(inventory.id!)
+                              }
+                            >
+                              <Table.Cell className="text-center">
+                                {index + 1}
+                              </Table.Cell>
+                              <Table.Cell className="text-center">
+                                <div className="flex gap-2.5">
+                                  <Avatar
+                                    shape="square"
+                                    src={inventory.images[0]}
+                                    size={45}
+                                  />
+                                  <div className="max-w-[350px] min-w-[350px] space-y-0.5">
+                                    <Link
+                                      to={`/${inventory.category?.slug}/${inventory.slug}`}
+                                      className="text-left hover:text-primary/90 font-medium"
+                                    >
+                                      <p className="text-nowrap text-ellipsis overflow-hidden">
+                                        {inventory.name}
+                                      </p>
+                                    </Link>
+                                    <p className="text-left text-nowrap text-ellipsis overflow-hidden text-sm text-secondary/50">
+                                      Cập nhật:{" "}
+                                      <span className="text-primary/75">
+                                        {dayjs(
+                                          findNewestUpdateTime(
+                                            inventory.variants
+                                          )
+                                        ).format("DD-MM-YYYY")}
+                                      </span>
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                            </Table.Cell>
-                            <Table.Cell className="text-center text-nowrap">
-                              {inventory.price_range}đ
-                            </Table.Cell>
-                            <Table.Cell className="text-center text-nowrap">
-                              {inventory.import_price_range === "0 - 0"
-                                ? "Chưa nhập"
-                                : `${inventory.import_price_range}đ`}
-                            </Table.Cell>
-                            <Table.Cell className="text-center text-nowrap">
-                              {inventory.quantity_range}
-                            </Table.Cell>
-                          </Table.Row>
-                          {selectedProductId === inventory.id &&
-                            inventoryItem.length !== 0 && (
-                              <Table.Row>
-                                <Table.Cell colSpan={4}>
-                                  <LoadingOverlay
-                                    active={isLoading}
-                                    spinner
-                                    text="Đang nhập hàng ..."
-                                    styles={{
-                                      overlay: (base) => ({
-                                        ...base,
-                                        background: "rgba(255, 255, 255, 0.75)",
-                                        backdropFilter: "blur(4px)",
-                                      }),
-                                      spinner: (base) => ({
-                                        ...base,
-                                        width: "40px",
-                                        "& svg circle": {
-                                          stroke: "rgba(255, 153, 0,5)",
-                                          strokeWidth: "3px",
-                                        },
-                                      }),
-                                    }}
-                                  >
-                                    <div className="border border-[#f1f1f1] rounded-md p-3 space-y-4">
-                                      <div className="flex items-center justify-between border-b border-dashed border-[#f1f1f1] pb-3">
-                                        <h4 className="font-medium text-secondary">
-                                          Nhập thông tin hàng hoá
-                                        </h4>
-                                        <div className="flex items-center gap-2">
-                                          <ConfigProvider
-                                            theme={{
-                                              token: {
-                                                colorPrimary: "#ff9900",
-                                              },
-                                            }}
-                                          >
-                                            <Checkbox
-                                              checked={
-                                                selectedVariantIndices.length ===
-                                                fields.length
-                                              }
-                                              onChange={handleSelectAll}
+                              </Table.Cell>
+                              <Table.Cell className="text-center text-nowrap">
+                                {inventory.price_range}đ
+                              </Table.Cell>
+                              <Table.Cell className="text-center text-nowrap">
+                                {inventory.import_price_range === "0 - 0"
+                                  ? "Chưa nhập"
+                                  : `${inventory.import_price_range}đ`}
+                              </Table.Cell>
+                              <Table.Cell className="text-center text-nowrap">
+                                {inventory.quantity_range}
+                              </Table.Cell>
+                            </Table.Row>
+                            {selectedProductId === inventory.id &&
+                              inventoryItem.length !== 0 && (
+                                <Table.Row>
+                                  <Table.Cell colSpan={3}>
+                                    <LoadingOverlay
+                                      active={isLoading}
+                                      spinner
+                                      text="Đang nhập hàng ..."
+                                      styles={{
+                                        overlay: (base) => ({
+                                          ...base,
+                                          background:
+                                            "rgba(255, 255, 255, 0.75)",
+                                          backdropFilter: "blur(4px)",
+                                        }),
+                                        spinner: (base) => ({
+                                          ...base,
+                                          width: "40px",
+                                          "& svg circle": {
+                                            stroke: "rgba(255, 153, 0,5)",
+                                            strokeWidth: "3px",
+                                          },
+                                        }),
+                                      }}
+                                    >
+                                      <div className="border border-[#f1f1f1] rounded-md p-3 space-y-4">
+                                        <div className="flex items-center justify-between border-b border-dashed border-[#f1f1f1] pb-3">
+                                          <h4 className="font-medium text-secondary">
+                                            Nhập thông tin hàng hoá
+                                          </h4>
+                                          <div className="flex items-center gap-2">
+                                            <ConfigProvider
+                                              theme={{
+                                                token: {
+                                                  colorPrimary: "#ff9900",
+                                                },
+                                              }}
                                             >
-                                              Chọn tất cả
-                                            </Checkbox>
-                                          </ConfigProvider>
+                                              <Checkbox
+                                                checked={
+                                                  selectedVariantIndices.length ===
+                                                  fields.length
+                                                }
+                                                onChange={handleSelectAll}
+                                              >
+                                                Chọn tất cả
+                                              </Checkbox>
+                                            </ConfigProvider>
+                                          </div>
                                         </div>
-                                      </div>
-                                      <form
-                                        action=""
-                                        className="space-y-3"
-                                        onSubmit={handleSubmit(
-                                          onImportInventory
-                                        )}
-                                      >
-                                        {fields.map((item, index) => {
-                                          return (
-                                            <div
-                                              className="border border-[#f1f1f1] p-3 rounded-md space-y-3 bg-util"
-                                              key={item.id}
-                                            >
-                                              <div className="flex items-center justify-between">
-                                                <div className="text-sm flex items-center gap-3">
-                                                  <ConfigProvider
-                                                    theme={{
-                                                      token: {
-                                                        colorPrimary: "#ff9900",
-                                                      },
-                                                    }}
-                                                  >
-                                                    <Checkbox
-                                                      checked={selectedVariantIndices.includes(
-                                                        index
-                                                      )}
-                                                      onChange={() =>
-                                                        handleCheckboxChange(
-                                                          index
-                                                        )
-                                                      }
-                                                    />
-                                                  </ConfigProvider>
-                                                  <span className="text-primary">
-                                                    Phân loại:{" "}
-                                                  </span>
-                                                  <p className="text-secondary/50">
-                                                    {renderAttributes(
-                                                      item.attribute_values
-                                                    )}
-                                                  </p>
-                                                  <p className="text-primary/85">
-                                                    ( SL:{" "}
-                                                    {item.quantity +
-                                                      watch(
-                                                        `variants.${index}.inventoryImports.quantity`
-                                                      ) || "rỗng"}{" "}
-                                                    )
-                                                  </p>
-                                                </div>
-                                                {watch(
-                                                  `variants.${index}.inventoryImports.quantity`
-                                                ) ? (
-                                                  <button
-                                                    type="button"
-                                                    onClick={handleSubmit(
-                                                      onSave(index)
-                                                    )}
-                                                    className="bg-primary py-1 text-util px-3 rounded-sm flex items-center gap-1"
-                                                  >
-                                                    <svg
-                                                      xmlns="http://www.w3.org/2000/svg"
-                                                      viewBox="0 0 24 24"
-                                                      className="size-4"
-                                                      color={"currentColor"}
-                                                      fill={"none"}
-                                                    >
-                                                      <path
-                                                        d="M11 22C10.1818 22 9.40019 21.6698 7.83693 21.0095C3.94564 19.3657 2 18.5438 2 17.1613C2 16.7742 2 10.0645 2 7M11 22L11 11.3548M11 22C11.7248 22 12.293 21.7409 13.5 21.2226M20 7V11"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                      <path
-                                                        d="M15 17.5H22M18.5 21L18.5 14"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                      />
-                                                      <path
-                                                        d="M7.32592 9.69138L4.40472 8.27785C2.80157 7.5021 2 7.11423 2 6.5C2 5.88577 2.80157 5.4979 4.40472 4.72215L7.32592 3.30862C9.12883 2.43621 10.0303 2 11 2C11.9697 2 12.8712 2.4362 14.6741 3.30862L17.5953 4.72215C19.1984 5.4979 20 5.88577 20 6.5C20 7.11423 19.1984 7.5021 17.5953 8.27785L14.6741 9.69138C12.8712 10.5638 11.9697 11 11 11C10.0303 11 9.12883 10.5638 7.32592 9.69138Z"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                      <path
-                                                        d="M5 12L7 13"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                      <path
-                                                        d="M16 4L6 9"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                    </svg>
-                                                    Nhập
-                                                  </button>
-                                                ) : (
-                                                  <button
-                                                    type="button"
-                                                    onClick={handleSubmit(
-                                                      onUpdateVariantProduct(
-                                                        index
-                                                      )
-                                                    )}
-                                                    className="bg-primary py-1 text-util px-3 rounded-sm flex items-center gap-1"
-                                                  >
-                                                    <svg
-                                                      xmlns="http://www.w3.org/2000/svg"
-                                                      viewBox="0 0 24 24"
-                                                      className="size-4"
-                                                      color={"currentColor"}
-                                                      fill={"none"}
-                                                    >
-                                                      <path
-                                                        d="M11 22C10.1818 22 9.40019 21.6698 7.83693 21.0095C3.94564 19.3657 2 18.5438 2 17.1613C2 16.7742 2 10.0645 2 7M11 22L11 11.3548M11 22C11.3404 22 11.6463 21.9428 12 21.8285M20 7V11.5"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                      <path
-                                                        d="M18 18.0005L18.9056 17.0949M22 18C22 15.7909 20.2091 14 18 14C15.7909 14 14 15.7909 14 18C14 20.2091 15.7909 22 18 22C20.2091 22 22 20.2091 22 18Z"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                      <path
-                                                        d="M7.32592 9.69138L4.40472 8.27785C2.80157 7.5021 2 7.11423 2 6.5C2 5.88577 2.80157 5.4979 4.40472 4.72215L7.32592 3.30862C9.12883 2.43621 10.0303 2 11 2C11.9697 2 12.8712 2.4362 14.6741 3.30862L17.5953 4.72215C19.1984 5.4979 20 5.88577 20 6.5C20 7.11423 19.1984 7.5021 17.5953 8.27785L14.6741 9.69138C12.8712 10.5638 11.9697 11 11 11C10.0303 11 9.12883 10.5638 7.32592 9.69138Z"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                      <path
-                                                        d="M5 12L7 13"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                      <path
-                                                        d="M16 4L6 9"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                      />
-                                                    </svg>
-                                                    Cập nhật
-                                                  </button>
-                                                )}
-                                              </div>
-                                              <div className="grid grid-cols-3 gap-3">
-                                                <input
-                                                  type="number"
-                                                  placeholder="Giá nhập"
-                                                  {...register(
-                                                    `variants.${index}.inventoryImports.import_price`,
-                                                    { valueAsNumber: true }
-                                                  )}
-                                                  defaultValue={
-                                                    item.inventoryImports
-                                                      ?.import_price
-                                                  }
-                                                  min={0}
-                                                  id="import-price"
-                                                  className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-[#f1f1f1] rounded-[5px] w-full focus:!shadow-none"
-                                                />
-                                                <Controller
-                                                  name={`variants.${index}.inventoryImports.quantity`}
-                                                  control={control}
-                                                  defaultValue={0}
-                                                  render={({
-                                                    field: {
-                                                      onChange,
-                                                      value,
-                                                      ...field
-                                                    },
-                                                  }) => (
-                                                    <input
-                                                      type="number"
-                                                      {...field}
-                                                      value={value ?? 0}
-                                                      onChange={(e) => {
-                                                        const inputValue =
-                                                          e.target.value;
-                                                        const parsedValue =
-                                                          inputValue === ""
-                                                            ? 0
-                                                            : Number(
-                                                                inputValue
-                                                              );
-                                                        onChange(parsedValue);
-                                                      }}
-                                                      min={0}
-                                                      placeholder="Số lượng"
-                                                      className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-[#f1f1f1] rounded-[5px] w-full focus:!shadow-none"
-                                                    />
-                                                  )}
-                                                />
-                                                <ConfigProvider
-                                                  theme={{
-                                                    token: {
-                                                      colorPrimary: "#ff9900",
-                                                    },
-                                                    components: {
-                                                      Select: {
-                                                        colorBorder:
-                                                          "#f1f1f1",
-                                                        colorPrimaryHover:
-                                                          "#f1f1f1",
-                                                      },
-                                                    },
-                                                  }}
-                                                >
-                                                  <Select
-                                                    defaultValue={
-                                                      item.inventoryImports
-                                                        ?.supplier?.id || null
-                                                    }
-                                                    allowClear
-                                                    showSearch
-                                                    id={`supplier`}
-                                                    style={{
-                                                      width: "100%",
-                                                      height: "35px",
-                                                      boxShadow: "none",
-                                                    }}
-                                                    placeholder={`Nhà cung cấp`}
-                                                    optionFilterProp="label"
-                                                    filterSort={(
-                                                      optionA,
-                                                      optionB
-                                                    ) =>
-                                                      (optionA?.label ?? "")
-                                                        .toLowerCase()
-                                                        .localeCompare(
-                                                          (
-                                                            optionB?.label ?? ""
-                                                          ).toLowerCase()
-                                                        )
-                                                    }
-                                                    onChange={(value) => {
-                                                      setValue(
-                                                        `variants.${index}.inventoryImports.supplier.id`,
-                                                        value
-                                                      );
-                                                    }}
-                                                    options={optionsSupplier}
-                                                  />
-                                                </ConfigProvider>
-                                                <input
-                                                  type="text"
-                                                  placeholder="Giá bán"
-                                                  {...register(
-                                                    `variants.${index}.price`,
-                                                    { valueAsNumber: true }
-                                                  )}
-                                                  defaultValue={item.price}
-                                                  min={0}
-                                                  id="sell-price"
-                                                  className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-[#f1f1f1] rounded-[5px] w-full focus:!shadow-none"
-                                                />
-                                                <input
-                                                  type="text"
-                                                  placeholder="Giá sale"
-                                                  {...register(
-                                                    `variants.${index}.sale_price`,
-                                                    { valueAsNumber: true }
-                                                  )}
-                                                  defaultValue={item.sale_price}
-                                                  id="sale-price"
-                                                  className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-[#f1f1f1] rounded-[5px] w-full focus:!shadow-none"
-                                                />
-                                                <Controller
-                                                  name={`variants.${index}.end_sale`}
-                                                  control={control}
-                                                  render={({ field }) => (
+                                        <form
+                                          action=""
+                                          className="space-y-3"
+                                          onSubmit={handleSubmit(
+                                            onImportInventory
+                                          )}
+                                        >
+                                          {fields.map((item, index) => {
+                                            return (
+                                              <div
+                                                key={item?.id}
+                                                data-variant-index={index}
+                                                className="border border-[#f1f1f1] p-3 rounded-md space-y-3 bg-util"
+                                              >
+                                                <div className="flex items-center justify-between">
+                                                  <div className="text-sm flex items-center gap-3">
                                                     <ConfigProvider
                                                       theme={{
                                                         token: {
                                                           colorPrimary:
                                                             "#ff9900",
-                                                          colorInfoHover:
-                                                            "#fff5e5",
-                                                          controlItemBgActiveHover:
-                                                            "#fff5e5",
                                                         },
                                                       }}
                                                     >
-                                                      <DatePicker
-                                                        placeholder="Sale kết thúc sau"
-                                                        showTime
-                                                        {...field}
-                                                        value={
-                                                          field.value
-                                                            ? dayjs(field.value)
-                                                            : null
+                                                      <Checkbox
+                                                        checked={selectedVariantIndices.includes(
+                                                          index
+                                                        )}
+                                                        onChange={() =>
+                                                          handleCheckboxChange(
+                                                            index
+                                                          )
                                                         }
-                                                        onChange={(date) => {
-                                                          field.onChange(
-                                                            date
-                                                              ? date.toISOString()
-                                                              : null
-                                                          );
-                                                        }}
-                                                        className="h-[35px] text-secondary w-full border-[#f1f1f1]"
                                                       />
                                                     </ConfigProvider>
-                                                  )}
-                                                />
+                                                    <span className="text-primary">
+                                                      Phân loại:{" "}
+                                                    </span>
+                                                    <p className="text-secondary/50">
+                                                      {renderAttributes(
+                                                        item.attribute_values
+                                                      )}
+                                                    </p>
+                                                    <p className="text-primary/85">
+                                                      ( SL:{" "}
+                                                      {calculateTotalQuantity(
+                                                        item
+                                                      )}
+                                                      )
+                                                    </p>
+                                                  </div>
+                                                  <div className="flex gap-2 items-center">
+                                                    <button
+                                                      type="button"
+                                                      onClick={() =>
+                                                        toggleVariantDetails(
+                                                          item
+                                                        )
+                                                      }
+                                                      className="px-4 py-2 text-primary"
+                                                    >
+                                                      Chi tiết
+                                                    </button>
+                                                    <button
+                                                      type="button"
+                                                      onClick={(e) => {
+                                                        e.preventDefault();
+                                                        const dataForm =
+                                                          getValues();
+                                                        const singleVariantForm =
+                                                          {
+                                                            variants: [
+                                                              dataForm.variants[
+                                                                index
+                                                              ],
+                                                            ],
+                                                          };
+
+                                                        onImportInventory(
+                                                          singleVariantForm
+                                                        );
+                                                      }}
+                                                      className="bg-primary py-1 text-util px-3 rounded-sm flex items-center gap-1"
+                                                    >
+                                                      <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 24 24"
+                                                        className="size-4"
+                                                        color={"currentColor"}
+                                                        fill={"none"}
+                                                      >
+                                                        <path
+                                                          d="M11 22C10.1818 22 9.40019 21.6698 7.83693 21.0095C3.94564 19.3657 2 18.5438 2 17.1613C2 16.7742 2 10.0645 2 7M11 22L11 11.3548M11 22C11.7248 22 12.293 21.7409 13.5 21.2226M20 7V11"
+                                                          stroke="currentColor"
+                                                          strokeWidth="1.5"
+                                                          strokeLinecap="round"
+                                                          strokeLinejoin="round"
+                                                        />
+                                                        <path
+                                                          d="M15 17.5H22M18.5 21L18.5 14"
+                                                          stroke="currentColor"
+                                                          strokeWidth="1.5"
+                                                          strokeLinecap="round"
+                                                        />
+                                                        <path
+                                                          d="M7.32592 9.69138L4.40472 8.27785C2.80157 7.5021 2 7.11423 2 6.5C2 5.88577 2.80157 5.4979 4.40472 4.72215L7.32592 3.30862C9.12883 2.43621 10.0303 2 11 2C11.9697 2 12.8712 2.4362 14.6741 3.30862L17.5953 4.72215C19.1984 5.4979 20 5.88577 20 6.5C20 7.11423 19.1984 7.5021 17.5953 8.27785L14.6741 9.69138C12.8712 10.5638 11.9697 11 11 11C10.0303 11 9.12883 10.5638 7.32592 9.69138Z"
+                                                          stroke="currentColor"
+                                                          strokeWidth="1.5"
+                                                          strokeLinecap="round"
+                                                          strokeLinejoin="round"
+                                                        />
+                                                        <path
+                                                          d="M5 12L7 13"
+                                                          stroke="currentColor"
+                                                          strokeWidth="1.5"
+                                                          strokeLinecap="round"
+                                                          strokeLinejoin="round"
+                                                        />
+                                                        <path
+                                                          d="M16 4L6 9"
+                                                          stroke="currentColor"
+                                                          strokeWidth="1.5"
+                                                          strokeLinecap="round"
+                                                          strokeLinejoin="round"
+                                                        />
+                                                      </svg>
+                                                      Nhập
+                                                    </button>
+                                                  </div>
+                                                </div>
+                                                <div className="grid grid-cols-3 gap-3">
+                                                  <input
+                                                    type="number"
+                                                    placeholder="Giá nhập"
+                                                    {...register(
+                                                      `variants.${index}.newImport.import_price`,
+                                                      {
+                                                        valueAsNumber: true,
+                                                        validate: {
+                                                          positive: (value) =>
+                                                            !value ||
+                                                            value > 0 ||
+                                                            "Giá nhập phải lớn hơn 0",
+                                                        },
+                                                      }
+                                                    )}
+                                                    min={0}
+                                                    className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-[#e9e9e9] rounded-[5px] w-full focus:!shadow-none"
+                                                  />
+                                                  <input
+                                                    type="number"
+                                                    placeholder="Số lượng"
+                                                    {...register(
+                                                      `variants.${index}.newImport.quantity`,
+                                                      {
+                                                        valueAsNumber: true,
+                                                        validate: {
+                                                          positive: (value) =>
+                                                            !value ||
+                                                            value > 0 ||
+                                                            "Số lượng phải lớn hơn 0",
+                                                        },
+                                                      }
+                                                    )}
+                                                    min={0}
+                                                    className="block text-secondary focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-[#e9e9e9] rounded-[5px] w-full focus:!shadow-none"
+                                                  />
+                                                  <ConfigProvider
+                                                    theme={{
+                                                      token: {
+                                                        colorPrimary: "#ff9900",
+                                                      },
+                                                      components: {
+                                                        Select: {
+                                                          colorBorder:
+                                                            "#f1f1f1",
+                                                          colorPrimaryHover:
+                                                            "#f1f1f1",
+                                                          activeBorderColor:
+                                                            "#ffcc93",
+                                                        },
+                                                      },
+                                                    }}
+                                                  >
+                                                    <Select
+                                                      allowClear
+                                                      showSearch
+                                                      style={{
+                                                        width: "100%",
+                                                        height: 35,
+                                                      }}
+                                                      placeholder="Nhà cung cấp"
+                                                      options={optionsSupplier}
+                                                      onChange={(value) => {
+                                                        setValue(
+                                                          `variants.${index}.newImport.supplier.id`,
+                                                          value
+                                                        );
+                                                      }}
+                                                    />
+                                                  </ConfigProvider>
+                                                </div>
+                                                {/* Danh sách các lần nhập trước */}
+                                                {expandedVariantId ===
+                                                  item.id && (
+                                                  <div className="mt-4">
+                                                    <h4 className="font-medium text-secondary mb-2">
+                                                      Kho hàng
+                                                    </h4>
+                                                    {variantDetails?.length >
+                                                      0 ||
+                                                    (item.inventoryImports &&
+                                                      item.inventoryImports
+                                                        .length > 0) ? (
+                                                      <div className="overflow-x-auto">
+                                                        <table className="w-full">
+                                                          <thead>
+                                                            <tr className="bg-[#F4F7FA]">
+                                                              <th className="p-2 text-left text-sm font-normal">
+                                                                Ngày Nhập
+                                                              </th>
+                                                              <th className="p-2 text-left text-sm font-normal">
+                                                                Giá Nhập
+                                                              </th>
+                                                              <th className="p-2 text-center text-sm font-normal">
+                                                                Số Lượng Nhập
+                                                              </th>
+                                                              <th className="p-2 text-center text-sm font-normal">
+                                                                Còn Lại
+                                                              </th>
+                                                              <th className="p-2 text-center text-sm font-normal">
+                                                                Nhà Cung Cấp
+                                                              </th>
+                                                              <th className="p-2 text-center text-sm font-normal">
+                                                                Hành động
+                                                              </th>
+                                                            </tr>
+                                                          </thead>
+                                                          <tbody>
+                                                            {variantDetails?.map(
+                                                              (
+                                                                importItem: any
+                                                              ) => (
+                                                                <tr
+                                                                  key={
+                                                                    importItem
+                                                                      .inventory_import
+                                                                      .id
+                                                                  }
+                                                                  className="transition-colors bg-util"
+                                                                >
+                                                                  <td className="p-2 text-sm">
+                                                                    {dayjs(
+                                                                      importItem
+                                                                        .inventory_import
+                                                                        .created_at
+                                                                    ).format(
+                                                                      "DD/MM/YYYY HH:mm"
+                                                                    )}
+                                                                  </td>
+                                                                  <td className="p-2 text-sm">
+                                                                    {new Intl.NumberFormat(
+                                                                      "vi-VN",
+                                                                      {
+                                                                        style:
+                                                                          "currency",
+                                                                        currency:
+                                                                          "VND",
+                                                                      }
+                                                                    ).format(
+                                                                      importItem
+                                                                        .inventory_import
+                                                                        .import_price
+                                                                    )}
+                                                                  </td>
+                                                                  <td className="p-2 text-sm text-center">
+                                                                    {
+                                                                      importItem
+                                                                        .inventory_import
+                                                                        .quantity
+                                                                    }
+                                                                  </td>
+                                                                  <td className="p-2 text-sm text-center">
+                                                                    {
+                                                                      importItem.quantity_imported
+                                                                    }
+                                                                  </td>
+                                                                  <td className="p-2 text-sm text-center">
+                                                                    <p className="text-nowrap text-ellipsis overflow-hidden">
+                                                                      {importItem
+                                                                        .inventory_import
+                                                                        .supplier
+                                                                        ?.name ||
+                                                                        "Chưa xác định"}
+                                                                    </p>
+                                                                  </td>
+                                                                  <td className="p-2">
+                                                                    <div className="flex items-center gap-2 justify-center">
+                                                                      <Popconfirm
+                                                                        title="Xác nhận đưa vào thùng rác lần nhập này?"
+                                                                        onConfirm={() =>
+                                                                          handleDeleteImportRecord(
+                                                                            importItem
+                                                                              .inventory_import
+                                                                              .id
+                                                                          )
+                                                                        }
+                                                                        okText="Thùng rác"
+                                                                        cancelText="Hủy"
+                                                                      >
+                                                                        <button
+                                                                          type="button"
+                                                                          className="text-primary p-2 bg-util shadow-sm rounded-full"
+                                                                        >
+                                                                          <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            viewBox="0 0 24 24"
+                                                                            className="size-4"
+                                                                            color={
+                                                                              "currentColor"
+                                                                            }
+                                                                            fill={
+                                                                              "none"
+                                                                            }
+                                                                          >
+                                                                            <path
+                                                                              d="M4.47461 6.10018L5.31543 18.1768C5.40886 19.3365 6.28178 21.5536 8.51889 21.8022C10.756 22.0507 15.2503 21.9951 16.0699 21.9951C16.8895 21.9951 19.0128 21.4136 19.0128 19.0059C19.0128 16.5756 16.9833 15.9419 15.7077 15.9635H12.0554M12.0554 15.9635C12.0607 15.7494 12.1515 15.5372 12.3278 15.3828L14.487 13.4924M12.0554 15.9635C12.0497 16.1919 12.1412 16.4224 12.33 16.5864L14.487 18.4609M19.4701 5.82422L19.0023 13.4792"
+                                                                              stroke="currentColor"
+                                                                              strokeWidth="1.5"
+                                                                              strokeLinecap="round"
+                                                                              strokeLinejoin="round"
+                                                                            />
+                                                                            <path
+                                                                              d="M3 5.49561H21M16.0555 5.49561L15.3729 4.08911C14.9194 3.15481 14.6926 2.68766 14.3015 2.39631C14.2148 2.33168 14.1229 2.2742 14.0268 2.22442C13.5937 2 13.0739 2 12.0343 2C10.9686 2 10.4358 2 9.99549 2.23383C9.89791 2.28565 9.80479 2.34547 9.7171 2.41265C9.32145 2.7158 9.10044 3.20004 8.65842 4.16854L8.05273 5.49561"
+                                                                              stroke="currentColor"
+                                                                              strokeWidth="1.5"
+                                                                              strokeLinecap="round"
+                                                                              strokeLinejoin="round"
+                                                                            />
+                                                                          </svg>
+                                                                        </button>
+                                                                      </Popconfirm>
+                                                                    </div>
+                                                                  </td>
+                                                                </tr>
+                                                              )
+                                                            )}
+                                                          </tbody>
+                                                        </table>
+                                                      </div>
+                                                    ) : (
+                                                      <p className="text-secondary/50 italic">
+                                                        Kho rỗng
+                                                      </p>
+                                                    )}
+                                                  </div>
+                                                )}
                                               </div>
-                                            </div>
-                                          );
-                                        })}
-                                        <ButtonSubmit content="Nhập tất cả lựa chọn" />
-                                      </form>
-                                    </div>
-                                  </LoadingOverlay>
-                                </Table.Cell>
-                              </Table.Row>
-                            )}
-                        </>
-                      );
-                    })
+                                            );
+                                          })}
+                                          {selectedVariantIndices.length >
+                                            0 && (
+                                            <ButtonSubmit content="Nhập tất cả lựa chọn" />
+                                          )}
+                                        </form>
+                                      </div>
+                                    </LoadingOverlay>
+                                  </Table.Cell>
+                                </Table.Row>
+                              )}
+                          </>
+                        );
+                      })
                   )}
                 </Table.Body>
               </Table>
@@ -1107,7 +1332,10 @@ const ModalInventoryImport = ({
                     </Checkbox>
                   </ConfigProvider>
                   {selectedVariants.length > 0 && (
-                    <button onClick={handleImportSelectedVariants} className="bg-primary text-util py-1.5 rounded-sm px-3.5">
+                    <button
+                      onClick={handleImportSelectedVariants}
+                      className="bg-primary text-util py-1.5 rounded-sm px-3.5"
+                    >
                       Nhập kho ({selectedVariants.length} biến thể)
                     </button>
                   )}
@@ -1138,13 +1366,6 @@ const ModalInventoryImport = ({
                           {attr.attribute.name}
                         </Table.HeadCell>
                       ))}
-
-                    <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
-                      Giá Bán
-                    </Table.HeadCell>
-                    <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
-                      Giá Sale
-                    </Table.HeadCell>
                     <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
                       Số Lượng Nhập
                     </Table.HeadCell>
@@ -1157,145 +1378,139 @@ const ModalInventoryImport = ({
                   </Table.Head>
                   <Table.Body className="divide-y">
                     {/* Nhóm các variant theo sản phẩm */}
-                    {inventorys.map((product) => {
-                      // Nhóm các variant có cùng thuộc tính
-                      const groupedVariants = product.variants.reduce(
-                        (acc, variant) => {
-                          // Tạo key từ các thuộc tính
-                          const key = variant.attribute_values
-                            .map(
-                              (attr) => `${attr.attribute.name}:${attr.value}`
-                            )
-                            .join("|");
+                    {inventorys
+                      .filter((item) => {
+                        return item.name
+                          .toLowerCase()
+                          .includes(valSearch.toLowerCase());
+                      })
+                      .map((product) => {
+                        // Nhóm các variant có cùng thuộc tính
+                        const groupedVariants = product.variants.reduce(
+                          (acc, variant) => {
+                            // Tạo key từ các thuộc tính
+                            const key = variant.attribute_values
+                              .map(
+                                (attr) => `${attr.attribute.name}:${attr.value}`
+                              )
+                              .join("|");
 
-                          if (!acc[key]) {
-                            acc[key] = [];
-                          }
-                          acc[key].push(variant);
-                          return acc;
-                        },
-                        {} as Record<string, IVariants[]>
-                      );
+                            if (!acc[key]) {
+                              acc[key] = [];
+                            }
+                            acc[key].push(variant);
+                            return acc;
+                          },
+                          {} as Record<string, IVariants[]>
+                        );
 
-                      return Object.entries(groupedVariants).map(
-                        ([key, variants], groupIndex) => {
-                          const firstVariant = variants[0];
-                          // const totalQuantity = variants.reduce(
-                          //   (sum, v) => sum + v.quantity,
-                          //   0
-                          // );
-                          const totalImportPrice = variants.reduce(
-                            (sum, v) =>
-                              sum + (v.inventoryImports?.import_price || 0),
-                            0
-                          );
-                          const importQuantity = variants.reduce(
-                            (sum, v) =>
-                              sum + (v.inventoryImports?.quantity || 0),
-                            0
-                          );
-                          const isGroupSelected = variants.every((v) =>
-                            isVariantSelected(v)
-                          );
-                          return (
-                            <Table.Row key={`${product.id}-${groupIndex}`}>
-                              {/* Thông tin sản phẩm (chỉ render 1 lần) */}
-                              <Table.Cell>
-                                <ConfigProvider
-                                  theme={{
-                                    token: {
-                                      colorPrimary: "#ff9900",
-                                    },
-                                  }}
-                                >
-                                  <Checkbox
-                                    checked={isGroupSelected}
-                                    onChange={() => handleGroupSelect(variants)}
-                                  />
-                                </ConfigProvider>
-                              </Table.Cell>
-                              {groupIndex === 0 && (
-                                <>
-                                  <Table.Cell
-                                    rowSpan={
-                                      Object.keys(groupedVariants).length
-                                    }
-                                    className="text-nowrap"
+                        return Object.entries(groupedVariants).map(
+                          ([key, variants], groupIndex) => {
+                            const firstVariant = variants[0];
+                            // const totalQuantity = variants.reduce(
+                            //   (sum, v) => sum + v.quantity,
+                            //   0
+                            // );
+                            const totalImportPrice = variants.reduce(
+                              (sum, v) =>
+                                sum + (v.inventoryImports?.import_price || 0),
+                              0
+                            );
+                            const importQuantity = variants.reduce(
+                              (sum, v) =>
+                                sum + (v.inventoryImports?.quantity || 0),
+                              0
+                            );
+                            const isGroupSelected = variants.every((v) =>
+                              isVariantSelected(v)
+                            );
+                            return (
+                              <Table.Row key={`${product.id}-${groupIndex}`}>
+                                {/* Thông tin sản phẩm (chỉ render 1 lần) */}
+                                <Table.Cell>
+                                  <ConfigProvider
+                                    theme={{
+                                      token: {
+                                        colorPrimary: "#ff9900",
+                                      },
+                                    }}
                                   >
-                                    {product.id}
-                                  </Table.Cell>
-                                  <Table.Cell
-                                    rowSpan={
-                                      Object.keys(groupedVariants).length
-                                    }
-                                    className="text-nowrap"
-                                  >
-                                    {product.name}
-                                  </Table.Cell>
-                                  <Table.Cell
-                                    rowSpan={
-                                      Object.keys(groupedVariants).length
-                                    }
-                                    className="text-nowrap flex justify-center"
-                                  >
-                                    <Avatar
-                                      shape="square"
-                                      size="large"
-                                      src={product.images[0]}
+                                    <Checkbox
+                                      checked={isGroupSelected}
+                                      onChange={() =>
+                                        handleGroupSelect(variants)
+                                      }
                                     />
-                                  </Table.Cell>
-                                </>
-                              )}
-                              <Table.Cell className="text-nowrap text-center">
-                                {variants.map((v) => v.id).join(", ")}
-                              </Table.Cell>
-                              {/* Render các thuộc tính */}
-                              {firstVariant.attribute_values.map(
-                                (attr, attrIndex) => (
-                                  <Table.Cell
-                                    key={attrIndex}
-                                    className="text-nowrap text-center"
-                                  >
-                                    {attr.value}
-                                  </Table.Cell>
-                                )
-                              )}
+                                  </ConfigProvider>
+                                </Table.Cell>
+                                {groupIndex === 0 && (
+                                  <>
+                                    <Table.Cell
+                                      rowSpan={
+                                        Object.keys(groupedVariants).length
+                                      }
+                                      className="text-nowrap"
+                                    >
+                                      {product.id}
+                                    </Table.Cell>
+                                    <Table.Cell
+                                      rowSpan={
+                                        Object.keys(groupedVariants).length
+                                      }
+                                      className="text-nowrap"
+                                    >
+                                      {product.name}
+                                    </Table.Cell>
+                                    <Table.Cell
+                                      rowSpan={
+                                        Object.keys(groupedVariants).length
+                                      }
+                                      className="text-nowrap flex justify-center"
+                                    >
+                                      <Avatar
+                                        shape="square"
+                                        size="large"
+                                        src={product.images[0]}
+                                      />
+                                    </Table.Cell>
+                                  </>
+                                )}
+                                <Table.Cell className="text-nowrap text-center">
+                                  {variants.map((v) => v.id).join(", ")}
+                                </Table.Cell>
+                                {/* Render các thuộc tính */}
+                                {firstVariant.attribute_values.map(
+                                  (attr, attrIndex) => (
+                                    <Table.Cell
+                                      key={attrIndex}
+                                      className="text-nowrap text-center"
+                                    >
+                                      {attr.value}
+                                    </Table.Cell>
+                                  )
+                                )}
 
-                              {/* Thông tin giá và số lượng */}
-                              <Table.Cell className="text-nowrap">
-                                {new Intl.NumberFormat("vi-VN", {
-                                  style: "currency",
-                                  currency: "VND",
-                                }).format(firstVariant.price)}
-                              </Table.Cell>
-                              <Table.Cell className="text-nowrap">
-                                {firstVariant.sale_price
-                                  ? new Intl.NumberFormat("vi-VN", {
-                                      style: "currency",
-                                      currency: "VND",
-                                    }).format(firstVariant.sale_price)
-                                  : "Không có"}
-                              </Table.Cell>
-                              <Table.Cell className="text-nowrap text-center">
-                                {importQuantity}
-                              </Table.Cell>
-                              <Table.Cell className="text-nowrap">
-                                {totalImportPrice > 0
-                                  ? new Intl.NumberFormat("vi-VN", {
-                                      style: "currency",
-                                      currency: "VND",
-                                    }).format(totalImportPrice)
-                                  : "Không có"}
-                              </Table.Cell>
-                              <Table.Cell className="text-nowrap text-center">
-                                {firstVariant.inventoryImports?.supplier?.id ||
-                                  "Chưa có"}
-                              </Table.Cell>
-                            </Table.Row>
-                          );
-                        }
-                      );
-                    })}
+                                {/* Thông tin giá và số lượng */}
+                                <Table.Cell className="text-nowrap text-center">
+                                  {importQuantity}
+                                </Table.Cell>
+                                <Table.Cell className="text-nowrap">
+                                  {totalImportPrice > 0
+                                    ? new Intl.NumberFormat("vi-VN", {
+                                        style: "currency",
+                                        currency: "VND",
+                                      }).format(totalImportPrice)
+                                    : "Không có"}
+                                </Table.Cell>
+                                <Table.Cell className="text-nowrap text-center">
+                                  {firstVariant.inventoryImports?.supplier
+                                    ?.id || "Chưa có"}
+                                </Table.Cell>
+                              </Table.Row>
+                            );
+                          }
+                        );
+                      })}
                   </Table.Body>
                 </Table>
               </>

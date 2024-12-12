@@ -20,48 +20,78 @@ interface TimelineButton {
 }
 
 const ChartAreaProfit: React.FC = () => {
-  const [dataDateFilter, setDataDateFilter] = useState<TimelineButton[]>([])
-  const [data, setData] = useState<string[]>([])
+  const [dataDateFilter, setDataDateFilter] = useState<TimelineButton[]>([]);
+  const [data, setData] = useState<[string, number][]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   
+  // Fetch date filter options
   useEffect(() => {
-    (async()=>{
+    const fetchDateFilter = async () => {
       try {
-        const {data}=await instance.get('thong-ke/ngay-thong-ke')
-        setDataDateFilter(data)
+        const { data } = await instance.get('thong-ke/ngay-thong-ke');
+        setDataDateFilter(data);
       } catch (error) {
-        console.log(error)
+        console.error('Error fetching date filter:', error);
+        setError('Không thể tải dữ liệu bộ lọc ngày');
       }
-    })()
-  }, [])
+    };
+    fetchDateFilter();
+  }, []);
 
+  // Fetch profit data
   useEffect(() => {
-    (async ()=>{
+    const fetchProfitData = async () => {
       try {
-        const {data:{data:response}}=await instance.get('thong-ke/doanh-thu')
-        setData(response)
+        setLoading(true);
+        const { data: { data: response } } = await instance.get('thong-ke/profit');
+        setData(response);
+        setLoading(false);
       } catch (error) {
-        console.log(error)
+        console.error('Error fetching profit data:', error);
+        setError('Không thể tải dữ liệu lợi nhuận');
+        setLoading(false);
       }
-    })()
-  }, [])
+    };
+    fetchProfitData();
+  }, []);
 
-
-  const formatNumber = (num) => {
+  // Format number with Vietnamese locale
+  const formatNumber = (num: number) => {
     return new Intl.NumberFormat("vi-VN").format(num);
   };
 
+  // Separate profit and loss data
+  const profitData = data
+    .filter(([_, value]) => value >= 0)
+    .map(([timestamp, value]) => [
+      new Date(timestamp).getTime() + 7 * 60 * 60 * 1000,
+      value
+    ]);
+
+  const lossData = data
+    .filter(([_, value]) => value < 0)
+    .map(([timestamp, value]) => [
+      new Date(timestamp).getTime() + 7 * 60 * 60 * 1000,
+      Math.abs(value)
+    ]);
+
+  // Chart series configuration
   const chartSeries: ChartSeries[] = [
     {
-      name: "Đơn hàng",
-      data: data.map(([timestamp, value]) => [
-        timestamp + 7 * 60 * 60 * 1000,
-        value,
-      ]),
+      name: "Lợi nhuận",
+      data: profitData,
     },
+    {
+      name: "Lỗ",
+      data: lossData,
+    }
   ];
 
+  // Timeline selection state
   const [selection, setSelection] = useState<TimelinePeriod>("one_month");
 
+  // Chart options
   const chartOptions: ChartOptions = useMemo(() => {
     const selectedTimeline = dataDateFilter.find(
       (btn) => btn.value === selection
@@ -78,24 +108,20 @@ const ChartAreaProfit: React.FC = () => {
         toolbar: {
           export: {
             csv: {
-              filename: "bieu_do_doanh_thu",
+              filename: "bieu_do_loi_nhuan",
               columnDelimiter: ",",
               headerCategory: "Ngày",
-              headerValue: "value",
+              headerValue: "Giá trị",
             },
-            svg: {
-              filename: undefined,
-            },
-            png: {
-              filename: undefined,
-            },
+            svg: { filename: undefined },
+            png: { filename: undefined },
           },
         },
       },
       title: {
-        text: "BIỂU ĐỒ THỐNG KÊ DOANH THU",
+        text: "BIỂU ĐỒ THỐNG KÊ LỢI NHUẬN",
       },
-      colors: ["#ff9900"],
+      colors: ["#14D1B8", "#FF4560"],
       dataLabels: {
         enabled: false,
       },
@@ -117,6 +143,9 @@ const ChartAreaProfit: React.FC = () => {
         labels: {
           formatter: (value: number) => `${formatNumber(value)}`,
         },
+        title: {
+          text: "Giá trị (VNĐ)"
+        }
       },
       tooltip: {
         x: {
@@ -135,12 +164,39 @@ const ChartAreaProfit: React.FC = () => {
           stops: [0, 100],
         },
       },
+      legend: {
+        show: true,
+        position: 'top',
+        horizontalAlign: 'left'
+      },
+      stroke: {
+        curve: 'smooth',
+        width: 2
+      }
     };
-  }, [selection]);
+  }, [selection, dataDateFilter]);
 
+  // Update timeline selection
   const updateData = (timeline: TimelinePeriod): void => {
     setSelection(timeline);
   };
+
+  // Loading and error handling
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow p-5 col-span-8 flex justify-center items-center">
+        <div className="loader">Đang tải...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-lg shadow p-5 col-span-8 text-red-500">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow p-5 col-span-8">

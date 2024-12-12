@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Client;
 
 use App\Events\OrderCanceled;
 use App\Events\OrderShipped;
+use App\Events\OrderStatusChanged;
+use App\Events\OrderStatusUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Order\StoreOrderRequest;
 use App\Models\Cart;
 use App\Models\Coupon;
 use App\Models\CouponUser;
 use App\Models\InventoryStock;
+use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderCancellation;
 use App\Models\OrderCoupon;
@@ -216,33 +219,64 @@ class OrderController extends Controller
             $order = Order::where('code', $code)->first();
 
             if (!$order) {
-                return response()->json(['message' => 'Không tìm thấy đơn hàng với mã: ' . $code], 404);
+                return response()->json(['success' => false, 'message' => 'Không tìm thấy đơn hàng với mã: ' . $code], 404);
             }
 
             if ($order->status_order !== Order::STATUS_ORDER_SHIPPING) {
-                return response()->json(['message' => 'Chỉ các đơn hàng đang vận chuyển mới có thể chuyển sang trạng thái "Đã giao hàng".'], 400);
+                return response()->json(['success' => false, 'message' => 'Chỉ các đơn hàng đang vận chuyển mới có thể chuyển sang trạng thái "Đã giao hàng".'], 400);
             }
+            $isDelivered = $order->is_delivered ?? [];
+            $isDelivered[] = 1;
+            $order->is_delivered = $isDelivered;
+            if (count($order->is_delivered) >= 2) {
+                $order->status_order = Order::STATUS_ORDER_DELIVERED;
+                $order->completed_at = now();
 
-            if ($order->user_id !== auth()->id() && !auth()->user()->isAdmin()) {
-                return response()->json(['message' => 'Bạn không có quyền thực hiện hành động này.'], 403);
             }
+            $order->save();
 
-            $order->update([
-                'status_order' => Order::STATUS_ORDER_DELIVERED,
-                'completed_at' => now(),
+           
+            // Cập nhật trạng thái đơn hàng
+            // $order->update([
+            //     'status_order' => Order::STATUS_ORDER_DELIVERED,
+            //     'completed_at' => now(),
+            // ]);
+
+            // Tạo thông báo
+            $notification = Notification::create([
+                'user_id' => $order->user_id,
+                'order_id' => $order->id,
+                'order_code' => $order->code,
+                'status' => $order->status_order,
+                'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' .
+                             ' đã được cập nhật trạng thái thành <span style="color: #8bc34a;">' .
+                             Order::STATUS_ORDER[$order->status_order] . '</span>',
             ]);
 
-            return response()->json(['message' => 'Đơn hàng với mã ' . $code . ' đã được chuyển sang trạng thái "Đã giao hàng".']);
+            // Phát sự kiện cho admin (kênh admin.notifications)
+            event(new OrderStatusChanged($notification, $order->user_id));
 
+            // Phát sự kiện cho client (kênh notifications.{userId})
+            event(new OrderStatusUpdated($notification, $order->user_id));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Trạng thái đơn hàng đã được cập nhật.',
+                'order' => $order,
+                'notification' => $notification,
+            ]);
         } catch (\Exception $e) {
             \Log::error('Lỗi xác nhận đơn hàng: ' . $e->getMessage(), ['code' => $code]);
 
             return response()->json([
+                'success' => false,
                 'message' => 'Đã xảy ra lỗi trong quá trình xử lý. Vui lòng thử lại sau.',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
+
+
 
 
 }
