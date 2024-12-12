@@ -349,7 +349,7 @@ class OrderController extends Controller
             if (!is_array($ids) || empty($ids)) {
                 return response()->json(['message' => 'Danh sách không hợp lệ!'], 400);
             }
-            Log::info($ids);
+            // Log::info($ids);
             // switch ($request->status) {
             //     case Order::STATUS_ORDER_PENDING:
             //         Order::query()->whereIn('id',  $ids)->update([
