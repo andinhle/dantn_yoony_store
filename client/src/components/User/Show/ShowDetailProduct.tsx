@@ -233,22 +233,7 @@ const ShowDetailProduct: React.FC = () => {
     );
   };
 
-  const handleAttributeSelect = (attributeName: string, value: string) => {
-    setSelectedAttributes((prev) => ({
-      ...prev,
-      [attributeName]: value,
-    }));
 
-    const currentGroup = attributeGroups.find(
-      (group) => group.name === attributeName
-    );
-    if (currentGroup) {
-      const valueIndex = currentGroup.values.indexOf(value);
-      if (valueIndex !== -1 && currentGroup.images[valueIndex]) {
-        setSelectedImage(currentGroup.images[valueIndex]);
-      }
-    }
-  };
   const getAvailableAttributeValues = (attributeName: string) => {
     const currentSelectedAttributes = { ...selectedAttributes };
 
@@ -285,6 +270,56 @@ const ShowDetailProduct: React.FC = () => {
     );
     setSelectedVariant(matchingVariant || null);
   }, [selectedAttributes, variants]);
+
+
+  const handleAttributeSelect = (attributeName: string, value: string) => {
+    // Tạo bản sao các thuộc tính đã chọn
+    const updatedAttributes = { ...selectedAttributes };
+  
+    // Nếu giá trị đã được chọn trước đó, gỡ bỏ nó
+    if (updatedAttributes[attributeName] === value) {
+      delete updatedAttributes[attributeName];
+    } else {
+      // Ngược lại, cập nhật giá trị mới
+      updatedAttributes[attributeName] = value;
+    }
+  
+    // Kiểm tra và loại bỏ các thuộc tính không còn khả dụng
+    const finalAttributes: {[key: string]: string} = {};
+  
+    // Kiểm tra các thuộc tính khác
+    attributeGroups.forEach(group => {
+      if (updatedAttributes[group.name]) {
+        const availableValues = getAvailableAttributeValues(group.name);
+        
+        // Nếu thuộc tính đã chọn trước đó không còn khả dụng
+        if (!availableValues.has(updatedAttributes[group.name])) {
+          // Chọn giá trị đầu tiên khả dụng nếu có
+          const firstAvailableValue = Array.from(availableValues)[0];
+          if (firstAvailableValue) {
+            finalAttributes[group.name] = firstAvailableValue;
+          }
+        } else {
+          // Giữ nguyên giá trị nếu vẫn còn khả dụng
+          finalAttributes[group.name] = updatedAttributes[group.name];
+        }
+      }
+    });
+  
+    // Cập nhật trạng thái
+    setSelectedAttributes(finalAttributes);
+  
+    // Cập nhật hình ảnh nếu có
+    const currentGroup = attributeGroups.find(
+      (group) => group.name === attributeName
+    );
+    if (currentGroup) {
+      const valueIndex = currentGroup.values.indexOf(value);
+      if (valueIndex !== -1 && currentGroup.images[valueIndex]) {
+        setSelectedImage(currentGroup.images[valueIndex]);
+      }
+    }
+  };
 
   const handleImageClick = () => {
     setIsZoomEnabled(!isZoomEnabled);
@@ -497,7 +532,7 @@ const ShowDetailProduct: React.FC = () => {
         return (
           <Tooltip
             key={value}
-            title={isAvailable ? value : "Không có sẵn"}
+            title={isAvailable ? (isSelected ? "Bỏ chọn" : value) : "Không có sẵn"}
             placement="top"
           >
             <div
@@ -555,7 +590,7 @@ const ShowDetailProduct: React.FC = () => {
         return (
           <Tooltip
             key={value}
-            title={isAvailable ? value : "Không có sẵn"}
+            title={isAvailable ? (isSelected ? "Bỏ chọn" : value) : "Không có sẵn"}
             placement="top"
           >
             <div className="relative overflow-hidden rounded-lg">
@@ -607,7 +642,7 @@ const ShowDetailProduct: React.FC = () => {
         return (
           <Tooltip
             key={value}
-            title={isAvailable ? value : "Không có sẵn"}
+            title={isAvailable ? (isSelected ? "Bỏ chọn" : value) : "Không có sẵn"}
             placement="top"
           >
             <div className="relative overflow-hidden rounded-lg">

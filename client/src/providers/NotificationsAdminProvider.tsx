@@ -1,11 +1,10 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { IProduct } from "../interfaces/IProduct";
 import { NotificationsContext, Props } from "../contexts/NotificationsContext";
 import NotificationsReducer from "../reducer/NotificationsReducer";
 import instance from "../instance/instance";
-import isAuthenticated from "../components/Middleware/isAuthenticated";
 import Pusher from "pusher-js";
-const NotificationsProvider = (props: Props) => {
+const NotificationsAdminProvider = (props: Props) => {
   const [notifications, dispatch] = useReducer(
     NotificationsReducer,
     [] as IProduct[]
@@ -19,13 +18,14 @@ const NotificationsProvider = (props: Props) => {
       try {
         const {
           data: { data: response },
-        } = await instance.get(`notification/${userData.id!}`);
-        if (response) {
-          dispatch({
-            type: "LIST",
-            payload: response,
-          });
-        }
+        } = await instance.get(`notification/orders/delivered}`);
+        console.log(response);
+        // if (response) {
+        //   dispatch({
+        //     type: "LIST",
+        //     payload: response,
+        //   });
+        // }
       } catch (error) {
         console.log(error);
       }
@@ -38,8 +38,8 @@ const NotificationsProvider = (props: Props) => {
       encrypted: true,
     });
   
-    const channel = pusher.subscribe(`notifications.${userData.id}`);
-    channel.bind("order-status-confirm", (data: any) => {
+    const channel = pusher.subscribe(`admin.notifications}`);
+    channel.bind("order-status-updated", (data: any) => {
       dispatch({
         type: "ADD",
         payload: data.notification,
@@ -60,4 +60,4 @@ const NotificationsProvider = (props: Props) => {
   );
 };
 
-export default NotificationsProvider;
+export default NotificationsAdminProvider;

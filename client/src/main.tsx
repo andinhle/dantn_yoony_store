@@ -59,6 +59,9 @@ import {
   AuthMiddleware,
 } from "./components/Middleware/AuthMiddleware.tsx";
 import OrdersListAdmin from "./pages/admin/Orders/OrdersListAdmin.tsx";
+import LayoutStatisAdmin from "./layouts/Admin/LayoutStatisAdmin.tsx";
+import StatisProductAdmin from "./pages/admin/statis/StatisProductAdmin.tsx";
+import StatisDetailProduct from "./pages/admin/statis/StatisDetailProduct.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -133,6 +136,12 @@ createRoot(document.getElementById("root")!).render(
                   <Route path="inventory" element={<ListInventory />} />
                   <Route path="suppliers" element={<SuppliersAdmin />} />
                   <Route path="update/:id" element={<AddOrUpdateProduct />} />
+                </Route>
+                <Route path="thong-ke" element={<LayoutStatisAdmin />}>
+                  <Route path="san-pham">
+                    <Route index element={<StatisProductAdmin />} />
+                    <Route path=":slug" element={<StatisDetailProduct />} />
+                  </Route>
                 </Route>
                 <Route path="orders" element={<OrdersListAdmin />} />
                 <Route path="users" element={<LayoutUsersAdmin />} />

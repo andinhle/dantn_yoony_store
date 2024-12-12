@@ -105,7 +105,7 @@ const ProductList = () => {
         setSearchParams({ page: String(page) });
         const {
           data,
-        } = await instance.get("products");
+        } = await instance.get(`products?page=${page}`);
         dispatch({
           type: "LIST",
           payload: data.data,
@@ -121,7 +121,7 @@ const ProductList = () => {
         }
       }
     })();
-  }, []);
+  }, [page]);
 
   const handleUpdateStatus = async (idProduct: number, status: any) => {
     try {
@@ -290,7 +290,7 @@ const ProductList = () => {
           </ConfigProvider>
         </div>
       </div>
-      <div className="rounded-lg overflow-hidden border-b border-[#f1f1f1]">
+      <div className="rounded-lg overflow-auto border-b border-[#f1f1f1]">
         <Table>
           <Table.Head className="text-center">
             <Table.HeadCell
