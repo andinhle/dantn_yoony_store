@@ -15,15 +15,17 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')->hourly();
         // Tự động xóa token hết hạn
         $schedule->command('sanctum:prune-expired --hours=24')->daily();
-        
-        $schedule->command('sale:check-expired')->everyMinute(); // Cấu hình để cron job chạy mỗi phút
+
+        // $schedule->command('sale:check-expired')->everyMinute(); // Cấu hình để cron job chạy mỗi phút
 
         // // Nếu bạn cần chạy command mỗi giây, sử dụng cách này:
         // $schedule->command('sale:check-expired')
         //          ->everyMinute()
         //          ->appendOutputTo(storage_path('logs/sale-expired.log'));
-      //  $schedule->command('order:update-status')->daily();
-        $schedule->command('order:update-status')->hourly();    
+        //  $schedule->command('order:update-status')->daily();
+        $schedule->command('order:update-status')
+            ->hourly()
+            ->appendOutputTo(storage_path('logs/order-status.log'));
     }
 
     /**
@@ -31,7 +33,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands(): void
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }

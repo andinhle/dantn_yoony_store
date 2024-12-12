@@ -267,16 +267,18 @@ const CartListClient = () => {
       render: (variant, record) => (
         <div className="flex gap-3 items-center w-fit">
           <img
-            src={variant.image || variant.product.images[0]}
+            src={variant?.image || variant.product?.images[0]}
             className="w-14 h-14 object-cover rounded-lg"
           />
           <div>
-            <Link
-              to={`/${variant.product.category?.slug}/${variant.product.slug}`}
-              className="line-clamp-1"
-            >
-              {variant.product?.name}
-            </Link>
+            <p>
+              <Link
+                to={`/${variant.product.category?.slug}/${variant.product.slug}`}
+                className="line-clamp-1 hover:text-primary"
+              >
+                {variant.product?.name}
+              </Link>
+            </p>
             <div className="flex gap-2 text-secondary/50 items-center">
               {variant.attribute_values.map(
                 (attribute_value: IAttributeValue, index) => {
@@ -570,6 +572,11 @@ const CartListClient = () => {
                 colorPrimary: "#ff9900",
                 colorInfoHover: "#fff5e5",
                 controlItemBgActiveHover: "#fff5e5",
+              },
+              components: {
+                Table: {
+                  colorLinkHover: "#ff9900",
+                },
               },
             }}
           >
