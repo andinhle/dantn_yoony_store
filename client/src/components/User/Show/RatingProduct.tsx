@@ -273,7 +273,7 @@ const RatingProduct = ({ slugProd }: Prop) => {
           onChange={(page) => {
             setCurrentPage(page);
             window.scrollTo({
-              top: 550,
+              top: 850,
               behavior: "smooth",
             });
           }}
