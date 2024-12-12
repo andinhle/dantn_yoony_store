@@ -485,6 +485,25 @@ class OrderController extends Controller
         }
     }
 
+    public function getDeliveredOrders(Request $request)
+    {
+        // Lọc các đơn hàng có trạng thái STATUS_ORDER_DELIVERED
+        $orders = Order::where('status', Order::STATUS_ORDER_DELIVERED)
+                       ->get();
 
+        // Kiểm tra nếu không có đơn hàng nào
+        if ($orders->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không có đơn hàng nào có trạng thái "Đã giao hàng".'
+            ], 404);
+        }
+
+        // Trả về kết quả dưới dạng JSON
+        return response()->json([
+            'success' => true,
+            'orders' => $orders
+        ]);
+    }
 
 }

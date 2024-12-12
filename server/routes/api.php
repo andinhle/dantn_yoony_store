@@ -54,6 +54,7 @@ Route::get('/variant/{id_variant}', [CartController::class, 'getVariant'])->name
 // Đăng ký đăng nhập
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('verify-email', [AuthController::class, 'verifyEmail'])->name('verify.email');
 
 // Quên mật khẩu
 Route::post('/auth/password/request-reset', [AuthController::class, 'requestPasswordReset'])->name('password.request');
@@ -148,6 +149,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::patch('admin/order-detail/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'updateOrderDetail']);
         Route::patch('admin/order-cancelation/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'canceledOrder']);
         Route::post('admin/order-update_much', [\App\Http\Controllers\Admin\OrderController::class, 'updateMuch']);
+        Route::get('/orders/delivered', [OrderController::class, 'getDeliveredOrders']);
 
         //lịch sử nhập hàng
         Route::get('checkAvailableStock', [InventoryImportController::class, 'checkAvailableStock']);
@@ -254,7 +256,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('ratings/by-product', [RatingController::class, 'getRatingByProduct']);
         Route::get('ratings/filter', [RatingController::class, 'filterRating']);
         Route::get('ratings/{id}', [RatingController::class, 'getOneRatingById'])->name('ratings.getOne');
-        
+
         // QL mã giảm giá
         Route::apiResource('coupon', CouponController::class);
         Route::patch('coupon/{id}/status', [CouponController::class, 'updateStatus'])->name('coupon.updateStatus');
