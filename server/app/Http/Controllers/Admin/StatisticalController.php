@@ -64,7 +64,7 @@ class StatisticalController extends Controller
                     'endDate' => now()->addDay()->format('d M Y'),
                 ],
             ];
-    
+
             return response()->json($ranges);
         } catch (\Exception $e) {
             return response()->json([
@@ -136,7 +136,7 @@ class StatisticalController extends Controller
                     'error' => 'Tham số type không hợp lệ. Chỉ chấp nhận: all, day, month, 6months, year, last_month.',
                 ], 400);
             }
-
+            \Log::info('Type:', ['type' => $type]);
             $totalProducts = Product::count();
 
             // Lấy điều kiện thời gian dựa trên tham số 'type'
@@ -477,5 +477,123 @@ class StatisticalController extends Controller
             ], 500);
         }
     }
+
+
+    //thống kê tất cả sản phẩm
+    public function thongKeSanPhamAll(Request $request)
+    {
+        try {
+            $type = $request->type ?? 'all';
+
+            // Kiểm tra giá trị 'type' có hợp lệ
+            if (!in_array($type, ['all', 'day', 'month', '6months', 'year', 'last_month'])) {
+                return response()->json([
+                    'error' => 'Tham số type không hợp lệ. Chỉ chấp nhận: all, day, month, 6months, year, last_month.',
+                ], 400);
+            }
+
+            \Log::info('Type:', ['type' => $type]);
+            $totalProducts = Product::count();
+
+            // Lấy điều kiện thời gian dựa trên tham số 'type'
+            $dateCondition = $this->getDateCondition($type);
+
+            $topSellingProducts = Product::with([
+                'variants' => function ($query) use ($dateCondition) {
+                    $query->withSum([
+                        'orderItems as total_revenue' => function ($query) use ($dateCondition) {
+                            $query->select(DB::raw('SUM(order_items.total_price)'))
+                                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                                ->where('orders.status_order', Order::STATUS_ORDER_DELIVERED); // Lọc đơn hàng đã giao
+                            if ($dateCondition) {
+                                $dateCondition($query, 'orders.created_at');
+                            }
+                        },
+                        'orderItems as total_quantity_sold' => function ($query) use ($dateCondition) {
+                            $query->select(DB::raw('SUM(order_items.quantity)')) // Tính tổng số lượng đã bán
+                                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                                ->where('orders.status_order', Order::STATUS_ORDER_DELIVERED); // Lọc đơn hàng đã giao
+                            if ($dateCondition) {
+                                $dateCondition($query, 'orders.created_at');
+                            }
+                        }
+                    ], 'total_price');
+                },
+                'category:id,name',
+                'variants.attributeValues'
+            ])
+                ->get()
+                ->map(function ($product) {
+                    // Tính tổng doanh thu và số lượng đã bán
+                    $product->total_revenue = $product->variants->sum('total_revenue') ?? 0;
+                    $product->total_quantity_sold = $product->variants->sum('total_quantity_sold') ?? 0;
+                    $product->images = json_decode($product->images, true); // Giải mã ảnh
+                    return $product;
+                })
+                ->sortByDesc('total_revenue') // Sắp xếp theo tổng doanh thu giảm dần
+                ->values();
+
+
+            // Trả về kết quả thống kê
+            return response()->json([
+                'get_all_products' => $topSellingProducts,
+            ]);
+        } catch (\Exception $e) {
+            // Xử lý lỗi
+            return response()->json([
+                'error' => true,
+                'message' => 'Đã xảy ra lỗi trong quá trình xử lý.',
+                'details' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    //thống kê chi tiết từng sản phẩm
+    public function thongKeProductDetailBySlug($slug)
+    {
+        try {
+            // Lấy sản phẩm theo slug
+            $product = Product::with([
+                'variants' => function ($query) {
+                    $query->withSum([
+                        'orderItems as total_revenue' => function ($query) {
+                            $query->select(DB::raw('SUM(order_items.total_price)'))
+                                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                                ->where('orders.status_order', Order::STATUS_ORDER_DELIVERED);
+                        },
+                        'orderItems as total_quantity_sold' => function ($query) {
+                            $query->select(DB::raw('SUM(order_items.quantity)')) 
+                                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                                ->where('orders.status_order', Order::STATUS_ORDER_DELIVERED); 
+                        }
+                    ], 'total_price');
+                },
+                'category:id,name',
+                'variants.attributeValues'
+            ])->where('slug', $slug)->firstOrFail(); 
+    
+            $product->total_revenue = $product->variants->sum('total_revenue') ?? 0;
+            $product->total_quantity_sold = $product->variants->sum('total_quantity_sold') ?? 0;
+            $product->images = json_decode($product->images, true); 
+
+            $averageRating = $product->rates()->avg('rating') ?? 0; 
+            $averageRating = round($averageRating * 2) / 2; 
+            $product->average_rating = $averageRating;
+            $product->stock_quantity = $product->variants->sum('quantity') ?? 0;
+            $product->total_reviews = $product->rates->count() ?? 0;
+
+
+            return response()->json([
+                'product_detail' => $product,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Đã xảy ra lỗi trong quá trình xử lý.',
+                'details' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    
 
 }

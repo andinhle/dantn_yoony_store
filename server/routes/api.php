@@ -203,6 +203,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         //Thống kê
         Route::get('thong-ke/doanh-thu', [StatisticalController::class, 'doanhThu']);
         Route::get('thong-ke/san-pham', [StatisticalController::class, 'thongKeSanPham']);
+        Route::get('thong-ke/all-san-pham', [StatisticalController::class,'thongKeSanPhamAll']);
+        Route::get('thong-ke/mot-san-pham/{slug}', [StatisticalController::class,'thongKeProductDetailBySlug']);
         Route::get('thong-ke/don-hang', [StatisticalController::class, 'thongKeDonHang']);
         Route::get('thong-ke/ngay-thong-ke', [StatisticalController::class, 'NgayThongKe']);
         Route::get('thong-ke/thong-ke-theo-ngay', [StatisticalController::class, 'thongKeNgay'])->name('thongKeNgay');
