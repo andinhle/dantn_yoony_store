@@ -13,7 +13,11 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Resources\UserResource;
+use App\Mail\VerifyEmail;
 use App\Notifications\ResetPasswordNotification;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -47,6 +51,7 @@ class AuthController extends Controller
     }
 
 
+
     public function register(RegisterRequest $request)
     {
         try {
@@ -55,35 +60,28 @@ class AuthController extends Controller
             $existingUser = User::where('email', $request->email)->first();
 
             if ($existingUser) {
-                if (is_null($existingUser->password)) {
-                    $existingUser->update([
-                        'name' => $request->name,
-                        'password' => bcrypt($request->password)
-                    ]);
-
-                    return response()->json([
-                        'message' => 'Đăng ký thành công!',
-                        'user' => $existingUser,
-                        'token' => $existingUser->createToken('API Token')->plainTextToken
-                    ], 200);
-                } else {
+                if (!is_null($existingUser->password)) {
                     return response()->json([
                         'message' => 'Email này đã được sử dụng, không thể đăng ký.'
                     ], 400);
                 }
             }
 
-            // Nếu email chưa tồn tại, tạo người dùng mới
-            $user = User::create([
+            $tokenData = [
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => bcrypt($request->password)
-            ]);
+                'password' => bcrypt($request->password),
+                'expires_at' => now()->addMinutes(10)->timestamp,
+            ];
+
+            $encryptedToken = Crypt::encrypt($tokenData);
+
+            $verificationUrl = route('verify.email', ['token' => $encryptedToken]);
+
+            Mail::to($request->email)->send(new VerifyEmail($verificationUrl));
 
             return response()->json([
-                'message' => 'Đăng ký thành công!',
-                'user' => $user,
-                'token' => $user->createToken('API Token')->plainTextToken
+                'message' => 'Vui lòng kiểm tra email để xác nhận tài khoản.'
             ], 200);
 
         } catch (\Exception $e) {
@@ -93,6 +91,82 @@ class AuthController extends Controller
             ], 500);
         }
     }
+
+    public function verifyEmail(Request $request)
+{
+    try {
+        // Giải mã token
+        $tokenData = Crypt::decrypt($request->token);
+
+        if ($tokenData['expires_at'] < now()->timestamp) {
+            return redirect('http://localhost:5173/auth/login?message=' . urlencode('Liên kết xác nhận đã hết hạn.'));
+        }
+
+        $existingUser = User::where('email', $tokenData['email'])->first();
+        if ($existingUser && !is_null($existingUser->password)) {
+            return redirect('http://localhost:5173/auth/login?message=' . urlencode('Email đã được xác nhận trước đó.'));
+        }
+
+        $user = User::create([
+            'name' => $tokenData['name'],
+            'email' => $tokenData['email'],
+            'password' => $tokenData['password'],
+        ]);
+
+        return redirect('http://localhost:5173/auth/login?message=' . urlencode('Xác minh email thành công, bạn hãy đăng nhập!'));
+
+    } catch (\Exception $e) {
+        Log::error('Có lỗi xảy ra khi xác minh email: ' . $e->getMessage());
+        return redirect('http://localhost:5173/auth/login?message=' . urlencode('Liên kết xác nhận không hợp lệ hoặc đã hết hạn.'));
+    }
+}
+
+    // public function register(RegisterRequest $request)
+    // {
+    //     try {
+    //         $request->validated($request->all());
+
+    //         $existingUser = User::where('email', $request->email)->first();
+
+    //         if ($existingUser) {
+    //             if (is_null($existingUser->password)) {
+    //                 $existingUser->update([
+    //                     'name' => $request->name,
+    //                     'password' => bcrypt($request->password)
+    //                 ]);
+
+    //                 return response()->json([
+    //                     'message' => 'Đăng ký thành công!',
+    //                     'user' => $existingUser,
+    //                     'token' => $existingUser->createToken('API Token')->plainTextToken
+    //                 ], 200);
+    //             } else {
+    //                 return response()->json([
+    //                     'message' => 'Email này đã được sử dụng, không thể đăng ký.'
+    //                 ], 400);
+    //             }
+    //         }
+
+    //         // Nếu email chưa tồn tại, tạo người dùng mới
+    //         $user = User::create([
+    //             'name' => $request->name,
+    //             'email' => $request->email,
+    //             'password' => bcrypt($request->password)
+    //         ]);
+
+    //         return response()->json([
+    //             'message' => 'Đăng ký thành công!',
+    //             'user' => $user,
+    //             'token' => $user->createToken('API Token')->plainTextToken
+    //         ], 200);
+
+    //     } catch (\Exception $e) {
+    //         Log::error('Có lỗi xảy ra: ' . $e->getMessage());
+    //         return response()->json([
+    //             'message' => 'Có lỗi xảy ra trong quá trình đăng ký.'
+    //         ], 500);
+    //     }
+    // }
 
 
     public function logout()

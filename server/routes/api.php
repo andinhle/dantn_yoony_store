@@ -54,6 +54,7 @@ Route::get('/variant/{id_variant}', [CartController::class, 'getVariant'])->name
 // Đăng ký đăng nhập
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('verify-email', [AuthController::class, 'verifyEmail'])->name('verify.email');
 
 // Quên mật khẩu
 Route::post('/auth/password/request-reset', [AuthController::class, 'requestPasswordReset'])->name('password.request');
@@ -203,6 +204,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         //Thống kê
         Route::get('thong-ke/doanh-thu', [StatisticalController::class, 'doanhThu']);
         Route::get('thong-ke/san-pham', [StatisticalController::class, 'thongKeSanPham']);
+        Route::get('thong-ke/all-san-pham', [StatisticalController::class,'thongKeSanPhamAll']);
+        Route::get('thong-ke/mot-san-pham/{slug}', [StatisticalController::class,'thongKeProductDetailBySlug']);
         Route::get('thong-ke/don-hang', [StatisticalController::class, 'thongKeDonHang']);
         Route::get('thong-ke/ngay-thong-ke', [StatisticalController::class, 'NgayThongKe']);
         Route::get('thong-ke/thong-ke-theo-ngay', [StatisticalController::class, 'thongKeNgay'])->name('thongKeNgay');
@@ -252,7 +255,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('ratings/by-product', [RatingController::class, 'getRatingByProduct']);
         Route::get('ratings/filter', [RatingController::class, 'filterRating']);
         Route::get('ratings/{id}', [RatingController::class, 'getOneRatingById'])->name('ratings.getOne');
-        
+
         // QL mã giảm giá
         Route::apiResource('coupon', CouponController::class);
         Route::patch('coupon/{id}/status', [CouponController::class, 'updateStatus'])->name('coupon.updateStatus');
