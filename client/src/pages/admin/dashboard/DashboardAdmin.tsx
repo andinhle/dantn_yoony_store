@@ -162,7 +162,9 @@ const DashboardAdmin = () => {
       </div>
       <ChartAdmin />
       <div className="grid grid-cols-12 gap-5">
-        <StatisticalProductTopSell />
+        <div className="bg-util p-5 col-span-8 rounded-md">
+          <StatisticalProductTopSell />
+        </div>
         <div className="col-span-4">ok</div>
       </div>
     </div>

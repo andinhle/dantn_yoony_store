@@ -50,12 +50,6 @@ class StatisticalController extends Controller
                     'endDate' => now()->format('d M Y'),
                 ],
                 [
-                    'label' => 'Năm trước',
-                    'value' => 'last_year',
-                    'startDate' => now()->subYear()->startOfYear()->format('d M Y'),
-                    'endDate' => now()->subYear()->endOfYear()->format('d M Y'),
-                ],
-                [
                     'label' => 'Tất cả',
                     'value' => 'all',
                     'startDate' => Order::min('created_at')
@@ -131,7 +125,7 @@ class StatisticalController extends Controller
             $type = $request->type ?? 'all';
 
             // Kiểm tra giá trị 'type' có hợp lệ
-            if (!in_array($type, ['all', 'day', 'month', '6months', 'year', 'last_month'])) {
+            if (!in_array($type, ['all', 'day','week', 'month', '6months', 'year', 'last_month'])) {
                 return response()->json([
                     'error' => 'Tham số type không hợp lệ. Chỉ chấp nhận: all, day, month, 6months, year, last_month.',
                 ], 400);
@@ -243,6 +237,13 @@ class StatisticalController extends Controller
             case 'day':
                 return function ($query, $dateColumn) {
                     $query->whereDate($dateColumn, today());
+                };
+            case 'week':
+                return function ($query, $dateColumn) {
+                    $query->whereBetween($dateColumn, [
+                        now()->startOfWeek(),
+                        now()->endOfWeek()
+                    ]);
                 };
             case 'month':
                 return function ($query, $dateColumn) {
