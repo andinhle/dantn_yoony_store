@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\RoleHasModelController;
 use App\Http\Controllers\Admin\StatisticalController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\Client\CouponUserController;
 use App\Http\Controllers\Client\FilterController;
 use App\Http\Controllers\Client\HomeController;
@@ -71,8 +72,6 @@ Route::get('home/products/{slug}/ratings', [HomeController::class, 'ratingListAl
 Route::get('home/products/featured', [HomeController::class, 'getFeaturedProducts']);
 Route::get('home/products/good-deal', [HomeController::class, 'getGoodDealProducts']);
 Route::get('home/product/category/{id}', [HomeController::class, 'getProductsByCategory']);
-
-
 
 Route::get('auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
 Route::get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);

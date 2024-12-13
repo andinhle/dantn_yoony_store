@@ -1,4 +1,4 @@
-import { Avatar, ConfigProvider, Modal, Pagination } from "antd";
+import { Avatar, ConfigProvider, Pagination } from "antd";
 import { Table } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { IProduct } from "../../../interfaces/IProduct";
@@ -11,11 +11,6 @@ import { useSearchParams } from "react-router-dom";
 import { DatePicker } from "antd";
 import { toast } from "react-toastify";
 import axios from "axios";
-type Props = {
-  isModalOpenHistory: boolean;
-  handleCancelHistory: () => void;
-  setIsModalOpenHistory: (isModalOpenHistory: boolean) => void;
-};
 
 const { RangePicker } = DatePicker;
 type IHistoryInventory = {
@@ -31,11 +26,7 @@ type IHistoryInventory = {
   updated_at: string;
 };
 
-const ModalHistoryInventory = ({
-  isModalOpenHistory,
-  handleCancelHistory,
-  setIsModalOpenHistory,
-}: Props) => {
+const HistoryInventory = () => {
   const [historyInventorys, setHistoryInventory] = useState<
     IHistoryInventory[]
   >([]);
@@ -47,14 +38,14 @@ const ModalHistoryInventory = ({
     (async () => {
       try {
         setSearchParams({ page: String(page) });
-        const { data } = await instance.get("checkAvailableStock");
+        const { data } = await instance.get(`checkAvailableStock?page=${page}`);
         setHistoryInventory(data.data);
         setMeta(data.pagination);
       } catch (error) {
         console.log(error);
       }
     })();
-  }, [isModalOpenHistory]);
+  }, [page]);
 
   const handleRemoveHistoryInventory=async(idHistory:number)=>{
     try {
@@ -139,17 +130,10 @@ const ModalHistoryInventory = ({
   };
   return (
     <div>
-      <Modal
-        open={isModalOpenHistory}
-        width={1200}
-        onCancel={handleCancelHistory}
-        footer={[]}
-      >
         <div className="space-y-7">
           <div className="flex items-center gap-5">
             <button
               className="font-medium flex items-center gap-1.5"
-              onClick={() => setIsModalOpenHistory(!isModalOpenHistory)}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -386,9 +370,8 @@ const ModalHistoryInventory = ({
             align="end"
           />
         </div>
-      </Modal>
     </div>
   );
 };
 
-export default ModalHistoryInventory;
+export default HistoryInventory;
