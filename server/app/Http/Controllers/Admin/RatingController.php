@@ -104,9 +104,16 @@ class RatingController extends Controller
                 $productId = $rating->product_id;
     
                 if (!isset($result[$productId])) {
+                    $product = $rating->product;
+    
+                    $product->images = json_decode($product->images, true);
+    
                     $result[$productId] = [
-                        'product' => $rating->product,
+                        'product' => $product,
                         'ratings' => [],
+                        'total_ratings' => 0, // Tổng số lượng đánh giá
+                        'average_rating' => 0, // Trung bình số sao
+                        'rating_sum' => 0, // Tổng điểm số sao (dùng để tính trung bình)
                     ];
                 }
     
@@ -116,6 +123,18 @@ class RatingController extends Controller
                     'content' => $rating->content,
                     'rating' => $rating->rating,
                 ];
+    
+                // Tăng tổng số lượng đánh giá và tổng điểm
+                $result[$productId]['total_ratings']++;
+                $result[$productId]['rating_sum'] += $rating->rating;
+            }
+    
+            // Tính trung bình số sao cho từng sản phẩm
+            foreach ($result as &$productData) {
+                if ($productData['total_ratings'] > 0) {
+                    $productData['average_rating'] = round($productData['rating_sum'] / $productData['total_ratings'], 1);
+                }
+                unset($productData['rating_sum']); // Xóa trường không cần thiết khỏi kết quả
             }
     
             return response()->json(array_values($result));
@@ -125,6 +144,8 @@ class RatingController extends Controller
             return response()->json(['message' => 'Đã xảy ra lỗi trong quá trình lấy đánh giá.'], 500);
         }
     }
+    
+    
     
 
     // Lọc theo rating (số sao từ 1->5)
