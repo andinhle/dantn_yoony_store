@@ -125,7 +125,7 @@ class StatisticalController extends Controller
             $type = $request->type ?? 'all';
 
             // Kiểm tra giá trị 'type' có hợp lệ
-            if (!in_array($type, ['all', 'day','week', 'month', '6months', 'year', 'last_month'])) {
+            if (!in_array($type, ['all', 'day', 'week', 'month', '6months', 'year', 'last_month'])) {
                 return response()->json([
                     'error' => 'Tham số type không hợp lệ. Chỉ chấp nhận: all, day, month, 6months, year, last_month.',
                 ], 400);
@@ -147,22 +147,54 @@ class StatisticalController extends Controller
                             if ($dateCondition) {
                                 $dateCondition($query, 'orders.created_at');
                             }
+                        },
+                        'orderItems as total_quantity_sold' => function ($query) use ($dateCondition) {
+                            $query->select(DB::raw('SUM(order_items.quantity)'))
+                                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                                ->where('orders.status_order', Order::STATUS_ORDER_DELIVERED);
+                            if ($dateCondition) {
+                                $dateCondition($query, 'orders.created_at');
+                            }
                         }
-                    ], 'total_price');
+                    ], 'quantity');
                 },
                 'category:id,name',
                 'variants.attributeValues'
-
             ])
+                ->withCount([
+                    'rates as average_rating' => function ($query) {
+                        $query->select(DB::raw('AVG(rating)'));
+                    },
+                    'rates as total_ratings_count' => function ($query) {
+                        $query->select(DB::raw('COUNT(*)')); // Sửa lỗi
+                    }
+                ])
                 ->get()
                 ->map(function ($product) {
                     $product->total_revenue = $product->variants->sum('total_revenue') ?? 0;
+                    $product->total_quantity_sold = $product->variants->sum('total_quantity_sold') ?? 0;
+            
+                    // Tính tổng số lượng tồn kho của toàn bộ sản phẩm
+                    $product->inventory = InventoryStock::whereIn('variant_id', $product->variants->pluck('id'))
+                        ->sum('quantity') ?? 0;
+            
+                    // Tính tổng số lượng tồn kho cho từng variant
+                    $product->variants->each(function ($variant) {
+                        $variant->stock_quantity = InventoryStock::where('variant_id', $variant->id)
+                            ->sum('quantity') ?? 0;
+                    });
+            
+                    $product->average_rating = $product->average_rating ? round($product->average_rating * 2) / 2 : 0; // Làm tròn
+                    $product->total_ratings_count = $product->total_ratings_count ?? 0;
                     $product->images = json_decode($product->images, true);
                     return $product;
                 })
                 ->sortByDesc('total_revenue')
                 ->take(10)
                 ->values();
+            
+
+
 
 
             // Thống kê sản phẩm theo đánh giá cao nhất
@@ -528,7 +560,7 @@ class StatisticalController extends Controller
                     // Tính tổng doanh thu và số lượng đã bán
                     $product->total_revenue = $product->variants->sum('total_revenue') ?? 0;
                     $product->total_quantity_sold = $product->variants->sum('total_quantity_sold') ?? 0;
-                    $product->images = json_decode($product->images, true); // Giải mã ảnh
+                    $product->images = json_decode($product->images, associative: true); // Giải mã ảnh
                     return $product;
                 })
                 ->sortByDesc('total_revenue') // Sắp xếp theo tổng doanh thu giảm dần
@@ -641,7 +673,25 @@ class StatisticalController extends Controller
     }
 
 
+    
+    //top 10 sản phẩm được yêu thích
+    public function top10YeuThich()
+    {
+        // Lấy các sản phẩm yêu thích nhất từ model Product
+        $top10Favorites = Product::select('products.id', 'products.name', 'products.images', \DB::raw('COUNT(wishlists.product_id) as favorites_count'))
+            ->join('wishlists', 'wishlists.product_id', '=', 'products.id')
+            ->groupBy('products.id', 'products.name', 'products.images')
+            ->orderByDesc('favorites_count')
+            ->limit(10)
+            ->get();
 
+        $top10Favorites->each(function ($product) {
+            $product->images = json_decode($product->images);  
+        });
 
+        return response()->json([
+            'top_10_wishlist' => $top10Favorites,
+        ]);
+    }
 
 }

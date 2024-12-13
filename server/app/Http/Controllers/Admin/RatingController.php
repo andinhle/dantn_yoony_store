@@ -13,21 +13,29 @@ class RatingController extends Controller
 
     // Lấy tất cả đánh giá
     public function getAllRating(Request $request)
-    {
-        try {
-            $query = Rate::query();
-    
-            $ratings = $query->with(['product', 'user'])
-                ->orderBy('created_at', 'desc')
-                ->paginate(10);
-    
-            return response()->json($ratings);
-        } catch (\Exception $e) {
-            Log::error('Error fetching all ratings: ' . $e->getMessage());
-    
-            return response()->json(['message' => 'Đã xảy ra lỗi trong quá trình lấy đánh giá.'], 500);
-        }
+{
+    try {
+        $query = Rate::query();
+
+        $ratings = $query->with(['product', 'user'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        $ratings->getCollection()->each(function ($rating) {
+            if (is_string($rating->product->images)) {
+                $rating->product->images = json_decode($rating->product->images);
+            }
+        });
+
+        return response()->json($ratings);
+    } catch (\Exception $e) {
+        Log::error('Error fetching all ratings: ' . $e->getMessage());
+
+        return response()->json(['message' => 'Đã xảy ra lỗi trong quá trình lấy đánh giá.'], 500);
     }
+}
+
+    
     
     // Lấy limit 10 đánh giá mới nhất
     public function getLimitRating10(Request $request)

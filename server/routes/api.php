@@ -212,6 +212,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('thong-ke/so-luong-bien-the-duoi-10', [StatisticalController::class, 'listSoLuongBienTheDuoi10']);
         Route::get('thong-ke/so-luong-bien-the-da-het', [StatisticalController::class, 'listSoLuongBienTheDaHet']);
         Route::get('thong-ke/profit', [StatisticalController::class, 'profit']);
+        Route::get('thong-ke/top10-favorite',[StatisticalController::class, 'top10YeuThich']);  
 
         // QL danh mục
         Route::apiResource('category', CategoryController::class);
