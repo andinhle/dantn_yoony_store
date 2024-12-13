@@ -41,12 +41,19 @@ class RatingController extends Controller
     public function getLimitRating10(Request $request)
     {
         try {
-            $query = Rate::query();
-    
-            $ratings = $query->with(['product', 'user'])
+            // Truy vấn lấy 10 đánh giá mới nhất
+            $ratings = Rate::with(['product', 'user'])
                 ->orderBy('created_at', 'desc')
                 ->limit(10)
                 ->get();
+    
+            // Giải mã trường images cho mỗi sản phẩm nếu nó là chuỗi JSON
+            $ratings->each(function ($rating) {
+                if (is_string($rating->product->images)) {
+                    // Giải mã nếu images là chuỗi JSON
+                    $rating->product->images = json_decode($rating->product->images);
+                }
+            });
     
             return response()->json($ratings);
         } catch (\Exception $e) {
@@ -56,11 +63,13 @@ class RatingController extends Controller
         }
     }
     
+    
 
     //Lấy đánh giá theo người dùng
     public function getRatingByUser()
 {
     try {
+        // Truy vấn các đánh giá với thông tin người dùng và sản phẩm
         $ratings = Rate::with(['user', 'product'])
             ->select('user_id', 'product_id', 'content', 'rating')
             ->groupBy('user_id', 'product_id', 'content', 'rating')
@@ -78,6 +87,12 @@ class RatingController extends Controller
                 ];
             }
 
+            // Giải mã trường images của sản phẩm nếu nó là chuỗi JSON
+            if (is_string($rating->product->images)) {
+                $rating->product->images = json_decode($rating->product->images);
+            }
+
+            // Thêm sản phẩm vào kết quả
             $result[$userId]['products'][] = [
                 'id' => $rating->product_id,
                 'name' => $rating->product->name,
@@ -94,6 +109,7 @@ class RatingController extends Controller
         return response()->json(['message' => 'Đã xảy ra lỗi trong quá trình lấy đánh giá.'], 500);
     }
 }
+
 
 
 
@@ -174,18 +190,23 @@ class RatingController extends Controller
     
             $ratings = $query->orderBy('created_at', 'desc')->get();
     
+            $ratings->each(function ($rating) {
+                if (is_string($rating->product->images)) {
+                    $rating->product->images = json_decode($rating->product->images);
+                }
+            });
+    
             return response()->json($ratings);
-            
+    
         } catch (\Illuminate\Validation\ValidationException $e) {
-
             return response()->json(['message' => 'Dữ liệu không hợp lệ.', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            
             Log::error('Error filtering ratings: ' . $e->getMessage());
     
             return response()->json(['message' => 'Đã xảy ra lỗi trong quá trình lọc đánh giá.'], 500);
         }
     }
+    
     
 
     // lấy rating theo id
@@ -193,18 +214,20 @@ class RatingController extends Controller
     {
         try {
             $rating = Rate::with(['user', 'product'])->findOrFail($id);
-
+    
+            if (is_string($rating->product->images)) {
+                $rating->product->images = json_decode($rating->product->images);
+            }
+    
             return response()->json($rating, 200);
-
+    
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['message' => 'Đánh giá không tồn tại.'], 404);
         } catch (\Exception $e) {
             Log::error('Error fetching rating by ID: ' . $e->getMessage());
-
+    
             return response()->json(['message' => 'Đã xảy ra lỗi trong quá trình lấy đánh giá.'], 500);
         }
     }
-
-
-
+    
 }
