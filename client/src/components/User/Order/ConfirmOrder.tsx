@@ -99,6 +99,11 @@ const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
               ].forEach((key) => localStorage.removeItem(key));
             }
           }
+        }else{
+          const { data } = await instance.post("vnpay/callback", {
+            ...parsed,
+          });
+          console.log(data);
         }
 
         if (resultCode) {
