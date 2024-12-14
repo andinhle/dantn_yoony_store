@@ -32,9 +32,9 @@ class InsertOrderItems
         $orderId = $event->order->id;
         $objectData =$event->order->items;
         \Log::info('orser', (array) $event->order );
-        
+
         $orderItems = [];
-        
+
         foreach ($objectData as $value) {
             // Log::info($value->variant->product->images[0]);
 
@@ -54,11 +54,11 @@ class InsertOrderItems
             $orderItem['unit_price'] = $value->variant->sale_price ?: $value->variant->price;
             $orderItem['total_price'] = $value->quantity * ($value->variant->sale_price ?: $value->variant->price);
 
-            
+
             InventoryStock::query()
             ->where('variant_id', $value->variant_id)
-            ->decrement('quantity', $value->quantity); 
-            
+            ->decrement('quantity', $value->quantity);
+
 
             $remainingQuantity = $value->quantity;
 
@@ -75,7 +75,7 @@ class InsertOrderItems
                 if ($remainingQuantity <= 0) {
                     break; // Nếu đã mua đủ, thoát khỏi vòng lặp
                 }
-        
+
                 // Tính số lượng sẽ trừ
                 $quantityAvailable = $stock->quantity;
                 $unitPrice = $stock->import_price;
@@ -85,16 +85,16 @@ class InsertOrderItems
                     if ($quantityAvailable >= $remainingQuantity) {
 
 
-                        $stock->quantity -= $remainingQuantity;
+                        // $stock->quantity -= $remainingQuantity;
                         $totalCost += $remainingQuantity * $unitPrice;
                         $remainingQuantity = 0; // Đã mua xong
 
                     } else {
                         $totalCost += $quantityAvailable * $unitPrice;
-                        $remainingQuantity -= $quantityAvailable;
+                        // $remainingQuantity -= $quantityAvailable;
                         $stock->quantity = 0;
                     }
-                        
+
 
 
                     $stock->save();
@@ -102,8 +102,8 @@ class InsertOrderItems
                         $stock->delete();
                     }
                 }
-                
-                
+
+
             }
             \Log::info('tutolCosst', (array) $totalCost);
             $unitCost = $totalCost / $value->quantity;
@@ -111,7 +111,7 @@ class InsertOrderItems
             $orderItem['profit'] = ($orderItem['unit_price'] - $orderItem['unit_cost']) * $value->quantity;
             $orderItems[] = $orderItem;
 
-        }           
+        }
         OrderItem::insert($orderItems);
 
         $orderProfit = OrderItem::query()
