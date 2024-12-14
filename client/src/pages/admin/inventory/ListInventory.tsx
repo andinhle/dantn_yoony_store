@@ -3,7 +3,6 @@ import {
   Checkbox,
   ConfigProvider,
   Input,
-  Modal,
   Pagination,
 } from "antd";
 import type { CheckboxProps } from "antd";
@@ -13,12 +12,11 @@ import InventoryContext from "../../../contexts/InventoryContext";
 import instance from "../../../instance/instance";
 import dayjs from "dayjs";
 import { IVariants } from "../../../interfaces/IVariants";
-import { Link, Outlet, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { IMeta } from "../../../interfaces/IMeta";
 import ModalInventoryImport from "./ModalInventoryImport";
-import ModalHistoryInventory from "./ModalHistoryInventory";
+import ModalHistoryInventory from "./HistoryInventory";
 import ButtonExport from "../../../components/Admin/Button/ButtonExport";
-import { IProduct } from "../../../interfaces/IProduct";
 import { ICategory } from "../../../interfaces/ICategory";
 import { LoadingOverlay } from "@achmadk/react-loading-overlay";
 const ListInventory = () => {

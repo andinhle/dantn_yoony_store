@@ -517,35 +517,36 @@ class StatisticalController extends Controller
     {
         try {
             $type = $request->type ?? 'all';
-
+    
             // Kiểm tra giá trị 'type' có hợp lệ
-            if (!in_array($type, ['all', 'day', 'month', '6months', 'year', 'last_month'])) {
+            if (!in_array($type, ['all', 'day','week', 'month', '6months', 'year', 'last_month'])) {
                 return response()->json([
                     'error' => 'Tham số type không hợp lệ. Chỉ chấp nhận: all, day, month, 6months, year, last_month.',
                 ], 400);
             }
-
+    
             \Log::info('Type:', ['type' => $type]);
-            $totalProducts = Product::count();
-
-            // Lấy điều kiện thời gian dựa trên tham số 'type'
+    
             $dateCondition = $this->getDateCondition($type);
-
-            $topSellingProducts = Product::with([
+    
+            // Số lượng sản phẩm mỗi trang (mặc định là 10)
+            $perPage = $request->input('per_page', 10);
+    
+            $paginatedProducts = Product::with([
                 'variants' => function ($query) use ($dateCondition) {
                     $query->withSum([
                         'orderItems as total_revenue' => function ($query) use ($dateCondition) {
                             $query->select(DB::raw('SUM(order_items.total_price)'))
                                 ->join('orders', 'orders.id', '=', 'order_items.order_id')
-                                ->where('orders.status_order', Order::STATUS_ORDER_DELIVERED); // Lọc đơn hàng đã giao
+                                ->where('orders.status_order', Order::STATUS_ORDER_DELIVERED);
                             if ($dateCondition) {
                                 $dateCondition($query, 'orders.created_at');
                             }
                         },
                         'orderItems as total_quantity_sold' => function ($query) use ($dateCondition) {
-                            $query->select(DB::raw('SUM(order_items.quantity)')) // Tính tổng số lượng đã bán
+                            $query->select(DB::raw('SUM(order_items.quantity)'))
                                 ->join('orders', 'orders.id', '=', 'order_items.order_id')
-                                ->where('orders.status_order', Order::STATUS_ORDER_DELIVERED); // Lọc đơn hàng đã giao
+                                ->where('orders.status_order', Order::STATUS_ORDER_DELIVERED);
                             if ($dateCondition) {
                                 $dateCondition($query, 'orders.created_at');
                             }
@@ -554,25 +555,34 @@ class StatisticalController extends Controller
                 },
                 'category:id,name',
                 'variants.attributeValues'
-            ])
-                ->get()
-                ->map(function ($product) {
-                    // Tính tổng doanh thu và số lượng đã bán
-                    $product->total_revenue = $product->variants->sum('total_revenue') ?? 0;
-                    $product->total_quantity_sold = $product->variants->sum('total_quantity_sold') ?? 0;
-                    $product->images = json_decode($product->images, associative: true); // Giải mã ảnh
-                    return $product;
-                })
-                ->sortByDesc('total_revenue') // Sắp xếp theo tổng doanh thu giảm dần
-                ->values();
-
-
-            // Trả về kết quả thống kê
-            return response()->json([
-                'get_all_products' => $topSellingProducts,
-            ]);
+            ])->paginate($perPage);
+    
+            // Tính toán dữ liệu cho từng sản phẩm
+            $paginatedProducts->getCollection()->transform(function ($product) {
+                $product->total_revenue = $product->variants->sum('total_revenue') ?? 0;
+                $product->total_quantity_sold = $product->variants->sum('total_quantity_sold') ?? 0;
+    
+                // Tính tổng số lượng tồn kho
+                $product->total_stock_quantity = InventoryStock::whereIn('variant_id', $product->variants->pluck('id'))
+                    ->sum('quantity');
+    
+                // Tính tồn kho cho từng variant
+                $product->variants->each(function ($variant) {
+                    $variant->stock_quantity = InventoryStock::where('variant_id', $variant->id)
+                        ->sum('quantity');
+                });
+                // Tính trung bình đánh giá
+                $averageRating = $product->rates()->avg('rating') ?? 0;
+                $averageRating = round($averageRating * 2) / 2;
+                $product->average_rating = $averageRating;
+    
+                $product->images = json_decode($product->images, true);
+                return $product;
+            });
+    
+            // Trả về kết quả phân trang
+            return response()->json($paginatedProducts);
         } catch (\Exception $e) {
-            // Xử lý lỗi
             return response()->json([
                 'error' => true,
                 'message' => 'Đã xảy ra lỗi trong quá trình xử lý.',
@@ -654,14 +664,7 @@ class StatisticalController extends Controller
             $product->total_reviews = $product->rates->count() ?? 0;
 
             return response()->json([
-                'product_detail' => $product,
-                'variant_details' => $product->variants->map(function ($variant) {
-                    return [
-                        'variant_id' => $variant->id,
-                        'variant_name' => $variant->name,
-                        'stock_quantity' => $variant->stock_quantity
-                    ];
-                }),
+                'data' => $product,
             ]);
         } catch (\Exception $e) {
             return response()->json([
