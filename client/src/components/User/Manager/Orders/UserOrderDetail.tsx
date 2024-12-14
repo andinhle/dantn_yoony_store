@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import instance from "../../../../instance/instance";
 import { IOrderUserClient } from "../../../../interfaces/IOrderUserClient";
@@ -14,6 +14,7 @@ import {
 import type { RadioChangeEvent } from "antd";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import { NotificationsContext } from "../../../../contexts/NotificationsContext";
 export const status = (statusOrder: string) => {
   switch (statusOrder) {
     case "pending":
@@ -286,7 +287,7 @@ const UserOrderDetail = () => {
   const onChange = (e: RadioChangeEvent) => {
     setValueReason(e.target.value);
   };
-
+  const { notifications } = useContext(NotificationsContext);
   useEffect(() => {
     (async () => {
       const {
@@ -297,7 +298,7 @@ const UserOrderDetail = () => {
   }, [valueReason, checkStatusCurrent]);
 
   useEffect(() => {
-    switch (orderDetails?.status_order) {
+    switch (notifications[0]?.status! || orderDetails?.status_order) {
       case "pending":
         return setCheckStatusCurrent(0);
       case "confirmed":
@@ -311,7 +312,7 @@ const UserOrderDetail = () => {
       default:
         break;
     }
-  }, [orderDetails?.status_order]);
+  }, [notifications[0]?.status! || orderDetails?.status_order]);
 
   const handleCancelOrder = async () => {
     try {
@@ -466,7 +467,6 @@ const UserOrderDetail = () => {
             </defs>
           </svg>
         );
-
       default:
         break;
     }
@@ -756,9 +756,9 @@ const UserOrderDetail = () => {
         <div className="border border-[#f1f1f1] rounded-md bg-util p-3 space-y-2">
           <div className="flex items-center justify-between pt-2 pb-4 border-b border-input/50">
             <h3 className="uppercase font-medium text-sm flex items-center gap-2">
-              Trạng thái đơn hàng: {status(orderDetails?.status_order!)}
+              Trạng thái đơn hàng: {status(notifications[0]?.status! || orderDetails?.status_order!)}
             </h3>
-            {checkButtonCancel(orderDetails?.status_order!, orderDetails?.code)}
+            {checkButtonCancel(notifications[0]?.status! || orderDetails?.status_order!, orderDetails?.code)}
           </div>
           <div>
             {orderDetails?.status_order !== "canceled" ? (
