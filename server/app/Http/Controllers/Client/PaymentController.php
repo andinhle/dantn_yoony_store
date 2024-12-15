@@ -37,75 +37,84 @@ class PaymentController extends Controller
 
 
     public function processPayment(Request $request)
-{
-    $paymentMethod = $request->payment_method; // Nhận phương thức thanh toán từ form
+    {
+        $paymentMethod = $request->payment_method; // Nhận phương thức thanh toán từ form
 
-    // Kiểm tra số lượng sản phẩm trong giỏ hàng
-    $selectedItems = $request->selected_items;
-    if (empty($selectedItems)) {
-        return response()->json(['error' => 'Bạn chưa chọn sản phẩm nào để thanh toán.'], 400);
+        // Kiểm tra số lượng sản phẩm trong giỏ hàng
+        $selectedItems = $request->selected_items;
+        if (empty($selectedItems)) {
+            return response()->json(['error' => 'Bạn chưa chọn sản phẩm nào để thanh toán.'], 400);
+        }
+
+        // Mở một giao dịch để kiểm tra và cập nhật kho
+        return DB::transaction(function () use ($request, $selectedItems, $paymentMethod) {
+            $cartItems = Cart::query()
+                ->with(['variant.product', 'variant.inventoryStock'])
+                ->where('user_id', Auth::id())
+                ->whereIn('id', $selectedItems)
+                ->get();
+
+            if ($cartItems->isEmpty()) {
+                return response()->json(['error' => 'Không tìm thấy sản phẩm nào trong giỏ hàng.'], 400);
+            }
+
+            // Kiểm tra tồn kho trước khi tạo bản ghi
+            foreach ($cartItems as $item) {
+                $requiredQuantity = $item->quantity;
+                $stockQuantity = $item->variant->inventoryStock->quantity;
+
+                $lockedItems = LockedItem::where('variant_id', $item->variant->id)->sum('quantity');
+                $availableQuantity = $stockQuantity - $lockedItems;
+
+                // Nếu một sản phẩm không đủ tồn kho, trả lỗi và hủy toàn bộ giao dịch
+                if ($requiredQuantity > $availableQuantity) {
+                    return response()->json([
+                        'error' => 'Sản phẩm ' . $item->variant->product->name . ' không đủ tồn kho. Còn ' . $availableQuantity . ' sản phẩm.'
+                    ], 400);
+                }
+            }
+
+            // Nếu tất cả sản phẩm đều đủ tồn kho, tiến hành lưu vào bảng locked_items và cập nhật tồn kho
+            foreach ($cartItems as $item) {
+                $requiredQuantity = $item->quantity;
+
+                // Lưu vào bảng locked_items
+                $lockedItem = LockedItem::create([
+                    'user_id' => Auth::id(),
+                    'cart_id' => $item->id,
+                    'variant_id' => $item->variant->id,
+                    'quantity' => $requiredQuantity,
+                    'locked_at' => now(), 
+
+                ]);
+
+                // Cập nhật số lượng trong bảng inventoryStock
+                $inventory = $item->variant->inventoryStock;
+                $inventory->quantity -= $requiredQuantity; // Trừ số lượng sản phẩm đã đặt
+                $inventory->save();
+            }
+
+            // Xử lý thanh toán
+            try {
+                switch ($paymentMethod) {
+                    case 'COD':
+                        return $this->handleOrder($request);
+                    case 'VNPAY':
+                        return $this->handleVNPay($request);
+                    case 'MOMO':
+                        return $this->handleMoMo($request);
+                    default:
+                        return response()->json(['error' => 'Phương thức thanh toán không hợp lệ'], 400);
+                }
+            } catch (\Exception $e) {
+                // Khôi phục lại các sản phẩm bị khóa trong trường hợp lỗi
+                $this->restoreLockedItems(Auth::id());
+                Log::error('Lỗi thanh toán: ' . $e->getMessage());
+                return response()->json(['error' => 'Lỗi hệ thống. Vui lòng thử lại.'], 500);
+            }
+        });
     }
 
-    // Mở một giao dịch để kiểm tra và cập nhật kho
-    return DB::transaction(function () use ($request, $selectedItems, $paymentMethod) {
-        $cartItems = Cart::query()
-            ->with(['variant.product', 'variant.inventoryStock'])
-            ->where('user_id', Auth::id())
-            ->whereIn('id', $selectedItems)
-            ->get();
-
-        if ($cartItems->isEmpty()) {
-            return response()->json(['error' => 'Không tìm thấy sản phẩm nào trong giỏ hàng.'], 400);
-        }
-
-        // Kiểm tra tồn kho và khóa sản phẩm
-        foreach ($cartItems as $item) {
-            $requiredQuantity = $item->quantity;
-            $stockQuantity = $item->variant->inventoryStock->quantity;
-
-            $lockedItems = LockedItem::where('variant_id', $item->variant->id)->sum('quantity');
-            $availableQuantity = $stockQuantity - $lockedItems;
-
-            if ($requiredQuantity > $availableQuantity) {
-                return response()->json([
-                    'error' => 'Sản phẩm ' . $item->variant->product->name . ' không đủ tồn kho. Còn ' . $availableQuantity . ' sản phẩm.'
-                ], 400);
-            }
-
-            // Lưu vào bảng locked_items
-            $lockedItem = LockedItem::create([
-                'user_id' => Auth::id(),
-                'cart_id' => $item->id,
-                'variant_id' => $item->variant->id,
-                'quantity' => $requiredQuantity
-            ]);
-
-            // Cập nhật số lượng trong bảng inventoryStock
-            $inventory = $item->variant->inventoryStock;
-            $inventory->quantity -= $requiredQuantity; // Trừ số lượng sản phẩm đã đặt
-            $inventory->save();
-        }
-
-        // Xử lý thanh toán
-        try {
-            switch ($paymentMethod) {
-                case 'COD':
-                    return $this->handleOrder($request);
-                case 'VNPAY':
-                    return $this->handleVNPay($request);
-                case 'MOMO':
-                    return $this->handleMoMo($request);
-                default:
-                    return response()->json(['error' => 'Phương thức thanh toán không hợp lệ'], 400);
-            }
-        } catch (\Exception $e) {
-            // Khôi phục lại các sản phẩm bị khóa trong trường hợp lỗi
-            $this->restoreLockedItems(Auth::id());
-            Log::error('Lỗi thanh toán: ' . $e->getMessage());
-            return response()->json(['error' => 'Lỗi hệ thống. Vui lòng thử lại.'], 500);
-        }
-    });
-}
 
 
 

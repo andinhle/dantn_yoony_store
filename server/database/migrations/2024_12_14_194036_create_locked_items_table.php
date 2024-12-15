@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('cart_id');
             $table->unsignedBigInteger('variant_id');
             $table->integer('quantity');
+            $table->timestamp('locked_at')->nullable();
             $table->timestamps();
 
             // Định nghĩa khóa ngoại

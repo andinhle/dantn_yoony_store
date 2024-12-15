@@ -15,6 +15,7 @@ class LockedItem extends Model
         'cart_id',
         'variant_id',
         'quantity',
+        'locked_at'
     ];
 
     // Liên kết với các model khác
