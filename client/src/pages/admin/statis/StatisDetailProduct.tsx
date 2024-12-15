@@ -24,7 +24,6 @@ const StatisDetailProduct = () => {
           `thong-ke/mot-san-pham/${slug}?from_date=${fromDate}&to_date=${toDate}`
         );
         setProductData(response);
-        console.log(response);
       } catch (error) {
         console.error("Error fetching product data", error);
       }

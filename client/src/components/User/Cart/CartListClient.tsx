@@ -576,6 +576,9 @@ const CartListClient = () => {
               components: {
                 Table: {
                   colorLinkHover: "#ff9900",
+                  colorBgBase:"#ff9900",
+                  headerBg:"#ff9900",
+                  headerColor:'#fff'
                 },
               },
             }}

@@ -12,8 +12,9 @@ import {
 import dayjs from "dayjs";
 type Props = {
   activeTab: string;
+  setDeliveredCount:(count:number)=>void
 };
-const OrderListDelivered = ({ activeTab }: Props) => {
+const OrderListDelivered = ({ activeTab,setDeliveredCount }: Props) => {
   const [ordersDelivered, setOrdersDelivered] = useState<Orders[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parseInt(searchParams.get("page") || "1");
@@ -28,7 +29,7 @@ const OrderListDelivered = ({ activeTab }: Props) => {
         } = await instance.get("admin/orders?status=delivered");
         setOrdersDelivered(response.data);
         setMeta(response);
-        console.log(response);
+        setDeliveredCount(response.data.length);
       } catch (error) {
         console.log(error);
       }

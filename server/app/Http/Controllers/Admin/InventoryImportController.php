@@ -436,44 +436,57 @@ class InventoryImportController extends Controller
     }
 
 
-    public function checkAvailableStock()
+    public function checkAvailableStock(Request $request)
     {
         try {
-            $products = InventoryImportHistory::with([
+            // Nhận tham số từ request
+            $fromDate = $request->input('from_date'); // Ngày bắt đầu
+            $toDate = $request->input('to_date');    // Ngày kết thúc
+    
+            // Lấy query ban đầu
+            $query = InventoryImportHistory::with([
                 'variant.attributeValues.attribute',
                 'variant.product',
                 'supplier'
-
-            ])->paginate(10);
-
+            ]);
+    
+            // Áp dụng bộ lọc ngày nếu có
+            if ($fromDate) {
+                $query->whereDate('created_at', '>=', $fromDate);
+            }
+    
+            if ($toDate) {
+                $query->whereDate('created_at', '<=', $toDate);
+            }
+    
+            $query->orderBy('created_at', 'desc');
+    
+            // Phân trang
+            $products = $query->paginate(10);
+    
             $result = [];
-
+    
             foreach ($products as $product) {
                 $import = InventoryImport::where('batch_number', $product->batch_number)->first();
-
+    
                 if ($import) {
                     $quantityAvailable = $import->quantity;
-
                     $productStatus = $quantityAvailable > 0 ? 'Còn hàng' : 'Hết hàng';
-
-                    if ($product->status !== $productStatus) {
-                        $product->update(['status' => $productStatus]);
-                    }
                 } else {
                     $quantityAvailable = 0;
                     $productStatus = 'Hết hàng';
-
-                    if ($product->status !== $productStatus) {
-                        $product->update(['status' => $productStatus]);
-                    }
                 }
-
+    
+                // Cập nhật trạng thái nếu khác biệt
+                if ($product->status !== $productStatus) {
+                    $product->update(['status' => $productStatus]);
+                }
+    
                 $result[] = [
                     'id' => $product->id,
                     'product' => [
-                            'name' => $product->variant->product->name ?? 'N/A',
-                            'images' => json_decode($product->variant->product->images, true) ?? []
-
+                        'name' => $product->variant->product->name ?? 'N/A',
+                        'images' => json_decode($product->variant->product->images, true) ?? []
                     ],
                     'quantity_import_history' => $product->quantity,
                     'quantity_available' => $quantityAvailable,
@@ -486,7 +499,7 @@ class InventoryImportController extends Controller
                     'updated_at' => $product->updated_at
                 ];
             }
-
+    
             return response()->json([
                 'message' => 'Danh sách các sản phẩm và trạng thái đã được cập nhật.',
                 'data' => $result,
@@ -506,6 +519,7 @@ class InventoryImportController extends Controller
             ], 500);
         }
     }
+    
 
     public function restoreImport($id)
     {
@@ -725,6 +739,8 @@ public function checkDateHistore(Request $request)
         if ($toDate) {
             $query->whereDate('created_at', '<=', $toDate);
         }
+
+        $query->orderBy('created_at', 'desc');
 
         // Phân trang
         $products = $query->paginate(10);

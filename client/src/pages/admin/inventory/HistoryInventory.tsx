@@ -7,7 +7,7 @@ import { ISupplier } from "../../../interfaces/ISupplier";
 import instance from "../../../instance/instance";
 import dayjs from "dayjs";
 import { IMeta } from "../../../interfaces/IMeta";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { DatePicker } from "antd";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -33,20 +33,27 @@ const HistoryInventory = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parseInt(searchParams.get("page") || "1");
   const [meta, setMeta] = useState<IMeta>();
-
+  const [dateRange, setDateRange] = useState<[string, string] | null>(null);
   useEffect(() => {
     (async () => {
       try {
         setSearchParams({ page: String(page) });
-        const { data } = await instance.get(`checkAvailableStock?page=${page}`);
+        const fromDate = dateRange ? dateRange[0] : "";
+        const toDate = dateRange ? dateRange[1] : "";
+        const { data } = await instance.get(`checkAvailableStock?from_date=${fromDate}&to_date=${toDate}&page=${page}`);
         setHistoryInventory(data.data);
         setMeta(data.pagination);
+        console.log(data);
       } catch (error) {
         console.log(error);
       }
     })();
-  }, [page]);
+  }, [page,dateRange]);
 
+  const handleDateChange = (dates: any, dateStrings: [string, string]) => {
+    setDateRange(dateStrings);
+  };
+  
   const handleRemoveHistoryInventory=async(idHistory:number)=>{
     try {
       const {data}=await instance.delete(`deleteHistoryRecord/${idHistory}`)
@@ -66,6 +73,7 @@ const HistoryInventory = () => {
       }
     }
   }
+
 
   const checkStatus = (status: string) => {
     switch (status) {
@@ -129,10 +137,10 @@ const HistoryInventory = () => {
     }
   };
   return (
-    <div>
+    <div className="bg-util p-5">
         <div className="space-y-7">
           <div className="flex items-center gap-5">
-            <button
+            <Link to={`/admin/products/inventory`}
               className="font-medium flex items-center gap-1.5"
             >
               <svg
@@ -157,8 +165,8 @@ const HistoryInventory = () => {
                   strokeLinejoin="round"
                 />
               </svg>
-              Lịch sử nhập hàng
-            </button>
+              Quay lại
+            </Link>
             <ConfigProvider
               theme={{
                 token: {
@@ -166,10 +174,10 @@ const HistoryInventory = () => {
                 },
               }}
             >
-              <RangePicker placeholder={["Ngày bắt đầu", "Ngày kết thúc"]} />
+              <RangePicker placeholder={["Ngày bắt đầu", "Ngày kết thúc"]} onChange={handleDateChange} />
             </ConfigProvider>
           </div>
-          <div className={"min-h-[80vh] overflow-x-auto"}>
+          <div className={"overflow-x-auto"}>
             <Table className="border-b border-[#E4E7EB]">
               <Table.Head className="text-center">
                 <Table.HeadCell
@@ -204,9 +212,9 @@ const HistoryInventory = () => {
                 <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
                   Ngày nhập
                 </Table.HeadCell>
-                <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
+                {/* <Table.HeadCell className="bg-[#F4F7FA] text-left text-secondary/75 text-sm font-medium capitalize text-nowrap">
                   Hành động
-                </Table.HeadCell>
+                </Table.HeadCell> */}
               </Table.Head>
               <Table.Body className="divide-y">
                 {historyInventorys.length === 0 ? (
@@ -297,7 +305,7 @@ const HistoryInventory = () => {
                             "DD-MM-YYYY"
                           )}
                         </Table.Cell>
-                        <Table.Cell className="text-center text-nowrap">
+                        {/* <Table.Cell className="text-center text-nowrap">
                           <button
                             className="bg-util shadow py-1.5 px-3 rounded-md"
                             onClick={() => {
@@ -348,7 +356,7 @@ const HistoryInventory = () => {
                               />
                             </svg>
                           </button>
-                        </Table.Cell>
+                        </Table.Cell> */}
                       </Table.Row>
                     );
                   })
