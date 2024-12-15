@@ -63,6 +63,7 @@ import LayoutStatisAdmin from "./layouts/Admin/LayoutStatisAdmin.tsx";
 import StatisProductAdmin from "./pages/admin/statis/StatisProductAdmin.tsx";
 import StatisDetailProduct from "./pages/admin/statis/StatisDetailProduct.tsx";
 
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>

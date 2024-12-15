@@ -15,6 +15,8 @@ export interface IVariants{
     total_revenue?:number,
     inventoryImports: InventoryImport[];
     updated_at?:string
+    total_quantity_sold?:number,
+    stock_quantity?:number
 }
 
 

@@ -84,7 +84,7 @@ class PaymentController extends Controller
                     'cart_id' => $item->id,
                     'variant_id' => $item->variant->id,
                     'quantity' => $requiredQuantity,
-                    'locked_at' => now(), 
+                    'locked_at' => now(),
 
                 ]);
 
@@ -114,7 +114,6 @@ class PaymentController extends Controller
             }
         });
     }
-
 
 
 
