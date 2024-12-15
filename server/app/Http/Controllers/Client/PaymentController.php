@@ -83,7 +83,9 @@ class PaymentController extends Controller
                     'user_id' => Auth::id(),
                     'cart_id' => $item->id,
                     'variant_id' => $item->variant->id,
-                    'quantity' => $requiredQuantity
+                    'quantity' => $requiredQuantity,
+                    'locked_at' => now(),
+
                 ]);
 
                 // Cập nhật số lượng trong bảng inventoryStock
@@ -99,7 +101,7 @@ class PaymentController extends Controller
                         return $this->handleOrder($request);
                     case 'VNPAY':
                         return $this->handleVNPay($request);
-case 'MOMO':
+                    case 'MOMO':
                         return $this->handleMoMo($request);
                     default:
                         return response()->json(['error' => 'Phương thức thanh toán không hợp lệ'], 400);
@@ -114,7 +116,21 @@ case 'MOMO':
     }
 
 
+    // public function processPayment(Request $request)
+    // {
+    //     $paymentMethod = $request->payment_method; // Nhận phương thức thanh toán từ form
 
+    //     switch ($paymentMethod) {
+    //         case 'COD':
+    //             return $this->handleOrder($request);
+    //         case 'VNPAY':
+    //             return $this->handleVNPay($request);
+    //         case 'MOMO':
+    //             return $this->handleMoMo($request);
+    //         default:
+    //             return response()->json(['error' => 'Phương thức thanh toán không hợp lệ'], 400);
+    //     }
+    // }
 
         function handleVNPay(Request $request)
     {

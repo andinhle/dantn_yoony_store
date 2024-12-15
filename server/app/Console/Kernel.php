@@ -26,6 +26,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('order:update-status')
             ->hourly()
             ->appendOutputTo(storage_path('logs/order-status.log'));
+
+            $schedule->command('app:unlock-locked-items')->everyMinute(); // Kiểm tra và mở khóa các item hết hạn mỗi phút
+
     }
 
     /**
