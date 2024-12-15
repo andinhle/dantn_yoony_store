@@ -18,6 +18,7 @@ import dayjs from "dayjs";
 import { useSearchParams } from "react-router-dom";
 import { Pagination, Dropdown } from "antd";
 import { IMeta } from "../../../interfaces/IMeta";
+import ButtonExport from "../../../components/Admin/Button/ButtonExport";
 const CategoryList: React.FC = () => {
   const [openModal, setOpenModal] = useState(false);
   const [categories, setCategories] = useState<ICategory[]>([]);
@@ -368,7 +369,13 @@ const CategoryList: React.FC = () => {
             </button>
           </Dropdown>
         </div>
-        <div>
+        <div className="flex items-center gap-2">
+          <ButtonExport
+            data={categories}
+            nameButton="Xuất excel"
+            nameSheet="Danh mục"
+            nameFile="danhmuc.xlsx"
+          />
           <Search
             placeholder="Tên danh mục"
             allowClear

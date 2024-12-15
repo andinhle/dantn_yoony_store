@@ -1,3 +1,4 @@
+import { AttributeValues } from "./IOrders";
 import { IUser } from "./IUser";
 import { IVariants } from "./IVariants";
 import { IVoucher } from "./IVouchers";
@@ -7,6 +8,9 @@ interface ItemsOrder {
     total_price: number
     unit_price: number,
     variant: IVariants
+    product_name?: string;
+    product_image?: string;
+    order_item_attribute?: AttributeValues[] | undefined;
 
 }
 export interface IOrderUserClient {

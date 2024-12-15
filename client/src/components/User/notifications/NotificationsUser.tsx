@@ -18,14 +18,11 @@ const NotificationsUser = () => {
     });
 
     return () => {
-      pusher.unsubscribe("notifications");
+      channel.unbind_all();
+      channel.unsubscribe();
     };
   }, []);
-  console.log(eventData);
-  return <div>
-    Message
-    <pre>{JSON.stringify(eventData, null, 2)}</pre>
-  </div>;
+  return JSON.stringify(eventData, null, 2);
 };
 
 export default NotificationsUser;

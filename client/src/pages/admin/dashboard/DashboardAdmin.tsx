@@ -45,7 +45,7 @@ const DashboardAdmin = () => {
           </div>
           <div>
             <h5 className="font-medium">
-              Lợi nhuận{" "}
+              Doanh thu{" "}
               <span className="text-primary">
                 / <span className="text-sm">Ngày</span>
               </span>
@@ -162,7 +162,9 @@ const DashboardAdmin = () => {
       </div>
       <ChartAdmin />
       <div className="grid grid-cols-12 gap-5">
-        <StatisticalProductTopSell />
+        <div className="bg-util p-5 col-span-8 rounded-md">
+          <StatisticalProductTopSell />
+        </div>
         <div className="col-span-4">ok</div>
       </div>
     </div>

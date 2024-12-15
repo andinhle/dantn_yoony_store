@@ -15,6 +15,7 @@ export interface Orders {
     created_at: string;
     updated_at: string;
     items: ItemProduct[];
+    profit:number;
     product: OrderProduct[];
     user: User;
     coupons:Coupons[]

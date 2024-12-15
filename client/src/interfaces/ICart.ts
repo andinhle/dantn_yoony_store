@@ -20,7 +20,7 @@ export interface ICart{
     variant:{
         image:string,
         price:number
-        attribute_values:IAttributeValue,
+        attribute_values:IAttributeValue[],
         product:IProduct,
         quantity:number,
         sale_price:number

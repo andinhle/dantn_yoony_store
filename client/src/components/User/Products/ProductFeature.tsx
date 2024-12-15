@@ -86,7 +86,7 @@ const ProductFeature = () => {
           );
         })}
       </Swiper>
-      <ButtonSeeMore link="/product-feature" />
+      {productFeatures.length >5 && <ButtonSeeMore link="search?filter=feature" />}
     </section>
   );
 };

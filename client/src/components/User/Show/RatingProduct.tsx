@@ -110,6 +110,7 @@ const RatingProduct = ({ slugProd }: Prop) => {
         ></LoadingOverlay>
       </div>
     );
+    console.log(ratingDatas);
   return (
     <section className="bg-util border border-[#f1f1f1] rounded-md p-5 space-y-5">
       <h2 className="text-base md:text-xl font-medium uppercase flex items-center gap-2">
@@ -273,7 +274,7 @@ const RatingProduct = ({ slugProd }: Prop) => {
           onChange={(page) => {
             setCurrentPage(page);
             window.scrollTo({
-              top: 550,
+              top: 850,
               behavior: "smooth",
             });
           }}

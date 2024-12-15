@@ -10,10 +10,10 @@ import queryString from "query-string";
 import { useRef } from "react";
 type Prop = {
   current: number;
-  setIsLoading:(isLoading:boolean)=>void
+  setIsLoading: (isLoading: boolean) => void;
 };
 
-const ConfirmOrder = ({ current,setIsLoading }: Prop) => {
+const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
   const { dispatch } = useContext(CartContext);
   const final_total = JSON.parse(localStorage.getItem("final_total") || "0");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -99,6 +99,11 @@ const ConfirmOrder = ({ current,setIsLoading }: Prop) => {
               ].forEach((key) => localStorage.removeItem(key));
             }
           }
+        }else{
+          const { data } = await instance.post("vnpay/callback", {
+            ...parsed,
+          });
+          console.log(data);
         }
 
         if (resultCode) {
@@ -144,7 +149,6 @@ const ConfirmOrder = ({ current,setIsLoading }: Prop) => {
         setIsLoading(false);
       }
     })();
-
     return () => {
       callbackProcessedRef.current = false;
       localStorage.removeItem("callback_processed");
@@ -152,8 +156,11 @@ const ConfirmOrder = ({ current,setIsLoading }: Prop) => {
   }, [dispatch, final_total, navigate]);
 
   const finalPaymentAmount = voucherCheck
-    ? final_total - voucherCheck.discount
-    : final_total;
+  ? voucherCheck.discount_type === 'percentage'
+    ? final_total - (final_total * (voucherCheck.discount / 100))
+    : final_total - voucherCheck.discount
+  : final_total;
+
 
   const { Search } = Input;
 
@@ -297,6 +304,7 @@ const ConfirmOrder = ({ current,setIsLoading }: Prop) => {
     }
   };
 
+  console.log(voucherCheck);
   return (
     <div className="col-span-3 border border-input p-3 rounded-md h-fit space-y-6 sticky top-20 bg-util">
       <Modal
@@ -532,7 +540,9 @@ const ConfirmOrder = ({ current,setIsLoading }: Prop) => {
               Khuyến mãi:{" "}
               <span className="text-sm text-primary">
                 {voucherCheck
-                  ? `-${voucherCheck?.discount.toLocaleString()} đ`
+                  ? voucherCheck.discount_type === "percentage"
+                    ? `-${voucherCheck?.discount.toLocaleString()}%`
+                    : `-${voucherCheck?.discount.toLocaleString()}đ`
                   : `0đ`}
               </span>
             </label>
@@ -547,16 +557,20 @@ const ConfirmOrder = ({ current,setIsLoading }: Prop) => {
         <p className="font-medium">
           Tổng thanh toán:{" "}
           <span className="text-primary">
-            {/* {(voucherCheck
-               final_total - voucherCheck.discount
+            {(voucherCheck
+              ? voucherCheck.discount_type === "percentage"
+                ? final_total - (final_total * voucherCheck.discount) / 100 
+                : voucherCheck.discount > final_total
+                ? 0 
+                : final_total - voucherCheck.discount 
               : final_total
-            ).toLocaleString()} */}
-            {
-              (voucherCheck?voucherCheck.discount>final_total? 0 : final_total - voucherCheck.discount : final_total).toLocaleString()
-            }đ
+            ) 
+              .toLocaleString()}
+            đ
           </span>
         </p>
       </div>
+
       <button
         className={`${
           current !== 2 ? "bg-[#D1D1D6]" : "bg-primary"

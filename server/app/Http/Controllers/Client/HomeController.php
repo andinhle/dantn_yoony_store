@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Client;
 
 use App\Events\CheckExpiredSalePrices;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\BannerResource;
 use App\Http\Resources\BlogResource;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProductResource;
@@ -11,6 +12,7 @@ use App\Http\Resources\RateAllByProductResource;
 use App\Http\Resources\RateResource;
 use App\Models\Address;
 use App\Models\Answer;
+use App\Models\Banner;
 use App\Models\Blog;
 use App\Models\Category;
 use App\Models\Coupon;
@@ -28,6 +30,11 @@ use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
 {
+    public function listBanner()
+    {
+        $banners = Banner::where('is_active', true)->latest('id')->get();
+        return BannerResource::collection($banners);
+    }
 
     //get one getOneProductBySlug
     public function getOneProductBySlug(Request $request, string $slug)
@@ -40,13 +47,13 @@ class HomeController extends Controller
                 ->where('is_active', 1)
                 ->firstOrFail();
 
-                $variant = $product->variants->first();
+                // $variant = $product->variants->first();
 
-                if ($variant) {
-                    event(new CheckExpiredSalePrices($variant));
-                } else {
-                    Log::warning('Không tìm thấy variant cho sản phẩm: ' . $slug);
-                }
+                // if ($variant) {
+                //     event(new CheckExpiredSalePrices($variant));
+                // } else {
+                //     Log::warning('Không tìm thấy variant cho sản phẩm: ' . $slug);
+                // }
 
             $relatedProducts = Product::with('category', 'variants.attributeValues.attribute')
                 ->where('category_id', $product->category_id)
@@ -195,8 +202,8 @@ class HomeController extends Controller
                 ->paginate(10);
 
             return response()->json([
-                'category' => new CategoryResource($category),
-                'products' => ProductResource::collection($products),
+                // 'category' => new CategoryResource($category),
+                'data' => ProductResource::collection($products),
             ], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Không tìm thấy danh mục.'], 404);

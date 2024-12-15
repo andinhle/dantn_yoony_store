@@ -5,18 +5,19 @@ import instance from "../../../instance/instance";
 import { ICategory } from "../../../interfaces/ICategory";
 import { IAttribute } from "../../../interfaces/IAttribute";
 import queryString from "query-string";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { IProduct } from "../../../interfaces/IProduct";
 import { debounce } from "lodash";
 import { LoadingOverlay } from "@achmadk/react-loading-overlay";
 import RenderProductFilter from "./RenderProductFilter";
+import { IMeta } from "../../../interfaces/IMeta";
 
 interface IPrice {
   min: number;
   max: number;
 }
 
-interface IFilterResponse {
+export interface IFilterResponse {
   categories: ICategory[];
   attributes: IAttribute[];
   price: IPrice;
@@ -26,7 +27,7 @@ interface IAttributeFilters {
   [key: string]: string[];
 }
 
-interface IFilterParams {
+export interface IFilterParams {
   name?: string;
   category_id?: number[];
   attributes?: IAttributeFilters;
@@ -46,6 +47,9 @@ const FilterProducts = () => {
   const [parsedSearch, setParsedSearch] = useState<any>();
   const [dataResponse, setDataResponse] = useState<IProduct[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = parseInt(searchParams.get("page") || "1");
+  const [meta, setMeta] = useState<IMeta>();
   const location = useLocation();
 
   const fetchProducts = useCallback(
@@ -53,7 +57,7 @@ const FilterProducts = () => {
       try {
         setIsLoading(true);
         await new Promise((resolve) => setTimeout(resolve, 1000));
-
+  
         const cleanParams = {
           ...params,
           name: params.name || undefined,
@@ -68,17 +72,24 @@ const FilterProducts = () => {
             : undefined,
         };
 
+        const currentPage = searchParams.get("page") || "1";
+        setSearchParams({ 
+          ...Object.fromEntries(searchParams), 
+          page: currentPage 
+        });
+  
         const {
-          data: { data: response },
-        } = await instance.post("products/filter", cleanParams);
-        setDataResponse(response);
+          data,
+        } = await instance.post(`products/filter?page=${currentPage}`, cleanParams);
+        setDataResponse(data.data);
+        setMeta(data)
       } catch (error) {
         console.error("Error fetching products:", error);
       } finally {
         setIsLoading(false);
       }
     },
-    [setDataResponse, setIsLoading]
+    [setDataResponse, setIsLoading, searchParams]
   );
 
   const debouncedFetchProducts = useCallback(debounce(fetchProducts, 500), [
@@ -94,7 +105,7 @@ const FilterProducts = () => {
       price: sliderValue,
     };
 
-    debouncedFetchProducts(params);
+    debouncedFetchProducts(params, page);
   }, [
     parsedSearch?.q,
     selectedCategories,
@@ -102,6 +113,7 @@ const FilterProducts = () => {
     selectedRating,
     sliderValue,
     debouncedFetchProducts,
+    page,
   ]);
 
   // Initial filter data fetch
@@ -121,8 +133,18 @@ const FilterProducts = () => {
 
   useEffect(() => {
     const parsed = queryString.parse(location.search);
-    setParsedSearch({ q: parsed.q as string });
-  }, [location.search, setParsedSearch]);
+    setParsedSearch(parsed);
+    if (parsed.category && dataFilter?.categories) {
+      const categoryFromUrl = parsed.category;
+      const matchedCategory = dataFilter.categories.find(
+        (category) => category.slug === categoryFromUrl
+      );
+      
+      if (matchedCategory) {
+        setSelectedCategories([matchedCategory.id]);
+      }
+    }
+  }, [location.search, setParsedSearch,dataFilter]);
 
   useEffect(() => {
     handleFiltersChange();
@@ -164,7 +186,7 @@ const FilterProducts = () => {
   const handleResetFilters = () => {
     setSelectedCategories([]);
     setSelectedAttributes({});
-    setSelectedRating(undefined)
+    setSelectedRating(undefined);
     // setSliderValue([dataFilter.price.min, dataFilter.price.max]);
     setSliderValue(undefined);
     handleFiltersChange();
@@ -441,7 +463,13 @@ const FilterProducts = () => {
             }}
             className="flex justify-between items-center"
           >
-            <RenderProductFilter datas={dataResponse} />
+            <RenderProductFilter
+              datas={dataResponse}
+              setSearchParams={setSearchParams}
+              parsedFilter={parsedSearch?.filter}
+              page={page}
+              meta={meta!}
+            />
           </LoadingOverlay>
         </div>
       </div>

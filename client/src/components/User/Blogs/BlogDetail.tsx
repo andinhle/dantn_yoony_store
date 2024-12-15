@@ -11,6 +11,12 @@ export default function BlogDetail() {
   const [title, setTitle] = useState<string | null>(null);
   const [hasFeaturedImage, setHasFeaturedImage] = useState(false);
 
+  const handleFacebookShare = () => {
+    const blogUrl = window.location.href;
+    const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(blogUrl)}`;
+    window.open(facebookShareUrl, '_blank', 'width=600,height=400');
+  };
+  
   useEffect(() => {
     (async () => {
       try {
@@ -57,11 +63,11 @@ export default function BlogDetail() {
       <div className="container m-auto">
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="lg:w-2/3">
-            <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
+            <div className="bg-white p-6 rounded-lg shadow-lg mb-6 space-y-3">
               {featuredImage && (
                 <img
-                  src={featuredImage}
-                  className="w-full h-[304px] object-cover p-2"
+                  src={blog.thumbnail}
+                  className="w-full h-[304px] object-cover rounded-sm"
                   alt={blog.slug}
                 />
               )}
@@ -71,7 +77,7 @@ export default function BlogDetail() {
                 </h1>
               )}
               <p className="text-sm text-gray-500 mb-4">
-                Người viết: {blog.user_id}
+                Người viết: {blog.user.name}
               </p>
 
               <div className="text-lg text-gray-700">
@@ -90,9 +96,9 @@ export default function BlogDetail() {
 
               <div className="share-buttons text-center mt-8 mb-6">
                 <h4 className="text-xl font-semibold mb-4">CHIA SẺ BÀI VIẾT</h4>
-                <div className="flex justify-center space-x-2 ">
+                <button className="mx-auto space-x-2" onClick={handleFacebookShare}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="25px" height="25px" viewBox="0 0 24 24" fill="currentColor"><path d="M12.001 2C6.47813 2 2.00098 6.47715 2.00098 12C2.00098 16.9913 5.65783 21.1283 10.4385 21.8785V14.8906H7.89941V12H10.4385V9.79688C10.4385 7.29063 11.9314 5.90625 14.2156 5.90625C15.3097 5.90625 16.4541 6.10156 16.4541 6.10156V8.5625H15.1931C13.9509 8.5625 13.5635 9.33334 13.5635 10.1242V12H16.3369L15.8936 14.8906H13.5635V21.8785C18.3441 21.1283 22.001 16.9913 22.001 12C22.001 6.47715 17.5238 2 12.001 2Z"></path></svg>
-                </div>
+                </button>
               </div>
             </div>
           </div>

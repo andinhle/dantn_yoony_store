@@ -1,22 +1,28 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../providers/AuthProvider";
 
 const SideBarAdmin = () => {
   const [is_openProduct, setOpenProduct] = useState<boolean>(false);
-  const [is_openUser, setOpenUser] = useState<boolean>(false);
+  const [is_openStatis, setOpenStatis] = useState<boolean>(false);
   const location = useLocation();
-
+  const {logout}=useAuth()
+  const navigate = useNavigate();
   useEffect(() => {
     if (location.pathname === "/admin") {
       setOpenProduct(false);
-      setOpenUser(false);
+      setOpenStatis(false);
+      setOpenStatis(false);
     } else if (location.pathname.startsWith("/admin/products")) {
       setOpenProduct(true);
-    } else if (location.pathname.startsWith("/admin/users")) {
-      setOpenUser(true);
+    } else if (location.pathname.startsWith("/admin/thong-ke")) {
+      setOpenStatis(true);
     }
   }, [location.pathname]);
-
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
   return (
     <>
       <nav className="fixed bg-util backdrop-blur top-0 max-w-[225px] left-0 bottom-0 w-full z-50 hidden lg:block transition-all shadow-sm">
@@ -40,6 +46,7 @@ const SideBarAdmin = () => {
                 end
                 onClick={() => {
                   setOpenProduct(false);
+                  setOpenStatis(false);
                 }}
               >
                 <svg
@@ -100,6 +107,7 @@ const SideBarAdmin = () => {
                 end
                 onClick={() => {
                   setOpenProduct(false);
+                  setOpenStatis(false);
                 }}
               >
                 <svg
@@ -354,12 +362,12 @@ const SideBarAdmin = () => {
                           strokeLinejoin="round"
                         />
                       </svg>
-                      Nhập đơn hàng
+                      Nhập hàng hoá
                     </NavLink>
                   </li>
                   <li className="">
                     <NavLink
-                      to={"ton-kho"}
+                      to={"products/suppliers"}
                       end
                       className={
                         "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-primary hover:text-util text-[15px] transition-all"
@@ -373,42 +381,60 @@ const SideBarAdmin = () => {
                         fill={"none"}
                       >
                         <path
-                          d="M11 22C10.1818 22 9.40019 21.6698 7.83693 21.0095C3.94564 19.3657 2 18.5438 2 17.1613C2 16.7742 2 10.0645 2 7M11 22L11 11.3548M11 22C11.3404 22 11.6463 21.9428 12 21.8285M20 7V11.5"
+                          d="M12 22C11.1818 22 10.4002 21.6754 8.83693 21.0262C4.94564 19.4101 3 18.6021 3 17.2429V7.74463M12 22C12.8182 22 13.5998 21.6754 15.1631 21.0262C19.0544 19.4101 21 18.6021 21 17.2429V7.74463M12 22V12.1687M3 7.74463C3 8.3485 3.80157 8.72983 5.40472 9.49248L8.32592 10.8822C10.1288 11.7399 11.0303 12.1687 12 12.1687M3 7.74463C3 7.14076 3.80157 6.75944 5.40472 5.99678L7.5 5M21 7.74463C21 8.3485 20.1984 8.72983 18.5953 9.49248L15.6741 10.8822C13.8712 11.7399 12.9697 12.1687 12 12.1687M21 7.74463C21 7.14076 20.1984 6.75944 18.5953 5.99678L16.5 5M6 13.1518L8 14.135"
                           stroke="currentColor"
                           strokeWidth="1.5"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
                         <path
-                          d="M18 18.0005L18.9056 17.0949M22 18C22 15.7909 20.2091 14 18 14C15.7909 14 14 15.7909 14 18C14 20.2091 15.7909 22 18 22C20.2091 22 22 20.2091 22 18Z"
+                          d="M12.0037 2L12.0037 8.99995M12.0037 8.99995C12.2668 9.00351 12.5263 8.81972 12.7178 8.59534L14 7.06174M12.0037 8.99995C11.7499 8.99652 11.4929 8.81368 11.2897 8.59534L10 7.06174"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      Nhà cung cấp
+                    </NavLink>
+                  </li>
+                  <li className="">
+                    <NavLink
+                      to={"products/historys"}
+                      end
+                      className={
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-primary hover:text-util text-[15px] transition-all"
+                      }
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        className="size-5"
+                        color={"currentColor"}
+                        fill={"none"}
+                      >
+                        <path
+                          d="M12 22C6.47715 22 2.00004 17.5228 2.00004 12C2.00004 6.47715 6.47719 2 12 2C16.4777 2 20.2257 4.94289 21.5 9H19"
                           stroke="currentColor"
                           strokeWidth="1.5"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
                         <path
-                          d="M7.32592 9.69138L4.40472 8.27785C2.80157 7.5021 2 7.11423 2 6.5C2 5.88577 2.80157 5.4979 4.40472 4.72215L7.32592 3.30862C9.12883 2.43621 10.0303 2 11 2C11.9697 2 12.8712 2.4362 14.6741 3.30862L17.5953 4.72215C19.1984 5.4979 20 5.88577 20 6.5C20 7.11423 19.1984 7.5021 17.5953 8.27785L14.6741 9.69138C12.8712 10.5638 11.9697 11 11 11C10.0303 11 9.12883 10.5638 7.32592 9.69138Z"
+                          d="M12 8V12L14 14"
                           stroke="currentColor"
                           strokeWidth="1.5"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
                         <path
-                          d="M5 12L7 13"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M16 4L6 9"
+                          d="M21.9551 13C21.9848 12.6709 22 12.3373 22 12M15 22C15.3416 21.8876 15.6753 21.7564 16 21.6078M20.7906 17C20.9835 16.6284 21.1555 16.2433 21.305 15.8462M18.1925 20.2292C18.5369 19.9441 18.8631 19.6358 19.1688 19.3065"
                           stroke="currentColor"
                           strokeWidth="1.5"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
                       </svg>
-                      Tồn kho
+                      <p className="text-nowrap text-ellipsis overflow-hidden">Lịch sử nhập hàng</p>
                     </NavLink>
                   </li>
                 </ul>
@@ -422,6 +448,7 @@ const SideBarAdmin = () => {
                 }
                 onClick={() => {
                   setOpenProduct(false);
+                  setOpenStatis(false);
                 }}
               >
                 <svg
@@ -446,6 +473,7 @@ const SideBarAdmin = () => {
                 to={"rates"}
                 onClick={() => {
                   setOpenProduct(false);
+                  setOpenStatis(false);
                 }}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] transition-all"
@@ -476,6 +504,7 @@ const SideBarAdmin = () => {
                 onClick={() => {
                   setOpenUser(!is_openUser);
                   setOpenProduct(false);
+                  setOpenStatis(false)
                 }}
               >
                 <div className="flex gap-2 text-[15px]">
@@ -610,6 +639,7 @@ const SideBarAdmin = () => {
                 end
                 onClick={() => {
                   setOpenProduct(false);
+                  setOpenStatis(false);
                 }}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] transition-all"
@@ -649,6 +679,7 @@ const SideBarAdmin = () => {
                 to={"banner"}
                 onClick={() => {
                   setOpenProduct(false);
+                  setOpenStatis(false);
                 }}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] transition-all"
@@ -687,6 +718,7 @@ const SideBarAdmin = () => {
                 to={"vouchers"}
                 onClick={() => {
                   setOpenProduct(false);
+                  setOpenStatis(false);
                 }}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary border border-[#f5f5f5] hover:text-util text-[15px] transition-all"
@@ -715,6 +747,7 @@ const SideBarAdmin = () => {
                 end
                 onClick={() => {
                   setOpenProduct(false);
+                  setOpenStatis(false)
                 }}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] transition-all"
@@ -778,6 +811,7 @@ const SideBarAdmin = () => {
                 to={"blogs"}
                 onClick={() => {
                   setOpenProduct(false);
+                  setOpenStatis(false);
                 }}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] transition-all"
@@ -800,10 +834,105 @@ const SideBarAdmin = () => {
                 Bài viết
               </NavLink>
             </li>
+            <li className={"space-y-2"}>
+              <div
+                className={`${
+                  is_openStatis && "bg-secondary text-util hover:bg-secondary"
+                } flex items-center justify-between px-2 py-[10px] rounded-md hover:cursor-pointer border border-[#f5f5f5] hover:bg-primary hover:text-util`}
+                onClick={() => {
+                  setOpenStatis(!is_openStatis);
+                }}
+              >
+                <div className="flex gap-2 text-[15px]">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="size-6"
+                    color={"currentColor"}
+                    fill={"none"}
+                  >
+                    <path
+                      d="M21 21H10C6.70017 21 5.05025 21 4.02513 19.9749C3 18.9497 3 17.2998 3 14V3"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M17.7048 9.33333L14.8311 13.9845C14.4123 14.6623 13.9369 15.686 13.0749 15.5344C12.0611 15.356 11.5742 13.8449 10.7026 13.3445C9.99285 12.9371 9.47971 13.4281 9.06475 14M21 4L19.1465 7M5 20L7.52632 16.2667"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  Thống kê
+                </div>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  className={`${
+                    is_openStatis && "rotate-180 transition-all"
+                  } size-5`}
+                  color={"currentColor"}
+                  fill={"none"}
+                >
+                  <path
+                    d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+              {is_openStatis && (
+                <ul className="flex flex-col gap-2 bg-primary/15 rounded-md p-2">
+                  <li className="">
+                    <NavLink
+                      to={"thong-ke/san-pham"}
+                      className={
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-primary hover:text-util text-[15px] transition-all"
+                      }
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        className="size-5"
+                        color={"currentColor"}
+                        fill={"none"}
+                      >
+                        <path
+                          d="M5.94724 9.003C5.94724 9.003 3.68265 11.252 3.01654 10.9766C2.07687 10.5882 1.67051 6.8204 2.30951 6.24512L4.76679 4.03287C5.90144 3.01137 5.93084 3 7.43853 3H8.95703C9.1835 4.3592 10.4956 5.99207 12 5.99207C13.5044 5.99207 14.8165 4.3592 15.043 3H16.5615C18.0692 3 18.0986 3.01136 19.2332 4.03287L21.6905 6.24512C22.3295 6.8204 21.9231 10.5882 20.9835 10.9766C20.3173 11.252 18.0489 9.003 18.0489 9.003"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M6 8V18.5267C6 19.2323 6.11985 19.6092 6.75491 19.9496C9.3676 21.3501 14.6324 21.3501 17.2451 19.9496C17.8802 19.6092 18 19.2323 18 18.5267L18 8"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M6 10C8 12.6667 16 12.6667 18 10"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      Sản phẩm
+                    </NavLink>
+                  </li>
+                </ul>
+              )}
+            </li>
           </ul>
           <div className="px-[20px] text-primary mb-7 btn-logout">
-            <Link
-              to={"logout"}
+            <button
+            onClick={handleLogout}
               className="py-[10px] bg-primary/20 px-2 w-full flex items-center gap-2 rounded-md"
             >
               <svg
@@ -815,7 +944,7 @@ const SideBarAdmin = () => {
                 <path d="M5 11H13V13H5V16L0 12L5 8V11ZM3.99927 18H6.70835C8.11862 19.2447 9.97111 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C9.97111 4 8.11862 4.75527 6.70835 6H3.99927C5.82368 3.57111 8.72836 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C8.72836 22 5.82368 20.4289 3.99927 18Z"></path>
               </svg>
               Logout
-            </Link>
+            </button>
           </div>
         </div>
       </nav>

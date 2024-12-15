@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import instance from "../../../instance/instance";
 import { IProduct } from "../../../interfaces/IProduct";
 import { HomeOutlined } from "@ant-design/icons";
@@ -18,6 +18,10 @@ import axios from "axios";
 import { Tooltip } from "@mui/material";
 import RatingProduct from "./RatingProduct";
 import { LoadingOverlay } from "@achmadk/react-loading-overlay";
+import isAuthenticated from "../../Middleware/isAuthenticated";
+import { ICart } from "../../../interfaces/ICart";
+import { toast } from "react-toastify";
+import ShowDescriptionProduct from "./ShowDescriptionProduct";
 interface IAttribute {
   value: string;
   type: "select" | "color" | "button" | "radio";
@@ -62,7 +66,7 @@ const ShowDetailProduct: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const { dispatch, carts } = useContext(CartContext);
   const [isZoomEnabled, setIsZoomEnabled] = useState(false);
-
+  const [isLoggedIn, setIsLoggedIn] = useState(isAuthenticated());
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -144,11 +148,23 @@ const ShowDetailProduct: React.FC = () => {
       const groups = generateAttributeGroups(processedVariants);
       setAttributeGroups(groups);
 
-      setImageProducts([
-        productData.images?.[0] || "",
-        ...processedVariants.map((v) => v.image).filter(Boolean),
-      ]);
+      // Check if there's only one variant, handle images accordingly
+      let allImages = productData.images || [];
 
+      if (processedVariants.length === 1) {
+        // If only one variant, include the images from the variant as well
+        allImages = [...allImages, processedVariants[0]?.image].filter(Boolean); // Remove any null or undefined images
+      } else {
+        // Otherwise, include images from each variant
+        allImages = [
+          productData.images?.[0] || "",
+          ...processedVariants.map((v) => v.image).filter(Boolean),
+        ];
+      }
+
+      setImageProducts(allImages);
+
+      // Set selected image
       setSelectedImage(
         productData.images?.[0] || processedVariants[0]?.image || ""
       );
@@ -176,6 +192,7 @@ const ShowDetailProduct: React.FC = () => {
         values: Set<string>;
         images: Set<string>;
         type: "select" | "color" | "button" | "radio";
+        availableValues: Set<string>; // New field
       };
     } = {};
 
@@ -188,6 +205,7 @@ const ShowDetailProduct: React.FC = () => {
             values: new Set(),
             images: new Set(),
             type: type,
+            availableValues: new Set(),
           };
         }
 
@@ -198,48 +216,51 @@ const ShowDetailProduct: React.FC = () => {
       });
     });
 
+    variants.forEach((variant) => {
+      Object.entries(variant.attributes).forEach(([key, attrDetails]) => {
+        const { value } = attrDetails;
+        attributeMap[key].availableValues.add(value);
+      });
+    });
+
     return Object.entries(attributeMap).map(
-      ([name, { values, images, type }]) => ({
+      ([name, { values, images, type, availableValues }]) => ({
         name,
         values: Array.from(values),
         images: Array.from(images),
         type,
+        availableValues: Array.from(availableValues),
       })
     );
   };
 
-  const handleAttributeSelect = (attributeName: string, value: string) => {
-    setSelectedAttributes((prev) => ({
-      ...prev,
-      [attributeName]: value,
-    }));
 
-    const currentGroup = attributeGroups.find(
-      (group) => group.name === attributeName
+  const getAvailableAttributeValues = (attributeName: string) => {
+    const currentSelectedAttributes = { ...selectedAttributes };
+
+    const matchingVariants = variants.filter((variant) =>
+      Object.entries(currentSelectedAttributes).every(
+        ([key, selectedValue]) =>
+          key === attributeName ||
+          variant.attributes[key]?.value === selectedValue
+      )
     );
-    if (currentGroup) {
-      const valueIndex = currentGroup.values.indexOf(value);
-      if (valueIndex !== -1 && currentGroup.images[valueIndex]) {
-        setSelectedImage(currentGroup.images[valueIndex]);
-      }
-    }
+
+    const availableValues = new Set(
+      matchingVariants
+        .map((variant) => variant.attributes[attributeName]?.value)
+        .filter(Boolean)
+    );
+
+    return availableValues;
   };
 
-  const isAttributeAvailable = (
+  const isAttributeValueAvailable = (
     attributeName: string,
     value: string
   ): boolean => {
-    return variants.some((variant) => {
-      for (const [key, selectedValue] of Object.entries(selectedAttributes)) {
-        if (
-          key !== attributeName &&
-          variant.attributes[key]?.value !== selectedValue
-        ) {
-          return false;
-        }
-      }
-      return variant.attributes[attributeName]?.value === value;
-    });
+    const availableValues = getAvailableAttributeValues(attributeName);
+    return availableValues.has(value);
   };
 
   useEffect(() => {
@@ -251,6 +272,56 @@ const ShowDetailProduct: React.FC = () => {
     setSelectedVariant(matchingVariant || null);
   }, [selectedAttributes, variants]);
 
+
+  const handleAttributeSelect = (attributeName: string, value: string) => {
+    // Tạo bản sao các thuộc tính đã chọn
+    const updatedAttributes = { ...selectedAttributes };
+  
+    // Nếu giá trị đã được chọn trước đó, gỡ bỏ nó
+    if (updatedAttributes[attributeName] === value) {
+      delete updatedAttributes[attributeName];
+    } else {
+      // Ngược lại, cập nhật giá trị mới
+      updatedAttributes[attributeName] = value;
+    }
+  
+    // Kiểm tra và loại bỏ các thuộc tính không còn khả dụng
+    const finalAttributes: {[key: string]: string} = {};
+  
+    // Kiểm tra các thuộc tính khác
+    attributeGroups.forEach(group => {
+      if (updatedAttributes[group.name]) {
+        const availableValues = getAvailableAttributeValues(group.name);
+        
+        // Nếu thuộc tính đã chọn trước đó không còn khả dụng
+        if (!availableValues.has(updatedAttributes[group.name])) {
+          // Chọn giá trị đầu tiên khả dụng nếu có
+          const firstAvailableValue = Array.from(availableValues)[0];
+          if (firstAvailableValue) {
+            finalAttributes[group.name] = firstAvailableValue;
+          }
+        } else {
+          // Giữ nguyên giá trị nếu vẫn còn khả dụng
+          finalAttributes[group.name] = updatedAttributes[group.name];
+        }
+      }
+    });
+  
+    // Cập nhật trạng thái
+    setSelectedAttributes(finalAttributes);
+  
+    // Cập nhật hình ảnh nếu có
+    const currentGroup = attributeGroups.find(
+      (group) => group.name === attributeName
+    );
+    if (currentGroup) {
+      const valueIndex = currentGroup.values.indexOf(value);
+      if (valueIndex !== -1 && currentGroup.images[valueIndex]) {
+        setSelectedImage(currentGroup.images[valueIndex]);
+      }
+    }
+  };
+
   const handleImageClick = () => {
     setIsZoomEnabled(!isZoomEnabled);
   };
@@ -261,8 +332,23 @@ const ShowDetailProduct: React.FC = () => {
   };
 
   const validateCartQuantity = (requestedQuantity, selectedVariant, carts) => {
+
     if (!selectedVariant) {
       message.error("Vui lòng chọn đầy đủ thuộc tính sản phẩm");
+      return false;
+    }
+
+    const requiredAttributes = Object.keys(selectedVariant.attributes);
+    const selectedAttributeKeys = Object.keys(selectedAttributes);
+
+    if (requiredAttributes.length !== selectedAttributeKeys.length) {
+      message.error("Vui lòng chọn đủ thuộc tính cho sản phẩm");
+      return false;
+    }
+
+    // Kiểm tra số lượng sản phẩm
+    if (!selectedVariant?.quantity || selectedVariant.quantity <= 0) {
+      message.warning("Hết hàng vui lòng chọn phân loại khác");
       return false;
     }
 
@@ -278,13 +364,6 @@ const ShowDetailProduct: React.FC = () => {
     const availableQuantity = selectedVariant.quantity - quantityInCart;
 
     if (requestedQuantity > availableQuantity) {
-      message.warning(
-        `Số lượng không được vượt quá ${selectedVariant.quantity}`
-      );
-      return false;
-    }
-
-    if (requestedQuantity > selectedVariant.quantity) {
       message.warning(
         `Số lượng không được vượt quá ${selectedVariant.quantity}`
       );
@@ -312,7 +391,6 @@ const ShowDetailProduct: React.FC = () => {
           type: "ADD",
           payload: response,
         });
-        console.log(response);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -324,6 +402,104 @@ const ShowDetailProduct: React.FC = () => {
       }
     }
   };
+
+  const addCartLocal = async () => {
+    const existingCart: ICart[] = JSON.parse(
+      localStorage.getItem("cartLocal") || "[]"
+    );
+    if (Object.keys(selectedAttributes).length < attributeGroups.length) {
+      message.error("Vui lòng chọn đầy đủ thuộc tính sản phẩm");
+      return false;
+    }
+    if (!selectedVariant) {
+      message.error("Vui lòng chọn đầy đủ thuộc tính sản phẩm");
+      return false;
+    }
+
+    if (!selectedVariant?.quantity || selectedVariant.quantity <= 0) {
+      message.warning("Hết hàng vui lòng chọn phân loại khác");
+      return false;
+    }
+
+    // Tìm số lượng hiện tại của variant này trong giỏ hàng
+    const existingItemIndex = existingCart.findIndex(
+      (item) => item.variant_id === selectedVariant?.id
+    );
+
+    // Tính tổng số lượng hiện tại trong giỏ hàng
+    const currentQuantityInCart =
+      existingItemIndex !== -1 ? existingCart[existingItemIndex].quantity : 0;
+
+    // Tính tổng số lượng sau khi thêm
+    const totalQuantity = currentQuantityInCart + quantity;
+
+    // Kiểm tra tổng số lượng có vượt quá số lượng trong kho không
+    if (totalQuantity > selectedVariant?.quantity) {
+      message.warning(
+        `Số lượng không được vượt quá ${selectedVariant.quantity}`
+      );
+      return false;
+    }
+
+    try {
+      const { data: variantDetail } = await instance.get(
+        `variant/${selectedVariant?.id}`
+      );
+
+      // Chuẩn bị payload mới
+      const newCartItem: ICart = {
+        id:selectedVariant?.id,
+        variant_id: selectedVariant?.id,
+        quantity: totalQuantity,
+        variant: variantDetail,
+      };
+
+      let updatedCart: ICart[];
+      if (existingItemIndex !== -1) {
+        updatedCart = existingCart.map((item, index) =>
+          index === existingItemIndex ? newCartItem : item
+        );
+      } else {
+        updatedCart = [...existingCart, newCartItem];
+      }
+
+      localStorage.setItem("cartLocal", JSON.stringify(updatedCart));
+      setQuantity(1);
+      toast.success("Đã thêm sản phẩm vào giỏ hàng");
+      dispatch({
+        type: "ADD",
+        payload: {
+          ...newCartItem,
+          quantity: quantity,
+          additive: existingItemIndex !== -1,
+        },
+      });
+    } catch (error) {
+      console.error("Lỗi khi thêm sản phẩm:", error);
+      toast.error("Thêm sản phẩm thất bại");
+    }
+  };
+
+  // const addOrder = async () => {
+  //   try {
+  //     if (!validateCartQuantity(quantity, selectedVariant, carts)) {
+  //       return;
+  //     }
+  //     const {
+  //       data: { data: response },
+  //     } = await instance.post("cart", {
+  //       quantity,
+  //       variant_id: selectedVariant?.id,
+  //       user_id: 1,
+  //     });
+  //     dispatch({
+  //       type: "ADD",
+  //       payload: response,
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   if (!product)
     return (
@@ -351,19 +527,20 @@ const ShowDetailProduct: React.FC = () => {
       </div>
     );
 
+  console.log(selectedVariant);
   const renderAttributeValue = (
     group: IAttributeGroup,
     value: string,
     index: number
   ) => {
-    const isAvailable = isAttributeAvailable(group.name, value);
+    const isAvailable = isAttributeValueAvailable(group.name, value);
     const isSelected = selectedAttributes[group.name] === value;
     switch (group.type) {
       case "color":
         return (
           <Tooltip
             key={value}
-            title={isAvailable ? value : "Không có sẵn"}
+            title={isAvailable ? (isSelected ? "Bỏ chọn" : value) : "Không có sẵn"}
             placement="top"
           >
             <div
@@ -421,7 +598,7 @@ const ShowDetailProduct: React.FC = () => {
         return (
           <Tooltip
             key={value}
-            title={isAvailable ? value : "Không có sẵn"}
+            title={isAvailable ? (isSelected ? "Bỏ chọn" : value) : "Không có sẵn"}
             placement="top"
           >
             <div className="relative overflow-hidden rounded-lg">
@@ -473,7 +650,7 @@ const ShowDetailProduct: React.FC = () => {
         return (
           <Tooltip
             key={value}
-            title={isAvailable ? value : "Không có sẵn"}
+            title={isAvailable ? (isSelected ? "Bỏ chọn" : value) : "Không có sẵn"}
             placement="top"
           >
             <div className="relative overflow-hidden rounded-lg">
@@ -544,8 +721,6 @@ const ShowDetailProduct: React.FC = () => {
     }
   };
 
-  console.log(product);
-
   return (
     <section className="space-y-8">
       <Breadcrumb
@@ -612,30 +787,57 @@ const ShowDetailProduct: React.FC = () => {
               <Rate disabled allowHalf value={average_rating} />
             </div>
             {selectedVariant ? (
-              <div className="py-1 px-3 bg-[#3CD139]/10 text-[#3CD139] rounded-full flex gap-1 w-fit text-sm">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  className="size-5"
-                  color={"currentColor"}
-                  fill={"none"}
-                >
-                  <path
-                    d="M12 22C11.1818 22 10.4002 21.6646 8.83693 20.9939C4.94564 19.3243 3 18.4895 3 17.0853L3 7.7475M12 22C12.8182 22 13.5998 21.6646 15.1631 20.9939C19.0544 19.3243 21 18.4895 21 17.0853V7.7475M12 22L12 12.1707M21 7.7475C21 8.35125 20.1984 8.7325 18.5953 9.495L15.6741 10.8844C13.8712 11.7419 12.9697 12.1707 12 12.1707M21 7.7475C21 7.14376 20.1984 6.7625 18.5953 6M3 7.7475C3 8.35125 3.80157 8.7325 5.40472 9.495L8.32592 10.8844C10.1288 11.7419 11.0303 12.1707 12 12.1707M3 7.7475C3 7.14376 3.80157 6.7625 5.40472 6M6.33203 13.311L8.32591 14.2594"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M12 2V4M16 3L14.5 5M8 3L9.5 5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                Còn hàng: {selectedVariant?.quantity}
-              </div>
+              selectedVariant?.quantity ? (
+                <div className="py-1 px-3 bg-[#3CD139]/10 text-[#3CD139] rounded-full flex gap-1 w-fit text-sm">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="size-5"
+                    color={"currentColor"}
+                    fill={"none"}
+                  >
+                    <path
+                      d="M12 22C11.1818 22 10.4002 21.6646 8.83693 20.9939C4.94564 19.3243 3 18.4895 3 17.0853L3 7.7475M12 22C12.8182 22 13.5998 21.6646 15.1631 20.9939C19.0544 19.3243 21 18.4895 21 17.0853V7.7475M12 22L12 12.1707M21 7.7475C21 8.35125 20.1984 8.7325 18.5953 9.495L15.6741 10.8844C13.8712 11.7419 12.9697 12.1707 12 12.1707M21 7.7475C21 7.14376 20.1984 6.7625 18.5953 6M3 7.7475C3 8.35125 3.80157 8.7325 5.40472 9.495L8.32592 10.8844C10.1288 11.7419 11.0303 12.1707 12 12.1707M3 7.7475C3 7.14376 3.80157 6.7625 5.40472 6M6.33203 13.311L8.32591 14.2594"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M12 2V4M16 3L14.5 5M8 3L9.5 5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  Còn hàng: {selectedVariant?.quantity}
+                </div>
+              ) : (
+                <div className="py-1 px-3 bg-primary/10 text-primary rounded-full flex gap-1 w-fit text-sm">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="size-5"
+                    color={"currentColor"}
+                    fill={"none"}
+                  >
+                    <path
+                      d="M12 22C11.1818 22 10.4002 21.6708 8.83693 21.0123C4.94564 19.3734 3 18.5539 3 17.1754V7.54234M12 22C12.8182 22 13.5998 21.6708 15.1631 21.0123C19.0544 19.3734 21 18.5539 21 17.1754V7.54234M12 22V12.0292M21 7.54234C21 8.15478 20.1984 8.54152 18.5953 9.315L15.6741 10.7244C13.8712 11.5943 12.9697 12.0292 12 12.0292M21 7.54234C21 6.9299 20.1984 6.54316 18.5953 5.76969L17 5M3 7.54234C3 8.15478 3.80157 8.54152 5.40472 9.315L8.32592 10.7244C10.1288 11.5943 11.0303 12.0292 12 12.0292M3 7.54234C3 6.9299 3.80157 6.54317 5.40472 5.76969L7 5M6 13.0263L8 14.0234"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M10 2L12 4M12 4L14 6M12 4L10 6M12 4L14 2"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  Hết hàng
+                </div>
+              )
             ) : (
               <div className="py-1 px-3 bg-primary/10 text-primary rounded-full flex gap-1 w-fit text-sm">
                 <svg
@@ -791,135 +993,196 @@ const ShowDetailProduct: React.FC = () => {
                 className="text-[#929292] !font-normal !text-sm"
                 value="Số lượng"
               />
-              <div className="flex items-center">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setQuantity(quantity > 1 ? quantity - 1 : 1);
-                  }}
-                  className="p-3 border-input rounded-es-sm rounded-ss-sm text-[#929292] border-s border-b border-t"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    className="size-3"
-                    color={"currentColor"}
-                    fill={"none"}
+              <div className="flex gap-5 items-center">
+                <div className="flex items-center">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setQuantity(quantity > 1 ? quantity - 1 : 1);
+                    }}
+                    className="p-3 border-input rounded-es-sm rounded-ss-sm text-[#929292] border-s border-b border-t"
                   >
-                    <path
-                      d="M20 12L4 12"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-                <input
-                  id="quantity-product"
-                  min={1}
-                  max={selectedVariant?.quantity}
-                  value={quantity}
-                  onChange={handleChangeQuantity}
-                  className="w-10 p-1.5 border border-input outline-none text-center"
-                />
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setQuantity(quantity + 1);
-                  }}
-                  className="p-3 border-input rounded-ee-sm rounded-se-sm text-[#929292] border-e border-t border-b"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    className="size-3"
-                    color={"currentColor"}
-                    fill={"none"}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      className="size-3"
+                      color={"currentColor"}
+                      fill={"none"}
+                    >
+                      <path
+                        d="M20 12L4 12"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  <input
+                    id="quantity-product"
+                    min={1}
+                    max={selectedVariant?.quantity}
+                    value={quantity}
+                    onChange={handleChangeQuantity}
+                    className="w-10 p-1.5 border border-input outline-none text-center"
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setQuantity(quantity + 1);
+                    }}
+                    className="p-3 border-input rounded-ee-sm rounded-se-sm text-[#929292] border-e border-t border-b"
                   >
-                    <path
-                      d="M12 4V20"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M4 12H20"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div className="flex gap-5">
-              <button
-                onClick={addCart}
-                type="button"
-                className="py-2 px-4 border border-primary rounded-md text-primary flex gap-1.5 items-center hover:bg-primary hover:text-util transition-all"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  className="size-5"
-                  color={"currentColor"}
-                  fill={"none"}
-                >
-                  <path
-                    d="M8 16L16.7201 15.2733C19.4486 15.046 20.0611 14.45 20.3635 11.7289L21 6"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M6 6H6.5M22 6H19.5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M9.5 6H16.5M13 9.5V2.5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                  <circle
-                    cx="6"
-                    cy="20"
-                    r="2"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  />
-                  <circle
-                    cx="17"
-                    cy="20"
-                    r="2"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  />
-                  <path
-                    d="M8 20L15 20"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M2 2H2.966C3.91068 2 4.73414 2.62459 4.96326 3.51493L7.93852 15.0765C8.08887 15.6608 7.9602 16.2797 7.58824 16.7616L6.63213 18"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                Thêm giỏ hàng
-              </button>
-              <button
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      className="size-3"
+                      color={"currentColor"}
+                      fill={"none"}
+                    >
+                      <path
+                        d="M12 4V20"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M4 12H20"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                {!isLoggedIn ? (
+                  <button
+                    onClick={addCartLocal}
+                    type="button"
+                    className="py-2 px-4 border border-primary rounded-md text-primary flex gap-1.5 items-center hover:bg-primary hover:text-util transition-all"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      className="size-5"
+                      color={"currentColor"}
+                      fill={"none"}
+                    >
+                      <path
+                        d="M8 16L16.7201 15.2733C19.4486 15.046 20.0611 14.45 20.3635 11.7289L21 6"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d="M6 6H6.5M22 6H19.5"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d="M9.5 6H16.5M13 9.5V2.5"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                      <circle
+                        cx="6"
+                        cy="20"
+                        r="2"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      />
+                      <circle
+                        cx="17"
+                        cy="20"
+                        r="2"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      />
+                      <path
+                        d="M8 20L15 20"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d="M2 2H2.966C3.91068 2 4.73414 2.62459 4.96326 3.51493L7.93852 15.0765C8.08887 15.6608 7.9602 16.2797 7.58824 16.7616L6.63213 18"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    Thêm giỏ hàng
+                  </button>
+                ) : (
+                  <button
+                    onClick={addCart}
+                    type="button"
+                    className="py-2 px-4 border border-primary rounded-md text-primary flex gap-1.5 items-center hover:bg-primary hover:text-util transition-all"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      className="size-5"
+                      color={"currentColor"}
+                      fill={"none"}
+                    >
+                      <path
+                        d="M8 16L16.7201 15.2733C19.4486 15.046 20.0611 14.45 20.3635 11.7289L21 6"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d="M6 6H6.5M22 6H19.5"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d="M9.5 6H16.5M13 9.5V2.5"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                      <circle
+                        cx="6"
+                        cy="20"
+                        r="2"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      />
+                      <circle
+                        cx="17"
+                        cy="20"
+                        r="2"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      />
+                      <path
+                        d="M8 20L15 20"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d="M2 2H2.966C3.91068 2 4.73414 2.62459 4.96326 3.51493L7.93852 15.0765C8.08887 15.6608 7.9602 16.2797 7.58824 16.7616L6.63213 18"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    Thêm giỏ hàng
+                  </button>
+                )}
+                {/* <button
                 type="button"
                 className="py-2 px-4 bg-primary text-util rounded-md flex gap-1.5 items-center"
                 onClick={() => {
-                  addCart();
+                  addOrder();
                 }}
               >
                 <svg
@@ -954,11 +1217,27 @@ const ShowDetailProduct: React.FC = () => {
                   />
                 </svg>
                 Mua ngay
-              </button>
+              </button> */}
+              </div>
+            </div>
+            <div className="space-y-2.5">
+              <h4 className="font-medium text-sm">
+                Thanh toán hỗ trợ nhiều phương thức
+              </h4>
+              <div className="w-fit space-y-2">
+                <img
+                  src="../../../../src/assets/images/images-payment.svg"
+                  alt="image-payment"
+                />
+                <p className="text-sm  text-secondary/75">
+                  Đảm bảo an toàn và bảo mật
+                </p>
+              </div>
             </div>
           </form>
         </div>
       </div>
+      <ShowDescriptionProduct descriptionProduct={product?.description}  />
       <RatingProduct slugProd={slugproduct} />
       <ShowProductRelated related_products={related_products} />
     </section>
