@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\Coupon;
 use App\Models\CouponUser;
+use App\Models\InventoryStock;
 use App\Models\Order;
 use App\Models\OrderCoupon;
 use Carbon\Carbon;
@@ -118,10 +119,21 @@ class PaymentController extends Controller
                 $data['user_id'] = Auth::id();
                 $data['code'] = $this->generateOrderCode();
                 $data['grand_total'] = 0;
-    
+                
                 // Kiểm tra số lượng tồn kho trước khi tính tổng giá trị đơn hàng
                 foreach ($cartItems as $value) {
                     $requiredQuantity = $value->quantity;
+                        // Lấy và khóa bản ghi tồn kho bằng FOR UPDATE
+                        $inventoryStock = InventoryStock::query()
+                            ->where('variant_id', $value->variant_id)
+                            ->lockForUpdate() 
+                            ->first();
+        
+                        if (!$inventoryStock) {
+                            return response()->json([
+                                'error' => 'Không tìm thấy thông tin tồn kho cho sản phẩm ' . $value->variant->product->name
+                            ]);
+                    }
     
                     // Kiểm tra số lượng trong kho
                     $stockQuantity = $value->variant->inventoryStock->quantity;
