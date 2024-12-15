@@ -4,12 +4,14 @@ import { Controller, useForm } from "react-hook-form";
 import { Label } from "flowbite-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import changePasswordUser from "../../../../validations/changePasswordUser";
+import { useAuth } from "../../../../providers/AuthProvider";
 export type IPassword = {
   passwordOld: string;
   newPassword: string;
   confirmPass: string;
 };
 const ChangePasswordUser = () => {
+  const {user}=useAuth()
   const {
     register,
     control,
@@ -32,6 +34,7 @@ const ChangePasswordUser = () => {
     }
   };
   return (
+    
     <form
       className="flex-1 max-w-lg p-6 rounded-sm space-y-5"
       onSubmit={handleSubmit(handlePasswordChange)}

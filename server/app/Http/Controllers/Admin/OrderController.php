@@ -357,47 +357,76 @@ class OrderController extends Controller
     {
         try {
             $ids = $request->ids;
-
+    
             if (!is_array($ids) || empty($ids)) {
                 return response()->json(['message' => 'Danh sách không hợp lệ!'], 400);
             }
-            switch ($request->status) {
-                case Order::STATUS_ORDER_PENDING:
-                    Order::query()->whereIn('id',  $ids)->update([
-                        'status_order' => Order::STATUS_ORDER_CONFIRMED,
-                    ]);
-                    return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);
-                case Order::STATUS_ORDER_CONFIRMED:
-                    Order::query()->whereIn('id', $ids)->update([
-                        'status_order' => Order::STATUS_ORDER_PREPARING_GOODS
-                    ]);
-                    return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);
-                case Order::STATUS_ORDER_PREPARING_GOODS:
-                    Order::query()->whereIn('id', $ids)->update([
-                        'status_order' => Order::STATUS_ORDER_SHIPPING
-                    ]);
-                    return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);
-                case Order::STATUS_ORDER_SHIPPING:
-                    Order::query()->whereIn('id', $ids)->update([
-                        'status_order' => Order::STATUS_ORDER_DELIVERED
-                    ]);
-                    return response()->json(['message' => 'Cập nhật trạng thái thành công'], Response::HTTP_OK);
-                default:
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Trạng thái không hợp lệ.'
-                    ], 400);
-            }
 
-          
+    
+            Log::info($ids);
+            $updatedOrders = []; // Danh sách đơn hàng được cập nhật
+    
+            foreach ($ids as $id) {
+                $order = Order::find($id);
+    
+                if (!$order) {
+                    continue; // Bỏ qua nếu không tìm thấy đơn hàng
+                }
+    
+                $newStatus = match ($order->status_order) {
+                    Order::STATUS_ORDER_PENDING => Order::STATUS_ORDER_CONFIRMED,
+                    Order::STATUS_ORDER_CONFIRMED => Order::STATUS_ORDER_PREPARING_GOODS,
+                    Order::STATUS_ORDER_PREPARING_GOODS => Order::STATUS_ORDER_SHIPPING,
+                    Order::STATUS_ORDER_SHIPPING => Order::STATUS_ORDER_DELIVERED,
+                    default => null,
+                };
+    
+                if ($newStatus === null) {
+                    continue; // Bỏ qua nếu trạng thái không hợp lệ
+                }
+    
+                // Cập nhật trạng thái
+                $order->status_order = $newStatus;
+                $order->save();
+    
+                // Tạo thông báo
+                $notification = Notification::create([
+                    'user_id' => $order->user_id,
+                    'order_id' => $order->id,
+                    'order_code' => $order->code,
+                    'status' => $newStatus,
+                    'content' => 'Đơn hàng <b>' . $order->code . '</b> đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$newStatus] . '</span>',
+                ]);
+    
+                // Phát event real-time
+                event(new OrderStatusUpdated($notification, $order->user_id));
+    
+                // Thêm đơn hàng đã cập nhật vào danh sách
+                $updatedOrders[] = [
+                    'order_id' => $order->id,
+                    'order_code' => $order->code,
+                    'new_status' => $newStatus,
+                ];
+            }
+    
+            if (empty($updatedOrders)) {
+                return response()->json(['message' => 'Không có đơn hàng nào được cập nhật.'], 400);
+            }
+    
+            return response()->json([
+                'message' => 'Cập nhật trạng thái thành công.',
+                'updated_orders' => $updatedOrders,
+            ], Response::HTTP_OK);
+
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
-                'message' => $th->getMessage()
+                'message' => $th->getMessage(),
             ]);
+    
             return response()->json([
-                'messages' => 'Lỗi',
-                'status' => 'error'
+                'message' => 'Lỗi hệ thống.',
+                'status' => 'error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -481,3 +510,5 @@ class OrderController extends Controller
     }
 
 }
+
+

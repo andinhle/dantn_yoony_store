@@ -20,21 +20,26 @@ interface DataType {
   category: string;
   productName: string;
 }
-
+const listDate = [
+  { label: "Ngày", value: "day" },
+  { label: "Tuần", value: "week" },
+  { label: "1 Tháng", value: "month" },
+  { label: "6 Tháng", value: "6months" },
+  { label: "Năm", value: "year" },
+];
 const StatisticalProductTopSell = () => {
   const [statisticalProduct, setStatisticalProducts] = useState<IProduct[]>([]);
-
+  const [select, setSelect] = useState<string>("day");
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await instance.get("thong-ke/san-pham");
+        const { data } = await instance.get(`thong-ke/san-pham?type=${select}`);
         setStatisticalProducts(data.top_selling_products);
-        console.log(data);
       } catch (error) {
         console.log(error);
       }
     })();
-  }, []);
+  }, [select]);
   const columns: TableColumnsType<DataType> = [
     {
       title: "Sản phẩm",
@@ -53,7 +58,9 @@ const StatisticalProductTopSell = () => {
             }}
             className="rounded-md"
           />
-          <Link to={`/${record.category}/${record.productName}`}>{record.name}</Link>
+          <Link to={`/${record.category}/${record.productName}`} className="hover:text-primary">
+            {record.name}
+          </Link>
         </div>
       ),
     },
@@ -113,8 +120,12 @@ const StatisticalProductTopSell = () => {
     return (
       <ConfigProvider
         theme={{
-          token: {
-            colorPrimary: "#ff9900",
+          components: {
+            Table: {
+              headerBg: "#F4F7FA",
+              colorLinkHover:"#ff9900",
+              colorLink:"#ff9900"
+            },
           },
         }}
       >
@@ -132,11 +143,34 @@ const StatisticalProductTopSell = () => {
   };
 
   return (
-    <div className="col-span-8">
+    <div className="space-y-5">
+      <h3 className="font-medium">TOP 10 SẢN PHẨM BÁN CHẠY</h3>
+      <div className="flex flex-wrap h-fit gap-3 text-secondary/75">
+        {listDate.map((item) => (
+          <button
+            type="button"
+            key={item.label}
+            className={`${
+              select === item.value
+                ? "text-util bg-primary"
+                : "bg-[#F3F4F6] text-secondary"
+            } px-5 py-1.5 rounded-sm transition-all`}
+            onClick={() => {
+              setSelect(item.value);
+            }}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
       <ConfigProvider
         theme={{
-          token: {
-            colorPrimary: "#ff9900",
+          components: {
+            Table: {
+              headerBg: "#F4F7FA",
+              colorLinkHover:"#ff9900",
+              colorLink:"#ff9900"
+            },
           },
         }}
       >

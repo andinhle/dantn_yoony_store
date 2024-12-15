@@ -28,7 +28,7 @@ const OrderDetails = () => {
     { value: "pending", label: "Chờ xác nhận" },
     { value: "confirmed", label: "Đã xác nhận" },
     { value: "preparing_goods", label: "Chuẩn bị hàng" },
-    { value: "shipping", label: "Đang giao hàng" },
+    { value: "shipping", label: "Đang vận chuyển" },
     { value: "delivered", label: "Đã giao hàng" },
     { value: "canceled", label: "Hủy" },
   ];
@@ -272,6 +272,11 @@ const OrderDetails = () => {
                         <span className="block mr-2 text-[#0DD1B7]">
                           {orderDetail?.final_total.toLocaleString()}đ
                         </span>
+                      </p>
+                      <p className={`${orderDetail?.profit>0 ? 'text-[#22A949]':'text-red-400'}`}>
+                        ( {' '}
+                         <span>Lợi nhuận đơn:</span>{" "}
+                        {orderDetail?.profit.toLocaleString()}đ )
                       </p>
                     </div>
                   </td>
