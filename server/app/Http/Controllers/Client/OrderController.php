@@ -225,13 +225,22 @@ class OrderController extends Controller
             if ($order->status_order !== Order::STATUS_ORDER_SHIPPING) {
                 return response()->json(['success' => false, 'message' => 'Chỉ các đơn hàng đang vận chuyển mới có thể chuyển sang trạng thái "Đã giao hàng".'], 400);
             }
+            $isDelivered = $order->is_delivered ?? [];
+            $isDelivered[] = 1;
+            $order->is_delivered = $isDelivered;
+            if (count($order->is_delivered) >= 2) {
+                $order->status_order = Order::STATUS_ORDER_DELIVERED;
+                $order->completed_at = now();
+
+            }
+            $order->save();
 
            
             // Cập nhật trạng thái đơn hàng
-            $order->update([
-                'status_order' => Order::STATUS_ORDER_DELIVERED,
-                'completed_at' => now(),
-            ]);
+            // $order->update([
+            //     'status_order' => Order::STATUS_ORDER_DELIVERED,
+            //     'completed_at' => now(),
+            // ]);
 
             // Tạo thông báo
             $notification = Notification::create([

@@ -31,7 +31,6 @@ class InsertOrderItems
 
         $orderId = $event->order->id;
         $objectData =$event->order->items;
-        \Log::info('orser', (array) $event->order );
 
         $orderItems = [];
 

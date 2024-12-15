@@ -241,7 +241,14 @@ class OrderController extends Controller
                     'notification' => $notification
                 ]);
             case Order::STATUS_ORDER_DELIVERED:
-                $order->status_order = $status;
+                $isDelivered = $order->is_delivered ?? [];
+                $isDelivered = [1];
+                $order->is_delivered = $isDelivered;
+                if (count($order->is_delivered) >= 2) {
+                    $order->status_order = Order::STATUS_ORDER_DELIVERED;
+                    $order->completed_at = now();
+
+                }
                 $order->save();
 
                 $notification = Notification::create([
@@ -354,6 +361,7 @@ class OrderController extends Controller
             if (!is_array($ids) || empty($ids)) {
                 return response()->json(['message' => 'Danh sách không hợp lệ!'], 400);
             }
+
     
             Log::info($ids);
             $updatedOrders = []; // Danh sách đơn hàng được cập nhật
@@ -409,6 +417,7 @@ class OrderController extends Controller
                 'message' => 'Cập nhật trạng thái thành công.',
                 'updated_orders' => $updatedOrders,
             ], Response::HTTP_OK);
+
         } catch (\Throwable $th) {
             Log::error(__CLASS__ . '@' . __FUNCTION__, [
                 'line' => $th->getLine(),
@@ -499,4 +508,7 @@ class OrderController extends Controller
             'orders' => $orders
         ]);
     }
+
 }
+
+
