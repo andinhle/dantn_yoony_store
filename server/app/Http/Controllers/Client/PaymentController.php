@@ -116,7 +116,21 @@ class PaymentController extends Controller
     }
 
 
+    // public function processPayment(Request $request)
+    // {
+    //     $paymentMethod = $request->payment_method; // Nhận phương thức thanh toán từ form
 
+    //     switch ($paymentMethod) {
+    //         case 'COD':
+    //             return $this->handleOrder($request);
+    //         case 'VNPAY':
+    //             return $this->handleVNPay($request);
+    //         case 'MOMO':
+    //             return $this->handleMoMo($request);
+    //         default:
+    //             return response()->json(['error' => 'Phương thức thanh toán không hợp lệ'], 400);
+    //     }
+    // }
 
         function handleVNPay(Request $request)
     {
