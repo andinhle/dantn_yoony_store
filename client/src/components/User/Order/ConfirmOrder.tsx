@@ -149,7 +149,6 @@ const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
         setIsLoading(false);
       }
     })();
-
     return () => {
       callbackProcessedRef.current = false;
       localStorage.removeItem("callback_processed");

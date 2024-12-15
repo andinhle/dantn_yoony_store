@@ -15,7 +15,7 @@ import { IVariants } from "../../../interfaces/IVariants";
 import { Link, useSearchParams } from "react-router-dom";
 import { IMeta } from "../../../interfaces/IMeta";
 import ModalInventoryImport from "./ModalInventoryImport";
-import ModalHistoryInventory from "./HistoryInventory";
+
 import ButtonExport from "../../../components/Admin/Button/ButtonExport";
 import { ICategory } from "../../../interfaces/ICategory";
 import { LoadingOverlay } from "@achmadk/react-loading-overlay";
@@ -271,41 +271,6 @@ const ListInventory = () => {
               nameSheet="Bảng nhập hàng"
               nameFile="nhaphang.xlsx"
             />
-            <button
-              className="flex gap-1.5 text-sm items-center text-primary bg-primary/15 py-2 px-4 rounded-md"
-              onClick={showModalHistory}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                className="size-5"
-                color={"currentColor"}
-                fill={"none"}
-              >
-                <path
-                  d="M12 22C6.47715 22 2.00004 17.5228 2.00004 12C2.00004 6.47715 6.47719 2 12 2C16.4777 2 20.2257 4.94289 21.5 9H19"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M12 8V12L14 14"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M21.9551 13C21.9848 12.6709 22 12.3373 22 12M15 22C15.3416 21.8876 15.6753 21.7564 16 21.6078M20.7906 17C20.9835 16.6284 21.1555 16.2433 21.305 15.8462M18.1925 20.2292C18.5369 19.9441 18.8631 19.6358 19.1688 19.3065"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Lịch sử nhập hàng
-            </button>
           </div>
         </div>
         <LoadingOverlay
@@ -518,11 +483,6 @@ const ListInventory = () => {
         isModalOpen={isModalOpen}
         findNewestUpdateTime={findNewestUpdateTime}
         handleCancel={handleCancel}
-      />
-      <ModalHistoryInventory
-        setIsModalOpenHistory={setIsModalOpenHistory}
-        isModalOpenHistory={isModalOpenHistory}
-        handleCancelHistory={handleCancelHistory}
       />
     </div>
   );

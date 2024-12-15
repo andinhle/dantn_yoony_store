@@ -97,7 +97,7 @@ const CardProductAll = ({
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
-            className={`size-6 ${isWishlisted ? "fill-primary/75" : ""}`}
+            className={`size-6 ${isWishlisted ? "fill-primary/75" : "hover:fill-primary/75"}`}
             color={"currentColor"}
             fill={"none"}
           >

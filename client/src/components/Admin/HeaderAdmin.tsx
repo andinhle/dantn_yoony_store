@@ -8,17 +8,25 @@ import Avatar from "@mui/material/Avatar";
 import { MouseEvent, useState } from "react";
 import Badge from "@mui/material/Badge";
 import { IconButton } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../providers/AuthProvider";
 
 
 const HeaderAdmin = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const {logout}=useAuth()
+  const navigate = useNavigate();
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
     setAnchorEl(null);
+  };
+  const handleLogout = () => {
+    setAnchorEl(null);
+    logout();
+    navigate("/");
   };
   const userData = JSON.parse(localStorage.getItem("userInfor") || "{}");
   return (
@@ -196,6 +204,7 @@ const HeaderAdmin = () => {
                 <ListItemText
                   className="text-primary"
                   primaryTypographyProps={{ fontSize: 14 }}
+                  onClick={handleLogout}
                 >
                   Logout
                 </ListItemText>

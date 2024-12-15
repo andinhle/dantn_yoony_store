@@ -35,7 +35,6 @@ class PaymentController extends Controller
     private $momoSecretKey = "at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa";
     private $momoReturnUrl = "http://localhost:5173/check-out";
 
-
     public function processPayment(Request $request)
     {
         $paymentMethod = $request->payment_method; // Nhận phương thức thanh toán từ form

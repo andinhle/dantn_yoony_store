@@ -14,8 +14,9 @@ import dayjs from "dayjs";
 import { toast } from "react-toastify";
 type Props = {
   activeTab: string;
+  setConfirmedCount:(count:number)=>void
 };
-const OrderListConfirmed = ({ activeTab }: Props) => {
+const OrderListConfirmed = ({ activeTab,setConfirmedCount }: Props) => {
   const [ordersConfirmed, setOrdersConfirmed] = useState<Orders[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parseInt(searchParams.get("page") || "1");
@@ -51,7 +52,7 @@ const OrderListConfirmed = ({ activeTab }: Props) => {
         } = await instance.get("admin/orders?status=confirmed");
         setOrdersConfirmed(response.data);
         setMeta(response);
-        console.log(response);
+        setConfirmedCount(response.data.length);
       } catch (error) {
         console.log(error);
       }

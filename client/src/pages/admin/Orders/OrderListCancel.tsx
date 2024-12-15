@@ -3,7 +3,7 @@ import { NavLink, useSearchParams } from "react-router-dom";
 import { Orders } from "../../../interfaces/IOrders";
 import { IMeta } from "../../../interfaces/IMeta";
 import instance from "../../../instance/instance";
-import { Checkbox, ConfigProvider, Pagination } from "antd";
+import { ConfigProvider, Pagination } from "antd";
 import { Table } from "flowbite-react";
 import {
   checkPaymentMethod,
@@ -11,7 +11,8 @@ import {
 } from "../../../components/User/Manager/Orders/ManagerOrdersUser";
 import dayjs from "dayjs";
 type Props={
-  activeTab:string
+  activeTab:string;
+  setCanceldCount:(count:number)=>void
 }
 const OrderListCancel = ({activeTab}:Props) => {
   const [ordersCanceled, setOrdersCanceled] = useState<Orders[]>([]);

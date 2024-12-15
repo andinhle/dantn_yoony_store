@@ -68,7 +68,7 @@ const ProductClothes = () => {
           );
         })}
       </Swiper>
-      <ButtonSeeMore link="/product-clothes" />
+      {productClothes.length >5 && <ButtonSeeMore link="search?category=quan-ao" />}
     </section>
   );
 };
