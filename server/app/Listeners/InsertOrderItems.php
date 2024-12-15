@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Events\OrderShipped;
 use App\Models\InventoryImport;
 use App\Models\InventoryStock;
+use App\Models\LockedItem;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemAttribute;
@@ -12,6 +13,7 @@ use App\Models\OrderItemAttributeValue;
 use App\Models\Variant;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Auth;
 
 class InsertOrderItems
 {
@@ -35,7 +37,7 @@ class InsertOrderItems
         $orderItems = [];
 
         foreach ($objectData as $value) {
-            // Log::info($value->variant->product->images[0]);
+            \Log::info('item', (array) $value);
 
             if($value->variant->image){
                 $productImage = $value->variant->image;
@@ -54,9 +56,9 @@ class InsertOrderItems
             $orderItem['total_price'] = $value->quantity * ($value->variant->sale_price ?: $value->variant->price);
 
 
-            InventoryStock::query()
-            ->where('variant_id', $value->variant_id)
-            ->decrement('quantity', $value->quantity);
+            // InventoryStock::query()
+            // ->where('variant_id', $value->variant_id)
+            // ->decrement('quantity', $value->quantity);
 
 
             $remainingQuantity = $value->quantity;
@@ -75,6 +77,8 @@ class InsertOrderItems
                     break; // Nếu đã mua đủ, thoát khỏi vòng lặp
                 }
 
+                
+
                 // Tính số lượng sẽ trừ
                 $quantityAvailable = $stock->quantity;
                 $unitPrice = $stock->import_price;
@@ -84,7 +88,7 @@ class InsertOrderItems
                     if ($quantityAvailable >= $remainingQuantity) {
 
 
-                        // $stock->quantity -= $remainingQuantity;
+                        $stock->quantity -= $remainingQuantity;
                         $totalCost += $remainingQuantity * $unitPrice;
                         $remainingQuantity = 0; // Đã mua xong
 
@@ -93,8 +97,6 @@ class InsertOrderItems
                         // $remainingQuantity -= $quantityAvailable;
                         $stock->quantity = 0;
                     }
-
-
 
                     $stock->save();
                     if($stock->quantity === 0){
@@ -110,6 +112,14 @@ class InsertOrderItems
             $orderItem['profit'] = ($orderItem['unit_price'] - $orderItem['unit_cost']) * $value->quantity;
             $orderItems[] = $orderItem;
 
+            LockedItem::query()
+                ->where([
+                    'user_id' => Auth::id(),
+                    'cart_id'=> $value->id,
+                    'variant_id' => $value->variant->id,
+                ])
+                ->delete();
+                
         }
         OrderItem::insert($orderItems);
 
