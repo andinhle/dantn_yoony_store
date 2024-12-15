@@ -48,6 +48,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/bannerHome', [HomeController::class, 'listBanner']);
+
 //create cart
 Route::post('/addcartMultil/{id_user}', [CartController::class, 'addCartMultil']);
 Route::get('/variant/{id_variant}', [CartController::class, 'getVariant'])->name('variant.get');
