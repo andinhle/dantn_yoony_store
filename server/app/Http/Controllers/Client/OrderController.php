@@ -156,7 +156,7 @@ class OrderController extends Controller
     {
         try {
             $order = Order::query()
-                ->with(['items', 'user',])
+                ->with(['items', 'user'])
                 ->findOrFail($id);
 
 
@@ -179,6 +179,8 @@ class OrderController extends Controller
                         'quantity' => $inventoryStock->quantity + $value->quantity
                     ]);
                 }
+
+                
             }
 
             OrderCancellation::create([

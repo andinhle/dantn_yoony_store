@@ -3,17 +3,18 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 
 const SideBarAdmin = () => {
   const [is_openProduct, setOpenProduct] = useState<boolean>(false);
-  const [is_openUser, setOpenUser] = useState<boolean>(false);
+  const [is_openStatis, setOpenStatis] = useState<boolean>(false);
   const location = useLocation();
 
   useEffect(() => {
     if (location.pathname === "/admin") {
       setOpenProduct(false);
-      setOpenUser(false);
+      setOpenStatis(false)
+      setOpenStatis(false);
     } else if (location.pathname.startsWith("/admin/products")) {
       setOpenProduct(true);
-    } else if (location.pathname.startsWith("/admin/users")) {
-      setOpenUser(true);
+    } else if (location.pathname.startsWith("/admin/thong-ke")) {
+      setOpenStatis(true);
     }
   }, [location.pathname]);
 
@@ -40,6 +41,7 @@ const SideBarAdmin = () => {
                 end
                 onClick={() => {
                   setOpenProduct(false);
+                  setOpenStatis(false)
                 }}
               >
                 <svg
@@ -100,6 +102,7 @@ const SideBarAdmin = () => {
                 end
                 onClick={() => {
                   setOpenProduct(false);
+                  setOpenStatis(false)
                 }}
               >
                 <svg
@@ -400,6 +403,7 @@ const SideBarAdmin = () => {
                 }
                 onClick={() => {
                   setOpenProduct(false);
+                  setOpenStatis(false)
                 }}
               >
                 <svg
@@ -424,6 +428,7 @@ const SideBarAdmin = () => {
                 to={"rates"}
                 onClick={() => {
                   setOpenProduct(false);
+                  setOpenStatis(false)
                 }}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] transition-all"
@@ -454,6 +459,7 @@ const SideBarAdmin = () => {
                 onClick={() => {
                   setOpenUser(!is_openUser);
                   setOpenProduct(false);
+                  setOpenStatis(false)
                 }}
               >
                 <div className="flex gap-2 text-[15px]">
@@ -588,6 +594,7 @@ const SideBarAdmin = () => {
                 end
                 onClick={() => {
                   setOpenProduct(false);
+                  setOpenStatis(false)
                 }}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] transition-all"
@@ -627,6 +634,7 @@ const SideBarAdmin = () => {
                 to={"banner"}
                 onClick={() => {
                   setOpenProduct(false);
+                  setOpenStatis(false)
                 }}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] transition-all"
@@ -665,6 +673,7 @@ const SideBarAdmin = () => {
                 to={"vouchers"}
                 onClick={() => {
                   setOpenProduct(false);
+                  setOpenStatis(false)
                 }}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary border border-[#f5f5f5] hover:text-util text-[15px] transition-all"
@@ -693,6 +702,7 @@ const SideBarAdmin = () => {
                 end
                 onClick={() => {
                   setOpenProduct(false);
+                  setOpenStatis(false)
                 }}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] transition-all"
@@ -756,6 +766,7 @@ const SideBarAdmin = () => {
                 to={"blogs"}
                 onClick={() => {
                   setOpenProduct(false);
+                  setOpenStatis(false)
                 }}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] transition-all"
@@ -777,6 +788,101 @@ const SideBarAdmin = () => {
                 </svg>
                 Bài viết
               </NavLink>
+            </li>
+            <li className={"space-y-2"}>
+              <div
+                className={`${
+                  is_openStatis && "bg-secondary text-util hover:bg-secondary"
+                } flex items-center justify-between px-2 py-[10px] rounded-md hover:cursor-pointer border border-[#f5f5f5] hover:bg-primary hover:text-util`}
+                onClick={() => {
+                  setOpenStatis(!is_openStatis);
+                }}
+              >
+                <div className="flex gap-2 text-[15px]">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="size-6"
+                    color={"currentColor"}
+                    fill={"none"}
+                  >
+                    <path
+                      d="M21 21H10C6.70017 21 5.05025 21 4.02513 19.9749C3 18.9497 3 17.2998 3 14V3"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M17.7048 9.33333L14.8311 13.9845C14.4123 14.6623 13.9369 15.686 13.0749 15.5344C12.0611 15.356 11.5742 13.8449 10.7026 13.3445C9.99285 12.9371 9.47971 13.4281 9.06475 14M21 4L19.1465 7M5 20L7.52632 16.2667"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  Thống kê
+                </div>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  className={`${
+                    is_openStatis && "rotate-180 transition-all"
+                  } size-5`}
+                  color={"currentColor"}
+                  fill={"none"}
+                >
+                  <path
+                    d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+              {is_openStatis && (
+                <ul className="flex flex-col gap-2 bg-primary/15 rounded-md p-2">
+                  <li className="">
+                    <NavLink
+                      to={"thong-ke/san-pham"}
+                      className={
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-primary hover:text-util text-[15px] transition-all"
+                      }
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        className="size-5"
+                        color={"currentColor"}
+                        fill={"none"}
+                      >
+                        <path
+                          d="M5.94724 9.003C5.94724 9.003 3.68265 11.252 3.01654 10.9766C2.07687 10.5882 1.67051 6.8204 2.30951 6.24512L4.76679 4.03287C5.90144 3.01137 5.93084 3 7.43853 3H8.95703C9.1835 4.3592 10.4956 5.99207 12 5.99207C13.5044 5.99207 14.8165 4.3592 15.043 3H16.5615C18.0692 3 18.0986 3.01136 19.2332 4.03287L21.6905 6.24512C22.3295 6.8204 21.9231 10.5882 20.9835 10.9766C20.3173 11.252 18.0489 9.003 18.0489 9.003"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M6 8V18.5267C6 19.2323 6.11985 19.6092 6.75491 19.9496C9.3676 21.3501 14.6324 21.3501 17.2451 19.9496C17.8802 19.6092 18 19.2323 18 18.5267L18 8"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M6 10C8 12.6667 16 12.6667 18 10"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      Sản phẩm
+                    </NavLink>
+                  </li>
+                </ul>
+              )}
             </li>
           </ul>
           <div className="px-[20px] text-primary mb-7 btn-logout">

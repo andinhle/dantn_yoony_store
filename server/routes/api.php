@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\RoleHasModelController;
 use App\Http\Controllers\Admin\StatisticalController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\Client\CouponUserController;
 use App\Http\Controllers\Client\FilterController;
 use App\Http\Controllers\Client\HomeController;
@@ -71,8 +72,6 @@ Route::get('home/products/{slug}/ratings', [HomeController::class, 'ratingListAl
 Route::get('home/products/featured', [HomeController::class, 'getFeaturedProducts']);
 Route::get('home/products/good-deal', [HomeController::class, 'getGoodDealProducts']);
 Route::get('home/product/category/{id}', [HomeController::class, 'getProductsByCategory']);
-
-
 
 Route::get('auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
 Route::get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
@@ -149,8 +148,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::patch('admin/order-detail/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'updateOrderDetail']);
         Route::patch('admin/order-cancelation/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'canceledOrder']);
         Route::post('admin/order-update_much', [\App\Http\Controllers\Admin\OrderController::class, 'updateMuch']);
-        Route::get('/orders/delivered', [OrderController::class, 'getDeliveredOrders']);
-
+        Route::get('notification/orders/delivered', [OrderController::class, 'getDeliveredOrders']);
         //lịch sử nhập hàng
         Route::get('checkAvailableStock', [InventoryImportController::class, 'checkAvailableStock']);
         //tìm hàng theo mã
@@ -213,6 +211,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('thong-ke/so-luong-bien-the-duoi-10', [StatisticalController::class, 'listSoLuongBienTheDuoi10']);
         Route::get('thong-ke/so-luong-bien-the-da-het', [StatisticalController::class, 'listSoLuongBienTheDaHet']);
         Route::get('thong-ke/profit', [StatisticalController::class, 'profit']);
+        Route::get('thong-ke/top10-favorite',[StatisticalController::class, 'top10YeuThich']);  
 
         // QL danh mục
         Route::apiResource('category', CategoryController::class);

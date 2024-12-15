@@ -21,6 +21,7 @@ import { LoadingOverlay } from "@achmadk/react-loading-overlay";
 import isAuthenticated from "../../Middleware/isAuthenticated";
 import { ICart } from "../../../interfaces/ICart";
 import { toast } from "react-toastify";
+import ShowDescriptionProduct from "./ShowDescriptionProduct";
 interface IAttribute {
   value: string;
   type: "select" | "color" | "button" | "radio";
@@ -233,22 +234,7 @@ const ShowDetailProduct: React.FC = () => {
     );
   };
 
-  const handleAttributeSelect = (attributeName: string, value: string) => {
-    setSelectedAttributes((prev) => ({
-      ...prev,
-      [attributeName]: value,
-    }));
 
-    const currentGroup = attributeGroups.find(
-      (group) => group.name === attributeName
-    );
-    if (currentGroup) {
-      const valueIndex = currentGroup.values.indexOf(value);
-      if (valueIndex !== -1 && currentGroup.images[valueIndex]) {
-        setSelectedImage(currentGroup.images[valueIndex]);
-      }
-    }
-  };
   const getAvailableAttributeValues = (attributeName: string) => {
     const currentSelectedAttributes = { ...selectedAttributes };
 
@@ -286,6 +272,56 @@ const ShowDetailProduct: React.FC = () => {
     setSelectedVariant(matchingVariant || null);
   }, [selectedAttributes, variants]);
 
+
+  const handleAttributeSelect = (attributeName: string, value: string) => {
+    // Tạo bản sao các thuộc tính đã chọn
+    const updatedAttributes = { ...selectedAttributes };
+  
+    // Nếu giá trị đã được chọn trước đó, gỡ bỏ nó
+    if (updatedAttributes[attributeName] === value) {
+      delete updatedAttributes[attributeName];
+    } else {
+      // Ngược lại, cập nhật giá trị mới
+      updatedAttributes[attributeName] = value;
+    }
+  
+    // Kiểm tra và loại bỏ các thuộc tính không còn khả dụng
+    const finalAttributes: {[key: string]: string} = {};
+  
+    // Kiểm tra các thuộc tính khác
+    attributeGroups.forEach(group => {
+      if (updatedAttributes[group.name]) {
+        const availableValues = getAvailableAttributeValues(group.name);
+        
+        // Nếu thuộc tính đã chọn trước đó không còn khả dụng
+        if (!availableValues.has(updatedAttributes[group.name])) {
+          // Chọn giá trị đầu tiên khả dụng nếu có
+          const firstAvailableValue = Array.from(availableValues)[0];
+          if (firstAvailableValue) {
+            finalAttributes[group.name] = firstAvailableValue;
+          }
+        } else {
+          // Giữ nguyên giá trị nếu vẫn còn khả dụng
+          finalAttributes[group.name] = updatedAttributes[group.name];
+        }
+      }
+    });
+  
+    // Cập nhật trạng thái
+    setSelectedAttributes(finalAttributes);
+  
+    // Cập nhật hình ảnh nếu có
+    const currentGroup = attributeGroups.find(
+      (group) => group.name === attributeName
+    );
+    if (currentGroup) {
+      const valueIndex = currentGroup.values.indexOf(value);
+      if (valueIndex !== -1 && currentGroup.images[valueIndex]) {
+        setSelectedImage(currentGroup.images[valueIndex]);
+      }
+    }
+  };
+
   const handleImageClick = () => {
     setIsZoomEnabled(!isZoomEnabled);
   };
@@ -296,10 +332,21 @@ const ShowDetailProduct: React.FC = () => {
   };
 
   const validateCartQuantity = (requestedQuantity, selectedVariant, carts) => {
+
     if (!selectedVariant) {
       message.error("Vui lòng chọn đầy đủ thuộc tính sản phẩm");
       return false;
     }
+
+    const requiredAttributes = Object.keys(selectedVariant.attributes);
+    const selectedAttributeKeys = Object.keys(selectedAttributes);
+
+    if (requiredAttributes.length !== selectedAttributeKeys.length) {
+      message.error("Vui lòng chọn đủ thuộc tính cho sản phẩm");
+      return false;
+    }
+
+    // Kiểm tra số lượng sản phẩm
     if (!selectedVariant?.quantity || selectedVariant.quantity <= 0) {
       message.warning("Hết hàng vui lòng chọn phân loại khác");
       return false;
@@ -317,13 +364,6 @@ const ShowDetailProduct: React.FC = () => {
     const availableQuantity = selectedVariant.quantity - quantityInCart;
 
     if (requestedQuantity > availableQuantity) {
-      message.warning(
-        `Số lượng không được vượt quá ${selectedVariant.quantity}`
-      );
-      return false;
-    }
-
-    if (requestedQuantity > selectedVariant.quantity) {
       message.warning(
         `Số lượng không được vượt quá ${selectedVariant.quantity}`
       );
@@ -367,7 +407,10 @@ const ShowDetailProduct: React.FC = () => {
     const existingCart: ICart[] = JSON.parse(
       localStorage.getItem("cartLocal") || "[]"
     );
-
+    if (Object.keys(selectedAttributes).length < attributeGroups.length) {
+      message.error("Vui lòng chọn đầy đủ thuộc tính sản phẩm");
+      return false;
+    }
     if (!selectedVariant) {
       message.error("Vui lòng chọn đầy đủ thuộc tính sản phẩm");
       return false;
@@ -497,7 +540,7 @@ const ShowDetailProduct: React.FC = () => {
         return (
           <Tooltip
             key={value}
-            title={isAvailable ? value : "Không có sẵn"}
+            title={isAvailable ? (isSelected ? "Bỏ chọn" : value) : "Không có sẵn"}
             placement="top"
           >
             <div
@@ -555,7 +598,7 @@ const ShowDetailProduct: React.FC = () => {
         return (
           <Tooltip
             key={value}
-            title={isAvailable ? value : "Không có sẵn"}
+            title={isAvailable ? (isSelected ? "Bỏ chọn" : value) : "Không có sẵn"}
             placement="top"
           >
             <div className="relative overflow-hidden rounded-lg">
@@ -607,7 +650,7 @@ const ShowDetailProduct: React.FC = () => {
         return (
           <Tooltip
             key={value}
-            title={isAvailable ? value : "Không có sẵn"}
+            title={isAvailable ? (isSelected ? "Bỏ chọn" : value) : "Không có sẵn"}
             placement="top"
           >
             <div className="relative overflow-hidden rounded-lg">
@@ -1194,6 +1237,7 @@ const ShowDetailProduct: React.FC = () => {
           </form>
         </div>
       </div>
+      <ShowDescriptionProduct descriptionProduct={product?.description}  />
       <RatingProduct slugProd={slugproduct} />
       <ShowProductRelated related_products={related_products} />
     </section>

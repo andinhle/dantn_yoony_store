@@ -37,14 +37,12 @@ export default function BlogHome() {
     return (
         <main className="container-main pb-24">
             <div className="container m-auto">
-                <h2 className="text-2xl font-bold mb-10 text-orange-500 flex justify-center mt-4">TIN TỨC</h2>
-
+                <h2 className="text-2xl font-bold mb-10 text-primary flex justify-center mt-4">TIN TỨC</h2>
                 <div className="flex gap-4">
-                   
                     {blogs && blogs.length > 0 && (
                         <div className="relative flex-1 bg-white rounded-lg shadow-lg">
                             <img
-                                src={extractFirstImage(blogs[0].content) || blogs[0].image}
+                                src={extractFirstImage(blogs[0].content) || blogs[0]?.image}
                                 className="w-full h-[380px] rounded-t-lg object-cover"
                                 alt={blogs[0].slug}
                             />

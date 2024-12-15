@@ -249,18 +249,11 @@ a:hover .number-cart{
   color:#ff9900
 }
 
-.ant-table-wrapper .ant-table-thead >tr>th{
+/* .ant-table-wrapper .ant-table-thead >tr>th{
   background-color: #ff9900;
   color: white;
-}
+} */
 
-:where(.css-dev-only-do-not-override-vryruh).ant-btn-variant-outlined:not(:disabled):not(.ant-btn-disabled):hover, :where(.css-dev-only-do-not-override-vryruh).ant-btn-variant-dashed:not(:disabled):not(.ant-btn-disabled):hover{
-  color:#ff9900;
-  border-color: #ff9900;
-}
-:where(.css-dev-only-do-not-override-vryruh) a:hover{
-  color:#ff9900;
-}
 
 .mini-cart [data-testid="close-drawer"]{
   top: 40px !important;
