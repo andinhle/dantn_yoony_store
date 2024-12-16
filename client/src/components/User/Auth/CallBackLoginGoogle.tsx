@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import instance from "../../../instance/instance";
-import { message } from "antd";
 import { useAuth } from "../../../providers/AuthProvider";
 import Cookies from "js-cookie";
 import { LoadingOverlay } from "@achmadk/react-loading-overlay";

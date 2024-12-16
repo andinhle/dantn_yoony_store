@@ -18,6 +18,9 @@ export interface IProduct{
     is_variant:boolean,
     variants:IVariants[],
     total_revenue?:number,
-    updated_at?:string
-    created_at?:string
+    updated_at?:string,
+    created_at?:string,
+    total_quantity_sold?:number
+    total_stock_quantity?:number,
+    average_rating?:number
 }

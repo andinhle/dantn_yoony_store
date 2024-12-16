@@ -17,7 +17,7 @@ interface IPrice {
   max: number;
 }
 
-interface IFilterResponse {
+export interface IFilterResponse {
   categories: ICategory[];
   attributes: IAttribute[];
   price: IPrice;
@@ -27,7 +27,7 @@ interface IAttributeFilters {
   [key: string]: string[];
 }
 
-interface IFilterParams {
+export interface IFilterParams {
   name?: string;
   category_id?: number[];
   attributes?: IAttributeFilters;
@@ -133,8 +133,18 @@ const FilterProducts = () => {
 
   useEffect(() => {
     const parsed = queryString.parse(location.search);
-    setParsedSearch({ q: parsed.q as string });
-  }, [location.search, setParsedSearch]);
+    setParsedSearch(parsed);
+    if (parsed.category && dataFilter?.categories) {
+      const categoryFromUrl = parsed.category;
+      const matchedCategory = dataFilter.categories.find(
+        (category) => category.slug === categoryFromUrl
+      );
+      
+      if (matchedCategory) {
+        setSelectedCategories([matchedCategory.id]);
+      }
+    }
+  }, [location.search, setParsedSearch,dataFilter]);
 
   useEffect(() => {
     handleFiltersChange();
@@ -456,6 +466,7 @@ const FilterProducts = () => {
             <RenderProductFilter
               datas={dataResponse}
               setSearchParams={setSearchParams}
+              parsedFilter={parsedSearch?.filter}
               page={page}
               meta={meta!}
             />

@@ -1,7 +1,18 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Navigation,Autoplay } from "swiper/modules";
+import { useEffect } from "react";
+import instance from "../../../instance/instance";
 
 const BannerHome = () => {
+  // useEffect(() => {
+  //   (async()=>{
+  //     try {
+  //       const {data}=await instance.get('banner')
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   })()
+  // }, [])
   return (
     <>
       <Swiper

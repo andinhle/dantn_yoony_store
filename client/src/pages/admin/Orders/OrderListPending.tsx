@@ -14,8 +14,9 @@ import dayjs from "dayjs";
 import { toast } from "react-toastify";
 type Props = {
   activeTab: string;
+  setPendingCount:(count:number)=>void
 };
-const OrderListPending = ({ activeTab }: Props) => {
+const OrderListPending = ({ activeTab,setPendingCount }: Props) => {
   const [ordersPending, setOrdersPending] = useState<Orders[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parseInt(searchParams.get("page") || "1");
@@ -51,7 +52,7 @@ const OrderListPending = ({ activeTab }: Props) => {
         } = await instance.get("admin/orders?status=pending");
         setOrdersPending(response.data);
         setMeta(response);
-        console.log(response);
+        setPendingCount(response.data.length)
       } catch (error) {
         console.log(error);
       }

@@ -27,7 +27,6 @@ class UpdateAttributeValueRequest extends FormRequest
     {
         return [
             'value' => 'required|unique:attribute_values,value,' . $this->route('attributeValue'),
-                        'attribute_id' => 'required'
         ];
     }
 
@@ -36,7 +35,6 @@ class UpdateAttributeValueRequest extends FormRequest
         return [
             'value.unique' => 'Giá trị thuộc tính đã tồn tại',
             'value.required' => 'Vui lòng nhập giá trị thuộc tính',
-            'attribute_id.required' => 'Vui lòng nhập chọn thuộc tính',
         ];
     }
     protected function failedValidation(Validator $validator)

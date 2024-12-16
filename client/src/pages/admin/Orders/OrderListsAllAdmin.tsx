@@ -11,7 +11,10 @@ import {
 } from "../../../components/User/Manager/Orders/ManagerOrdersUser";
 import { NavLink, useSearchParams } from "react-router-dom";
 import { IMeta } from "../../../interfaces/IMeta";
-const OrderListsAllAdmin = () => {
+type Prop ={
+  setListAllCount:(count:number)=>void
+}
+const OrderListsAllAdmin = ({setListAllCount}:Prop) => {
   const [valSearch, SetValSearch] = useState<string>("");
   const [orders, setOrders] = useState<Orders[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -26,6 +29,7 @@ const OrderListsAllAdmin = () => {
           data: { data: response },
         } = await instance.get("admin/orders");
         setOrders(response.data);
+        setListAllCount(response.data.length)
         setMeta(response);
       } catch (error) {
         console.log(error);
