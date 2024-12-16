@@ -29,7 +29,8 @@ class Order extends Model
         'address',
         'paid_at',
         'completed_at',
-        'code'
+        'code',
+        'is_delivered'
     ];
 
     const STATUS_ORDER_PENDING = 'pending';
@@ -38,6 +39,10 @@ class Order extends Model
     const STATUS_ORDER_SHIPPING = 'shipping';
     const STATUS_ORDER_DELIVERED = 'delivered';
     const STATUS_ORDER_CANCELED = 'canceled';
+
+    protected $casts = [
+        'is_delivered' => 'array', 
+    ];
 
 
     public function items() 

@@ -18,7 +18,7 @@ const ShowDescriptionProduct = ({ descriptionProduct }: Prop) => {
           className={`
           max-w-[800px] w-full relative 
           ${
-            isShowDesc ? "max-h-full" : "max-h-[300px] overflow-hidden relative"
+            isShowDesc ? "max-h-full" : "max-h-[300px] min-h-[100px] overflow-hidden relative"
           }
         `}
         >

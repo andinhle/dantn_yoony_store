@@ -1,4 +1,4 @@
-import { ConfigProvider, Tabs } from "antd";
+import { Badge, ConfigProvider, Tabs } from "antd";
 import type { TabsProps } from "antd";
 import OrderListsAllAdmin from "./OrderListsAllAdmin";
 import OrderListPending from "./OrderListPending";
@@ -11,14 +11,37 @@ import { useState } from "react";
 
 const OrdersListAdmin = () => {
   const [activeTab, setActiveTab] = useState("all");
+  const [pendingCount, setPendingCount] = useState<number>(0);
+  const [confirmedCount, setConfirmedCount] = useState<number>(0);
+  const [preparingCount, setPreparingCount] = useState<number>(0);
+  const [shippingCount, setShippingCount] = useState<number>(0);
+  const [deliveredCount, setDeliveredCount] = useState<number>(0);
+  const [canceldCount, setCanceldCount] = useState<number>(0);
+  const [listAllCount, setListAllCount] = useState<number>(0);
   const onChange = (key: string) => {
     setActiveTab(key);
   };
   const items: TabsProps["items"] = [
     {
       key: "all",
-      label: "Tất cả",
-      children: <OrderListsAllAdmin activeTab={activeTab} />,
+      label: (
+        <p>
+          Tất cả
+          <Badge
+            offset={[5, 2]}
+            count={listAllCount}
+            size="small"
+            color="orange"
+            className="absolute top-1"
+          ></Badge>
+        </p>
+      ),
+      children: (
+        <OrderListsAllAdmin
+          activeTab={activeTab}
+          setListAllCount={setListAllCount}
+        />
+      ),
     },
     {
       key: "pending",
@@ -68,9 +91,23 @@ const OrdersListAdmin = () => {
             />
           </svg>
           <span>Chờ xác nhận</span>
+          {pendingCount !== 0 && (
+            <Badge
+              offset={[10, 0]}
+              count={pendingCount}
+              size="small"
+              color="orange"
+              className="absolute -right-1 top-1"
+            ></Badge>
+          )}
         </button>
       ),
-      children: <OrderListPending activeTab={activeTab} />,
+      children: (
+        <OrderListPending
+          activeTab={activeTab}
+          setPendingCount={setPendingCount}
+        />
+      ),
     },
     {
       key: "confirmed",
@@ -120,9 +157,23 @@ const OrdersListAdmin = () => {
             />
           </svg>
           <span>Đã xác nhận</span>
+          {confirmedCount !== 0 && (
+            <Badge
+              offset={[10, 0]}
+              count={confirmedCount}
+              size="small"
+              color="orange"
+              className="absolute -right-1 top-1"
+            ></Badge>
+          )}
         </div>
       ),
-      children: <OrderListConfirmed activeTab={activeTab} />,
+      children: (
+        <OrderListConfirmed
+          activeTab={activeTab}
+          setConfirmedCount={setConfirmedCount}
+        />
+      ),
     },
     {
       key: "preparing_goods",
@@ -172,9 +223,23 @@ const OrdersListAdmin = () => {
             />
           </svg>
           <span>Đang chuẩn bị hàng</span>
+          {preparingCount !== 0 && (
+            <Badge
+              offset={[10, 0]}
+              count={preparingCount}
+              size="small"
+              color="orange"
+              className="absolute -right-1 top-1"
+            ></Badge>
+          )}
         </div>
       ),
-      children: <OrderListPreparing activeTab={activeTab} />,
+      children: (
+        <OrderListPreparing
+          activeTab={activeTab}
+          setPreparingCount={setPreparingCount}
+        />
+      ),
     },
     {
       key: "shipping",
@@ -231,9 +296,18 @@ const OrdersListAdmin = () => {
             />
           </svg>
           <span>Đang vận chuyển</span>
+          {shippingCount !== 0 && (
+            <Badge
+              offset={[10, 0]}
+              count={shippingCount}
+              size="small"
+              color="orange"
+              className="absolute -right-1 top-1"
+            ></Badge>
+          )}
         </div>
       ),
-      children: <OrderListShipping activeTab={activeTab} />,
+      children: <OrderListShipping activeTab={activeTab} setShippingCount={setShippingCount} />,
     },
     {
       key: "delivered",
@@ -283,9 +357,18 @@ const OrdersListAdmin = () => {
             />
           </svg>
           <span>Đã giao hàng</span>
+          {deliveredCount !== 0 && (
+            <Badge
+              offset={[10, 0]}
+              count={deliveredCount}
+              size="small"
+              color="orange"
+              className="absolute -right-1 top-1"
+            ></Badge>
+          )}
         </div>
       ),
-      children: <OrderListDelivered activeTab={activeTab} />,
+      children: <OrderListDelivered activeTab={activeTab} setDeliveredCount={setDeliveredCount} />,
     },
     {
       key: "canceled",
@@ -313,9 +396,18 @@ const OrdersListAdmin = () => {
             />
           </svg>
           <span>Đơn hàng đã bị huỷ</span>
+          {canceldCount !== 0 && (
+            <Badge
+              offset={[10, 0]}
+              count={canceldCount}
+              size="small"
+              color="orange"
+              className="absolute -right-1 top-1"
+            ></Badge>
+          )}
         </div>
       ),
-      children: <OrderListCancel activeTab={activeTab} />,
+      children: <OrderListCancel activeTab={activeTab} setCanceldCount={setCanceldCount} />,
     },
   ];
   return (
@@ -329,7 +421,7 @@ const OrdersListAdmin = () => {
             components: {
               Tabs: {
                 itemHoverColor: "#ff9900",
-                horizontalItemGutter: 40,
+                horizontalItemGutter: 50,
               },
             },
           }}

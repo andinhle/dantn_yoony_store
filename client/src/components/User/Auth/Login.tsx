@@ -4,10 +4,11 @@ import { Controller, useForm } from "react-hook-form";
 import axios from "axios";
 import instance from "../../../instance/instance";
 import Cookies from "js-cookie";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../providers/AuthProvider";
 import { Input, message } from "antd";
 import LoginGoogleFaceBook from "./LoginGoogleFaceBook";
+import { useEffect } from "react";
 
 const Login = () => {
   const {
