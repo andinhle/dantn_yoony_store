@@ -1,11 +1,11 @@
 <?php
 
-// app/Console/Commands/UnlockLockedItems.php
-
 namespace App\Console\Commands;
 
 use App\Models\InventoryStock;
 use App\Models\LockedItem;
+use App\Models\Coupon;
+use App\Models\CouponUser;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -13,41 +13,57 @@ use Pusher\Pusher;
 
 class UnlockLockedItems extends Command
 {
-    protected $signature = 'app:unlock-locked-items'; // Đảm bảo tên đúng
+    protected $signature = 'app:unlock-locked-items';
 
-    protected $description = 'Unlock items that have exceeded the expiration time and update inventory stock.';
+    protected $description = 'Unlock items that have exceeded the expiration time and update inventory stock, and restore coupon usage.';
 
     public function handle()
-{
-    while (true) {  // Vòng lặp vô hạn để kiểm tra liên tục
-        $expirationTime = Carbon::now()->subMinutes(10); // Kiểm tra các bản ghi đã hết hạn từ 10 phút trước
+    {
+        while (true) {
+            $expirationTime = Carbon::now()->subMinutes(15);
 
-        // Lấy các bản ghi bị khóa đã quá hạn
-        $expiredItems = LockedItem::where('locked_at', '<', $expirationTime)->get();
+            $expiredItems = LockedItem::where('locked_at', '<', $expirationTime)->get();
 
-        if ($expiredItems->isEmpty()) {
-            $this->info('No expired items found.');
-        } else {
-            foreach ($expiredItems as $item) {
-                // Khôi phục tồn kho
-                $inventory = InventoryStock::where('variant_id', $item->variant_id)->first();
-                if ($inventory) {
-                    $inventory->quantity += $item->quantity;
-                    $inventory->save();
+            if ($expiredItems->isEmpty()) {
+                $this->info('No expired items found.');
+            } else {
+                foreach ($expiredItems as $item) {
+                    $inventory = InventoryStock::where('variant_id', $item->variant_id)->first();
+                    if ($inventory) {
+                        $inventory->quantity += $item->quantity;
+                        $inventory->save();
+                    }
+
+                    $this->restoreCouponUsage($item);
+
+                    $item->delete();
+
+                    $this->sendPusherNotification($item->variant_id, $inventory->quantity);
                 }
 
-                // Xóa bản ghi bị khóa
-                $item->delete();
-
-                // Phát sự kiện Realtime qua Pusher (nếu cần)
-                $this->sendPusherNotification($item->variant_id, $inventory->quantity);
+                $this->info('Unlocked expired items and restored coupons successfully!');
             }
 
-            $this->info('Unlocked expired items successfully!');
+            sleep(60);
         }
+    }
 
-        // Đợi 1 phút trước khi tiếp tục kiểm tra
-        sleep(60);
+public function restoreCouponUsage($item)
+{
+    $cart = $item->cart; 
+    if ($cart && $cart->coupon_id) {
+        $coupon = Coupon::find($cart->coupon_id);
+        if ($coupon) {
+            $couponUser = CouponUser::where('user_id', $cart->user_id)
+                                    ->where('coupon_id', $coupon->id)
+                                    ->first();
+            if ($couponUser && !$couponUser->used_at) {
+                $coupon->usage_limit += 1;
+                $coupon->save();
+
+                $couponUser->delete();
+            }
+        }
     }
 }
 

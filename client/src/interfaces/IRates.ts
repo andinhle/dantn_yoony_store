@@ -1,4 +1,5 @@
 export interface Irates {
+    [x: string]: any;
     id?: number;
     content: string;
     created_at: string;
