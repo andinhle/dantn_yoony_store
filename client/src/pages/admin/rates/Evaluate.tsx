@@ -4,14 +4,15 @@ import { Rate, Table, TableColumnsType } from "antd";
 import { FaStar } from "react-icons/fa";
 import instance from "../../../instance/instance";
 import { Irates } from "../../../interfaces/IRates";
-import { FaEye, FaEyeSlash, FaUser, FaBox } from "react-icons/fa";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import "swiper/css";
 import logoUser from "./champion.jpg"
-import { MdRateReview } from "react-icons/md";
 import { TiArrowSyncOutline } from "react-icons/ti";
+import { Link } from "react-router-dom";
+
 interface DataType {
+    imageProduct: string;
     key: React.Key;
     stt: number;
     name: string;
@@ -66,10 +67,9 @@ interface ApiResponse {
 }
 const Rates = () => {
     const [reviews, setReviews] = useState<Irates[]>([]);
-    const [selectedView, setSelectedView] = useState<"product" | "user">("product");
+    const [tenReview, settenReview] = useState<Irates[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [isHidden, setIsHidden] = useState<boolean>(false);
-    const [expandedContent, setExpandedContent] = useState(null);
+    const [displayedProducts, setDisplayedProducts] = useState<Set<number>>(new Set());
     useEffect(() => {
         const fetchReviews = async () => {
             setLoading(true);
@@ -90,6 +90,27 @@ const Rates = () => {
         fetchReviews();
     }, []);
 
+    useEffect(() => {
+        const fetchReviewTen = async () => {
+            try {
+                const response = await instance.get("ratings");
+                console.log("dataTen", response.data.data);
+                if (response.data && Array.isArray(response.data.data)) {
+                    settenReview(response.data.data);
+                } else {
+                    console.error("Invalid response data");
+                }
+            } catch (error: any) {
+                console.error("Error fetching reviews:", error.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchReviewTen();
+    }, []);
+
+
+
     const tableData = reviews.map((review, index) => ({
         key: review.id,
         stt: index + 1,
@@ -101,23 +122,6 @@ const Rates = () => {
         created_at: new Date(review.created_at).toLocaleDateString("vi-VN"),
         rating: review.rating,
     }));
-
-    const generateTableData = (filterType: "product" | "user") => {
-        const uniqueValues = reviews
-            .map((review) => (filterType === "product" ? review.product?.name : review.user?.name))
-            .filter((value, index, self) => self.indexOf(value) === index && value);
-
-        return uniqueValues.map((value, index) => ({
-            key: index + 1,
-            stt: index + 1,
-            name: value || "",
-            reviews: reviews.filter((review) =>
-                filterType === "product"
-                    ? review.product?.name === value
-                    : review.user?.name === value
-            ),
-        }));
-    };
     const columnsAll: TableColumnsType<DataType> = [
         {
             title: "STT",
@@ -144,7 +148,7 @@ const Rates = () => {
             render: (_, record) => (
                 <div className="flex items-center gap-2">
                     <img
-                        src={record.product?.images || "https://via.placeholder.com/40"}
+                        src={record.imageProduct || "https://via.placeholder.com/40"}
                         alt="Avatar"
                         className="w-10 h-10 rounded-full"
                     />
@@ -181,69 +185,53 @@ const Rates = () => {
             )
         },
     ];
-    const columns = [
-        {
-            title: "STT",
-            dataIndex: "stt",
-            key: "stt",
-            align: "center" as const,
-        },
-        {
-            title: selectedView === "product" ? "Tên sản phẩm" : "Tên người dùng",
-            dataIndex: "name",
-            key: "name",
-        },
-        {
-            title: "Đánh giá",
-            key: "reviews",
-            render: (_: any, record: any) => (
-                <div>
-                    {record.reviews.map((review: Irates, index: number) => (
-                        <div key={index} className="mb-4 border-b pb-2">
-                            <div className="flex items-center space-x-2">
-                                <strong>{selectedView === "product" ? review.user?.name : review.product?.name}</strong>
-                                <div className="flex">
-                                    {Array.from({ length: 5 }, (_, starIndex) => (
-                                        <FaStar
-                                            key={starIndex}
-                                            className={
-                                                starIndex < review.rating
-                                                    ? "text-primary fill-primary"
-                                                    : "text-gray-300"
-                                            }
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                            <p>{review.content}</p>
-                            <p className="text-sm text-gray-500">
-                                {new Date(review.created_at).toLocaleDateString("vi-VN")}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-            ),
-        },
-    ];
-
-    // Chuyển đổi giữa đánh giá theo sản phẩm và người dùng
-    const toggleView = (view: "product" | "user") => {
-        setSelectedView(view);
-    };
-
-    // Chuyển đổi trạng thái ẩn/hiện
-    const toggleHidden = () => {
-        setIsHidden(!isHidden);
-    };
     const [showTable, setShowTable] = useState(false); // Quản lý trạng thái ẩn/hiện
-
     const handleToggleTable = () => {
         setShowTable((prev) => !prev);
         // Đảo trạng thái show table 
     };
+    const groupedReviews = tenReview.reduce((acc, rate) => {
+        const productId = rate.product?.id;
+        if (!productId) return acc; // Nếu không có productId, bỏ qua
+
+        if (!acc[productId]) {
+            acc[productId] = {
+                product: rate.product,
+                ratings: [],
+            };
+        }
+
+        acc[productId].ratings.push(rate.rating); // Thêm đánh giá vào sản phẩm
+
+        return acc;
+    }, {});
+    const productReviews = Object.values(groupedReviews).map(({ product, ratings }) => {
+        const totalStars = ratings.reduce((acc, rating) => acc + rating, 0);
+        const avgRating = totalStars / ratings.length;
+
+        const fullStars = Math.floor(avgRating);
+        const halfStar = avgRating % 1 >= 0.5;
+        const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+
+        let starDisplay = "";
+        for (let i = 0; i < fullStars; i++) {
+            starDisplay += "⭐";
+        }
+        if (halfStar) {
+            starDisplay += "⭐";
+        }
+        for (let i = 0; i < emptyStars; i++) {
+            starDisplay += "☆";
+        }
+
+        return {
+            product,
+            starDisplay,
+        };
+    });
     return (
         <>
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+            {/* <div className="bg-white shadow-md rounded-lg overflow-hidden">
                 <div className="p-4">
                     <div className="mb-6">
                         <button
@@ -281,12 +269,6 @@ const Rates = () => {
                                             />
                                         ))}
                                     </div>
-                                    <div>
-                                        <p className="text-sm truncate whitespace-nowrap overflow-hidden text-ellipsis">
-                                            {expandedContent === review.id
-                                                && review.content}
-                                        </p>
-                                    </div>
                                     <div className="flex items-center space-x-3">
                                         <div className="w-10 h-10">
                                             <img
@@ -311,83 +293,140 @@ const Rates = () => {
                         ))}
                     </Swiper>
                 </div>
-            </div>
-            <div className="mt-4 mb-4">
-                <button
-                    onClick={handleToggleTable}
-                    className="bg-primary text-white flex items-center gap-2 px-6 py-2 border rounded-lg font-normal text-sm transition duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg"
-                >
-                    <MdRateReview />
-                    {showTable ? "Ẩn bảng đánh giá tổng quan" : "Hiện bảng đánh giá quan"}
+            </div> */}
+            <div className="mt-4">
+                <button className="bg-primary p-2 text-white rounded-md text-sm">
+                    Tất cả đánh giá
                 </button>
             </div>
-            {showTable && (
+            <div className="mt-4 mb-8">
                 <Table
                     columns={columnsAll}
                     dataSource={tableData}
                     pagination={{ pageSize: 10 }}
                     scroll={{ x: 800 }}
                 />
-            )}
-
-            <div className="mb-4 flex space-x-4">
-                {/* Nút Đánh giá theo sản phẩm */}
-                <button
-                    onClick={() => toggleView("product")}
-                    className={`flex items-center px-4 py-2 border rounded-lg font-normal text-sm transition duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg ${selectedView === "product"
-                        ? "bg-primary text-white border-primary"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                        }`}
-                >
-                    <FaBox className="inline mr-2" />
-                    Đánh giá theo sản phẩm
-                </button>
-
-                {/* Nút Đánh giá theo người dùng */}
-                <button
-                    onClick={() => toggleView("user")}
-                    className={`flex items-center px-4 py-2 border rounded-lg font-normal text-sm transition duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg ${selectedView === "user"
-                        ? "bg-primary text-white border-primary"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                        }`}
-                >
-                    <FaUser className="inline mr-2" />
-                    Đánh giá theo người dùng
-                </button>
-
-                {/* Nút Ẩn/Hiện đánh giá */}
-                <button
-                    onClick={toggleHidden}
-                    className="flex items-center px-4 py-2 border rounded-lg font-normal text-sm bg-red-500 text-white hover:bg-red-600 duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg"
-                >
-                    {isHidden ? (
-                        <>
-                            <FaEye className="inline mr-2" />
-                            Hiện đánh giá
-                        </>
-                    ) : (
-                        <>
-                            <FaEyeSlash className="inline mr-2" />
-                            Ẩn đánh giá
-                        </>
-                    )}
+            </div>
+            <div className="">
+                <button className="bg-primary p-2 text-white rounded-md text-sm">
+                    Top sản phẩm đánh giá
                 </button>
             </div>
 
-            {/* Hiển thị bảng đánh giá nếu không bị ẩn */}
-            {/* Hiển thị bảng đánh giá nếu không bị ẩn */}
-           
-            {!isHidden && (
-                <Table
-                    columns={columns}
-                    dataSource={generateTableData(selectedView)}
-                    loading={loading}
-                    pagination={{
-                        pageSize: 5,
-                    }}
-                    bordered
-                />
-            )}
+            {/* <div className="overflow-x-auto mt-4 mb-8">
+                <table className="min-w-full table-auto border-collapse bg-white rounded-md">
+                    <thead className="">
+                        <tr className="bg-gray-50">
+                            <th className="px-6 py-4 text-sm font-medium text-gray-900 text-left">Sản phẩm</th>
+                            <th className="px-6 py-4 text-sm font-medium text-gray-900 text-left">Số sao</th>
+                            <th className="px-6 py-4 text-sm font-medium text-gray-900 text-left">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {tenReview.map((rate, index) => {
+                            console.log("images", rate.product?.images[0])
+                            const rating = rate.rating;
+                            const fullStars = Math.floor(rating);  // Số sao đầy (làm tròn xuống)
+                            const halfStar = rating % 1 >= 0.5;    // Kiểm tra xem có nửa sao hay không
+                            const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);  // Số sao trống còn lại
+
+                            // Tạo chuỗi sao
+                            let starDisplay = '';
+                            for (let i = 0; i < fullStars; i++) {
+                                starDisplay += '⭐';  // Sao đầy
+                            }
+                            if (halfStar) {
+                                starDisplay += '⭐';  // Nửa sao
+                            }
+                            for (let i = 0; i < emptyStars; i++) {
+                                starDisplay += '☆';  // Sao trống
+                            }
+
+                            return (
+                                <tr className="border-b hover:bg-gray-50" key={index}>
+                                    <div className="flex items-center m-2">
+                                        <img src={rate.product?.images} className="w-10 h-8 rounded-md" />
+
+                                        <div>
+                                            <td className="px-2 py-2 text-sm font-medium text-gray-900">{rate.product?.name}</td>
+                                        </div>
+                                    </div>
+
+                                    <td className="px-6 py-4 text-sm text-primary text-left">
+                                        {starDisplay}
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-primary text-left">
+                                        <Link to={`/admin/rates/${rate.product?.slug}`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 cursor-pointer">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                            </svg>
+                                        </Link>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div> */}
+            <div className="overflow-x-auto mt-4 mb-8">
+                <table className="min-w-full table-auto border-collapse bg-white rounded-md">
+                    <thead>
+                        <tr className="bg-gray-50">
+                            <th className="px-6 py-4 text-sm font-medium text-gray-900 text-left">Sản phẩm</th>
+                            <th className="px-6 py-4 text-sm font-medium text-gray-900 text-left">Số sao</th>
+                            <th className="px-6 py-4 text-sm font-medium text-gray-900 text-left">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {productReviews.map((productReview, index) => {
+                            const { product, starDisplay } = productReview;
+
+                            return (
+                                <tr className="border-b hover:bg-gray-50" key={product?.id}>
+                                    <div className="flex items-center m-2">
+                                        <img
+                                            src={product?.images[0] || "https://via.placeholder.com/40"}
+                                            className="w-10 h-8 rounded-md"
+                                            alt="Product"
+                                        />
+                                        <div>
+                                            <td className="px-2 py-2 text-sm font-medium text-gray-900">{product?.name}</td>
+                                        </div>
+                                    </div>
+
+                                    <td className="px-6 py-4 text-sm text-primary text-left">{starDisplay}</td>
+
+                                    <td className="px-6 py-4 text-sm text-primary text-left">
+                                        <Link to={`/admin/rates/${product?.slug}`}>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="size-6 cursor-pointer"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
+                                                />
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                                />
+                                            </svg>
+                                        </Link>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+
         </>
     );
 };

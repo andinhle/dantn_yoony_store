@@ -63,6 +63,8 @@ import LayoutStatisAdmin from "./layouts/Admin/LayoutStatisAdmin.tsx";
 import StatisProductAdmin from "./pages/admin/statis/StatisProductAdmin.tsx";
 import StatisDetailProduct from "./pages/admin/statis/StatisDetailProduct.tsx";
 
+import RatingProductAdmin from "./pages/admin/rates/EvaluateDetails.tsx";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
@@ -153,6 +155,11 @@ createRoot(document.getElementById("root")!).render(
                   element={<OrderDetails />}
                 />
                 <Route path="rates" element={<Rates />} />
+            
+                <Route
+                path="rates/:slug"
+                element={<RatingProductAdmin />}
+              />
                 <Route path="chatbot" element={<LayoutChatAdmin />} />
               </Route>
             </Route>
