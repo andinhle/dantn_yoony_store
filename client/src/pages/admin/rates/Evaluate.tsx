@@ -122,6 +122,7 @@ const Rates = () => {
         created_at: new Date(review.created_at).toLocaleDateString("vi-VN"),
         rating: review.rating,
     }));
+    //Bảng dữ liệu cho table 
     const columnsAll: TableColumnsType<DataType> = [
         {
             title: "STT",
