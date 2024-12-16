@@ -65,6 +65,8 @@ import StatisDetailProduct from "./pages/admin/statis/StatisDetailProduct.tsx";
 import HistoryInventory from "./pages/admin/inventory/HistoryInventory.tsx";
 
 
+import RatingProductAdmin from "./pages/admin/rates/EvaluateDetails.tsx";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
@@ -156,6 +158,11 @@ createRoot(document.getElementById("root")!).render(
                   element={<OrderDetails />}
                 />
                 <Route path="rates" element={<Rates />} />
+            
+                <Route
+                path="rates/:slug"
+                element={<RatingProductAdmin />}
+              />
                 <Route path="chatbot" element={<LayoutChatAdmin />} />
               </Route>
             </Route>
