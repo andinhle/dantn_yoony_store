@@ -23,11 +23,15 @@ class Kernel extends ConsoleKernel
         //          ->everyMinute()
         //          ->appendOutputTo(storage_path('logs/sale-expired.log'));
         //  $schedule->command('order:update-status')->daily();
+        $schedule->exec('php artisan app:update-sale-price-realtime & php artisan app:unlock-locked-items')
+        ->everyMinute()
+        ->name('Run both commands together');
+
+
         $schedule->command('order:update-status')
             ->hourly()
             ->appendOutputTo(storage_path('logs/order-status.log'));
 
-            $schedule->command('app:unlock-locked-items')->everyMinute(); // Kiểm tra và mở khóa các item hết hạn mỗi phút
 
     }
 
