@@ -678,23 +678,64 @@ class StatisticalController extends Controller
 
     
     //top 10 sản phẩm được yêu thích
-    public function top10YeuThich()
-    {
-        // Lấy các sản phẩm yêu thích nhất từ model Product
-        $top10Favorites = Product::select('products.id', 'products.name', 'products.images', \DB::raw('COUNT(wishlists.product_id) as favorites_count'))
-            ->join('wishlists', 'wishlists.product_id', '=', 'products.id')
-            ->groupBy('products.id', 'products.name', 'products.images')
-            ->orderByDesc('favorites_count')
-            ->limit(10)
-            ->get();
+    public function top10YeuThich(Request $request)
+{
+    $type = $request->type ?? 'all';
 
-        $top10Favorites->each(function ($product) {
-            $product->images = json_decode($product->images);  
-        });
-
+    // Kiểm tra giá trị 'type' có hợp lệ
+    if (!in_array($type, ['all', 'day', 'week', 'month', '6months', 'year'])) {
         return response()->json([
-            'top_10_wishlist' => $top10Favorites,
-        ]);
+            'error' => 'Tham số type không hợp lệ. Chỉ chấp nhận: all, day, week, month, 6months, year, last_month.',
+        ], 400);
     }
+
+    $timeFrame = null;
+    switch ($type) {
+        case 'day':
+            $timeFrame = now()->subDay();
+            break;
+        case 'week':
+            $timeFrame = now()->subWeek();
+            break;
+        case 'month':
+            $timeFrame = now()->subMonth();
+            break;
+        case '6months':
+            $timeFrame = now()->subMonths(6);
+            break;
+        case 'year':
+            $timeFrame = now()->subYear();
+            break;
+        case 'all':
+        default:
+            $timeFrame = null;
+    }
+
+    // Lấy các sản phẩm yêu thích nhất từ model Product
+    $query = Product::select('products.id', 'products.name', 'products.images', \DB::raw('COUNT(wishlists.product_id) as favorites_count'))
+        ->join('wishlists', 'wishlists.product_id', '=', 'products.id');
+
+    // Thêm điều kiện lọc theo thời gian nếu có
+    if ($type === 'last_month') {
+        $query->whereBetween('wishlists.created_at', $timeFrame);
+    } elseif ($timeFrame) {
+        $query->where('wishlists.created_at', '>=', $timeFrame);
+    }
+
+    $top10Favorites = $query
+        ->groupBy('products.id', 'products.name', 'products.images')
+        ->orderByDesc('favorites_count')
+        ->limit(10)
+        ->get();
+
+    $top10Favorites->each(function ($product) {
+        $product->images = json_decode($product->images);
+    });
+
+    return response()->json([
+        'top_10_wishlist' => $top10Favorites,
+    ]);
+}
+
 
 }
