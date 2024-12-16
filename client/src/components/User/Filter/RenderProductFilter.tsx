@@ -1,5 +1,4 @@
 import { Pagination } from "antd";
-import instance from "../../../instance/instance";
 import { IMeta } from "../../../interfaces/IMeta";
 import { IProduct } from "../../../interfaces/IProduct";
 import CardProductAll from "../Products/CardProductAll";
@@ -11,11 +10,12 @@ type Props = {
   meta: IMeta;
   page: number;
   setSearchParams: (params: Record<string, string | number | boolean>) => void;
+  parsedFilter:string
 };
-const RenderProductFilter = ({ datas, meta, page, setSearchParams }: Props) => {
+const RenderProductFilter = ({ datas, meta, page, setSearchParams,parsedFilter }: Props) => {
   const [productFilter, setProductFilter] = useState<string>("new");
   const [filteredProducts, setFilteredProducts] = useState<IProduct[]>(datas);
-
+  console.log(parsedFilter);
   // const handleSortPrice = async (status: string) => {
   //   try {
   //     const { data:{data:response} } = await instance.post(
@@ -26,6 +26,12 @@ const RenderProductFilter = ({ datas, meta, page, setSearchParams }: Props) => {
   //     console.log(error);
   //   }
   // };
+
+  useEffect(() => {
+    if (parsedFilter) {
+      setProductFilter(parsedFilter);
+    }
+  }, [parsedFilter]);
 
   useEffect(() => {
     let result = [...datas];
@@ -70,7 +76,7 @@ const RenderProductFilter = ({ datas, meta, page, setSearchParams }: Props) => {
     }
 
     setFilteredProducts(result);
-  }, [datas, productFilter]);
+  }, [datas, productFilter,parsedFilter]);
   // Danh sách các nút lọc
   const filterButtons = [
     { key: "new", label: "Mới nhất" },

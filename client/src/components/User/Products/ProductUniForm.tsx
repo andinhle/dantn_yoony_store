@@ -39,7 +39,7 @@ const ProductUniForm = () => {
         />
         <div className="absolute bg-custom-gradient-hover w-full h-full top-0 rounded-md bottom-0 left-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 group-hover:cursor-pointer">
           <Link
-            to={""}
+            to={"search?category=dong-phuc"}
             className="px-5 py-2.5 bg-util hover:bg-primary hover:text-util transition-all duration-300 rounded-lg absolute top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%] text-xl font-medium text-primary"
           >
             XEM THÊM
@@ -93,7 +93,7 @@ const ProductUniForm = () => {
               );
             })}
           </Swiper>
-          <ButtonSeeMore link="" />
+          {productUniForms.length >5 &&<ButtonSeeMore link="search?category=dong-phuc" />}
         </div>
       </div>
     </section>

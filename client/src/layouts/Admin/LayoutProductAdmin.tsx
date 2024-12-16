@@ -8,19 +8,19 @@ import TrashProvider from "../../providers/TrashProvider";
 
 const LayoutProductAdmin = () => {
   return (
-    <ProductProvider>
-      <AttributeValueProvider>
-        <AttributeProvider>
-          <InventoryProvider>
-            <SupplierProvider>
-              <TrashProvider>
-                <Outlet />
-              </TrashProvider>
-            </SupplierProvider>
-          </InventoryProvider>
-        </AttributeProvider>
-      </AttributeValueProvider>
-    </ProductProvider>
+      <ProductProvider>
+        <AttributeValueProvider>
+          <AttributeProvider>
+            <InventoryProvider>
+              <SupplierProvider>
+                <TrashProvider>
+                  <Outlet />
+                </TrashProvider>
+              </SupplierProvider>
+            </InventoryProvider>
+          </AttributeProvider>
+        </AttributeValueProvider>
+      </ProductProvider>
   );
 };
 

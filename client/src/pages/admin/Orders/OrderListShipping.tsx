@@ -14,8 +14,9 @@ import dayjs from "dayjs";
 import { toast } from "react-toastify";
 type Props = {
   activeTab: string;
+  setShippingCount:(count:number)=>void
 };
-const OrderListShipping = ({ activeTab }: Props) => {
+const OrderListShipping = ({ activeTab,setShippingCount }: Props) => {
   const [ordersShipping, setOrdersShipping] = useState<Orders[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parseInt(searchParams.get("page") || "1");
@@ -51,7 +52,7 @@ const OrderListShipping = ({ activeTab }: Props) => {
         } = await instance.get("admin/orders?status=shipping");
         setOrdersShipping(response.data);
         setMeta(response);
-        console.log(response);
+        setShippingCount(response.data.length);
       } catch (error) {
         console.log(error);
       }
