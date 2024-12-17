@@ -35,6 +35,9 @@ class UpdateProductRequest extends FormRequest
             'variants.*.sale_price' => 'nullable|numeric|min:0',
             'variants.*.image' => 'nullable|string',
             'variants.*.attribute_value_ids' => 'nullable|array',
+            'variants.*.end_sale' => ['nullable', 'date', 'after_or_equal:tomorrow'],
+            'variants.*.attribute_values.*' => 'integer|exists:attribute_values,id',
+
         ];
     }
 

@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Product\StoreProductRequest;
 use App\Http\Requests\Product\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
+use App\Models\AttributeValue;
 use App\Models\InventoryStock;
 use App\Models\Product;
 use App\Models\Variant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -32,8 +34,29 @@ public function index()
      */
     public function store(StoreProductRequest $request)
     {
+        DB::beginTransaction();
+
         try {
-            // Tạo Product
+            $existingVariants = [];
+
+            foreach ($request->variants as $variantData) {
+                $attributeValues = AttributeValue::whereIn('id', $variantData['attribute_values'])
+                    ->pluck('value')
+                    ->sort()
+                    ->values();
+
+                foreach ($existingVariants as $existingValues) {
+                    if ($existingValues->count() == $attributeValues->count() && $existingValues->diff($attributeValues)->isEmpty()) {
+                        return response()->json([
+                            'message' => 'Biến thể có giá trị thuộc tính trùng lặp.',
+                            'error' => 'Các giá trị thuộc tính (value) trùng nhau không được phép.'
+                        ], 422);
+                    }
+                }
+
+                $existingVariants[] = $attributeValues;
+            }
+
             $product = Product::create([
                 'name' => $request->name,
                 'slug' => $request->slug,
@@ -45,6 +68,7 @@ public function index()
             ]);
 
             foreach ($request->variants as $variantData) {
+                // Lưu biến thể mới
                 $variant = Variant::create([
                     'price' => $variantData['price'],
                     'sale_price' => $variantData['sale_price'],
@@ -61,17 +85,18 @@ public function index()
                 }
 
                 if (isset($variantData['attribute_values'])) {
-                    foreach ($variantData['attribute_values'] as $attributeValueId) {
-                        $variant->attributeValues()->attach($attributeValueId);
-                    }
+                    $variant->attributeValues()->attach($variantData['attribute_values']);
                 }
             }
 
-            return new ProductResource($product->load('category', 'variants.attributeValues.attribute', 'variants.inventoryStock', ));
+            DB::commit();
+            return new ProductResource($product->load('category', 'variants.attributeValues.attribute', 'variants.inventoryStock'));
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json(['message' => 'Thêm Product thất bại', 'error' => $e->getMessage()], 500);
         }
     }
+
 
     /**
      * Display the specified resource.
@@ -85,8 +110,11 @@ public function index()
 
     public function update(UpdateProductRequest $request, string $id): JsonResponse
     {
+        DB::beginTransaction();
+
         try {
             $product = Product::findOrFail($id);
+
             $product->update([
                 'name' => $request->name,
                 'slug' => $request->slug,
@@ -98,8 +126,26 @@ public function index()
             ]);
 
             $variantIds = [];
+            $existingVariants = [];
 
             foreach ($request->variants as $variantData) {
+                $attributeValues = AttributeValue::whereIn('id', $variantData['attribute_values'])
+                    ->pluck('value')
+                    ->sort()
+                    ->values();
+
+                foreach ($existingVariants as $existingValues) {
+                    if ($existingValues->count() == $attributeValues->count() && $existingValues->diff($attributeValues)->isEmpty()) {
+                        DB::rollBack();
+                        return response()->json([
+                            'message' => 'Biến thể có giá trị thuộc tính trùng lặp.',
+                            'error' => 'Các giá trị thuộc tính (value) trùng nhau không được phép.'
+                        ], 422);
+                    }
+                }
+
+                $existingVariants[] = $attributeValues;
+
                 $variant = Variant::updateOrCreate(
                     ['id' => $variantData['id'] ?? null, 'product_id' => $product->id],
                     [
@@ -119,10 +165,13 @@ public function index()
 
             $product->variants()->whereNotIn('id', $variantIds)->delete();
 
+            DB::commit();
+
             return response()->json(new ProductResource(
                 $product->load(['category', 'variants.attributeValues.attribute', 'variants.inventoryStock'])
             ), 200);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
         }
     }
@@ -155,12 +204,12 @@ public function index()
             $product = Product::with('category')->findOrFail($id);
             $productData = $product->toArray();
             if (isset($productData['images'])) {
-                $productData['images'] = json_decode($productData['images'], true); 
+                $productData['images'] = json_decode($productData['images'], true);
             }
             $product->delete();
             return response()->json([
                 'message' => 'Product xóa thành công',
-                'data' => $productData 
+                'data' => $productData
             ], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Xóa product thất bại', 'error' => $e->getMessage()], 500);
@@ -190,7 +239,7 @@ public function index()
     // }
 
     //updateIsActive
-  
+
     public function updateIsActive(Request $request, string $id){
         $product = Product::with('category')->findOrFail($id);
         $product->update(['is_active'=>$request->is_active]);
@@ -202,7 +251,6 @@ public function index()
         ], 200);
     }
 
-    //khôi phục product (chuyển deleted_at về null)
     public function restore(string $id)
     {
         $product = Product::withTrashed()->findOrFail($id);
