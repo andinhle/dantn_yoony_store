@@ -334,4 +334,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     //xác nhận giao hàng
     Route::post('/orders/{code}/confirm-delivered', [OrderController::class, 'confirmDelivered'])->name('orders.confirmDelivered');
+
+    //api check variant 
+    Route::post('/cart-check', [CartController::class, 'checkVatirant']);
 });
