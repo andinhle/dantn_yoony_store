@@ -29,4 +29,3 @@ class UpdateOrderStatus extends Command
  }
 
 }
-

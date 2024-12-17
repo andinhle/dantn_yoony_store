@@ -79,22 +79,20 @@ class InsertOrderItems
 
                 
 
-                // Tính số lượng sẽ trừ
+                // SL có thể trừ
                 $quantityAvailable = $stock->quantity;
                 $unitPrice = $stock->import_price;
 
                 if ($quantityAvailable > 0) {
                     // Nếu còn hàng trong kho
                     if ($quantityAvailable >= $remainingQuantity) {
-
-
                         $stock->quantity -= $remainingQuantity;
                         $totalCost += $remainingQuantity * $unitPrice;
                         $remainingQuantity = 0; // Đã mua xong
 
                     } else {
                         $totalCost += $quantityAvailable * $unitPrice;
-                        // $remainingQuantity -= $quantityAvailable;
+                        $remainingQuantity -= $quantityAvailable;
                         $stock->quantity = 0;
                     }
 

@@ -222,6 +222,7 @@ class OrderController extends Controller
                 ]);
             case Order::STATUS_ORDER_SHIPPING:
                 $order->status_order = $status;
+                $order->shipped_at = now();
                 $order->save();
 
                 $notification = Notification::create([
@@ -510,5 +511,3 @@ class OrderController extends Controller
     }
 
 }
-
-

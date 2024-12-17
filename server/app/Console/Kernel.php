@@ -24,8 +24,11 @@ class Kernel extends ConsoleKernel
         //          ->appendOutputTo(storage_path('logs/sale-expired.log'));
         //  $schedule->command('order:update-status')->daily();
         $schedule->command('order:update-status')
-            ->hourly()
-            ->appendOutputTo(storage_path('logs/order-status.log'));
+        ->hourly()
+        ->appendOutputTo(storage_path('logs/order-status.log'));
+        
+        // Chạy mỗi ngày kiểm tra đơn hàng
+        $schedule->job(new \App\Jobs\AutoMarkDelivered())->everyMinute();
     }
 
     /**
