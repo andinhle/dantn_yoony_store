@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Supplier\StoreSupplierRequest;
+use App\Http\Requests\Supplier\UpdateSupplierRequest;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 
@@ -43,7 +44,7 @@ class SupplierController extends Controller
         ]);   
     }
 
-    public function update(StoreSupplierRequest $request, string $id)
+    public function update(UpdateSupplierRequest $request, string $id)
     {
         try {
             $supplier = Supplier::findOrFail($id);
