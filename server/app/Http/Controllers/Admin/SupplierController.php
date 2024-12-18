@@ -69,10 +69,23 @@ class SupplierController extends Controller
     {
         try {
             $supplier = Supplier::findOrFail($id);
+    
+            // Kiểm tra nếu supplier_id tồn tại trong bảng inventory_import_history
+            $hasHistory = \App\Models\InventoryImportHistory::where('supplier_id', $id)->exists();
+    
+            if ($hasHistory) {
+                return response()->json([
+                    'error' => 'Không thể xóa nhà cung cấp vì có lịch sử nhập hàng liên quan.'
+                ], 400);
+            }
+    
+            // Xóa nhà cung cấp nếu không có lịch sử nhập hàng
             $supplier->delete();
+    
             return response()->json(['message' => 'Xóa thành công'], 200);
+    
         } catch (\Exception $e) {
             return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
         }
-    }
+    }    
 }
