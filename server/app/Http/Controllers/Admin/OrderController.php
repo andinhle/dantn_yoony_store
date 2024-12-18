@@ -396,7 +396,7 @@ class OrderController extends Controller
                     Order::STATUS_ORDER_PENDING => Order::STATUS_ORDER_CONFIRMED,
                     Order::STATUS_ORDER_CONFIRMED => Order::STATUS_ORDER_PREPARING_GOODS,
                     Order::STATUS_ORDER_PREPARING_GOODS => Order::STATUS_ORDER_SHIPPING,
-                    Order::STATUS_ORDER_SHIPPING => Order::STATUS_ORDER_DELIVERED,
+                    Order::STATUS_ORDER_SHIPPING => Order::STATUS_ORDER_SHIPPING,
                     default => null,
                 };
 
@@ -413,7 +413,7 @@ class OrderController extends Controller
                 $isDelivered = $order->is_delivered ?? [];
                 $isDelivered = [1];
 
-                if ($order->status_order === Order::STATUS_ORDER_DELIVERED) {
+                if ($order->status_order === Order::STATUS_ORDER_SHIPPING) {
                     $order->is_delivered = $isDelivered; // Đánh dấu đơn hàng đã giao
                     $order->save();
                 }
