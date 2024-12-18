@@ -88,17 +88,18 @@ export default function BlogHome() {
                   />
                   <div className="p-4 flex-1">
                     <Link
-                      to={`/detailBlog/${blog.slug}`}
+                      to={`/blogs/${blog.slug}`}
                       className="text-base font-bold text-gray-700 mb-2"
                     >
                       {blog.title}
-                    </Link>
+                   
                     <p className="text-sm text-gray-500 mb-2">
                       Người viết: {blog.user_id}
                     </p>
                     <p className="text-sm text-gray-600 line-clamp-2">
                       {extractTextContent(blog.content)}
                     </p>
+                     </Link>
                   </div>
                 </div>
               ))}
