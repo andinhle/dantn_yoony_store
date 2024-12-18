@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->enum('discount_type', ['fixed', 'percentage']);
             $table->integer('usage_limit');
             $table->integer('min_order_value')->nullable();
-            $table->integer('max_order_value')->nullable();
+            $table->integer('max_discout')->nullable();
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->boolean('status')->default(true);
