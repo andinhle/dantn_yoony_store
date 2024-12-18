@@ -315,6 +315,13 @@ class OrderController extends Controller
         try {
             $order = Order::query()->where('code', $code)->first();
 
+            if(!$order){
+                return response()->json([
+                            'message' => 'Không tìm thấy sản phẩm',
+                            'status' => 'error',
+                        ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
             $request->validate([
                 'reason' => 'required|max:225'
             ], [
@@ -323,8 +330,19 @@ class OrderController extends Controller
             ]);
 
             $reason = $request->reason;
+            if($order->status_order	 === Order::STATUS_ORDER_CANCELED 
+                || $order->status_order === Order::STATUS_ORDER_SHIPPING
+                || $order->status_order === Order::STATUS_ORDER_DELIVERED)
+            {
+                return response()->json([
+                    'message' => 'Đơn hàng đang được giao. Không thể hủy đơn hàng',
+                    'status' => 'success',
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
 
-            $order->update(['status_order' => Order::STATUS_ORDER_CANCELED]);
+            $order->status_order = Order::STATUS_ORDER_CANCELED;
+            $order->save();
+            // $order->update(['status_order' => Order::STATUS_ORDER_CANCELED]);
 
             OrderCancellation::create([
                 'reason' => $reason,
@@ -381,6 +399,8 @@ class OrderController extends Controller
                     Order::STATUS_ORDER_SHIPPING => Order::STATUS_ORDER_DELIVERED,
                     default => null,
                 };
+
+                
     
                 if ($newStatus === null) {
                     continue; // Bỏ qua nếu trạng thái không hợp lệ
@@ -389,6 +409,14 @@ class OrderController extends Controller
                 // Cập nhật trạng thái
                 $order->status_order = $newStatus;
                 $order->save();
+
+                $isDelivered = $order->is_delivered ?? [];
+                $isDelivered = [1];
+
+                if ($order->status_order === Order::STATUS_ORDER_DELIVERED) {
+                    $order->is_delivered = $isDelivered; // Đánh dấu đơn hàng đã giao
+                    $order->save();
+                }
     
                 // Tạo thông báo
                 $notification = Notification::create([

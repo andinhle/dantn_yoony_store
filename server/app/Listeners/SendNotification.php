@@ -27,6 +27,9 @@ class SendNotification implements ShouldQueue
     {
         $user = $event->order->user;
        
+        // $items = json_decode($event->order->items);
+        // Log::info($items);
+
         Mail::send('orderShipperdMail', [
             'name' => $user->name,
             'order' =>  $event->order,
