@@ -436,15 +436,33 @@ class InventoryImportController extends Controller
     }
 
 
-    public function checkAvailableStock()
+    public function checkAvailableStock(Request $request)
     {
         try {
-            $products = InventoryImportHistory::with([
+            // Nhận tham số từ request
+            $fromDate = $request->input('from_date'); // Ngày bắt đầu
+            $toDate = $request->input('to_date');    // Ngày kết thúc
+
+            // Lấy query ban đầu
+            $query = InventoryImportHistory::with([
                 'variant.attributeValues.attribute',
                 'variant.product',
                 'supplier'
+            ]);
 
-            ])->paginate(10);
+            // Áp dụng bộ lọc ngày nếu có
+            if ($fromDate) {
+                $query->whereDate('created_at', '>=', $fromDate);
+            }
+
+            if ($toDate) {
+                $query->whereDate('created_at', '<=', $toDate);
+            }
+
+            $query->orderBy('created_at', 'desc');
+
+            // Phân trang
+            $products = $query->paginate(10);
 
             $result = [];
 
@@ -453,27 +471,22 @@ class InventoryImportController extends Controller
 
                 if ($import) {
                     $quantityAvailable = $import->quantity;
-
                     $productStatus = $quantityAvailable > 0 ? 'Còn hàng' : 'Hết hàng';
-
-                    if ($product->status !== $productStatus) {
-                        $product->update(['status' => $productStatus]);
-                    }
                 } else {
                     $quantityAvailable = 0;
                     $productStatus = 'Hết hàng';
+                }
 
-                    if ($product->status !== $productStatus) {
-                        $product->update(['status' => $productStatus]);
-                    }
+                // Cập nhật trạng thái nếu khác biệt
+                if ($product->status !== $productStatus) {
+                    $product->update(['status' => $productStatus]);
                 }
 
                 $result[] = [
                     'id' => $product->id,
                     'product' => [
-                            'name' => $product->variant->product->name ?? 'N/A',
-                            'images' => json_decode($product->variant->product->images, true) ?? []
-
+                        'name' => $product->variant->product->name ?? 'N/A',
+                        'images' => json_decode($product->variant->product->images, true) ?? []
                     ],
                     'quantity_import_history' => $product->quantity,
                     'quantity_available' => $quantityAvailable,
@@ -506,6 +519,7 @@ class InventoryImportController extends Controller
             ], 500);
         }
     }
+
 
     public function restoreImport($id)
     {
@@ -668,6 +682,46 @@ class InventoryImportController extends Controller
         }
     }
 
+    public function getByVariantIdOnlyTrashed($variantId)
+    {
+        try {
+            // Lấy các bản ghi đã xóa mềm từ InventoryImport dựa trên variant_id
+            $records = InventoryImport::onlyTrashed()
+                ->with(['supplier'])
+                ->where('variant_id', $variantId)
+                ->get();
+
+            if ($records->isEmpty()) {
+                return response()->json([
+                    'message' => 'Không tìm thấy bản ghi nào đã xóa mềm liên quan đến variant_id: ' . $variantId,
+                ], 404);
+            }
+
+            $result = [];
+
+            foreach ($records as $record) {
+                // Lấy thông tin từ InventoryImportHistory dựa trên batch_number
+                $history = InventoryImportHistory::where('batch_number', $record->batch_number)->first();
+
+                $result[] = [
+                    'inventory_import' => $record,
+                    'quantity_imported' => $history->quantity ?? 0, // Số lượng nhập đã lưu
+                    'batch_number' => $record->batch_number,
+                ];
+            }
+
+            return response()->json([
+                'message' => 'Danh sách các bản ghi đã xóa mềm liên quan đến variant_id: ' . $variantId,
+                'data' => $result
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Có lỗi xảy ra.',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 
 
 public function deleteHistoryRecord($id)
@@ -725,6 +779,8 @@ public function checkDateHistore(Request $request)
         if ($toDate) {
             $query->whereDate('created_at', '<=', $toDate);
         }
+
+        $query->orderBy('created_at', 'desc');
 
         // Phân trang
         $products = $query->paginate(10);

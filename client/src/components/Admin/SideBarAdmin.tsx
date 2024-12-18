@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../providers/AuthProvider";
 
 const SideBarAdmin = () => {
   const [is_openProduct, setOpenProduct] = useState<boolean>(false);
   const [is_openStatis, setOpenStatis] = useState<boolean>(false);
   const location = useLocation();
-
+  const {logout}=useAuth()
+  const navigate = useNavigate();
   useEffect(() => {
     if (location.pathname === "/admin") {
       setOpenProduct(false);
-      setOpenStatis(false)
+      setOpenStatis(false);
       setOpenStatis(false);
     } else if (location.pathname.startsWith("/admin/products")) {
       setOpenProduct(true);
@@ -17,7 +19,10 @@ const SideBarAdmin = () => {
       setOpenStatis(true);
     }
   }, [location.pathname]);
-
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
   return (
     <>
       <nav className="fixed bg-util backdrop-blur top-0 max-w-[225px] left-0 bottom-0 w-full z-50 hidden lg:block transition-all shadow-sm">
@@ -41,7 +46,7 @@ const SideBarAdmin = () => {
                 end
                 onClick={() => {
                   setOpenProduct(false);
-                  setOpenStatis(false)
+                  setOpenStatis(false);
                 }}
               >
                 <svg
@@ -102,7 +107,7 @@ const SideBarAdmin = () => {
                 end
                 onClick={() => {
                   setOpenProduct(false);
-                  setOpenStatis(false)
+                  setOpenStatis(false);
                 }}
               >
                 <svg
@@ -392,6 +397,46 @@ const SideBarAdmin = () => {
                       Nhà cung cấp
                     </NavLink>
                   </li>
+                  <li className="">
+                    <NavLink
+                      to={"products/historys"}
+                      end
+                      className={
+                        "flex p-2 rounded-md gap-2 border bg-util border-[#f5f5f5] hover:bg-primary hover:text-util text-[15px] transition-all"
+                      }
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        className="size-5"
+                        color={"currentColor"}
+                        fill={"none"}
+                      >
+                        <path
+                          d="M12 22C6.47715 22 2.00004 17.5228 2.00004 12C2.00004 6.47715 6.47719 2 12 2C16.4777 2 20.2257 4.94289 21.5 9H19"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M12 8V12L14 14"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M21.9551 13C21.9848 12.6709 22 12.3373 22 12M15 22C15.3416 21.8876 15.6753 21.7564 16 21.6078M20.7906 17C20.9835 16.6284 21.1555 16.2433 21.305 15.8462M18.1925 20.2292C18.5369 19.9441 18.8631 19.6358 19.1688 19.3065"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      <p className="text-nowrap text-ellipsis overflow-hidden">Lịch sử nhập hàng</p>
+                    </NavLink>
+                  </li>
                 </ul>
               )}
             </li>
@@ -403,7 +448,7 @@ const SideBarAdmin = () => {
                 }
                 onClick={() => {
                   setOpenProduct(false);
-                  setOpenStatis(false)
+                  setOpenStatis(false);
                 }}
               >
                 <svg
@@ -428,7 +473,7 @@ const SideBarAdmin = () => {
                 to={"rates"}
                 onClick={() => {
                   setOpenProduct(false);
-                  setOpenStatis(false)
+                  setOpenStatis(false);
                 }}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] transition-all"
@@ -594,7 +639,7 @@ const SideBarAdmin = () => {
                 end
                 onClick={() => {
                   setOpenProduct(false);
-                  setOpenStatis(false)
+                  setOpenStatis(false);
                 }}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] transition-all"
@@ -634,7 +679,7 @@ const SideBarAdmin = () => {
                 to={"banner"}
                 onClick={() => {
                   setOpenProduct(false);
-                  setOpenStatis(false)
+                  setOpenStatis(false);
                 }}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] transition-all"
@@ -673,7 +718,7 @@ const SideBarAdmin = () => {
                 to={"vouchers"}
                 onClick={() => {
                   setOpenProduct(false);
-                  setOpenStatis(false)
+                  setOpenStatis(false);
                 }}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary border border-[#f5f5f5] hover:text-util text-[15px] transition-all"
@@ -766,7 +811,7 @@ const SideBarAdmin = () => {
                 to={"blogs"}
                 onClick={() => {
                   setOpenProduct(false);
-                  setOpenStatis(false)
+                  setOpenStatis(false);
                 }}
                 className={
                   "flex items-center gap-2 py-[10px] px-2 rounded-md hover:bg-primary hover:text-util border border-[#f5f5f5] text-[15px] transition-all"
@@ -886,8 +931,8 @@ const SideBarAdmin = () => {
             </li>
           </ul>
           <div className="px-[20px] text-primary mb-7 btn-logout">
-            <Link
-              to={"logout"}
+            <button
+            onClick={handleLogout}
               className="py-[10px] bg-primary/20 px-2 w-full flex items-center gap-2 rounded-md"
             >
               <svg
@@ -899,7 +944,7 @@ const SideBarAdmin = () => {
                 <path d="M5 11H13V13H5V16L0 12L5 8V11ZM3.99927 18H6.70835C8.11862 19.2447 9.97111 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C9.97111 4 8.11862 4.75527 6.70835 6H3.99927C5.82368 3.57111 8.72836 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C8.72836 22 5.82368 20.4289 3.99927 18Z"></path>
               </svg>
               Logout
-            </Link>
+            </button>
           </div>
         </div>
       </nav>

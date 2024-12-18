@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
+use App\Models\InventoryStock;
 use App\Models\OrderItem;
 use App\Models\Variant;
 use Illuminate\Http\Request;
@@ -285,11 +286,9 @@ class CartController extends Controller
             return response()->json(['message' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
         }
     }
-
     public function addCartMultil(Request $request, $id_user)
     {
         try {
-            // Kiểm tra nếu không có id_user
             if (!$id_user) {
                 return response()->json([
                     'message' => 'id_user không được cung cấp',
@@ -297,10 +296,8 @@ class CartController extends Controller
                 ], Response::HTTP_BAD_REQUEST);
             }
 
-            // Lấy danh sách local cart từ request
             $localCart = $request->input('local_cart', []);
 
-            // Kiểm tra dữ liệu local_cart
             if (empty($localCart) || !is_array($localCart)) {
                 return response()->json([
                     'message' => 'Dữ liệu local_cart không hợp lệ',
@@ -308,16 +305,15 @@ class CartController extends Controller
                 ], Response::HTTP_BAD_REQUEST);
             }
 
+            $errors = [];
+
             // Duyệt qua từng item trong local_cart
             foreach ($localCart as $item) {
                 $variantId = $item['variant_id'] ?? null;
                 $quantity = $item['quantity'] ?? 0;
 
                 if (!$variantId || $quantity <= 0) {
-                    return response()->json([
-                        'message' => 'Dữ liệu không hợp lệ trong local_cart',
-                        'status' => 'error',
-                    ], Response::HTTP_BAD_REQUEST);
+                    continue; // Bỏ qua các item không hợp lệ
                 }
 
                 // Kiểm tra xem variant đã tồn tại trong giỏ hàng của user chưa
@@ -326,7 +322,33 @@ class CartController extends Controller
                     ->where('user_id', $id_user)
                     ->first();
 
-                if (!$existingCart) {
+                // Lấy thông tin tồn kho từ bảng InventoryStock
+                $inventoryStock = InventoryStock::where('variant_id', $variantId)->first();
+
+                if (!$inventoryStock) {
+                    $errors[] = [
+                        'variant_id' => $variantId,
+                        'error' => 'Sản phẩm không tồn tại trong kho!',
+                    ];
+                    continue;
+                }
+
+                // Tính tổng số lượng muốn cập nhật vào giỏ hàng
+                $newQuantity = $existingCart ? $existingCart->quantity + $quantity : $quantity;
+
+                if ($newQuantity > $inventoryStock->quantity) {
+                    // Thêm vào mảng lỗi nhưng không dừng chương trình
+                    $errors[] = [
+                        'variant_id' => $variantId,
+                        'error' => 'Số lượng sản phẩm vượt quá số lượng tồn kho hiện tại!',
+                    ];
+                    continue; // Bỏ qua sản phẩm này
+                }
+
+                if ($existingCart) {
+                    $existingCart->quantity = $newQuantity;
+                    $existingCart->save();
+                } else {
                     // Thêm mới sản phẩm vào giỏ hàng
                     Cart::create([
                         'user_id' => $id_user,
@@ -334,7 +356,6 @@ class CartController extends Controller
                         'quantity' => $quantity,
                     ]);
                 }
-                
             }
 
             // Lấy lại danh sách giỏ hàng sau khi cập nhật
@@ -347,6 +368,7 @@ class CartController extends Controller
                 'message' => 'Giỏ hàng đã được cập nhật thành công',
                 'status' => 'success',
                 'data' => $updatedCart,
+                'errors' => $errors, // Trả về các sản phẩm gặp lỗi (nếu có)
             ], Response::HTTP_OK);
         } catch (\Throwable $th) {
             Log::error('Error in addCartMultil method: ', [
@@ -393,6 +415,38 @@ class CartController extends Controller
             return response()->json([
                 'message' => 'An error occurred while fetching the variant',
                 'status' => 'error'
+            ], 500);
+        }
+    }
+
+    public function checkVatirant(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'variant_id' => 'required|exists:variants,id',
+                'user_id' => 'required|exists:users,id',
+            ]);
+
+            $cartItem = Cart::where('variant_id', $validated['variant_id'])
+                ->where('user_id', $validated['user_id'])
+                ->first();
+
+            if ($cartItem) {
+                return response()->json([
+                    'data' => $cartItem
+                ], 200);
+            } else {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Không tìm thấy sản phẩm trong giỏ hàng của bạn, có thể shop đã tắt sản phẩm này!',
+                ], 404);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Đã xảy ra lỗi trong quá trình xử lý.',
+                'details' => $e->getMessage(),
             ], 500);
         }
     }

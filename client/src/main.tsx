@@ -62,7 +62,10 @@ import OrdersListAdmin from "./pages/admin/Orders/OrdersListAdmin.tsx";
 import LayoutStatisAdmin from "./layouts/Admin/LayoutStatisAdmin.tsx";
 import StatisProductAdmin from "./pages/admin/statis/StatisProductAdmin.tsx";
 import StatisDetailProduct from "./pages/admin/statis/StatisDetailProduct.tsx";
+import HistoryInventory from "./pages/admin/inventory/HistoryInventory.tsx";
 
+
+import RatingProductAdmin from "./pages/admin/rates/EvaluateDetails.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -118,9 +121,9 @@ createRoot(document.getElementById("root")!).render(
               <Route path="search" element={<FilterProducts />} />
               <Route path="gio-hang" element={<CartListClient />} />
               <Route path="blogs" element={<BlogPage />} />
+              <Route path="blogs/:slug" element={<BlogDetail />} />
               <Route path="checkorder" element={<CheckOrder />} />
               <Route path="event" element={<EventUser />} />
-              <Route path="detailBlog/:slug" element={<BlogDetail />} />
             </Route>
             {/* Admin và manage mới vô được */}
             <Route element={<AdminMiddleware />}>
@@ -136,6 +139,7 @@ createRoot(document.getElementById("root")!).render(
                   <Route path="variants" element={<ListVariant />} />
                   <Route path="inventory" element={<ListInventory />} />
                   <Route path="suppliers" element={<SuppliersAdmin />} />
+                  <Route path="historys" element={<HistoryInventory />} />
                   <Route path="update/:id" element={<AddOrUpdateProduct />} />
                 </Route>
                 <Route path="thong-ke" element={<LayoutStatisAdmin />}>
@@ -154,6 +158,11 @@ createRoot(document.getElementById("root")!).render(
                   element={<OrderDetails />}
                 />
                 <Route path="rates" element={<Rates />} />
+            
+                <Route
+                path="rates/:slug"
+                element={<RatingProductAdmin />}
+              />
                 <Route path="chatbot" element={<LayoutChatAdmin />} />
               </Route>
             </Route>
