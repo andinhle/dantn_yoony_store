@@ -538,4 +538,58 @@ class OrderController extends Controller
         ]);
     }
 
+    public function filterOrdersByDateRange(Request $request)
+{
+    try {
+        // Lấy giá trị bắt đầu và kết thúc từ request
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        // Xác thực dữ liệu đầu vào
+        $request->validate([
+            'start_date' => 'required|date|before_or_equal:end_date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ], [
+            'start_date.required' => 'Ngày bắt đầu là bắt buộc.',
+            'start_date.date' => 'Ngày bắt đầu không hợp lệ.',
+            'start_date.before_or_equal' => 'Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.',
+            'end_date.required' => 'Ngày kết thúc là bắt buộc.',
+            'end_date.date' => 'Ngày kết thúc không hợp lệ.',
+            'end_date.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.',
+        ]);
+
+        // Truy vấn đơn hàng trong khoảng thời gian
+        $orders = Order::query()
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->with(['items.variant'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Kiểm tra nếu không có đơn hàng nào
+        if ($orders->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không có đơn hàng nào trong khoảng thời gian này.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $orders,
+        ], 200);
+
+    } catch (\Throwable $th) {
+        Log::error(__CLASS__ . '@' . __FUNCTION__, [
+            'line' => $th->getLine(),
+            'message' => $th->getMessage(),
+        ]);
+
+        return response()->json([
+            'message' => 'Đã xảy ra lỗi trong quá trình xử lý.',
+            'status' => 'error',
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+}
+
+
 }
