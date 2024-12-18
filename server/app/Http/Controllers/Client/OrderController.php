@@ -286,7 +286,6 @@ class OrderController extends Controller
             'user_id' => Auth::id(),
         ]);
 
-        // Thêm thông tin lý do và mã người dùng vào dữ liệu trả về
         $order['reason'] = $reason;
         $order['user']['code'] = $order->code;
 
