@@ -280,7 +280,7 @@ class HomeController extends Controller
         $blog = Blog::where('slug', $slug)->firstOrFail();
 
         $related_blogs = Blog::where('id', '!=', $blog->id)
-            ->take(5)
+            ->take(10)
             ->get();
 
         return response()->json([
