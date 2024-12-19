@@ -11,10 +11,10 @@ import {
 } from "../../../components/User/Manager/Orders/ManagerOrdersUser";
 import { NavLink, useSearchParams } from "react-router-dom";
 import { IMeta } from "../../../interfaces/IMeta";
-type Prop ={
-  setListAllCount:(count:number)=>void
-}
-const OrderListsAllAdmin = ({setListAllCount}:Prop) => {
+type Prop = {
+  setListAllCount: (count: number) => void;
+};
+const OrderListsAllAdmin = ({ setListAllCount }: Prop) => {
   const [valSearch, SetValSearch] = useState<string>("");
   const [orders, setOrders] = useState<Orders[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -29,7 +29,7 @@ const OrderListsAllAdmin = ({setListAllCount}:Prop) => {
           data: { data: response },
         } = await instance.get("admin/orders");
         setOrders(response.data);
-        setListAllCount(response.data.length)
+        setListAllCount(response.data.length);
         setMeta(response);
       } catch (error) {
         console.log(error);
@@ -108,6 +108,9 @@ const OrderListsAllAdmin = ({setListAllCount}:Prop) => {
               </Table.HeadCell>
               <Table.HeadCell className="bg-[#F4F7FA] text-secondary/75 text-sm font-medium capitalize text-nowrap">
                 Trạng thái
+              </Table.HeadCell>
+              <Table.HeadCell className="bg-[#F4F7FA] text-secondary/75 text-sm font-medium capitalize text-nowrap">
+                Thông tin giao hàng
               </Table.HeadCell>
               <Table.HeadCell className="bg-[#F4F7FA] text-secondary/75 text-sm font-medium capitalize text-nowrap">
                 Hành động
@@ -217,6 +220,27 @@ const OrderListsAllAdmin = ({setListAllCount}:Prop) => {
                         <Table.Cell>
                           <p className="block text-nowrap">
                             {status(order.status_order)}
+                          </p>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <p className="block text-nowrap">
+                            {order.status_order === "shipping" && (
+                              <>
+                                {order.is_delivered === null && (
+                                  <p>Chưa có thông tin</p>
+                                )}
+                                {Array(order?.is_delivered).length === 1 && (
+                                  <p className="text-primary/75">
+                                    Đang chờ người dùng xác nhận
+                                  </p>
+                                )}
+                                {Array(order?.is_delivered).length === 2 && (
+                                  <p className="text-[#33C8DB]">
+                                    Giao hàng thành công
+                                  </p>
+                                )}
+                              </>
+                            )}
                           </p>
                         </Table.Cell>
                         <Table.Cell>

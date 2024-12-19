@@ -28,7 +28,6 @@ const StatisDetailProduct = () => {
         console.error("Error fetching product data", error);
       }
     };
-
     fetchProductData();
   }, [slug, dateRange]);
 
@@ -38,8 +37,10 @@ const StatisDetailProduct = () => {
 
   const series = [
     {
-      name: "Giá (VND)",
-      data: productData?.variants.map((variant) => variant.price || 0),
+      name: "SL huỷ",
+      data: productData?.variants.map(
+        (variant) => variant?.canceled_quantity || 0
+      ),
     },
     {
       name: "Tổng doanh thu (VND)",
@@ -75,7 +76,7 @@ const StatisDetailProduct = () => {
           show: true,
         },
       },
-      colors: ["#3b82f6", "#22c55e", "#f97316", "#eab308"],
+      colors: ["#F05152", "#22c55e", "#f97316", "#eab308"],
       plotOptions: {
         bar: {
           borderRadius: 8,
@@ -106,7 +107,7 @@ const StatisDetailProduct = () => {
           shade: "light",
           type: "vertical",
           shadeIntensity: 0.5,
-          gradientToColors: ["#60a5fa", "#4ade80", "#fb923c", "#facc15"],
+          gradientToColors: ["#FF9900", "#4ade80", "#fb923c", "#facc15"],
           stops: [0, 100],
         },
       },
@@ -129,14 +130,11 @@ const StatisDetailProduct = () => {
 
   const seriesProduct = [
     Number(productData?.total_quantity_sold),
-    Number(productData?.stock_quantity)
-  ]
-
-
-  console.log(seriesProduct);
+    Number(productData?.stock_quantity),
+  ];
 
   const optionsProduct = {
-    series: seriesProduct, 
+    series: seriesProduct,
     chart: {
       width: 320,
       type: "pie",
@@ -155,18 +153,16 @@ const StatisDetailProduct = () => {
         },
       },
     ],
-    colors: ['#0088FE','#00C49F'],
+    colors: ["#0088FE", "#00C49F"],
     legend: {
-      position: 'bottom',
-      horizontalAlign: 'center', // Căn giữa các label
-      fontSize: '14px', // Kích thước font chữ
+      position: "bottom",
+      horizontalAlign: "center", // Căn giữa các label
+      fontSize: "14px", // Kích thước font chữ
       labels: {
-        colors: '#000', // Màu của label
+        colors: "#000", // Màu của label
       },
     },
   };
-  
-
   return (
     <div className="p-5 rounded-md min-h-screen bg-util space-y-5">
       <div className="grid grid-cols-12 gap-5">
@@ -203,28 +199,28 @@ const StatisDetailProduct = () => {
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
-                  className="size-5"
+                  className="size-6"
                   color={"currentColor"}
                   fill={"none"}
                 >
                   <path
-                    d="M18.4167 8.14815C18.4167 5.85719 15.5438 4 12 4C8.45617 4 5.58333 5.85719 5.58333 8.14815C5.58333 10.4391 7.33333 11.7037 12 11.7037C16.6667 11.7037 19 12.8889 19 15.8519C19 18.8148 15.866 20 12 20C8.13401 20 5 18.1428 5 15.8519"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M12 2V22"
+                    d="M12 22C11.1818 22 10.4002 21.6708 8.83693 21.0123C4.94564 19.3734 3 18.5539 3 17.1754V7.54234M12 22C12.8182 22 13.5998 21.6708 15.1631 21.0123C19.0544 19.3734 21 18.5539 21 17.1754V7.54234M12 22V12.0292M21 7.54234C21 8.15478 20.1984 8.54152 18.5953 9.315L15.6741 10.7244C13.8712 11.5943 12.9697 12.0292 12 12.0292M21 7.54234C21 6.9299 20.1984 6.54316 18.5953 5.76969L17 5M3 7.54234C3 8.15478 3.80157 8.54152 5.40472 9.315L8.32592 10.7244C10.1288 11.5943 11.0303 12.0292 12 12.0292M3 7.54234C3 6.9299 3.80157 6.54317 5.40472 5.76969L7 5M6 13.0263L8 14.0234"
                     stroke="currentColor"
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
+                  <path
+                    d="M10 2L12 4M12 4L14 6M12 4L10 6M12 4L14 2"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
                 </svg>
               </span>
               <div className="flex flex-col">
-                <label className="text-sm text-secondary/50">Giá</label>
-                <p>200.000 VNĐ</p>
+                <label className="text-sm text-secondary/50">SL đã huỷ</label>
+                <p className="text-red-500">{productData?.canceled_quantity}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -374,7 +370,7 @@ const StatisDetailProduct = () => {
                 <label className="text-sm text-secondary/50">
                   Tổng doanh thu
                 </label>
-                <p>{productData?.total_quantity_sold}</p>
+                <p>{productData?.total_revenue.toLocaleString()}đ</p>
               </div>
             </div>
             <div className="flex items-center gap-2">

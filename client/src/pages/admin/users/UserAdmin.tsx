@@ -195,11 +195,12 @@ const UserAdmin = () => {
                   </Table.Cell>
                   <Table.Cell>
                     <button
-                      className="text-primary flex items-center mx-auto gap-1.5"
+                      className={`${user.role==='admin' ? 'text-secondary/40 hover:cursor-not-allowed' : 'text-primary hover:cursor-pointer'} flex items-center mx-auto gap-1.5`}
                       onClick={() => {
                         setOpenModal(true);
                         getDataUser(user.id!);
                       }}
+                      disabled={user.role==='admin'}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"

@@ -44,7 +44,16 @@ class CouponController extends Controller
     public function store(StoreCouponRequest $request)
     {
         try {
-            $coupon = Coupon::create($request->validated());
+            $data = $request->all();
+            
+            if ($data['discount_type'] == 'percentage' && isset($data['max_discount']) && $data['discount'] > $data['max_discount']) {
+                return response()->json(['max_discount' => 'Mức chiết khấu tối đa phải lớn hơn hoặc bằng tỷ lệ phần trăm chiết khấu.'],Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+            if(($data['discount'] > 100) && $data['discount_type'] == 'percentage'){
+                return response()->json(['max_discount' => 'Phần trăm tối đa là 100%'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+            
+            $coupon = Coupon::create($data);
 
             return response()->json([
                 'message' => 'Thêm mới coupon thành công',
@@ -102,6 +111,14 @@ class CouponController extends Controller
             $data = $request->all();
 
             $model = Coupon::query()->findOrFail($id);
+
+            if ($data['discount_type'] == 'percentage' && isset($data['max_discount']) && $data['discount'] > $data['max_discount']) {
+                return response()->json(['max_discount' => 'Mức chiết khấu tối đa phải lớn hơn hoặc bằng tỷ lệ phần trăm chiết khấu.'],Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+            if(($data['discount'] > 100) && $data['discount_type'] == 'percentage'){
+                return response()->json(['max_discount' => 'Phần trăm tối đa là 100%'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
 
             $model->update($data);
 

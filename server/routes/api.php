@@ -118,9 +118,16 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Thông báo
+    // Lấy ra tất cả tb của user và đém sl thông báo (id là id của user)
     Route::get('/notification/{id}', [NotificationController::class, 'getUserNotifications']);
+    // Đếm số lượng tb chưa đọc và list ra (id là id của user)
+    Route::get('/count-unread-notification/{id}', [NotificationController::class, 'countUnreadNotifications']);
+    // Đếm số lượng tb đã đọc và list ra (id là id của user)
+    Route::get('/count-isread-notification/{id}', [NotificationController::class, 'countIsreadNotifications']);
+    // Đọc từng tb (id là id của thông bào)
     Route::patch('/notification/{id}/read', [NotificationController::class, 'markAsRead']);
-
+    // Đọc tất cả tb của user (id là id của user)
+    Route::put('/notification/{id}/readAll', [NotificationController::class, 'markAllAsRead']);
     // Admin
     Route::middleware(['admin'])->group(function () {
         //QL user

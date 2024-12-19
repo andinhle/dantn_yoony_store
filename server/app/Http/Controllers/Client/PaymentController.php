@@ -67,7 +67,7 @@ class PaymentController extends Controller
 
             if ($requiredQuantity > $availableQuantity) {
                 return response()->json([
-                    'error' => 'Sản phẩm ' . $item->variant->product->name . ' không đủ tồn kho. Còn ' . $availableQuantity . ' sản phẩm.'
+                    'error' => 'Sản phẩm ' . $item->variant->product->name . ' không đủ tồn kho.'
                 ], 400);
             }
         }

@@ -59,8 +59,6 @@ const OrderListPending = ({ activeTab,setPendingCount }: Props) => {
     })();
   }, [activeTab]);
 
-  console.log(checkedList);
-
   const handleUpdateStatusOrderNext = async (status: string) => {
     try {
       await instance.post("admin/order-update_much", {

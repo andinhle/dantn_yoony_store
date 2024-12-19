@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Orders } from "../../../interfaces/IOrders";
 import instance from "../../../instance/instance";
 import { toast } from "react-toastify";
 import { IoArrowBackCircleSharp } from "react-icons/io5";
-import { Steps } from "antd";
+import { ConfigProvider, Select, Steps } from "antd";
 import { GiftOutlined, LockOutlined } from "@ant-design/icons";
 import { TiDelete } from "react-icons/ti";
 import "./index.css";
@@ -32,6 +32,7 @@ const OrderDetails = () => {
     { value: "delivered", label: "Đã giao hàng" },
     { value: "canceled", label: "Hủy" },
   ];
+
   const stepIndex = orderStatuses.findIndex(
     (status) => status.value === selectedStatus
   );
@@ -43,18 +44,60 @@ const OrderDetails = () => {
     setShowCancelModal(false);
     setCancelReason(""); // Reset lý do hủy
   };
-  const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newStatus = event.target.value;
-    setSelectedStatus(newStatus); // Lưu trạng thái đã chọn
-    if (newStatus === "canceled") {
-      setShowCancelModal(true); // Hiện modal lý do hủy
-    } else {
-      setShowCancelModal(false); // Ẩn modal nếu không phải "Canceled"
-    }
-    // setSelectedStatus(event.target.value);
-  };
-  console.log(selectedStatus);
+  // const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  //   const newStatus = event.target.value;
+  //   setSelectedStatus(newStatus);
 
+  //   if (newStatus === "canceled") {
+  //     setShowCancelModal(true);
+  //   } else {
+  //     setShowCancelModal(false);
+  //   }
+  // };
+
+  const isOptionDisabled = (option: { value: string; label: string }) => {
+    // Nếu trạng thái hiện tại là "pending"
+    if (selectedStatus === "pending") {
+      if (!["confirmed", "canceled"].includes(option.value)) return true;
+    }
+  
+    // Nếu trạng thái hiện tại là "confirmed"
+    if (selectedStatus === "confirmed") {
+      if (!["preparing_goods", "canceled"].includes(option.value)) return true;
+    }
+    if (selectedStatus === "preparing_goods") {
+      if (option.value !== "shipping") return true;
+    }
+    if (selectedStatus === "shipping") {
+      if (option.value !== "delivered") return true;
+    }
+
+
+    // Nếu trạng thái hiện tại có trước "shipping"
+    const orderStatusOrder = [
+      "pending",
+      "confirmed",
+      "preparing_goods",
+      "shipping",
+      "delivered",
+      "canceled",
+    ];
+    const currentIndex = orderStatusOrder.indexOf(selectedStatus);
+    const optionIndex = orderStatusOrder.indexOf(option.value);
+
+    // Disable các trạng thái trước trạng thái hiện tại
+    if (optionIndex < currentIndex) return true;
+
+    // Disable "canceled" nếu đang ở trạng thái shipping hoặc delivered
+    if (
+      option.value === "canceled" &&
+      (selectedStatus === "shipping" || selectedStatus === "delivered")
+    ) {
+      return true;
+    }
+
+    return false;
+  };
   const handleUpdateStatus = async () => {
     try {
       // Gửi yêu cầu cập nhật trạng thái
@@ -82,13 +125,11 @@ const OrderDetails = () => {
     try {
       const { data } = await instance.get(`admin/order-detail/${code}`);
       setOrderDetail(data.data);
-      console.log("data:", data.data);
       // Đảm bảo rằng bạn set selectedStatus bằng với status_order của đơn hàng
       const currentStatus = data.data.status_order; // Trạng thái hiện tại
       const statusExists = orderStatuses.some(
         (status) => status.value === currentStatus
       );
-
       setSelectedStatus(statusExists ? currentStatus : "pending"); // Nếu trạng thái không hợp lệ, fallback về "pending"
     } catch (error: any) {
       toast.error(
@@ -115,7 +156,6 @@ const OrderDetails = () => {
       await instance.patch(`admin/order-cancelation/${code}`, {
         reason: cancelReason,
       });
-      console.log("reason");
       toast.success("Hủy đơn hàng thành công!");
       setSelectedStatus("canceled");
       setOrderDetail((prev) =>
@@ -273,9 +313,14 @@ const OrderDetails = () => {
                           {orderDetail?.final_total.toLocaleString()}đ
                         </span>
                       </p>
-                      <p className={`${orderDetail?.profit>0 ? 'text-[#22A949]':'text-red-400'}`}>
-                        ( {' '}
-                         <span>Lợi nhuận đơn:</span>{" "}
+                      <p
+                        className={`${
+                          orderDetail?.profit > 0
+                            ? "text-[#22A949]"
+                            : "text-red-400"
+                        }`}
+                      >
+                        ( <span>Lợi nhuận đơn:</span>{" "}
                         {orderDetail?.profit.toLocaleString()}đ )
                       </p>
                     </div>
@@ -294,28 +339,45 @@ const OrderDetails = () => {
             >
               TRẠNG THÁI ĐƠN HÀNG
             </label>
-            <select
-              id="orderStatus"
-              value={selectedStatus}
-              onChange={handleStatusChange}
-              disabled={selectedStatus === "canceled"}
-              className="block border-[#f1f1f1] rounded-md min-w-max focus:border-primary focus:ring-primary sm:text-sm"
-            >
-              {orderStatuses
-                .filter(
-                  (status) =>
-                    !(
-                      (selectedStatus === "shipping" ||
-                        selectedStatus === "delivered") &&
-                      status.value === "canceled"
-                    )
-                )
-                .map((status) => (
-                  <option key={status.value} value={status.value}>
-                    {status.label}
-                  </option>
-                ))}
-            </select>
+            <div className="flex gap-2">
+              <ConfigProvider
+                theme={{
+                  token: {
+                    colorPrimary: "#ff9900",
+                  },
+                }}
+              >
+                <Select
+                  style={{ width: "170px" }}
+                  value={selectedStatus}
+                  onChange={(value) => {
+                    setSelectedStatus(value);
+                    if (value === "canceled") {
+                      setShowCancelModal(true);
+                    }
+                  }}
+                  disabled={
+                    selectedStatus === "canceled"
+                  }
+                >
+                  {orderStatuses.map((status) => (
+                    <Select.Option
+                      key={status.value}
+                      value={status.value}
+                      disabled={isOptionDisabled(status)}
+                    >
+                      {status.label}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </ConfigProvider>
+              <button
+                className="bg-primary/90 text-util px-3 rounded-full text-sm"
+                onClick={() => fetchOrderDetail(orderDetail.code)}
+              >
+                Đặt lại
+              </button>
+            </div>
           </div>
           {selectedStatus !== "canceled" && (
             <div className="flex items-center gap-3">
@@ -325,117 +387,44 @@ const OrderDetails = () => {
                   type="submit"
                   className="cursor-pointer focus:outline-none w-full text-white bg-primary hover:bg-primary focus:ring-4 focus:ring-primary font-medium rounded-md text-sm py-2 px-3.5 dark:bg-primary dark:hover:bg-primary dark:focus:ring-primary flex items-center justify-center"
                 >
-                  <MdUpdate className="mr-2 w-5 h-5" />{" "}
-                  {/* Biểu tượng update với khoảng cách bên phải */}
-                  Cập nhật
+                  <MdUpdate className="mr-2 w-5 h-5" /> Cập nhật
                 </button>
               </div>
-              <div>
-                <button
-                  type="submit"
-                  onClick={handleCancelClick}
-                  className="text-[#FF7F40] bg-primary/10 py-1.5 px-2 flex items-center flex-nowrap gap-1 rounded-sm"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    className="size-5"
-                    color={"currentColor"}
-                    fill={"none"}
+              {selectedStatus !== "delivered" && (
+                <div>
+                  <button
+                    type="submit"
+                    onClick={handleCancelClick}
+                    className="text-[#FF7F40] bg-primary/10 py-1.5 px-2 flex items-center flex-nowrap gap-1 rounded-sm"
                   >
-                    <path
-                      d="M12 22C11.1818 22 10.4002 21.6708 8.83693 21.0123C4.94564 19.3734 3 18.5539 3 17.1754V7.54234M12 22C12.8182 22 13.5998 21.6708 15.1631 21.0123C19.0544 19.3734 21 18.5539 21 17.1754V7.54234M12 22V12.0292M21 7.54234C21 8.15478 20.1984 8.54152 18.5953 9.315L15.6741 10.7244C13.8712 11.5943 12.9697 12.0292 12 12.0292M21 7.54234C21 6.9299 20.1984 6.54316 18.5953 5.76969L17 5M3 7.54234C3 8.15478 3.80157 8.54152 5.40472 9.315L8.32592 10.7244C10.1288 11.5943 11.0303 12.0292 12 12.0292M3 7.54234C3 6.9299 3.80157 6.54317 5.40472 5.76969L7 5M6 13.0263L8 14.0234"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M10 2L12 4M12 4L14 6M12 4L10 6M12 4L14 2"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <span>Huỷ đơn</span>
-                </button>
-              </div>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      className="size-5"
+                      color={"currentColor"}
+                      fill={"none"}
+                    >
+                      <path
+                        d="M12 22C11.1818 22 10.4002 21.6708 8.83693 21.0123C4.94564 19.3734 3 18.5539 3 17.1754V7.54234M12 22C12.8182 22 13.5998 21.6708 15.1631 21.0123C19.0544 19.3734 21 18.5539 21 17.1754V7.54234M12 22V12.0292M21 7.54234C21 8.15478 20.1984 8.54152 18.5953 9.315L15.6741 10.7244C13.8712 11.5943 12.9697 12.0292 12 12.0292M21 7.54234C21 6.9299 20.1984 6.54316 18.5953 5.76969L17 5M3 7.54234C3 8.15478 3.80157 8.54152 5.40472 9.315L8.32592 10.7244C10.1288 11.5943 11.0303 12.0292 12 12.0292M3 7.54234C3 6.9299 3.80157 6.54317 5.40472 5.76969L7 5M6 13.0263L8 14.0234"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M10 2L12 4M12 4L14 6M12 4L10 6M12 4L14 2"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <span>Huỷ đơn</span>
+                  </button>
+                </div>
+              )}
             </div>
           )}
           {showCancelModal && (
-            // <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 overflow-hidden">
-            //     <div className="bg-white p-6 rounded-lg shadow-lg w-1/3 max-h-screen overflow-y-auto">
-            //         <h3 className="text-lg font-semibold mb-4">Lý do hủy đơn hàng</h3>
-            //         <div className="space-y-2">
-            //             {["Hàng không đúng mẫu", "Giao hàng chậm quá số ngày quy định", "Sai chính sách"].map((reason, idx) => (
-            //                 <button
-            //                     key={idx}
-            //                     className={`w-full p-2 border border-gray-300 rounded-md text-left ${cancelReason === reason ? "bg-gray-200" : ""
-            //                         }`}
-            //                     onClick={() => setCancelReason(reason)}
-            //                 >
-            //                     {reason}
-            //                 </button>
-            //             ))}
-            //         </div>
-            //         <div className="flex justify-end mt-4">
-            //             <button
-            //                 onClick={handleCloseModal}
-            //                 className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md mr-2"
-            //             >
-            //                 Đóng
-            //             </button>
-            //             <button
-            //                 onClick={handleConfirmCancel}
-            //                 className="px-4 py-2 bg-red-600 text-white rounded-md"
-            //             >
-            //                 Xác nhận hủy
-            //             </button>
-            //         </div>
-            //     </div>
-            // </div>
-            // <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 overflow-hidden">
-            //     <div className="bg-white p-4 rounded-lg shadow-lg w-1/4 max-h-screen overflow-y-auto text-sm">
-            //         <h3 className="text-md font-semibold mb-3">Lý do hủy đơn hàng</h3>
-            //         <div className="space-y-2">
-            //             {["Hàng không đúng mẫu", "Giao hàng chậm quá số ngày quy định", "Sai chính sách", "Khác"].map((reason, idx) => (
-            //                 <label key={idx} className="flex items-center space-x-2">
-            //                     <input
-            //                         type="radio"
-            //                         value={reason}
-            //                         checked={cancelReason === reason}
-            //                         onChange={() => setCancelReason(reason)}
-            //                         className="form-radio h-4 w-4 text-blue-600"
-            //                     />
-            //                     <span className="text-left">{reason}</span>
-            //                 </label>
-            //             ))}
-            //             {cancelReason === "Khác" && (
-            //                 <input
-            //                     type="text"
-            //                     placeholder="Nhập lý do hủy khác..."
-            //                     value={customReason}
-            //                     onChange={(e) => setCustomReason(e.target.value)}
-            //                     className="mt-2 p-1 border border-gray-300 rounded-md w-full text-sm"
-            //                 />
-            //             )}
-            //         </div>
-            //         <div className="flex justify-end mt-3">
-            //             <button
-            //                 onClick={handleCloseModal}
-            //                 className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md mr-2 text-sm"
-            //             >
-            //                 Đóng
-            //             </button>
-            //             <button
-            //                 onClick={handleConfirmCancel}
-            //                 className="px-3 py-1 bg-red-600 text-white rounded-md text-sm"
-            //             >
-            //                 Xác nhận hủy
-            //             </button>
-            //         </div>
-            //     </div>
-            // </div>
             <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 overflow-hidden">
               <div className="bg-white p-4 rounded-lg shadow-lg w-1/4 max-h-screen overflow-y-auto text-sm">
                 <h3 className="text-md font-semibold mb-3">
@@ -554,85 +543,6 @@ const OrderDetails = () => {
         </div>
       </div>
       <div className="overflow-hidden w-full lg:w-1/3 space-y-4">
-        {/* <div className="bg-white rounded-lg  p-6">
-                    <div className="pb-3 flex justify-between items-center space-x-1">
-                        <div className="flex justify-start items-center">
-                            <MdLocalShipping className="text-primary w-10" size={20} />
-                            <h2 className="text-primary font-bold text-sm">THÔNG TIN HẬU CẦN</h2>
-                        </div>
-                        <div className="font-mono text-xs w-fit p-2 bg-yellow-100 text-yellow-400 rounded-lg">
-                            Track Order
-                        </div>
-                    </div>
-                    <hr />
-                    <div className="flex justify-center items-center">
-                        <svg
-                            className="text-primary w-24"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            width="150"
-                            height="150"
-                            color="#000000"
-                            fill="none">
-                            <path d="M19.5 17.5C19.5 18.8807 18.3807 20 17 20C15.6193 20 14.5 18.8807 14.5 17.5C14.5 16.1193 15.6193 15 17 15C18.3807 15 19.5 16.1193 19.5 17.5Z"
-                                stroke="currentColor"
-                                stroke-width="1.5" />
-                            <path d="M9.5 17.5C9.5 18.8807 8.38071 20 7 20C5.61929 20 4.5 18.8807 4.5 17.5C4.5 16.1193 5.61929 15 7 15C8.38071 15 9.5 16.1193 9.5 17.5Z"
-                                stroke="currentColor"
-                                stroke-width="1.5" />
-                            <path d="M14.5 17.5H9.5M19.5 17.5H20.2632C20.4831 17.5 20.5931 17.5 20.6855 17.4885C21.3669 17.4036 21.9036 16.8669 21.9885 16.1855C22 16.0931 22 15.9831 22 15.7632V13C22 9.41015 19.0899 6.5 15.5 6.5M15 15.5V7C15 5.58579 15 4.87868 14.5607 4.43934C14.1213 4 13.4142 4 12 4H5C3.58579 4 2.87868 4 2.43934 4.43934C2 4.87868 2 5.58579 2 7V15C2 15.9346 2 16.4019 2.20096 16.75C2.33261 16.978 2.52197 17.1674 2.75 17.299C3.09808 17.5 3.56538 17.5 4.5 17.5"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round" />
-                            <path d="M6.5 7V10.9998M10.5 7V10.9998"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round" />
-                        </svg>
-                    </div>
-                    <div className="space-y-3">
-                        <div className="flex space-x-2">
-                            <p className="font-bold text-sm">Ngày đặt hàng :</p>
-                            <span className="text-sm">
-                                {new Date(orderDetail?.created_at as string).toLocaleDateString("vi-VN", {
-                                    year: "numeric",
-                                    month: "numeric",
-                                    day: "numeric",
-                                })}
-                            </span>
-                        </div>
-                        <div className="flex space-x-2">
-                            <p className="font-bold text-sm">Phương thức giao hàng :</p>
-                            <span className="text-sm">
-                                Giao hàng nhanh
-                            </span>
-                        </div>
-
-                        <div className="">
-                            <div className="flex space-x-2">
-                                <p className="font-bold text-sm">Phương thức thanh toán :</p>
-                                <span className="text-sm">
-                                    {orderDetail?.payment_method}
-                                </span>
-                            </div>
-
-                            {orderDetail?.payment_method === 'VNPAY' && (
-                                <img src={VNPAY} className="w-16 h-7" />
-                            )}
-                            {orderDetail?.payment_method === 'COD' && (
-                                <span className="text-green-600 text-sm">Thanh toán khi nhận hàng (COD)</span>
-                            )}
-                        </div>
-                        <div className="space-x-2">
-                            <p className="font-bold text-sm">Ghi chú đơn hàng :</p>
-                            <span className="text-sm">
-                                {orderDetail?.notes}
-                            </span>
-                        </div>
-                    </div>
-                </div> */}
         <div className="border border-[#f1f1f1] rounded-md bg-util p-3 space-y-2">
           <h3 className="uppercase text-primary font-medium text-sm flex items-center gap-2 pb-2.5 border-b border-input/50">
             <svg

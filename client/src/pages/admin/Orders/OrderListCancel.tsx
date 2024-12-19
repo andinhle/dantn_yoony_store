@@ -29,7 +29,6 @@ const OrderListCancel = ({activeTab}:Props) => {
         } = await instance.get("admin/orders?status=canceled");
         setOrdersCanceled(response.data);
         setMeta(response);
-        console.log(response);
       } catch (error) {
         console.log(error);
       }
