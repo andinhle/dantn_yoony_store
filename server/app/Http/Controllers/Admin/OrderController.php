@@ -397,64 +397,73 @@ class OrderController extends Controller
                         $newStatus = Order::STATUS_ORDER_CONFIRMED;
                         $order->status_order = $newStatus;
                         $order->save();
+                        // Tạo thông báo
+                        $notification = Notification::create([
+                            'user_id' => $order->user_id,
+                            'order_id' => $order->id,
+                            'order_code' => $order->code,
+                            'status' => $newStatus,
+                            'is_delivered' => json_encode($order->is_delivered),
+                            'content' => 'Đơn hàng <b>' . $order->code . '</b> đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$newStatus] . '</span>',
+                        ]);
                         break;
                     case Order::STATUS_ORDER_CONFIRMED:
                         $newStatus = Order::STATUS_ORDER_PREPARING_GOODS;
                         $order->status_order = $newStatus;
                         $order->save();
+                        // Tạo thông báo
+                        $notification = Notification::create([
+                            'user_id' => $order->user_id,
+                            'order_id' => $order->id,
+                            'order_code' => $order->code,
+                            'status' => $newStatus,
+                            'is_delivered' => json_encode($order->is_delivered),
+                            'content' => 'Đơn hàng <b>' . $order->code . '</b> đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$newStatus] . '</span>',
+                        ]);
                         break;
                     case Order::STATUS_ORDER_PREPARING_GOODS:
                         $newStatus = Order::STATUS_ORDER_SHIPPING;
                         $order->status_order = $newStatus;
                         $order->save();
+                        // Tạo thông báo
+                        $notification = Notification::create([
+                            'user_id' => $order->user_id,
+                            'order_id' => $order->id,
+                            'order_code' => $order->code,
+                            'status' => $newStatus,
+                            'is_delivered' => json_encode($order->is_delivered),
+                            'content' => 'Đơn hàng <b>' . $order->code . '</b> đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$newStatus] . '</span>',
+                        ]);
                         break;
                     case Order::STATUS_ORDER_SHIPPING:
-                        $order->shipped_at = now();
-                        $newStatus = Order::STATUS_ORDER_SHIPPING;
-                        $order->status_order = $newStatus;
-                        $order->save();
-                        break;
-                    case Order::STATUS_ORDER_DELIVERED:
                         $isDelivered = $order->is_delivered ?? [];
-                        
-                        // Gán giá trị `[1]` khi chuyển sang trạng thái DELIVERED
-                        if (empty($isDelivered)) {
-                            $isDelivered = [1];
-                        } else {
-                            $isDelivered[] = 1; // Thêm giá trị nếu đã có
-                        }
-                    
-                        $order->is_delivered = json_encode($isDelivered); // Lưu dưới dạng JSON nếu cần
-                        if (count($isDelivered) >= 2) {
-                            $newStatus = Order::STATUS_ORDER_DELIVERED;
-                            $order->status_order = $newStatus;
+                        $isDelivered = [1];
+                        $order->is_delivered = $isDelivered;
+                        $newStatus = Order::STATUS_ORDER_SHIPPING;
+
+                        $order->status_order = $newStatus;
+                        if (count($order->is_delivered) >= 2) {
                             $order->completed_at = now();
-                        }
-                    
+
+                        }                    
                         $order->save();
+                        // Tạo thông báo
+                        $notification = Notification::create([
+                            'user_id' => $order->user_id,
+                            'order_id' => $order->id,
+                            'order_code' => $order->code,
+                            'status' => $newStatus,
+                            'is_delivered' => json_encode($order->is_delivered),
+                            'content' => 'Đơn hàng <b>' . $order->code . '</b> đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$newStatus] . '</span>',
+                        ]);
                         break;
                     default:
                         $newStatus = null;
                         break;
                     }
     
-
-                
-    
-                if ($newStatus === null) {
-                    continue; // Bỏ qua nếu trạng thái không hợp lệ
-}
-                
-                // Tạo thông báo
-                $notification = Notification::create([
-                    'user_id' => $order->user_id,
-                    'order_id' => $order->id,
-                    'order_code' => $order->code,
-                    'status' => $newStatus,
-                    'is_delivered' => json_encode($order->is_delivered),
-                    'content' => 'Đơn hàng <b>' . $order->code . '</b> đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$newStatus] . '</span>',
-                ]);
-    
+                  continue; // Bỏ qua nếu trạng thái không hợp lệ
+                }
                 // Phát event real-time
                 event(new OrderStatusUpdated($notification, $order->user_id));
     
@@ -464,7 +473,7 @@ class OrderController extends Controller
                     'order_code' => $order->code,
                     'new_status' => $newStatus,
                 ];
-            }
+            
     
             if (empty($updatedOrders)) {
                 return response()->json(['message' => 'Không có đơn hàng nào được cập nhật.'], 400);
@@ -484,9 +493,10 @@ class OrderController extends Controller
             return response()->json([
                 'message' => 'Lỗi hệ thống.',
                 'status' => 'error',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    
 
 
     
