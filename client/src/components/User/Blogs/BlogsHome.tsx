@@ -94,7 +94,7 @@ export default function BlogHome() {
                       {blog.title}
                    
                     <p className="text-sm text-gray-500 mb-2">
-                      Người viết: {blog.user_id}
+                      Người viết: {blog.user.name}
                     </p>
                     <p className="text-sm text-gray-600 line-clamp-2">
                       {extractTextContent(blog.content)}

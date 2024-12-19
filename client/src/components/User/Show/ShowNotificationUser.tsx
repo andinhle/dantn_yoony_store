@@ -50,7 +50,7 @@ const ShowNotificationUser = () => {
             return (
               <Link
                 key={notification.id}
-                to={`/user-manager/user-orders/order-detail/${notification.order_code}`}
+                to={`/count-unread-notification/{id}/${notification.order_code}`}
                 className="block"
               >
                 {HTMLReactParser(notification.content)}
