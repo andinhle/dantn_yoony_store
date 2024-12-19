@@ -281,7 +281,7 @@ const ModalInventoryImport = ({
         const errorMessage = invalidVariantDetails
           .map(
             (variant) =>
-              `Variant ID ${variant.id} (${variant.attributes}): Thiếu ${variant.missingFields}`
+              `Biến thể ${variant.id} (${variant.attributes}): Thiếu ${variant.missingFields}`
           )
           .join("\n");
 
@@ -465,22 +465,41 @@ const ModalInventoryImport = ({
   };
 
   const [variantDetails, setVariantDetails] = useState<IVariants[]>([]);
+  const [unlockVariantDetails, setUnlockVariantDetails] = useState<IVariants[]>(
+    []
+  );
 
-  const handleDeleteImportRecord = async (importId: number) => {
+  const handleLockImportRecord = async (importId: number) => {
     try {
       const {
         data: { data: response },
       } = await instance.delete(`deleteImport/${importId}`);
-      console.log(response);
-      // Cập nhật state
       if (response) {
         setVariantDetails(
           variantDetails.filter((variantDetail) => {
             return variantDetail?.inventory_import?.id !== importId;
           })
         );
+        toast.success("Khoá lô hàng thành công");
       }
-      toast.success("Xóa lô nhập hàng thành công");
+
+    } catch (error) {
+      console.error("Lỗi khi xóa lô nhập hàng:", error);
+    }
+  };
+  const handleUnLockImportRecord = async (importId: number) => {
+    try {
+      const {
+        data: { data: response },
+      } = await instance.post(`inventory-imports/${importId}/restore`);
+      if (response) {
+        setUnlockVariantDetails(
+          unlockVariantDetails.filter((variantDetail) => {
+            return variantDetail?.inventory_import?.id !== importId;
+          })
+        );
+        toast.success("Mở khoá lô nhập hàng thành công");
+      }
     } catch (error) {
       console.error("Lỗi khi xóa lô nhập hàng:", error);
     }
@@ -638,6 +657,7 @@ const ModalInventoryImport = ({
   const [expandedVariantId, setExpandedVariantId] = useState<number | null>(
     null
   );
+  const [unlockVariantId, setUnlockVariantId] = useState<number | null>(null);
 
   const toggleVariantDetails = async (item: any) => {
     const originalVariant = inventoryItem.find((v) =>
@@ -649,7 +669,7 @@ const ModalInventoryImport = ({
     if (originalVariant) {
       const newExpandedId = expandedVariantId === item.id ? null : item.id;
       setExpandedVariantId(newExpandedId);
-
+      setUnlockVariantId(null);
       if (newExpandedId !== null) {
         try {
           const {
@@ -658,7 +678,6 @@ const ModalInventoryImport = ({
             `inventory-import/variant/${originalVariant.id}`
           );
           setVariantDetails(response);
-          console.log(response);
         } catch (error) {
           console.log(error);
           setVariantDetails(null);
@@ -670,6 +689,41 @@ const ModalInventoryImport = ({
       console.log("Không tìm thấy variant");
       setExpandedVariantId(null);
       setVariantDetails(null);
+    }
+  };
+  const toggleUnlockVariant = async (item: any) => {
+    const originalVariant = inventoryItem.find((v) =>
+      v.attribute_values.every(
+        (attr, index) => attr.value === item.attribute_values[index]?.value
+      )
+    );
+
+    if (originalVariant) {
+      const newUnlockId = unlockVariantId === item.id ? null : item.id;
+      setUnlockVariantId(newUnlockId);
+      setExpandedVariantId(null);
+      if (newUnlockId !== null) {
+        try {
+          const {
+            data: { data: response },
+          } = await instance.get(
+            `getByVariantIdOnlyTrashed/${originalVariant.id}`
+          );
+          const filteredDetails = response.filter(
+            (detail: any) => detail.inventory_import.quantity > 0
+          );
+          setUnlockVariantDetails(filteredDetails);
+        } catch (error) {
+          console.log(error);
+          setUnlockVariantDetails(null);
+        }
+      } else {
+        setUnlockVariantDetails(null);
+      }
+    } else {
+      console.log("Không tìm thấy variant");
+      setUnlockVariantId(null);
+      setUnlockVariantDetails(null);
     }
   };
 
@@ -791,7 +845,7 @@ const ModalInventoryImport = ({
                 </Table.Head>
                 <Table.Body className="divide-y">
                   {inventorys.length === 0 ? (
-                    <Table.Row>
+                    <Table.Row key={1}>
                       <Table.Cell colSpan={6}>
                         <div className="flex flex-col items-center text-secondary/20 space-y-2 justify-center min-h-[50vh]">
                           <svg
@@ -839,6 +893,7 @@ const ModalInventoryImport = ({
                               onClick={() =>
                                 handleToggleVariants(inventory.id!)
                               }
+                              key={index+1}
                             >
                               <Table.Cell className="text-center">
                                 {index + 1}
@@ -989,11 +1044,22 @@ const ModalInventoryImport = ({
                                                     <button
                                                       type="button"
                                                       onClick={() =>
+                                                        toggleUnlockVariant(
+                                                          item
+                                                        )
+                                                      }
+                                                      className="px-4 py-1 text-primary rounded-sm border border-[#f1f1f1]"
+                                                    >
+                                                      Kho
+                                                    </button>
+                                                    <button
+                                                      type="button"
+                                                      onClick={() =>
                                                         toggleVariantDetails(
                                                           item
                                                         )
                                                       }
-                                                      className="px-4 py-2 text-primary"
+                                                      className="px-4 py-1 text-[#5EB800] rounded-sm border border-[#f1f1f1]"
                                                     >
                                                       Chi tiết
                                                     </button>
@@ -1137,6 +1203,174 @@ const ModalInventoryImport = ({
                                                   </ConfigProvider>
                                                 </div>
                                                 {/* Danh sách các lần nhập trước */}
+                                                {unlockVariantId ===
+                                                  item.id && (
+                                                  <div className="mt-4">
+                                                    <h4 className="font-medium text-secondary mb-2">
+                                                      Kho bị khoá
+                                                    </h4>
+                                                    {unlockVariantDetails?.length >
+                                                      0 ||
+                                                    (item.inventoryImports &&
+                                                      item.inventoryImports
+                                                        .length > 0) ? (
+                                                      <div className="overflow-x-auto">
+                                                        <table className="w-full">
+                                                          <thead>
+                                                            <tr className="bg-[#F4F7FA]">
+                                                              <th className="p-2 text-left text-sm font-normal">
+                                                                Ngày Nhập
+                                                              </th>
+                                                              <th className="p-2 text-left text-sm font-normal">
+                                                                Giá Nhập
+                                                              </th>
+                                                              <th className="p-2 text-center text-sm font-normal">
+                                                                Số Lượng Nhập
+                                                              </th>
+                                                              <th className="p-2 text-center text-sm font-normal">
+                                                                Còn Lại
+                                                              </th>
+                                                              <th className="p-2 text-center text-sm font-normal">
+                                                                Nhà Cung Cấp
+                                                              </th>
+                                                              <th className="p-2 text-center text-sm font-normal">
+                                                                Hành động
+                                                              </th>
+                                                            </tr>
+                                                          </thead>
+                                                          <tbody>
+                                                            {unlockVariantDetails?.map(
+                                                              (
+                                                                importItem: any
+                                                              ) => (
+                                                                <tr
+                                                                  key={
+                                                                    importItem
+                                                                      .inventory_import
+                                                                      .id
+                                                                  }
+                                                                  className="transition-colors bg-util"
+                                                                >
+                                                                  <td className="p-2 text-sm">
+                                                                    {dayjs(
+                                                                      importItem
+                                                                        .inventory_import
+                                                                        .created_at
+                                                                    ).format(
+                                                                      "DD/MM/YYYY HH:mm"
+                                                                    )}
+                                                                  </td>
+                                                                  <td className="p-2 text-sm">
+                                                                    {new Intl.NumberFormat(
+                                                                      "vi-VN",
+                                                                      {
+                                                                        style:
+                                                                          "currency",
+                                                                        currency:
+                                                                          "VND",
+                                                                      }
+                                                                    ).format(
+                                                                      importItem
+                                                                        .inventory_import
+                                                                        .import_price
+                                                                    )}
+                                                                  </td>
+                                                                  <td className="p-2 text-sm text-center">
+                                                                    {
+                                                                      importItem.quantity_imported
+                                                                    }
+                                                                  </td>
+                                                                  <td className="p-2 text-sm text-center text-primary">
+                                                                    {
+                                                                      importItem
+                                                                        .inventory_import
+                                                                        .quantity
+                                                                    }
+                                                                  </td>
+                                                                  <td className="p-2 text-sm text-center">
+                                                                    <p className="text-nowrap text-ellipsis overflow-hidden">
+                                                                      {importItem
+                                                                        .inventory_import
+                                                                        .supplier
+                                                                        ?.name ||
+                                                                        "Chưa xác định"}
+                                                                    </p>
+                                                                  </td>
+                                                                  <td className="p-2">
+                                                                    <div className="flex items-center gap-2 justify-center">
+                                                                      <ConfigProvider
+                                                                        theme={{
+                                                                          token:
+                                                                            {
+                                                                              colorPrimary:
+                                                                                "#ff9900",
+                                                                            },
+                                                                        }}
+                                                                      >
+                                                                        <Popconfirm
+                                                                          title="Xác nhận mở khoá lần nhập này?"
+                                                                          onConfirm={() =>
+                                                                            handleUnLockImportRecord(
+                                                                              importItem
+                                                                                .inventory_import
+                                                                                .id
+                                                                            )
+                                                                          }
+                                                                          okText="Mở khoá"
+                                                                          cancelText="Hủy"
+                                                                        >
+                                                                          <button
+                                                                            type="button"
+                                                                            className="text-primary p-2 bg-util shadow-sm rounded-full"
+                                                                          >
+                                                                            <svg
+                                                                              xmlns="http://www.w3.org/2000/svg"
+                                                                              viewBox="0 0 24 24"
+                                                                              className="size-5"
+                                                                              color={
+                                                                                "currentColor"
+                                                                              }
+                                                                              fill={
+                                                                                "none"
+                                                                              }
+                                                                            >
+                                                                              <path
+                                                                                d="M5 15C5 11.134 8.13401 8 12 8C15.866 8 19 11.134 19 15C19 18.866 15.866 22 12 22C8.13401 22 5 18.866 5 15Z"
+                                                                                stroke="currentColor"
+                                                                                strokeWidth="1.5"
+                                                                              />
+                                                                              <path
+                                                                                d="M7.5 9.5V6.5C7.5 4.01472 9.51472 2 12 2C13.5602 2 14.935 2.79401 15.7422 4"
+                                                                                stroke="currentColor"
+                                                                                strokeWidth="1.5"
+                                                                                strokeLinecap="round"
+                                                                              />
+                                                                              <path
+                                                                                d="M12 16V14"
+                                                                                stroke="currentColor"
+                                                                                strokeWidth="1.5"
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                              />
+                                                                            </svg>
+                                                                          </button>
+                                                                        </Popconfirm>
+                                                                      </ConfigProvider>
+                                                                    </div>
+                                                                  </td>
+                                                                </tr>
+                                                              )
+                                                            )}
+                                                          </tbody>
+                                                        </table>
+                                                      </div>
+                                                    ) : (
+                                                      <p className="text-secondary/50 italic">
+                                                        Kho rỗng
+                                                      </p>
+                                                    )}
+                                                  </div>
+                                                )}
                                                 {expandedVariantId ===
                                                   item.id && (
                                                   <div className="mt-4">
@@ -1211,14 +1445,14 @@ const ModalInventoryImport = ({
                                                                   </td>
                                                                   <td className="p-2 text-sm text-center">
                                                                     {
+                                                                      importItem.quantity_imported
+                                                                    }
+                                                                  </td>
+                                                                  <td className="p-2 text-sm text-center text-primary">
+                                                                    {
                                                                       importItem
                                                                         .inventory_import
                                                                         .quantity
-                                                                    }
-                                                                  </td>
-                                                                  <td className="p-2 text-sm text-center">
-                                                                    {
-                                                                      importItem.quantity_imported
                                                                     }
                                                                   </td>
                                                                   <td className="p-2 text-sm text-center">
@@ -1232,50 +1466,65 @@ const ModalInventoryImport = ({
                                                                   </td>
                                                                   <td className="p-2">
                                                                     <div className="flex items-center gap-2 justify-center">
-                                                                      <Popconfirm
-                                                                        title="Xác nhận đưa vào thùng rác lần nhập này?"
-                                                                        onConfirm={() =>
-                                                                          handleDeleteImportRecord(
-                                                                            importItem
-                                                                              .inventory_import
-                                                                              .id
-                                                                          )
-                                                                        }
-                                                                        okText="Thùng rác"
-                                                                        cancelText="Hủy"
+                                                                      <ConfigProvider
+                                                                        theme={{
+                                                                          token:
+                                                                            {
+                                                                              colorPrimary:
+                                                                                "#ff9900",
+                                                                            },
+                                                                        }}
                                                                       >
-                                                                        <button
-                                                                          type="button"
-                                                                          className="text-primary p-2 bg-util shadow-sm rounded-full"
+                                                                        <Popconfirm
+                                                                          title="Xác nhận khoá lần nhập này?"
+                                                                          onConfirm={() =>
+                                                                            handleLockImportRecord(
+                                                                              importItem
+                                                                                .inventory_import
+                                                                                .id
+                                                                            )
+                                                                          }
+                                                                          okText="Khoá"
+                                                                          cancelText="Hủy"
                                                                         >
-                                                                          <svg
-                                                                            xmlns="http://www.w3.org/2000/svg"
-                                                                            viewBox="0 0 24 24"
-                                                                            className="size-4"
-                                                                            color={
-                                                                              "currentColor"
-                                                                            }
-                                                                            fill={
-                                                                              "none"
-                                                                            }
+                                                                          <button
+                                                                            type="button"
+                                                                            className="text-primary p-2 bg-util shadow-sm rounded-full"
                                                                           >
-                                                                            <path
-                                                                              d="M4.47461 6.10018L5.31543 18.1768C5.40886 19.3365 6.28178 21.5536 8.51889 21.8022C10.756 22.0507 15.2503 21.9951 16.0699 21.9951C16.8895 21.9951 19.0128 21.4136 19.0128 19.0059C19.0128 16.5756 16.9833 15.9419 15.7077 15.9635H12.0554M12.0554 15.9635C12.0607 15.7494 12.1515 15.5372 12.3278 15.3828L14.487 13.4924M12.0554 15.9635C12.0497 16.1919 12.1412 16.4224 12.33 16.5864L14.487 18.4609M19.4701 5.82422L19.0023 13.4792"
-                                                                              stroke="currentColor"
-                                                                              strokeWidth="1.5"
-                                                                              strokeLinecap="round"
-                                                                              strokeLinejoin="round"
-                                                                            />
-                                                                            <path
-                                                                              d="M3 5.49561H21M16.0555 5.49561L15.3729 4.08911C14.9194 3.15481 14.6926 2.68766 14.3015 2.39631C14.2148 2.33168 14.1229 2.2742 14.0268 2.22442C13.5937 2 13.0739 2 12.0343 2C10.9686 2 10.4358 2 9.99549 2.23383C9.89791 2.28565 9.80479 2.34547 9.7171 2.41265C9.32145 2.7158 9.10044 3.20004 8.65842 4.16854L8.05273 5.49561"
-                                                                              stroke="currentColor"
-                                                                              strokeWidth="1.5"
-                                                                              strokeLinecap="round"
-                                                                              strokeLinejoin="round"
-                                                                            />
-                                                                          </svg>
-                                                                        </button>
-                                                                      </Popconfirm>
+                                                                            <svg
+                                                                              xmlns="http://www.w3.org/2000/svg"
+                                                                              viewBox="0 0 24 24"
+                                                                              className="size-5"
+                                                                              color={
+                                                                                "currentColor"
+                                                                              }
+                                                                              fill={
+                                                                                "none"
+                                                                              }
+                                                                            >
+                                                                              <path
+                                                                                d="M14.491 15.5H14.5M9.5 15.5H9.50897"
+                                                                                stroke="currentColor"
+                                                                                strokeWidth="2"
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                              />
+                                                                              <path
+                                                                                d="M4.26781 18.8447C4.49269 20.515 5.87613 21.8235 7.55966 21.9009C8.97627 21.966 10.4153 22 12 22C13.5847 22 15.0237 21.966 16.4403 21.9009C18.1239 21.8235 19.5073 20.515 19.7322 18.8447C19.879 17.7547 20 16.6376 20 15.5C20 14.3624 19.879 13.2453 19.7322 12.1553C19.5073 10.485 18.1239 9.17649 16.4403 9.09909C15.0237 9.03397 13.5847 9 12 9C10.4153 9 8.97627 9.03397 7.55966 9.09909C5.87613 9.17649 4.49269 10.485 4.26781 12.1553C4.12105 13.2453 4 14.3624 4 15.5C4 16.6376 4.12105 17.7547 4.26781 18.8447Z"
+                                                                                stroke="currentColor"
+                                                                                strokeWidth="1.5"
+                                                                              />
+                                                                              <path
+                                                                                d="M7.5 9V6.5C7.5 4.01472 9.51472 2 12 2C14.4853 2 16.5 4.01472 16.5 6.5V9"
+                                                                                stroke="currentColor"
+                                                                                strokeWidth="1.5"
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                              />
+                                                                            </svg>
+                                                                          </button>
+                                                                        </Popconfirm>
+                                                                      </ConfigProvider>
                                                                     </div>
                                                                   </td>
                                                                 </tr>

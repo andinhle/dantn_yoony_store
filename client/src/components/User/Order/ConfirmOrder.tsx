@@ -4,7 +4,7 @@ import instance from "../../../instance/instance";
 import { useContext, useEffect, useState } from "react";
 import CartContext from "../../../contexts/CartContext";
 import { useNavigate } from "react-router-dom";
-import { Modal, Input, Progress, message } from "antd";
+import { Modal, Input, Progress, message, ConfigProvider } from "antd";
 import { IVoucher } from "../../../interfaces/IVouchers";
 import queryString from "query-string";
 import { useRef } from "react";
@@ -23,6 +23,8 @@ const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
   const [voucherCheck, setCheckVoucher] = useState<IVoucher | undefined>(
     undefined
   );
+  const [modal2Open, setModal2Open] = useState(false);
+  const [errorConfirmOrder, setErrorConfirmOrder] = useState<string>("");
   const callbackProcessedRef = useRef(false);
   const navigate = useNavigate();
   useEffect(() => {
@@ -99,11 +101,11 @@ const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
               ].forEach((key) => localStorage.removeItem(key));
             }
           }
-        }else{
-          const { data } = await instance.post("vnpay/callback", {
+        } else {
+          await instance.post("vnpay/callback", {
             ...parsed,
           });
-          console.log(data);
+          // console.log(data);
         }
 
         if (resultCode) {
@@ -156,11 +158,10 @@ const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
   }, [dispatch, final_total, navigate]);
 
   const finalPaymentAmount = voucherCheck
-  ? voucherCheck.discount_type === 'percentage'
-    ? final_total - (final_total * (voucherCheck.discount / 100))
-    : final_total - voucherCheck.discount
-  : final_total;
-
+    ? voucherCheck.discount_type === "percentage"
+      ? final_total - final_total * (voucherCheck.discount / 100)
+      : final_total - voucherCheck.discount
+    : final_total;
 
   const { Search } = Input;
 
@@ -246,6 +247,10 @@ const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
         }
       }
     } catch (error) {
+      if (error) {
+        setModal2Open(true);
+        setErrorConfirmOrder(error.response?.data?.error);
+      }
       if (axios.isAxiosError(error)) {
         toast.error(error.response?.data?.message);
       } else if (error instanceof Error) {
@@ -304,9 +309,8 @@ const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
     }
   };
 
-  console.log(voucherCheck);
   return (
-    <div className="col-span-3 border border-input p-3 rounded-md h-fit space-y-6 sticky top-20 bg-util">
+    <div className="col-span-12 lg:col-span-3 border border-input p-3 rounded-md h-fit space-y-6 sticky top-20 bg-util">
       <Modal
         title="Chọn Yoony Voucher"
         open={isModalOpen}
@@ -515,7 +519,7 @@ const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
               </svg>
             </label>
           </div>
-          <div className="flex w-auto items-center rounded-[5px] overflow-hidden">
+          <div className="flex items-center rounded-[5px] overflow-hidden">
             <input
               type="text"
               onClick={showModal}
@@ -528,7 +532,7 @@ const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
               type="button"
               className={`block ${
                 voucherCheck ? "bg-gray-400" : "bg-primary"
-              } w-full h-[35px] px-2 text-sm text-util`}
+              } w-auto lg:w-full h-[35px] px-2 text-sm text-util`}
               onClick={handleCheckVoucher}
               disabled={voucherCheck !== undefined}
             >
@@ -559,18 +563,16 @@ const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
           <span className="text-primary">
             {(voucherCheck
               ? voucherCheck.discount_type === "percentage"
-                ? final_total - (final_total * voucherCheck.discount) / 100 
+                ? final_total - (final_total * voucherCheck.discount) / 100
                 : voucherCheck.discount > final_total
-                ? 0 
-                : final_total - voucherCheck.discount 
+                ? 0
+                : final_total - voucherCheck.discount
               : final_total
-            ) 
-              .toLocaleString()}
+            ).toLocaleString()}
             đ
           </span>
         </p>
       </div>
-
       <button
         className={`${
           current !== 2 ? "bg-[#D1D1D6]" : "bg-primary"
@@ -590,6 +592,71 @@ const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
           Đảm bảo an toàn và bảo mật
         </p>
       </div>
+      <ConfigProvider
+        theme={{
+          token: {
+            colorPrimary: "#ff9900",
+          },
+        }}
+      >
+        <Modal
+          centered
+          open={modal2Open}
+          onOk={() => navigate('/gio-hang')}
+          onCancel={() => setModal2Open(false)}
+          cancelText={"Trở lại"}
+          okText={"Giỏ hàng"}
+          width={320}
+        >
+          <div className="space-y-5 mb-7">
+            <div className="p-5 bg-primary/10 text-red-400 w-fit rounded-full mx-auto">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className="size-10"
+                color={"currentColor"}
+                fill={"none"}
+              >
+                <path
+                  d="M11 22C10.1818 22 9.40019 21.6698 7.83693 21.0095C3.94564 19.3657 2 18.5438 2 17.1613C2 16.7742 2 10.0645 2 7M11 22L11 11.3548M11 22C11.6167 22 12.12 21.8124 13 21.4372M20 7V12"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M16 15L19 18M19 18L22 21M19 18L16 21M19 18L22 15"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M7.32592 9.69138L4.40472 8.27785C2.80157 7.5021 2 7.11423 2 6.5C2 5.88577 2.80157 5.4979 4.40472 4.72215L7.32592 3.30862C9.12883 2.43621 10.0303 2 11 2C11.9697 2 12.8712 2.4362 14.6741 3.30862L17.5953 4.72215C19.1984 5.4979 20 5.88577 20 6.5C20 7.11423 19.1984 7.5021 17.5953 8.27785L14.6741 9.69138C12.8712 10.5638 11.9697 11 11 11C10.0303 11 9.12883 10.5638 7.32592 9.69138Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M5 12L7 13"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M16 4L6 9"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+            <p className="text-red-400 text-center">{errorConfirmOrder}</p>
+          </div>
+        </Modal>
+      </ConfigProvider>
     </div>
   );
 };

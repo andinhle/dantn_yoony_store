@@ -4,31 +4,12 @@ import { FreeMode, Navigation, HashNavigation } from "swiper/modules";
 import { Autoplay } from "swiper/modules";
 import ButtonSeeMore from "../Button/ButtonSeeMore";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import instance from "../../../instance/instance";
-import axios from "axios";
 import { IProduct } from "../../../interfaces/IProduct";
 import GroupVariantsByColor from "../Show/GroupVariantsByColor";
-const ProductUniForm = () => {
-  const [productUniForms, setProductUniForms] = useState<IProduct[]>([]);
-  useEffect(() => {
-    (async () => {
-      try {
-        const {
-          data: { data: response },
-        } = await instance.get(`home/product/category/${4}`);
-        setProductUniForms(response);
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data?.message);
-        } else if (error instanceof Error) {
-          console.log(error.message);
-        } else {
-          console.log("Đã xảy ra lỗi không mong muốn");
-        }
-      }
-    })();
-  }, []);
+type Prop = {
+  productUniForms: IProduct[];
+};
+const ProductUniForm = ({productUniForms}:Prop) => {
   return (
     <section className="py-5 flex gap-5">
       <div className="w-1/3 relative group">

@@ -168,7 +168,7 @@ class OrderController extends Controller
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
-                    'status'=>$order->status,
+                    'status'=>$order->status_order,
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #ff9800;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
 
@@ -188,7 +188,7 @@ class OrderController extends Controller
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
-                    'status'=>$order->status,
+                    'status'=>$order->status_order,
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #4caf50;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
 
@@ -208,7 +208,7 @@ class OrderController extends Controller
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
-                    'status'=>$order->status,
+                    'status'=>$order->status_order,
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
 
@@ -222,14 +222,14 @@ class OrderController extends Controller
                 ]);
             case Order::STATUS_ORDER_SHIPPING:
                 $order->status_order = $status;
-                $order->shipped_at = now();
                 $order->save();
 
                 $notification = Notification::create([
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
-                    'status'=>$order->status,
+                    'status'=>$order->status_order,
+                    'is_delivered'=> json_encode($order->is_delivered),
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #03a9f4;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
 
@@ -248,7 +248,6 @@ class OrderController extends Controller
                 if (count($order->is_delivered) >= 2) {
                     $order->status_order = Order::STATUS_ORDER_DELIVERED;
                     $order->completed_at = now();
-
                 }
                 $order->save();
 
@@ -256,7 +255,8 @@ class OrderController extends Controller
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
-                    'status'=>$order->status,
+                    'status'=>$order->status_order,
+                    'is_delivered'=> json_encode($order->is_delivered),
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #8bc34a;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
 
@@ -276,7 +276,7 @@ class OrderController extends Controller
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
-                    'status'=>$order->status,
+                    'status'=>$order->status_order,
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #f44336;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
 
@@ -403,7 +403,11 @@ class OrderController extends Controller
                             'order_id' => $order->id,
                             'order_code' => $order->code,
                             'status' => $newStatus,
+<<<<<<< HEAD
                             // 'is_delivered' => json_decode($order->is_delivered),
+=======
+                            'is_delivered' => json_encode($order->is_delivered),
+>>>>>>> 09464faa461f55a0be9ec242bc96d75e49608273
                             'content' => 'Đơn hàng <b>' . $order->code . '</b> đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$newStatus] . '</span>',
                         ]);
                         break;
@@ -417,7 +421,11 @@ class OrderController extends Controller
                             'order_id' => $order->id,
                             'order_code' => $order->code,
                             'status' => $newStatus,
+<<<<<<< HEAD
                             // 'is_delivered' => json_decode($order->is_delivered),
+=======
+                            'is_delivered' => json_encode($order->is_delivered),
+>>>>>>> 09464faa461f55a0be9ec242bc96d75e49608273
                             'content' => 'Đơn hàng <b>' . $order->code . '</b> đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$newStatus] . '</span>',
                         ]);
                         break;
@@ -431,7 +439,11 @@ class OrderController extends Controller
                             'order_id' => $order->id,
                             'order_code' => $order->code,
                             'status' => $newStatus,
+<<<<<<< HEAD
                             // 'is_delivered' => json_decode($order->is_delivered),
+=======
+                            'is_delivered' => json_encode($order->is_delivered),
+>>>>>>> 09464faa461f55a0be9ec242bc96d75e49608273
                             'content' => 'Đơn hàng <b>' . $order->code . '</b> đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$newStatus] . '</span>',
                         ]);
                         break;
@@ -440,6 +452,7 @@ class OrderController extends Controller
                         $isDelivered = [1];
                         $order->is_delivered = $isDelivered;
                         $newStatus = Order::STATUS_ORDER_SHIPPING;
+<<<<<<< HEAD
 
                         $order->status_order = $newStatus;
                         if (count($order->is_delivered) >= 2) {
@@ -462,8 +475,29 @@ class OrderController extends Controller
                         break;
                     }
     
+=======
+>>>>>>> 09464faa461f55a0be9ec242bc96d75e49608273
 
-                
+                        $order->status_order = $newStatus;
+                        if (count($order->is_delivered) >= 2) {
+                            $order->completed_at = now();
+
+                        }                    
+                        $order->save();
+                        // Tạo thông báo
+                        $notification = Notification::create([
+                            'user_id' => $order->user_id,
+                            'order_id' => $order->id,
+                            'order_code' => $order->code,
+                            'status' => $newStatus,
+                            'is_delivered' => json_encode($order->is_delivered),
+                            'content' => 'Đơn hàng <b>' . $order->code . '</b> đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$newStatus] . '</span>',
+                        ]);
+                        break;
+                    default:
+                        $newStatus = null;
+                        break;
+                    }
     
                   continue; // Bỏ qua nếu trạng thái không hợp lệ
                 }
@@ -496,9 +530,13 @@ class OrderController extends Controller
             return response()->json([
                 'message' => 'Lỗi hệ thống.',
                 'status' => 'error',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    
+
+
+    
 
     public function confirmDelivered(Request $request, $code)
     {
