@@ -114,7 +114,7 @@ const StatisDetailProduct = () => {
       tooltip: {
         y: {
           formatter: function (val, { seriesIndex }) {
-            if (seriesIndex === 0 || seriesIndex === 1) {
+            if (seriesIndex === 1) {
               return val.toLocaleString() + " VND/Units";
             }
             return val.toLocaleString();

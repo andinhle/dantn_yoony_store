@@ -1,4 +1,4 @@
-import { Avatar, ConfigProvider, Pagination } from "antd";
+import { Avatar, ConfigProvider, Input, Pagination } from "antd";
 import { Table } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { IProduct } from "../../../interfaces/IProduct";
@@ -11,7 +11,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { DatePicker } from "antd";
 import { toast } from "react-toastify";
 import axios from "axios";
-
+import { Select } from "antd";
 const { RangePicker } = DatePicker;
 type IHistoryInventory = {
   id?: number;
@@ -31,9 +31,12 @@ const HistoryInventory = () => {
     IHistoryInventory[]
   >([]);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [valSearch, SetValSearch] = useState<string>("");
   const page = parseInt(searchParams.get("page") || "1");
   const [meta, setMeta] = useState<IMeta>();
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("");
+  const { Search } = Input;
   useEffect(() => {
     (async () => {
       try {
@@ -41,7 +44,7 @@ const HistoryInventory = () => {
         const fromDate = dateRange ? dateRange[0] : "";
         const toDate = dateRange ? dateRange[1] : "";
         const { data } = await instance.get(
-          `checkAvailableStock?from_date=${fromDate}&to_date=${toDate}&page=${page}`
+          `checkAvailableStock?from_date=${fromDate}&to_date=${toDate}&status=${statusFilter}&page=${page}`
         );
         setHistoryInventory(data.data);
         setMeta(data.pagination);
@@ -49,12 +52,14 @@ const HistoryInventory = () => {
         console.log(error);
       }
     })();
-  }, [page, dateRange]);
+  }, [page, dateRange, statusFilter]);
 
+  const handleChangeStatus = (value: string) => {
+    setStatusFilter(value);
+  };
   const handleDateChange = (dates: any, dateStrings: [string, string]) => {
     setDateRange(dateStrings);
   };
-
   const handleRemoveHistoryInventory = async (idHistory: number) => {
     try {
       const { data } = await instance.delete(
@@ -216,6 +221,27 @@ const HistoryInventory = () => {
               placeholder={["Ngày bắt đầu", "Ngày kết thúc"]}
               onChange={handleDateChange}
             />
+            <Select
+              defaultValue="Tất cả"
+              style={{ width: 120 }}
+              onChange={handleChangeStatus}
+              options={[
+                { value: "", label: "Tất cả" },
+                { value: "Còn hàng", label: "Còn hàng" },
+                { value: "Hết hàng", label: "Hết hàng" },
+                { value: "Bị khoá", label: "Bị khoá" },
+              ]}
+            />
+            <div className="max-w-[300px] w-full">
+              <Search
+                placeholder="Tìm kiếm sản phẩm, Nhà cung cấp"
+                allowClear
+                size="middle"
+                onChange={(e) => {
+                  SetValSearch(e.target.value);
+                }}
+              />
+            </div>
           </ConfigProvider>
         </div>
         <div className={"overflow-x-auto"}>
@@ -293,7 +319,11 @@ const HistoryInventory = () => {
                   </Table.Cell>
                 </Table.Row>
               ) : (
-                historyInventorys.map((historyInventory, index) => {
+                historyInventorys
+                .filter(item=>{
+                  return item.supplier.name.toLowerCase().includes(valSearch.toLowerCase()) || item.product.name.toLowerCase().includes(valSearch.toLowerCase())
+                })
+                .map((historyInventory, index) => {
                   return (
                     <Table.Row className="hover:cursor-pointer" key={index + 1}>
                       <Table.Cell className="text-center">
