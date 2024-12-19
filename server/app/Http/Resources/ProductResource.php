@@ -14,13 +14,8 @@ class ProductResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $minSalePrice = $this->variants->flatMap(function ($variant) {
-            return $variant->pluck('price');
-        })->min();
-
-        $maxSalePrice = $this->variants->flatMap(function ($variant) {
-            return $variant->pluck('price');
-        })->max();
+        $minSalePrice = $this->variants->min('price');
+        $maxSalePrice = $this->variants->max('price');
 
         $minImportPrice = $this->variants->flatMap(function ($variant) {
             return $variant->inventoryImports->pluck('import_price');

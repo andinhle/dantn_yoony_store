@@ -19,7 +19,7 @@ const NotificationsAdminProvider = (props: Props) => {
         const {
           data: { data: response },
         } = await instance.get(`notification/orders/delivered}`);
-        console.log(response);
+        // console.log(response);
         // if (response) {
         //   dispatch({
         //     type: "LIST",

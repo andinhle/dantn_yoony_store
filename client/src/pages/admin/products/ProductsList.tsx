@@ -12,13 +12,13 @@ import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { SiMicrosoftexcel } from "react-icons/si";
 import * as XLSX from "xlsx";
 import dayjs from "dayjs";
-import TrashContext from "../../../contexts/TrashContext";
+// import TrashContext from "../../../contexts/TrashContext";
 import { IMeta } from "../../../interfaces/IMeta";
 const ProductList = () => {
   const { Search } = Input;
   const { products, dispatch } = useContext(ProductContext);
   const [valSearch, setValSearch] = useState<string>("");
-  const { trashProducts, dispatch: disPathTrash } = useContext(TrashContext);
+  // const { trashProducts, dispatch: disPathTrash } = useContext(TrashContext);
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parseInt(searchParams.get("page") || "1");
   const [meta, setMeta] = useState<IMeta>();
@@ -173,7 +173,6 @@ const ProductList = () => {
       const {
         data: { data: response },
       } = await instance.delete(`products/${id}`);
-      console.log(response);
       if (response) {
         toast.success("Di chuyển tới thùng rác thành công !");
         dispatch({
@@ -220,7 +219,7 @@ const ProductList = () => {
             </svg>
             THÊM SẢN PHẨM
           </Link>
-          <ConfigProvider
+          {/* <ConfigProvider
             theme={{
               components: {
                 Badge: {
@@ -262,7 +261,7 @@ const ProductList = () => {
                 Thùng rác
               </Link>
             </Badge>
-          </ConfigProvider>
+          </ConfigProvider> */}
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -422,7 +421,7 @@ const ProductList = () => {
                             ></path>
                           </svg>
                         </Link>
-                        <button
+                        {/* <button
                           className="bg-util shadow py-1.5 px-3 rounded-md text-primary"
                           onClick={() => {
                             swal({
@@ -461,7 +460,7 @@ const ProductList = () => {
                               strokeLinejoin="round"
                             />
                           </svg>
-                        </button>
+                        </button> */}
                       </div>
                     </Table.Cell>
                   </Table.Row>

@@ -1,21 +1,10 @@
-import { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import instance from "../../../instance/instance";
 import { ICategory } from "../../../interfaces/ICategory";
 import { Link } from "react-router-dom";
-const CategorysList = () => {
-  const [categoryLists, setCategoryLists] = useState<ICategory[]>([]);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await instance.get("products/filter");
-        setCategoryLists(data.categories);
-      } catch (error) {
-        console.error(error);
-      }
-    })();
-  }, []);
+type Prop = {
+  categoryLists: ICategory[];
+};
+const CategorysList = ({categoryLists}:Prop) => {
 
   return (
     <section className="py-7">

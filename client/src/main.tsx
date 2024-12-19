@@ -53,7 +53,7 @@ import AddressesUser from "./components/User/Manager/Addresses/AddressesUser.tsx
 import ListInventory from "./pages/admin/inventory/ListInventory.tsx";
 import ListVariant from "./pages/admin/varriant/ListVariant.tsx";
 import SuppliersAdmin from "./pages/admin/suppliers/SuppliersAdmin.tsx";
-import ListTrashProducts from "./pages/admin/trash/ListTrashProducts.tsx";
+// import ListTrashProducts from "./pages/admin/trash/ListTrashProducts.tsx";
 import {
   AdminMiddleware,
   AuthMiddleware,
@@ -135,7 +135,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="products" element={<LayoutProductAdmin />}>
                   <Route index element={<ProductList />} />
                   <Route path="add" element={<AddOrUpdateProduct />} />
-                  <Route path="trashs" element={<ListTrashProducts />} />
+                  {/* <Route path="trashs" element={<ListTrashProducts />} /> */}
                   <Route path="variants" element={<ListVariant />} />
                   <Route path="inventory" element={<ListInventory />} />
                   <Route path="suppliers" element={<SuppliersAdmin />} />

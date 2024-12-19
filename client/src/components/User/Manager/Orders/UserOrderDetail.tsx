@@ -14,6 +14,7 @@ import {
 import type { RadioChangeEvent } from "antd";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import Pusher from "pusher-js";
 import { NotificationsContext } from "../../../../contexts/NotificationsContext";
 export const status = (statusOrder: string) => {
   switch (statusOrder) {
@@ -284,10 +285,11 @@ const UserOrderDetail = () => {
   const [checkStatusCurrent, setCheckStatusCurrent] = useState<number>(0);
   const [valueReason, setValueReason] = useState<string>("");
   const { setValue, watch } = useForm<{ reason: any }>();
+  const [statusOrder, setStatusOrder] = useState();
   const onChange = (e: RadioChangeEvent) => {
     setValueReason(e.target.value);
   };
-  const { notifications } = useContext(NotificationsContext);
+
   useEffect(() => {
     (async () => {
       const {
@@ -295,24 +297,59 @@ const UserOrderDetail = () => {
       } = await instance.get(`order-detail/${code_order}`);
       setOrderDetails(response);
     })();
-  }, [valueReason, checkStatusCurrent]);
+  }, [valueReason, checkStatusCurrent, code_order]);
+
+  const userData = JSON.parse(localStorage.getItem("userInfor")!);
 
   useEffect(() => {
-    switch (notifications[0]?.status! || orderDetails?.status_order) {
+    // Tạo kết nối Pusher
+    const pusher = new Pusher(import.meta.env.VITE_PUSHER_APP_KEY, {
+      cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+      encrypted: true,
+    });
+
+    const channel = pusher.subscribe(`notifications.${userData.id}`);
+    channel.bind("order-status-updated", (data: any) => {
+      setStatusOrder(data.notification);
+    });
+
+    // Dọn dẹp kết nối Pusher
+    return () => {
+      channel.unbind_all();
+      channel.unsubscribe();
+      pusher.disconnect();
+    };
+  }, [userData.id]);
+
+  console.log(statusOrder);
+
+  useEffect(() => {
+    switch (
+      (statusOrder?.order_code === orderDetails?.code && statusOrder?.status) ||
+      orderDetails?.status_order
+    ) {
       case "pending":
-        return setCheckStatusCurrent(0);
+        setCheckStatusCurrent(0);
+        break;
       case "confirmed":
-        return setCheckStatusCurrent(1);
+        setCheckStatusCurrent(1);
+        break;
       case "preparing_goods":
-        return setCheckStatusCurrent(2);
+        setCheckStatusCurrent(2);
+        break;
       case "shipping":
-        return setCheckStatusCurrent(3);
+        setCheckStatusCurrent(3);
+        break;
       case "delivered":
-        return setCheckStatusCurrent(5);
+        setCheckStatusCurrent(5);
+        break;
       default:
         break;
     }
-  }, [notifications[0]?.status! || orderDetails?.status_order]);
+  }, [
+    (statusOrder?.order_code === orderDetails?.code && statusOrder?.status) ||
+      orderDetails?.status_order,
+  ]);
 
   const handleCancelOrder = async () => {
     try {
@@ -480,13 +517,21 @@ const UserOrderDetail = () => {
     }
   };
 
+  console.log(orderDetails);
+
   const checkButtonCancel = (status_order: string, codeOrder: string) => {
     switch (status_order) {
       case "shipping":
         return (
           <button
             type="button"
-            className="text-[#FF7F40] bg-primary/10 py-1.5 px-2 flex items-center flex-nowrap gap-1 rounded-sm"
+            className={`text-[#FF7F40] ${
+              (statusOrder?.order_code === orderDetails?.code &&
+                statusOrder?.is_delivered === "[1]") ||
+              orderDetails?.is_delivered?.length === 1
+                ? "text-[#FF7F40] bg-primary/10 hover:cursor-pointer"
+                : "text-secondary/20 bg-secondary/10 hover:cursor-not-allowed"
+            } py-1.5 px-2 flex items-center flex-nowrap gap-1 rounded-sm`}
             onClick={() => {
               swal({
                 title: "Bạn đã nhận được hàng chưa?",
@@ -503,6 +548,11 @@ const UserOrderDetail = () => {
                 }
               });
             }}
+            disabled={
+              !(statusOrder?.order_code === orderDetails?.code &&
+                statusOrder?.is_delivered === "[1]") &&
+              orderDetails?.is_delivered?.length !== 1
+            }
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -550,6 +600,7 @@ const UserOrderDetail = () => {
             <span>Xác nhận</span>
           </button>
         );
+      case "preparing_goods":
       case "delivered":
       case "canceled":
         return (
@@ -584,7 +635,6 @@ const UserOrderDetail = () => {
         );
       case "pending":
       case "confirmed":
-      case "preparing_goods":
         return (
           <Popover
             content={content}
@@ -646,12 +696,12 @@ const UserOrderDetail = () => {
           <table className="table w-full overflow-hidden rounded-sm">
             <thead>
               <tr className="text-sm font-[400] bg-[#F3F6F9] h-10 text-secondary/65">
-                <th className="font-medium text-left pl-4">
+                <th className="font-medium text-left pl-4 text-nowrap">
                   Chi tiết sản phẩm
                 </th>
                 <th className="font-medium">Giá</th>
-                <th className="font-medium">Số lượng</th>
-                <th className="font-medium">Tổng số tiền</th>
+                <th className="font-medium text-nowrap">Số lượng</th>
+                <th className="font-medium text-nowrap">Tổng số tiền</th>
               </tr>
             </thead>
             <tbody>
@@ -668,12 +718,14 @@ const UserOrderDetail = () => {
                             src={item?.product_image}
                             className="w-14 h-14 object-cover rounded-lg"
                           />
-                          <div className="space-y-1">
+                          <div className="space-y-1 max-w-[300px]">
                             <Link
                               to={`/${item?.variant?.product?.category?.slug}/${item?.variant?.product?.slug}`}
-                              className="line-clamp-1 text-sm hover:text-primary"
+                              className=" text-sm hover:text-primary"
                             >
-                              {item.product_name}
+                              <p className="text-ellipsis text-nowrap overflow-hidden">
+                                {item.product_name}
+                              </p>
                             </Link>
                             <div className="flex gap-2 text-secondary/50 flex-wrap">
                               {item?.order_item_attribute.map(
@@ -756,9 +808,19 @@ const UserOrderDetail = () => {
         <div className="border border-[#f1f1f1] rounded-md bg-util p-3 space-y-2">
           <div className="flex items-center justify-between pt-2 pb-4 border-b border-input/50">
             <h3 className="uppercase font-medium text-sm flex items-center gap-2">
-              Trạng thái đơn hàng: {status(notifications[0]?.status! || orderDetails?.status_order!)}
+              Trạng thái đơn hàng:{" "}
+              {status(
+                (statusOrder?.order_code === orderDetails?.code &&
+                  statusOrder?.status) ||
+                  orderDetails?.status_order
+              )}
             </h3>
-            {checkButtonCancel(notifications[0]?.status! || orderDetails?.status_order!, orderDetails?.code)}
+            {checkButtonCancel(
+              (statusOrder?.order_code === orderDetails?.code &&
+                statusOrder?.status) ||
+                orderDetails?.status_order,
+              orderDetails?.code
+            )}
           </div>
           <div>
             {orderDetails?.status_order !== "canceled" ? (
