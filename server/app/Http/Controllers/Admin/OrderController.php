@@ -392,41 +392,81 @@ class OrderController extends Controller
                     continue; // Bỏ qua nếu không tìm thấy đơn hàng
                 }
     
-                $newStatus = match ($order->status_order) {
-                    Order::STATUS_ORDER_PENDING => Order::STATUS_ORDER_CONFIRMED,
-                    Order::STATUS_ORDER_CONFIRMED => Order::STATUS_ORDER_PREPARING_GOODS,
-                    Order::STATUS_ORDER_PREPARING_GOODS => Order::STATUS_ORDER_SHIPPING,
-                    Order::STATUS_ORDER_SHIPPING => Order::STATUS_ORDER_SHIPPING,
-                    default => null,
-                };
+                switch ($order->status_order) {
+                    case Order::STATUS_ORDER_PENDING:
+                        $newStatus = Order::STATUS_ORDER_CONFIRMED;
+                        $order->status_order = $newStatus;
+                        $order->save();
+                        // Tạo thông báo
+                        $notification = Notification::create([
+                            'user_id' => $order->user_id,
+                            'order_id' => $order->id,
+                            'order_code' => $order->code,
+                            'status' => $newStatus,
+                            // 'is_delivered' => json_decode($order->is_delivered),
+                            'content' => 'Đơn hàng <b>' . $order->code . '</b> đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$newStatus] . '</span>',
+                        ]);
+                        break;
+                    case Order::STATUS_ORDER_CONFIRMED:
+                        $newStatus = Order::STATUS_ORDER_PREPARING_GOODS;
+                        $order->status_order = $newStatus;
+                        $order->save();
+                        // Tạo thông báo
+                        $notification = Notification::create([
+                            'user_id' => $order->user_id,
+                            'order_id' => $order->id,
+                            'order_code' => $order->code,
+                            'status' => $newStatus,
+                            // 'is_delivered' => json_decode($order->is_delivered),
+                            'content' => 'Đơn hàng <b>' . $order->code . '</b> đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$newStatus] . '</span>',
+                        ]);
+                        break;
+                    case Order::STATUS_ORDER_PREPARING_GOODS:
+                        $newStatus = Order::STATUS_ORDER_SHIPPING;
+                        $order->status_order = $newStatus;
+                        $order->save();
+                        // Tạo thông báo
+                        $notification = Notification::create([
+                            'user_id' => $order->user_id,
+                            'order_id' => $order->id,
+                            'order_code' => $order->code,
+                            'status' => $newStatus,
+                            // 'is_delivered' => json_decode($order->is_delivered),
+                            'content' => 'Đơn hàng <b>' . $order->code . '</b> đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$newStatus] . '</span>',
+                        ]);
+                        break;
+                    case Order::STATUS_ORDER_SHIPPING:
+                        $isDelivered = $order->is_delivered ?? [];
+                        $isDelivered = [1];
+                        $order->is_delivered = $isDelivered;
+                        $newStatus = Order::STATUS_ORDER_SHIPPING;
+
+                        $order->status_order = $newStatus;
+                        if (count($order->is_delivered) >= 2) {
+                            $order->completed_at = now();
+
+                        }                    
+                        $order->save();
+                        // Tạo thông báo
+                        $notification = Notification::create([
+                            'user_id' => $order->user_id,
+                            'order_id' => $order->id,
+                            'order_code' => $order->code,
+                            'status' => $newStatus,
+                            // 'is_delivered' => json_decode($order->is_delivered),
+                            'content' => 'Đơn hàng <b>' . $order->code . '</b> đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$newStatus] . '</span>',
+                        ]);
+                        break;
+                    default:
+                        $newStatus = null;
+                        break;
+                    }
+    
 
                 
     
-                if ($newStatus === null) {
-                    continue; // Bỏ qua nếu trạng thái không hợp lệ
+                  continue; // Bỏ qua nếu trạng thái không hợp lệ
                 }
-    
-                // Cập nhật trạng thái
-                $order->status_order = $newStatus;
-                $order->save();
-
-                $isDelivered = $order->is_delivered ?? [];
-                $isDelivered = [1];
-
-                if ($order->status_order === Order::STATUS_ORDER_SHIPPING) {
-                    $order->is_delivered = $isDelivered; // Đánh dấu đơn hàng đã giao
-                    $order->save();
-                }
-    
-                // Tạo thông báo
-                $notification = Notification::create([
-                    'user_id' => $order->user_id,
-                    'order_id' => $order->id,
-                    'order_code' => $order->code,
-                    'status' => $newStatus,
-                    'content' => 'Đơn hàng <b>' . $order->code . '</b> đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$newStatus] . '</span>',
-                ]);
-    
                 // Phát event real-time
                 event(new OrderStatusUpdated($notification, $order->user_id));
     
@@ -436,7 +476,7 @@ class OrderController extends Controller
                     'order_code' => $order->code,
                     'new_status' => $newStatus,
                 ];
-            }
+            
     
             if (empty($updatedOrders)) {
                 return response()->json(['message' => 'Không có đơn hàng nào được cập nhật.'], 400);
@@ -539,57 +579,57 @@ class OrderController extends Controller
     }
 
     public function filterOrdersByDateRange(Request $request)
-{
-    try {
-        // Lấy giá trị bắt đầu và kết thúc từ request
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
+    {
+        try {
+            // Lấy giá trị bắt đầu và kết thúc từ request
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
 
-        // Xác thực dữ liệu đầu vào
-        $request->validate([
-            'start_date' => 'required|date|before_or_equal:end_date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-        ], [
-            'start_date.required' => 'Ngày bắt đầu là bắt buộc.',
-            'start_date.date' => 'Ngày bắt đầu không hợp lệ.',
-            'start_date.before_or_equal' => 'Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.',
-            'end_date.required' => 'Ngày kết thúc là bắt buộc.',
-            'end_date.date' => 'Ngày kết thúc không hợp lệ.',
-            'end_date.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.',
-        ]);
+            // Xác thực dữ liệu đầu vào
+            $request->validate([
+                'start_date' => 'required|date|before_or_equal:end_date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+            ], [
+                'start_date.required' => 'Ngày bắt đầu là bắt buộc.',
+                'start_date.date' => 'Ngày bắt đầu không hợp lệ.',
+                'start_date.before_or_equal' => 'Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.',
+                'end_date.required' => 'Ngày kết thúc là bắt buộc.',
+                'end_date.date' => 'Ngày kết thúc không hợp lệ.',
+                'end_date.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.',
+            ]);
 
-        // Truy vấn đơn hàng trong khoảng thời gian
-        $orders = Order::query()
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->with(['items.variant'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+            // Truy vấn đơn hàng trong khoảng thời gian
+            $orders = Order::query()
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->with(['items.variant'])
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        // Kiểm tra nếu không có đơn hàng nào
-        if ($orders->isEmpty()) {
+            // Kiểm tra nếu không có đơn hàng nào
+            if ($orders->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không có đơn hàng nào trong khoảng thời gian này.',
+                ], 404);
+            }
+
             return response()->json([
-                'success' => false,
-                'message' => 'Không có đơn hàng nào trong khoảng thời gian này.',
-            ], 404);
+                'success' => true,
+                'data' => $orders,
+            ], 200);
+
+        } catch (\Throwable $th) {
+            Log::error(__CLASS__ . '@' . __FUNCTION__, [
+                'line' => $th->getLine(),
+                'message' => $th->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Đã xảy ra lỗi trong quá trình xử lý.',
+                'status' => 'error',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-        return response()->json([
-            'success' => true,
-            'data' => $orders,
-        ], 200);
-
-    } catch (\Throwable $th) {
-        Log::error(__CLASS__ . '@' . __FUNCTION__, [
-            'line' => $th->getLine(),
-            'message' => $th->getMessage(),
-        ]);
-
-        return response()->json([
-            'message' => 'Đã xảy ra lỗi trong quá trình xử lý.',
-            'status' => 'error',
-        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-}
 
 
 }
