@@ -1,16 +1,15 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import ModalAddress from "./ModalAddress";
 import { AddressContext } from "../../../../contexts/AddressContext";
 import instance from "../../../../instance/instance";
 import { message, Popconfirm } from "antd";
-import { useAuth } from "../../../../providers/AuthProvider";
 
 const AddressesUser = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { addresses, dispatch } = useContext(AddressContext);
   const [addOrUpdate, setAddOrUpdate] = useState<string>("ADD");
   const [idAddress, setIdAddress] = useState<number>();
-  const { user } = useAuth();
+  const [user, setUser] = useState(null);
   const showModal = () => {
     setIsModalOpen(true);
   };
@@ -35,6 +34,19 @@ const AddressesUser = () => {
     }
   };
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem("userInfor");
+    if (storedUser) setUser(JSON.parse(storedUser));
+    const handleAuthChange = () => {
+      const updatedUser = localStorage.getItem("userInfor");
+      setUser(updatedUser ? JSON.parse(updatedUser) : null);
+    };
+    window.addEventListener("auth-change", handleAuthChange);
+    return () => {
+      window.removeEventListener("auth-change", handleAuthChange);
+    };
+  }, []);
+
   const getIdAddress = (id: number) => {
     setIdAddress(id);
     setAddOrUpdate("UPDATE");
@@ -47,7 +59,7 @@ const AddressesUser = () => {
         const userData = JSON.parse(localStorage.getItem("userInfor")!);
         userData.address_id = data?.default_address_id;
         localStorage.setItem("userInfor", JSON.stringify(userData));
-        message.success('Đã thiết lập địa chỉ mặc định')
+        message.success("Đã thiết lập địa chỉ mặc định");
       }
     } catch (error) {
       console.log(error);

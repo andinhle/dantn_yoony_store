@@ -706,7 +706,7 @@ const ShowDetailProduct: React.FC = () => {
               options={group.values.map((val) => ({
                 value: val,
                 label: val,
-                disabled: !isAttributeAvailable(group.name, val),
+                disabled: !isAttributeValueAvailable(group.name, val),
               }))}
             />
           </div>

@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from "react";
 import Chart from "react-apexcharts";
 import type { ChartOptions, ChartSeries } from "./types";
 import instance from "../../../instance/instance";
+import { ConfigProvider, DatePicker } from "antd";
+import dayjs from "dayjs";
 
 type TimelinePeriod =
   | "one_day"
@@ -19,48 +21,65 @@ interface TimelineButton {
 }
 
 const ChartAreaRevenue: React.FC = () => {
-  const [dataDateFilter, setDataDateFilter] = useState<TimelineButton[]>([])
-  const [data, setData] = useState<string[]>([])
-  
+  const [dataDateFilter, setDataDateFilter] = useState<TimelineButton[]>([]);
+  const [allData, setAllData] = useState<string[][]>([]); // Tất cả dữ liệu nhận từ server
+  const [filteredData, setFilteredData] = useState<string[][]>([]); // Dữ liệu đã lọc theo năm
+  const [year, setYear] = useState<number>(new Date().getFullYear()); // Năm hiện tại
+  const [selection, setSelection] = useState<TimelinePeriod>("one_month");
+
+  // Lấy dữ liệu cho các nút bộ lọc ngày
   useEffect(() => {
-    (async()=>{
+    (async () => {
       try {
-        const {data}=await instance.get('thong-ke/ngay-thong-ke')
-        setDataDateFilter(data)
+        const { data } = await instance.get("thong-ke/ngay-thong-ke");
+        setDataDateFilter(data);
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
-    })()
-  }, [])
+    })();
+  }, []);
 
+  // Lấy dữ liệu doanh thu và lưu tất cả dữ liệu lại
   useEffect(() => {
-    (async ()=>{
+    (async () => {
       try {
-        const {data:{data:response}}=await instance.get('thong-ke/doanh-thu')
-        setData(response)
+        const {
+          data: { data: response },
+        } = await instance.get("thong-ke/doanh-thu");
+        setAllData(response); // Lưu toàn bộ dữ liệu
+        filterDataByYear(response, year); // Lọc dữ liệu theo năm mặc định (năm hiện tại)
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
-    })()
-  }, [])
+    })();
+  }, []);
 
+  // Lọc dữ liệu doanh thu theo năm
+  const filterDataByYear = (data: string[][], selectedYear: number) => {
+    const filtered = data.filter(([timestamp]) => {
+      const date = new Date(Number(timestamp));
+      return date.getFullYear() === selectedYear;
+    });
+    setFilteredData(filtered);
+  };
 
-  const formatNumber = (num) => {
+  // Định dạng số
+  const formatNumber = (num: number) => {
     return new Intl.NumberFormat("vi-VN").format(num);
   };
 
+  // Dữ liệu của biểu đồ
   const chartSeries: ChartSeries[] = [
     {
       name: "Đơn hàng",
-      data: data.map(([timestamp, value]) => [
-        timestamp + 7 * 60 * 60 * 1000,
+      data: filteredData.map(([timestamp, value]) => [
+        Number(timestamp) + 7 * 60 * 60 * 1000, // GMT+7
         value,
       ]),
     },
   ];
 
-  const [selection, setSelection] = useState<TimelinePeriod>("one_month");
-
+  // Cài đặt biểu đồ
   const chartOptions: ChartOptions = useMemo(() => {
     const selectedTimeline = dataDateFilter.find(
       (btn) => btn.value === selection
@@ -92,7 +111,7 @@ const ChartAreaRevenue: React.FC = () => {
         },
       },
       title: {
-        text: "BIỂU ĐỒ THỐNG KÊ DOANH THU",
+        text: `BIỂU ĐỒ THỐNG KÊ DOANH THU NĂM ${year}`,
       },
       colors: ["#ff9900"],
       dataLabels: {
@@ -117,8 +136,8 @@ const ChartAreaRevenue: React.FC = () => {
           formatter: (value: number) => `${formatNumber(value)}`,
         },
         title: {
-          text: "Giá trị (VNĐ)"
-        }
+          text: "Giá trị (VNĐ)",
+        },
       },
       tooltip: {
         x: {
@@ -138,10 +157,20 @@ const ChartAreaRevenue: React.FC = () => {
         },
       },
     };
-  }, [selection]);
+  }, [selection, year, filteredData]);
 
+  //Cập nhật khi người dùng chọn mốc thời gian
   const updateData = (timeline: TimelinePeriod): void => {
     setSelection(timeline);
+  };
+
+  // Xử lý khi người dùng chọn năm mới
+  const handleYearChange = (date: dayjs.Dayjs | null) => {
+    if (date) {
+      const selectedYear = date.year();
+      setYear(selectedYear);
+      filterDataByYear(allData, selectedYear); // Lọc dữ liệu theo năm mới
+    }
   };
 
   return (
@@ -160,6 +189,21 @@ const ChartAreaRevenue: React.FC = () => {
             {label}
           </button>
         ))}
+
+        <ConfigProvider
+          theme={{
+            token: {
+              colorPrimary: "#ff9900",
+            },
+          }}
+        >
+          <DatePicker
+            onChange={handleYearChange}
+            picker="year"
+            value={year ? dayjs(year.toString(), "YYYY") : null}
+            className="ml-2"
+          />
+        </ConfigProvider>
       </div>
       <Chart
         options={chartOptions}

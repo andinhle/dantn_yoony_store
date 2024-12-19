@@ -4,14 +4,15 @@ import { Controller, useForm } from "react-hook-form";
 import { Label } from "flowbite-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import changePasswordUser from "../../../../validations/changePasswordUser";
-import { useAuth } from "../../../../providers/AuthProvider";
+import { useEffect, useState } from "react";
+
 export type IPassword = {
   passwordOld: string;
   newPassword: string;
   confirmPass: string;
 };
 const ChangePasswordUser = () => {
-  const {user}=useAuth()
+  const [user, setUser] = useState(null);
   const {
     register,
     control,
@@ -21,6 +22,7 @@ const ChangePasswordUser = () => {
   } = useForm<IPassword>({
     resolver: zodResolver(changePasswordUser),
   });
+
   const handlePasswordChange = async (dataForm: IPassword) => {
     try {
       const response = await instance.post("/change-password", {
@@ -33,8 +35,8 @@ const ChangePasswordUser = () => {
       message.error(error.response?.data?.message || "Đổi mật khẩu thất bại");
     }
   };
+
   return (
-    
     <form
       className="flex-1 max-w-lg p-6 rounded-sm space-y-5"
       onSubmit={handleSubmit(handlePasswordChange)}
