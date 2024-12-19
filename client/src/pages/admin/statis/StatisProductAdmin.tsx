@@ -35,6 +35,24 @@ const listDate = [
   { label: "6 Tháng", value: "6months" },
   { label: "Năm", value: "year" },
 ];
+interface APIParams {
+  type?: string;
+  from_date?: string;
+  to_date?: string;
+  page: number;
+}
+const fetchStatisticalData = async (params: APIParams) => {
+  const queryParams = new URLSearchParams();
+  
+  // Dynamic add params
+  Object.entries(params).forEach(([key, value]) => {
+    if (value) queryParams.append(key, value.toString());
+  });
+
+  const url = `thong-ke/all-san-pham?${queryParams.toString()}`;
+  return await instance.get(url);
+};
+
 const StatisProductAdmin = () => {
   const [statisticalProduct, setStatisticalProducts] = useState<IProduct[]>([]);
   const [select, setSelect] = useState<string>("day");
@@ -43,30 +61,58 @@ const StatisProductAdmin = () => {
   const page = parseInt(searchParams.get("page") || "1");
   const [meta, setMeta] = useState<IMeta>();
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
+  const [dateRangeProduct, setDateRangeProduct] = useState<
+    [string, string] | null
+  >(null);
 
   const { RangePicker } = DatePicker;
   const handleDateChange = (dates: any, dateStrings: [string, string]) => {
     setDateRange(dateStrings);
   };
 
+  const handleDateChangeProduct = (
+    dates: any,
+    dateStringProducts: [string, string]
+  ) => {
+    setDateRangeProduct(dateStringProducts);
+    setSelect(''); 
+  };
+
+  const handleSelectClick = (value: string) => {
+    setSelect(value);
+    setDateRangeProduct(null); // Reset date range khi chọn select
+  };
+
   useEffect(() => {
-    (async () => {
+    const loadData = async () => {
       try {
         setLoading(true);
         setSearchParams({ page: String(page) });
-        const { data } = await instance.get(
-          `thong-ke/all-san-pham?type=${select}&page=${page}`
-        );
-        // console.log(data);
+
+        const params: APIParams = { page };
+
+        if (dateRangeProduct) {
+          params.from_date = dateRangeProduct[0];
+          params.to_date = dateRangeProduct[1];
+          setSelect(''); // Reset select khi dùng date range
+        } else if (select) {
+          params.type = select;
+        }
+
+        const { data } = await fetchStatisticalData(params);
         setMeta(data);
         setStatisticalProducts(data.data);
+
       } catch (error) {
         console.log(error);
       } finally {
         setLoading(false);
       }
-    })();
-  }, [select, page]);
+    };
+
+    loadData();
+  }, [select, dateRangeProduct, page]);
+
   const columns: TableColumnsType<DataType> = [
     {
       title: "Sản phẩm",
@@ -284,23 +330,39 @@ const StatisProductAdmin = () => {
         <div className="space-y-5 col-span-8">
           <div className="overflow-auto border-b border-[#f1f1f1] space-y-5">
             <h3 className="font-medium">TOP SẢN PHẨM BÁN CHẠY</h3>
-            <div className="flex flex-wrap h-fit gap-3 text-secondary/75">
-              {listDate.map((item) => (
-                <button
-                  type="button"
-                  key={item.label}
-                  className={`${
-                    select === item.value
-                      ? "text-util bg-primary"
-                      : "bg-[#F3F4F6] text-secondary"
-                  } px-5 py-1.5 rounded-sm transition-all`}
-                  onClick={() => {
-                    setSelect(item.value);
+            <div className="flex gap-3 items-center">
+              <div className="flex flex-wrap h-fit gap-3 text-secondary/75">
+                {listDate.map((item) => (
+                  <button
+                    type="button"
+                    key={item.label}
+                    className={`${
+                      select === item.value
+                        ? "text-util bg-primary"
+                        : "bg-[#F3F4F6] text-secondary"
+                    } px-5 py-1.5 rounded-sm transition-all`}
+                    onClick={() => {
+                      handleSelectClick(item.value);
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+              <div>
+                <ConfigProvider
+                  theme={{
+                    token: {
+                      colorPrimary: "#ff9900",
+                    },
                   }}
                 >
-                  {item.label}
-                </button>
-              ))}
+                  <RangePicker
+                    placeholder={["Ngày bắt đầu", "Ngày kết thúc"]}
+                    onChange={handleDateChangeProduct}
+                  />
+                </ConfigProvider>
+              </div>
             </div>
             <ConfigProvider
               theme={{

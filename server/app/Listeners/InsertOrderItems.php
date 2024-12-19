@@ -63,34 +63,14 @@ class InsertOrderItems
             ->orderBy('id', 'asc')
             ->get();
 
+        $totalCost = 0;
 
-            $totalCost = 0;
-
-            foreach ($stocks as $stock) {
-                // Kiểm tra nếu còn đủ hàng
-                if ($remainingQuantity <= 0) {
-                    break; // Nếu đã mua đủ, thoát khỏi vòng lặp
-                }
-
-                
-
-                // SL có thể trừ
-                $quantityAvailable = $stock->quantity;
-                $unitPrice = $stock->import_price;
-
-                if ($quantityAvailable > 0) {
-                    // Nếu còn hàng trong kho
-                    if ($quantityAvailable >= $remainingQuantity) {
-                        $stock->quantity -= $remainingQuantity;
-                        $totalCost += $remainingQuantity * $unitPrice;
-                        $remainingQuantity = 0; // Đã mua xong
-
-                    } else {
-                        $totalCost += $quantityAvailable * $unitPrice;
-                        $remainingQuantity -= $quantityAvailable;
-                        $stock->quantity = 0;
-                    }
-
+        // Xử lý tồn kho và lưu vào bảng inventory_deductions
+        foreach ($stocks as $stock) {
+            // Kiểm tra nếu còn đủ hàng
+            if ($remainingQuantity <= 0) {
+                break; // Nếu đã mua đủ, thoát khỏi vòng lặp
+            }
 
             // Tính số lượng sẽ trừ
             $quantityAvailable = $stock->quantity;

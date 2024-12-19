@@ -1,18 +1,18 @@
 import { message } from "antd";
 import Cookies from "js-cookie";
-const AUTH_COOKIE_NAME = "authToken";
-const USER_INFO_KEY = "userInfor";
-const WISHLIST_KEY = "wishlists";
-const ADDRESS_KEY = "addressSelect";
-const FINAL_TOTAL_KEY = "final_total";
-const ID_CART_KEY = "id_cart";
-const METHOD_PAYMENT_KEY = "methodPayment";
-const ORDER_DATA_KEY = "orderData";
-const VOUCHER_KEY = "selected_voucher";
-const CALLBACK_KEY = "callback_processed";
-const CARTLOCAL_KEY = "cartLocal";
-const Logout = () => {
-  const clearStorage = () => {
+export const AUTH_COOKIE_NAME = "authToken";
+export const USER_INFO_KEY = "userInfor";
+export const WISHLIST_KEY = "wishlists";
+export const ADDRESS_KEY = "addressSelect";
+export const FINAL_TOTAL_KEY = "final_total";
+export const ID_CART_KEY = "id_cart";
+export const METHOD_PAYMENT_KEY = "methodPayment";
+export const ORDER_DATA_KEY = "orderData";
+export const VOUCHER_KEY = "selected_voucher";
+export const CALLBACK_KEY = "callback_processed";
+export const CARTLOCAL_KEY = "cartLocal";
+
+export const clearStorage = () => {
     const keysToClear = [
       USER_INFO_KEY,
       WISHLIST_KEY,
@@ -29,7 +29,8 @@ const Logout = () => {
     keysToClear.forEach((key) => localStorage.removeItem(key));
     Cookies.remove(AUTH_COOKIE_NAME);
   };
-  
+const Logout = () => {
+
   return ()=>{
     clearStorage();
     window.dispatchEvent(new Event("auth-change"));
