@@ -35,6 +35,10 @@ class StoreProductRequest extends FormRequest
             'variants.*.attribute_values' => 'required|array',
             'variants.*.image' => 'nullable|string',
             'variants.*.attribute_values.*' => 'integer|exists:attribute_values,id',
+            'variants.*.end_sale' => ['nullable', 'date', 'after_or_equal:tomorrow'],
+            'variants.*.attribute_value_ids' => 'nullable|array',
+            'variants.*.attribute_values.*' => 'integer|exists:attribute_values,id',
+
         ];
     }
     public function messages(): array
@@ -49,7 +53,7 @@ class StoreProductRequest extends FormRequest
             'category_id.exists' => 'Danh mục không tồn tại.',
             'variants.required' => 'Biến thể là bắt buộc.',
             'variants.array' => 'Biến thể phải là một mảng.',
-
+            'variants.*.end_sale.after_or_equal' => 'Ngày kết thúc giảm giá phải là hôm nay hoặc sau hôm nay.',
             'variants.*.price.required' => 'Giá là bắt buộc cho từng biến thể.',
             'variants.*.price.numeric' => 'Giá phải là một số.',
             'variants.*.price.min' => 'Giá phải lớn hơn hoặc bằng 0.',

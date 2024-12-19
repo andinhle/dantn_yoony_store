@@ -63,6 +63,7 @@ const UserDetails = () => {
         if (data) {
           message.success("Cập nhật thông tin thành công !");
           localStorage.setItem("userInfor", JSON.stringify(data?.user));
+          window.dispatchEvent(new Event("auth-change"));
         }
       }
 
@@ -102,6 +103,7 @@ const UserDetails = () => {
             setLoading(false);
             message.success("Cập nhật thông tin thành công !");
             localStorage.setItem("userInfor", JSON.stringify(data?.user));
+            window.dispatchEvent(new Event("auth-change"));
             setFileList([
               {
                 uid: "-1",
@@ -120,7 +122,7 @@ const UserDetails = () => {
     }
   };
   return (
-    <div className="flex justify-start border border-[#f1f1f1] rounded-md bg-white h-[fit-content] w-full">
+    <div className="flex flex-col lg:flex-row lg:justify-start border border-[#f1f1f1] rounded-md bg-white h-[fit-content] w-full">
       <LoadingOverlay
         active={isLoading}
         spinner
@@ -182,7 +184,6 @@ const UserDetails = () => {
                     {errors.name?.message}
                   </span>
                 </div>
-
                 <div className="space-y-1.5">
                   <label
                     htmlFor="phone"

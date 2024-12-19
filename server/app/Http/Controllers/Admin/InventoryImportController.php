@@ -439,18 +439,17 @@ class InventoryImportController extends Controller
     public function checkAvailableStock(Request $request)
     {
         try {
-            // Nhận tham số từ request
             $fromDate = $request->input('from_date'); // Ngày bắt đầu
             $toDate = $request->input('to_date');    // Ngày kết thúc
+            $status = $request->input('status');    // Trạng thái (Còn hàng, Hết hàng, Hàng đang bị khóa)
     
-            // Lấy query ban đầu
+            // Lấy danh sách từ InventoryImportHistory với các mối quan hệ liên quan
             $query = InventoryImportHistory::with([
                 'variant.attributeValues.attribute',
                 'variant.product',
                 'supplier'
             ]);
     
-            // Áp dụng bộ lọc ngày nếu có
             if ($fromDate) {
                 $query->whereDate('created_at', '>=', $fromDate);
             }
@@ -459,22 +458,37 @@ class InventoryImportController extends Controller
                 $query->whereDate('created_at', '<=', $toDate);
             }
     
+            if ($status) {
+                $query->where('status', $status);
+            }
+    
             $query->orderBy('created_at', 'desc');
     
-            // Phân trang
             $products = $query->paginate(10);
     
             $result = [];
     
             foreach ($products as $product) {
-                $import = InventoryImport::where('batch_number', $product->batch_number)->first();
+                $import = InventoryImport::withTrashed()
+                    ->where('batch_number', $product->batch_number)
+                    ->first();
+    
+                $quantityAvailable = 0;
+                $productStatus = 'Hết hàng';
     
                 if ($import) {
                     $quantityAvailable = $import->quantity;
-                    $productStatus = $quantityAvailable > 0 ? 'Còn hàng' : 'Hết hàng';
-                } else {
-                    $quantityAvailable = 0;
-                    $productStatus = 'Hết hàng';
+    
+                    // Kiểm tra trạng thái
+                    if ($import->trashed()) {
+                        if ($quantityAvailable > 0) {
+                            $productStatus = 'Bị khóa'; // Bị xóa mềm và còn hàng
+                        } else {
+                            $productStatus = 'Hết hàng'; // Bị xóa mềm và hết hàng
+                        }
+                    } else {
+                        $productStatus = $quantityAvailable > 0 ? 'Còn hàng' : 'Hết hàng'; // Chưa bị xóa
+                    }
                 }
     
                 // Cập nhật trạng thái nếu khác biệt
@@ -503,7 +517,7 @@ class InventoryImportController extends Controller
             return response()->json([
                 'message' => 'Danh sách các sản phẩm và trạng thái đã được cập nhật.',
                 'data' => $result,
-                'pagination' => [
+    'pagination' => [
                     'total' => $products->total(),
                     'current_page' => $products->currentPage(),
                     'per_page' => $products->perPage(),
@@ -519,7 +533,7 @@ class InventoryImportController extends Controller
             ], 500);
         }
     }
-    
+
 
     public function restoreImport($id)
     {
@@ -682,6 +696,46 @@ class InventoryImportController extends Controller
         }
     }
 
+    public function getByVariantIdOnlyTrashed($variantId)
+    {
+        try {
+            // Lấy các bản ghi đã xóa mềm từ InventoryImport dựa trên variant_id
+            $records = InventoryImport::onlyTrashed()
+                ->with(['supplier'])
+                ->where('variant_id', $variantId)
+                ->get();
+
+            // if ($records->isEmpty()) {
+            //     return response()->json([
+            //         'message' => 'Không tìm thấy bản ghi nào đã xóa mềm liên quan đến variant_id: ' . $variantId,
+            //     ], 404);
+            // }
+
+            $result = [];
+
+            foreach ($records as $record) {
+                // Lấy thông tin từ InventoryImportHistory dựa trên batch_number
+                $history = InventoryImportHistory::where('batch_number', $record->batch_number)->first();
+
+                $result[] = [
+                    'inventory_import' => $record,
+                    'quantity_imported' => $history->quantity ?? 0, // Số lượng nhập đã lưu
+                    'batch_number' => $record->batch_number,
+                ];
+            }
+
+            return response()->json([
+                'message' => 'Danh sách các bản ghi đã xóa mềm liên quan đến variant_id: ' . $variantId,
+                'data' => $result
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Có lỗi xảy ra.',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 
 
 public function deleteHistoryRecord($id)

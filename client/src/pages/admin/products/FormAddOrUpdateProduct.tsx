@@ -159,7 +159,6 @@ const FormAddOrUpdateProduct = () => {
         const {
           data: { data: response },
         } = await instance.get(`products/${id}`);
-        console.log(response);
         reset({
           ...response,
           variants: response.variants.map((variant) => ({
@@ -196,16 +195,66 @@ const FormAddOrUpdateProduct = () => {
     setValue("slug", slugify(watch("name")));
   }, [watch("name")]);
 
+  // const handleUploadImageProduct = (e: any) => {
+  //   const imgForms = e.target.files;
+  //   console.log(imgForms);
+  //   if (AddOrUpdate === "ADD") {
+  //     setImagesProduct(imgForms);
+  //     if ([...imagesProduct].length > 0) {
+  //       setImagesProduct(_.uniqBy([...imagesProduct, ...imgForms], "name"));
+  //     }
+  //   } else {
+  //     setImagesProduct([...imagesProduct, ...imgForms]);
+  //   }
+  // };
+
   const handleUploadImageProduct = (e: any) => {
-    const imgForms = e.target.files;
-    if (AddOrUpdate === "ADD") {
-      setImagesProduct(imgForms);
-      if ([...imagesProduct].length > 0) {
-        setImagesProduct(_.uniqBy([...imagesProduct, ...imgForms], "name"));
-      }
-    } else {
-      setImagesProduct([...imagesProduct, ...imgForms]);
-    }
+    const imgForms = Array.from(e.target.files);
+
+    const getFileTypeFromMagicNumber = (header: Uint8Array) => {
+      const headerHex = Array.from(header)
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("");
+      const magicNumbers: Record<string, string> = {
+        "89504e47": "image/png", // PNG
+        ffd8ffe0: "image/jpeg", // JPEG
+        ffd8ffe1: "image/jpeg", // JPEG
+        ffd8ffe2: "image/jpeg", // JPEG
+        ffd8ffe3: "image/jpeg", // JPEG
+        ffd8ffe8: "image/jpeg", // JPEG
+      };
+      return magicNumbers[headerHex] || "unknown";
+    };
+
+    imgForms.forEach((file: File) => {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const header = new Uint8Array(reader.result as ArrayBuffer).subarray(
+          0,
+          4
+        ); // Lấy 4 byte đầu tiên
+        const fileType = getFileTypeFromMagicNumber(header);
+
+        if (["image/png", "image/jpeg"].includes(fileType)) {
+
+          if (AddOrUpdate === "ADD") {
+            if (imagesProduct.length > 0) {
+              setImagesProduct((prev) => _.uniqBy([...prev, file], "name"));
+            } else {
+              setImagesProduct([file]);
+            }
+          } else {
+            setImagesProduct((prev) => _.uniqBy([...prev, file], "name"));
+          }
+        } else {
+          console.error(`❌ Tệp "${file.name}" không phải là ảnh hợp lệ.`);
+          toast.error(`Tệp "${file.name}" không phải là ảnh hợp lệ.`);
+        }
+      };
+
+      reader.readAsArrayBuffer(file); // Đọc file dưới dạng binary buffer
+    });
   };
 
   const handleRemoveImagesProductBlob = (image_name: string) => {
@@ -261,7 +310,6 @@ const FormAddOrUpdateProduct = () => {
           data: { data: response },
         } = await instance.post("products", dataForm);
         if (response) {
-          console.log(response);
           toast.success("Thêm sản phẩm thành công!");
           setLoadingProduct(false);
           reset();
@@ -277,7 +325,6 @@ const FormAddOrUpdateProduct = () => {
       if (AddOrUpdate === "UPDATE") {
         const { data } = await instance.put(`products/${id}`, dataForm);
         if (data) {
-          console.log(data);
           toast.success("Update sản phẩm thành công!");
           dispatch({
             type: "UPDATE",
@@ -572,38 +619,6 @@ const FormAddOrUpdateProduct = () => {
                 />
               </div>
             </div>
-            {/* <div className="flex gap-3 items-center">
-              <div className="block">
-                <Label htmlFor="good-deal-product" value="Giá tốt" />
-              </div>
-              <div>
-                <ToggleSwitch
-                  sizing={"sm"}
-                  id="good-deal-product"
-                  checked={watch("is_good_deal")}
-                  {...register("is_good_deal")}
-                  onChange={(e) => {
-                    setValue("is_good_deal", e);
-                  }}
-                />
-              </div>
-            </div> */}
-            {/* <div className="flex gap-3 items-center">
-              <div className="block">
-                <Label htmlFor="is_variant-product" value="Có biến thể" />
-              </div>
-              <div>
-                <ToggleSwitch
-                  sizing={"sm"}
-                  id="is_variant-product"
-                  checked={watch("is_variant")}
-                  {...register("is_variant")}
-                  onChange={(e) => {
-                    setValue("is_variant", e);
-                  }}
-                />
-              </div>
-            </div> */}
           </div>
           <div className="space-y-3">
             {variantFields.map((field, index) => {
@@ -653,20 +668,6 @@ const FormAddOrUpdateProduct = () => {
                         className="block focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-input rounded-[5px] w-full focus:!shadow-none"
                       />
                     </div>
-                    {/* <div>
-                      <div className="flex">
-                        <Label htmlFor="quality-product" value="Số lượng" />
-                      </div>
-                      <input
-                        type="number"
-                        placeholder="Số lượng"
-                        id="quality-product"
-                        {...register(`variants.${index}.quantity`, {
-                          valueAsNumber: true,
-                        })}
-                        className="block focus:!border-primary/50 h-[35px] text-sm placeholder-[#00000040] border-input rounded-[5px] w-full focus:!shadow-none"
-                      />
-                    </div> */}
                     <div>
                       <div className="flex mb-2">
                         <Label htmlFor="end-sale" value="Sale kết thúc sau" />
@@ -696,7 +697,16 @@ const FormAddOrUpdateProduct = () => {
                       />
                     </div>
                   </div>
-                  <Attribute_Value_Variant index={index} />
+                  <Attribute_Value_Variant
+                    index={index}
+                    onDuplicateVariant={() => {
+                      // Gọi hàm focus của Attribute_Value_Variant
+                      const attributeValueVariantRef = refs[index];
+                      attributeValueVariantRef?.current?.focusOnDuplicateAttribute(
+                        0
+                      ); 
+                    }}
+                  />
                   {index > 0 && (
                     <button
                       type="button"
@@ -728,6 +738,42 @@ const FormAddOrUpdateProduct = () => {
             <button
               type="button"
               onClick={() => {
+                const currentVariants = watch("variants");
+                // Kiểm tra trùng lặp thuộc tính
+                const isDuplicateVariant = currentVariants.some(
+                  (variant, existingIndex) => {
+                    if (existingIndex === currentVariants.length - 1)
+                      return false;
+                    if (
+                      variant.attribute_values.length ===
+                      currentVariants[currentVariants.length - 1]
+                        .attribute_values.length
+                    ) {
+                      // So sánh từng attribute_values
+                      const isFullyDuplicate = variant.attribute_values.every(
+                        (existingAttr) =>
+                          currentVariants[
+                            currentVariants.length - 1
+                          ].attribute_values.some(
+                            (newAttr) =>
+                              existingAttr.attribute_id ===
+                                newAttr.attribute_id &&
+                              existingAttr.attribute_value_id ===
+                                newAttr.attribute_value_id
+                          )
+                      );
+
+                      return isFullyDuplicate;
+                    }
+                    return false;
+                  }
+                );
+
+                if (isDuplicateVariant) {
+                  toast.error("Biến thể này đã tồn tại");
+                  return;
+                }
+
                 appendVariant({
                   price: null!,
                   sale_price: null!,

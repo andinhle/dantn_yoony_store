@@ -30,7 +30,8 @@ class Order extends Model
         'paid_at',
         'completed_at',
         'code',
-        'is_delivered'
+        'is_delivered',
+        'shipped_at'
     ];
 
     const STATUS_ORDER_PENDING = 'pending';

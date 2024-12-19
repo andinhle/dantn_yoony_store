@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../../providers/AuthProvider";
+import Logout from "../User/Auth/Logout";
 
 const SideBarAdmin = () => {
   const [is_openProduct, setOpenProduct] = useState<boolean>(false);
   const [is_openStatis, setOpenStatis] = useState<boolean>(false);
   const location = useLocation();
-  const {logout}=useAuth()
   const navigate = useNavigate();
   useEffect(() => {
     if (location.pathname === "/admin") {
@@ -20,7 +19,7 @@ const SideBarAdmin = () => {
     }
   }, [location.pathname]);
   const handleLogout = () => {
-    logout();
+    Logout()
     navigate("/");
   };
   return (

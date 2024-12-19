@@ -36,7 +36,6 @@ class StoreCouponRequest extends FormRequest
             'end_date' => 'nullable|date|date_format:Y-m-d|after_or_equal:start_date',
             'status' => 'boolean',
             'min_order_value' => 'nullable|min:0|numeric',
-            'max_order_value'   => 'nullable|numeric|gt:min_order_value',
         ];
     }
 
@@ -56,8 +55,6 @@ class StoreCouponRequest extends FormRequest
             'usage_limit.required' => 'Yêu cầu nhập',
             'min_order_value.min' => 'Giá trị phải là số ',
             'min_order_value.numeric' => 'Vui lòng nhập số',
-            'max_order_value.numeric' => 'Vui lòng nhập số',
-            'max_order_value.gt:min_order_value' => 'Giá trị phải lớn hơn giá trị đơn hàng thấp nhất',
             'status.in' => 'Trạng thái đã chọn không hợp lệ',
 
 

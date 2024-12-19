@@ -31,7 +31,8 @@ export interface IOrderUserClient {
     updated_at: string;
     coupons:CouponUsage[]
     items: ItemsOrder[],
-    user:IUser
+    user:IUser,
+    is_delivered:number[]
 }
 
 interface CouponUsage {

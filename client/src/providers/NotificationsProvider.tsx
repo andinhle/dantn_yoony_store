@@ -3,7 +3,6 @@ import { IProduct } from "../interfaces/IProduct";
 import { NotificationsContext, Props } from "../contexts/NotificationsContext";
 import NotificationsReducer from "../reducer/NotificationsReducer";
 import instance from "../instance/instance";
-import isAuthenticated from "../components/Middleware/isAuthenticated";
 import Pusher from "pusher-js";
 const NotificationsProvider = (props: Props) => {
   const [notifications, dispatch] = useReducer(
@@ -39,7 +38,7 @@ const NotificationsProvider = (props: Props) => {
     });
   
     const channel = pusher.subscribe(`notifications.${userData.id}`);
-    channel.bind("order-status-confirm", (data: any) => {
+    channel.bind("order-status-updated", (data: any) => {
       dispatch({
         type: "ADD",
         payload: data.notification,

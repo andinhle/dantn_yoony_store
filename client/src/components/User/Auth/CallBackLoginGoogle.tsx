@@ -1,17 +1,60 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import instance from "../../../instance/instance";
-import { useAuth } from "../../../providers/AuthProvider";
 import Cookies from "js-cookie";
 import { LoadingOverlay } from "@achmadk/react-loading-overlay";
+import { NotificationsContext } from "../../../contexts/NotificationsContext";
+import CartContext from "../../../contexts/CartContext";
+import { CARTLOCAL_KEY, WISHLIST_KEY } from "./Login";
+import { message } from "antd";
 
 const CallBackLoginGoogle = () => {
     const navigate = useNavigate();
-    const { login } = useAuth();
     const location = useLocation();
     const [isLoading, setLoading] = useState<boolean>(false);
     const hasFetchedRef = useRef(false); 
-
+    const { dispatch: dispatchNotification } = useContext(NotificationsContext);
+    const { dispatch: dispatchCart } = useContext(CartContext);
+  
+    const callNotification = useCallback(
+      async (idUser: number) => {
+        const {
+          data: { data: response },
+        } = await instance.get(`notification/${idUser}`);
+        if (response) {
+          dispatchNotification({ type: "LIST", payload: response });
+        }
+      },
+      [dispatchNotification]
+    );
+  
+    const fetchWishlists = useCallback(async () => {
+      const { data } = await instance.get("list-wishlists-check");
+      localStorage.setItem(WISHLIST_KEY, JSON.stringify(data.wishlists));
+    }, []);
+  
+    const addCartLocal = useCallback(
+      async (idUser: number) => {
+        const existingCart = JSON.parse(
+          localStorage.getItem(CARTLOCAL_KEY) || "[]"
+        );
+  
+        if (existingCart.length === 0) return;
+  
+        const formattedCart = existingCart.map((item) => ({
+          variant_id: item.variant_id,
+          quantity: item.quantity,
+        }));
+  
+        const { data } = await instance.post(`addcartMultil/${idUser}`, {
+          local_cart: formattedCart,
+        });
+        dispatchCart({ type: "ADD", payload: data.data });
+        localStorage.removeItem(CARTLOCAL_KEY);
+      },
+      [dispatchCart]
+    );
+  
     useEffect(() => {
         const fetchLoginInfo = async () => {
             const params = new URLSearchParams(location.search);
@@ -30,10 +73,14 @@ const CallBackLoginGoogle = () => {
                             secure: true,
                             sameSite: "strict",
                         });
-                    
                         localStorage.setItem("userInfor", JSON.stringify(responseLoginInfor.user));
-                      
-                        login(responseLoginInfor.user);
+                        await Promise.all([
+                            fetchWishlists(),
+                            callNotification(responseLoginInfor.user.id!),
+                            addCartLocal(responseLoginInfor.user.id!)
+                          ]);
+                          message.success("Đăng nhập thành công!");
+                          window.dispatchEvent(new Event("auth-change"));
                         navigate("/"); 
                     }
                 } catch (error) {
