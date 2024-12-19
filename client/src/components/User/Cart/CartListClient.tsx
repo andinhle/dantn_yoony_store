@@ -565,7 +565,7 @@ const CartListClient = () => {
         GIỎ HÀNG
       </h2>
       <div className="grid grid-cols-12 gap-5">
-        <div className="col-span-9">
+        <div className="col-span-12 lg:col-span-9">
           <ConfigProvider
             theme={{
               token: {
@@ -646,8 +646,8 @@ const CartListClient = () => {
             />
           </div>
         </div>
-        <div className="col-span-3 border border-input p-3 rounded-md h-fit space-y-6 sticky top-20 bg-util">
-          <div>
+        <div className="col-span-12 lg:col-span-3 border border-input p-3 rounded-md h-fit space-y-6 sticky top-20 bg-util">
+          <div className=" hidden lg:block">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="372.673 -803.279 3000 3000"

@@ -15,7 +15,6 @@ type Props = {
 const RenderProductFilter = ({ datas, meta, page, setSearchParams,parsedFilter }: Props) => {
   const [productFilter, setProductFilter] = useState<string>("new");
   const [filteredProducts, setFilteredProducts] = useState<IProduct[]>(datas);
-  console.log(parsedFilter);
   // const handleSortPrice = async (status: string) => {
   //   try {
   //     const { data:{data:response} } = await instance.post(

@@ -6,29 +6,12 @@ import {
   HashNavigation,
 } from "swiper/modules";
 import ButtonSeeMore from "../Button/ButtonSeeMore";
-import { useEffect, useState } from "react";
 import { IProduct } from "../../../interfaces/IProduct";
-import instance from "../../../instance/instance";
-import axios from "axios";
 import GroupVariantsByColor from "../Show/GroupVariantsByColor";
-const ProductClothes = () => {
-  const [productClothes, setProductClothes] = useState<IProduct[]>([]);
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data:{data:response} } = await instance.get(`home/product/category/${1}`);
-        setProductClothes(response)
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.log(error.response?.data?.message);
-        } else if (error instanceof Error) {
-          console.log(error.message);
-        } else {
-          console.log("Đã xảy ra lỗi không mong muốn");
-        }
-      }
-    })();
-  }, []);
+type Prop = {
+  productClothes: IProduct[];
+};
+const ProductClothes = ({productClothes}:Prop) => {
   return (
     <section className="py-5">
       <h2 className="text-base md:text-xl lg:text-2xl font-medium uppercase product-clothes flex items-center gap-2">

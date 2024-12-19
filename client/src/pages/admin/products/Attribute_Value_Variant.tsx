@@ -1,4 +1,9 @@
-import { useContext, useState, useEffect } from "react";
+import {
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { IProduct } from "../../../interfaces/IProduct";
 import { Label } from "flowbite-react";
@@ -28,6 +33,9 @@ const Attribute_Value_Variant = ({ index }: Prop) => {
     control,
     name: `variants.${index}.attribute_values` as any,
   });
+
+  const firstAttributeRef = useRef<HTMLSelectElement>(null);
+
   const [fileList, setFileList] = useState<UploadFile[]>([]);
 
   const onChange: UploadProps["onChange"] = ({
@@ -221,6 +229,9 @@ const Attribute_Value_Variant = ({ index }: Prop) => {
       }
     } catch (error) {
       toast.error(`Error uploading image`, error);
+      setValue(`variants.${index}.image`, "");
+    } finally {
+      setLoading(false);
     }
   };
 

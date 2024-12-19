@@ -9,13 +9,12 @@ import { MouseEvent, useState } from "react";
 import Badge from "@mui/material/Badge";
 import { IconButton } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../providers/AuthProvider";
+import Logout from "../User/Auth/Logout";
 
 
 const HeaderAdmin = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const {logout}=useAuth()
   const navigate = useNavigate();
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -25,7 +24,7 @@ const HeaderAdmin = () => {
   };
   const handleLogout = () => {
     setAnchorEl(null);
-    logout();
+    Logout()
     navigate("/");
   };
   const userData = JSON.parse(localStorage.getItem("userInfor") || "{}");
@@ -83,24 +82,6 @@ const HeaderAdmin = () => {
           />
         </div>
         <div className="space-x-5">
-          <IconButton>
-            <Badge badgeContent={1} color="warning">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="size-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
-                />
-              </svg>
-            </Badge>
-          </IconButton>
           <Button
             id="basic-button"
             onClick={handleClick}

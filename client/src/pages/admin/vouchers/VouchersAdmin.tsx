@@ -43,7 +43,6 @@ const VouchersAdmin = () => {
     try {
       if (AddOrUpdate === "ADD") {
         const { data } = await instance.post("coupon", dataForm);
-        console.log(data);
         dispatch({
           type: "ADD",
           payload: data.data,

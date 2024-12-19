@@ -2,13 +2,11 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import instance from "../../../instance/instance";
 import { message } from "antd";
-import { useAuth } from "../../../providers/AuthProvider";
 import Cookies from "js-cookie";
 import { LoadingOverlay } from "@achmadk/react-loading-overlay";
 
 const CallBackLoginFacebook = () => {
     const navigate = useNavigate();
-    const { login } = useAuth();
     const location = useLocation();
     const [isLoadingProduct, setLoadingProduct] = useState<boolean>(false);
     useEffect(() => {
@@ -28,7 +26,7 @@ const CallBackLoginFacebook = () => {
                   secure: true,
                   sameSite: "strict",
                 });
-                login(responseLoginInfor.user);
+                
                 localStorage.setItem("userInfor", JSON.stringify(responseLoginInfor.user));
                 message.success("Đăng nhập thành công!");
                 navigate("/");
