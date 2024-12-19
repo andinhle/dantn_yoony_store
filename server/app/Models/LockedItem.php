@@ -15,6 +15,7 @@ class LockedItem extends Model
         'cart_id',
         'variant_id',
         'quantity',
+        'locked_at'
     ];
 
     // Liên kết với các model khác
@@ -27,4 +28,9 @@ class LockedItem extends Model
     {
         return $this->belongsTo(Cart::class);
     }
+    public function user()
+{
+    return $this->belongsTo(User::class, 'user_id');
+}
+
 }

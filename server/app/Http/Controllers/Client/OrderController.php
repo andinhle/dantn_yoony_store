@@ -11,6 +11,8 @@ use App\Http\Requests\Order\StoreOrderRequest;
 use App\Models\Cart;
 use App\Models\Coupon;
 use App\Models\CouponUser;
+use App\Models\InventoryDeduction;
+use App\Models\InventoryImport;
 use App\Models\InventoryStock;
 use App\Models\Notification;
 use App\Models\Order;
@@ -152,84 +154,116 @@ class OrderController extends Controller
 
     }
 
-    public function canceledOrder(Request $request, $id)
-    {
-        try {
+public function canceledOrder(Request $request, $id)
+{
+    try {
+        // Tìm đơn hàng theo ID, kèm theo các quan hệ liên quan
+        $order = Order::query()
+            ->with(['items', 'user'])
+            ->findOrFail($id);
 
-            $order = Order::query()->where('id', $id)->first();
+        // Validate lý do hủy đơn hàng
+        $request->validate([
+            'reason' => 'required|max:225'
+        ], [
+            'reason.required' => 'Vui lòng nhập lý do',
+            'reason.max' => 'Tiêu đề không được vượt quá 225 ký tự.',
+        ]);
 
-            if(!$order){
-                return response()->json([
-                            'message' => 'Không tìm thấy sản phẩm',
-                            'status' => 'error',
-                        ], Response::HTTP_INTERNAL_SERVER_ERROR);
-            }
-                
-            $request->validate([
-                'reason' => 'required|max:225'
-            ], [
-                'reason.required' => 'Vui lòng nhập lý do',
-                'reason.max' => 'Tiêu đề không được vượt quá 225 ký tự.',
-            ]);
+        $reason = $request->reason;
 
-            $reason = $request->reason;
-            if($order->status_order	 === Order::STATUS_ORDER_CANCELED 
-                || $order->status_order === Order::STATUS_ORDER_SHIPPING
-                || $order->status_order === Order::STATUS_ORDER_DELIVERED)
-            {
-                return response()->json([
-                    'message' => 'Không thể hủy đơn hàng',
-                    'status' => 'success',
-                ], Response::HTTP_INTERNAL_SERVER_ERROR);
-            }
+        // Cập nhật trạng thái đơn hàng thành "Đã hủy"
+        $order->update(['status_order' => Order::STATUS_ORDER_CANCELED]);
 
-            $order->update(['status_order' => Order::STATUS_ORDER_CANCELED]);
+        // Hoàn lại số lượng tồn kho và xử lý inventory_imports
+        foreach ($order->items as $value) {
+            // Kiểm tra xem variant_id có tồn tại không
+            if ($value->variant_id) {
+                $inventoryStock = InventoryStock::query()->where('variant_id', $value->variant_id)->first();
 
-                foreach ($order->items as $value) {
-                    $inventoryStock = InventoryStock::query()->where('variant_id', $value->variant_id)->first();
-
-                    if ($inventoryStock) {
-                        $inventoryStock->update([
-                            'quantity' => $inventoryStock->quantity + $value->quantity
-                        ]);
-                    }
-
-                    
+                if ($inventoryStock) {
+                    $inventoryStock->update([
+                        'quantity' => $inventoryStock->quantity + $value->quantity
+                    ]);
                 }
 
-                OrderCancellation::create([
-                    'reason' => $reason,
-                    'order_id' => $id,
-                    'user_id' => Auth::id(),
-                ]);
-                $order['reason'] = $reason;
-                $order['user']['code'] = $order->code;
-                // Log::info($order);
-                $dataOrder = json_encode($order);
-                OrderCanceled::dispatch($dataOrder);
-                return response()->json([
-                    'message' => 'Đơn hàng đã hủy thành công',
-                    'status' => 'success',
-                    'data' => $order
-                ], Response::HTTP_OK);
+                // Lấy các bản ghi InventoryDeduction liên quan
+                $deductions = InventoryDeduction::where('order_id', $order->id)
+                    ->where('variant_id', $value->variant_id)
+                    ->get();
 
-            
+                foreach ($deductions as $deduction) {
+                    $inventoryImport = InventoryImport::withTrashed()->find($deduction->inventory_import_id);
 
-            
-        } catch (\Throwable $th) {
-            Log::error(__CLASS__ . '@' . __FUNCTION__, [
-                'line' => $th->getLine(),
-                'message' => $th->getMessage()
-            ]);
+                    if ($inventoryImport) {
+                        if ($inventoryImport->trashed()) {
+                            $inventoryImport->restore();
+                        }
 
-            return response()->json([
-                'message' => 'Lỗi tải trang',
-                'status' => 'error',
+                        $inventoryImport->update([
+                            'quantity' => $inventoryImport->quantity + $deduction->quantity_deducted
+                        ]);
+                    }
+                }
 
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                // Xóa các bản ghi InventoryDeduction liên quan
+                InventoryDeduction::where('order_id', $order->id)
+                    ->where('variant_id', $value->variant_id)
+                    ->delete();
+            } else {
+                // Xử lý các sản phẩm không có variant (nếu cần)
+                Log::warning('OrderItem không có variant', ['order_item_id' => $value->id]);
+            }
         }
 
+
+        // Ghi nhận lý do hủy đơn hàng
+        OrderCancellation::create([
+            'reason' => $reason,
+            'order_id' => $id,
+            'user_id' => Auth::id(),
+        ]);
+
+        // Thêm thông tin lý do và mã người dùng vào dữ liệu trả về
+        $order['reason'] = $reason;
+        $order['user']['code'] = $order->code;
+
+        // Dispatch sự kiện hủy đơn hàng
+        $dataOrder = json_encode($order);
+        OrderCanceled::dispatch($dataOrder);
+
+        return response()->json([
+            'message' => 'Đơn hàng đã hủy thành công',
+            'status' => 'success',
+            'data' => $order
+        ], Response::HTTP_OK);
+    } catch (\Throwable $th) {
+        // Ghi log lỗi nếu xảy ra
+        Log::error(__CLASS__ . '@' . __FUNCTION__, [
+            'line' => $th->getLine(),
+            'message' => $th->getMessage()
+        ]);
+
+        return response()->json([
+            'message' => 'Lỗi tải trang',
+            'status' => 'error',
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     //xác nhận giao hàng
@@ -255,7 +289,7 @@ class OrderController extends Controller
             }
             $order->save();
 
-           
+
             // Cập nhật trạng thái đơn hàng
             // $order->update([
             //     'status_order' => Order::STATUS_ORDER_DELIVERED,
@@ -295,7 +329,6 @@ class OrderController extends Controller
             ], 500);
         }
     }
-
 
 
 

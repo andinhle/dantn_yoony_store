@@ -48,6 +48,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/bannerHome', [HomeController::class, 'listBanner']);
+
 //create cart
 Route::post('/addcartMultil/{id_user}', [CartController::class, 'addCartMultil']);
 Route::get('/variant/{id_variant}', [CartController::class, 'getVariant'])->name('variant.get');
@@ -156,9 +158,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('/search-by-batch-number/{batchNumber}', [InventoryImportController::class, 'searchByBatchNumber']);
         //xóa đơn nhập
         Route::delete('/deleteImport/{id}', [InventoryImportController::class, 'deleteImport']);
+
         Route::post('/inventory-imports/{id}/restore', [InventoryImportController::class, 'restoreImport']);
         //lịch sử nhập hàng trước nhập hàng
         Route::get('/inventory-import/variant/{variantId}', [InventoryImportController::class, 'getByVariantId']);
+
+        Route::get('/getByVariantIdOnlyTrashed/{variantId}', [InventoryImportController::class, 'getByVariantIdOnlyTrashed']);
+
         //xóa lịch sử nhập hàng
         Route::delete('/deleteHistoryRecord/{id}', [InventoryImportController::class, 'deleteHistoryRecord']);
         // ví dụ ?from_date=2024-12-01&to_date=2024-12-10
@@ -204,15 +210,15 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         //Thống kê
         Route::get('thong-ke/doanh-thu', [StatisticalController::class, 'doanhThu']);
         Route::get('thong-ke/san-pham', [StatisticalController::class, 'thongKeSanPham']);
-        Route::get('thong-ke/all-san-pham', [StatisticalController::class,'thongKeSanPhamAll']);
-        Route::get('thong-ke/mot-san-pham/{slug}', [StatisticalController::class,'thongKeProductDetailBySlug']);
+        Route::get('thong-ke/all-san-pham', [StatisticalController::class, 'thongKeSanPhamAll']);
+        Route::get('thong-ke/mot-san-pham/{slug}', [StatisticalController::class, 'thongKeProductDetailBySlug']);
         Route::get('thong-ke/don-hang', [StatisticalController::class, 'thongKeDonHang']);
         Route::get('thong-ke/ngay-thong-ke', [StatisticalController::class, 'NgayThongKe']);
         Route::get('thong-ke/thong-ke-theo-ngay', [StatisticalController::class, 'thongKeNgay'])->name('thongKeNgay');
         Route::get('thong-ke/so-luong-bien-the-duoi-10', [StatisticalController::class, 'listSoLuongBienTheDuoi10']);
         Route::get('thong-ke/so-luong-bien-the-da-het', [StatisticalController::class, 'listSoLuongBienTheDaHet']);
         Route::get('thong-ke/profit', [StatisticalController::class, 'profit']);
-        Route::get('thong-ke/top10-favorite',[StatisticalController::class, 'top10YeuThich']);  
+        Route::get('thong-ke/top10-favorite', [StatisticalController::class, 'top10YeuThich']);
 
         // QL danh mục
         Route::apiResource('category', CategoryController::class);
@@ -329,4 +335,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     //xác nhận giao hàng
     Route::post('/orders/{code}/confirm-delivered', [OrderController::class, 'confirmDelivered'])->name('orders.confirmDelivered');
+
+    //api check variant 
+    Route::post('/cart-check', [CartController::class, 'checkVatirant']);
 });

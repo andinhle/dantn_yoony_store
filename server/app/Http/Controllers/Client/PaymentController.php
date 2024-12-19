@@ -35,86 +35,130 @@ class PaymentController extends Controller
     private $momoSecretKey = "at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa";
     private $momoReturnUrl = "http://localhost:5173/check-out";
 
-
     public function processPayment(Request $request)
-    {
-        $paymentMethod = $request->payment_method; // Nhận phương thức thanh toán từ form
+{
+    $paymentMethod = $request->payment_method;
 
-        // Kiểm tra số lượng sản phẩm trong giỏ hàng
-        $selectedItems = $request->selected_items;
-        if (empty($selectedItems)) {
-            return response()->json(['error' => 'Bạn chưa chọn sản phẩm nào để thanh toán.'], 400);
-        }
-
-        // Mở một giao dịch để kiểm tra và cập nhật kho
-        return DB::transaction(function () use ($request, $selectedItems, $paymentMethod) {
-            $cartItems = Cart::query()
-                ->with(['variant.product', 'variant.inventoryStock'])
-                ->where('user_id', Auth::id())
-                ->whereIn('id', $selectedItems)
-                ->get();
-
-            if ($cartItems->isEmpty()) {
-                return response()->json(['error' => 'Không tìm thấy sản phẩm nào trong giỏ hàng.'], 400);
-            }
-
-            // Kiểm tra tồn kho trước khi tạo bản ghi
-            foreach ($cartItems as $item) {
-                $requiredQuantity = $item->quantity;
-                $stockQuantity = $item->variant->inventoryStock->quantity;
-
-                $lockedItems = LockedItem::where('variant_id', $item->variant->id)->sum('quantity');
-                $availableQuantity = $stockQuantity - $lockedItems;
-
-                // Nếu một sản phẩm không đủ tồn kho, trả lỗi và hủy toàn bộ giao dịch
-                if ($requiredQuantity > $availableQuantity) {
-                    return response()->json([
-                        'error' => 'Sản phẩm ' . $item->variant->product->name . ' không đủ tồn kho. Còn ' . $availableQuantity . ' sản phẩm.'
-                    ], 400);
-                }
-            }
-
-            // Nếu tất cả sản phẩm đều đủ tồn kho, tiến hành lưu vào bảng locked_items và cập nhật tồn kho
-            foreach ($cartItems as $item) {
-                $requiredQuantity = $item->quantity;
-
-                // Lưu vào bảng locked_items
-                $lockedItem = LockedItem::create([
-                    'user_id' => Auth::id(),
-                    'cart_id' => $item->id,
-                    'variant_id' => $item->variant->id,
-                    'quantity' => $requiredQuantity
-                ]);
-
-                // Cập nhật số lượng trong bảng inventoryStock
-                $inventory = $item->variant->inventoryStock;
-                $inventory->quantity -= $requiredQuantity; // Trừ số lượng sản phẩm đã đặt
-                $inventory->save();
-            }
-
-            // Xử lý thanh toán
-            try {
-                switch ($paymentMethod) {
-                    case 'COD':
-                        return $this->handleOrder($request);
-                    case 'VNPAY':
-                        return $this->handleVNPay($request);
-case 'MOMO':
-                        return $this->handleMoMo($request);
-                    default:
-                        return response()->json(['error' => 'Phương thức thanh toán không hợp lệ'], 400);
-                }
-            } catch (\Exception $e) {
-                // Khôi phục lại các sản phẩm bị khóa trong trường hợp lỗi
-                $this->restoreLockedItems(Auth::id());
-                Log::error('Lỗi thanh toán: ' . $e->getMessage());
-                return response()->json(['error' => 'Lỗi hệ thống. Vui lòng thử lại.'], 500);
-            }
-        });
+    // Kiểm tra số lượng sản phẩm trong giỏ hàng
+    $selectedItems = $request->selected_items;
+    if (empty($selectedItems)) {
+        return response()->json(['error' => 'Bạn chưa chọn sản phẩm nào để thanh toán.'], 400);
     }
 
+    // Mở một giao dịch để kiểm tra và cập nhật kho
+    return DB::transaction(function () use ($request, $selectedItems, $paymentMethod) {
+        $cartItems = Cart::query()
+            ->with(['variant.product', 'variant.inventoryStock'])
+            ->where('user_id', Auth::id())
+            ->whereIn('id', $selectedItems)
+            ->get();
+
+        if ($cartItems->isEmpty()) {
+            return response()->json(['error' => 'Không tìm thấy sản phẩm nào trong giỏ hàng.'], 400);
+        }
+
+        // Kiểm tra tồn kho trước khi tạo bản ghi
+        foreach ($cartItems as $item) {
+            $requiredQuantity = $item->quantity;
+            $stockQuantity = $item->variant->inventoryStock->quantity;
+
+            $lockedItems = LockedItem::where('variant_id', $item->variant->id)->sum('quantity');
+            $availableQuantity = $stockQuantity - $lockedItems;
+
+            if ($requiredQuantity > $availableQuantity) {
+                return response()->json([
+                    'error' => 'Sản phẩm ' . $item->variant->product->name . ' không đủ tồn kho. Còn ' . $availableQuantity . ' sản phẩm.'
+                ], 400);
+            }
+        }
+
+        // Lưu vào bảng locked_items và giảm số lượng trong kho
+        foreach ($cartItems as $item) {
+            $requiredQuantity = $item->quantity;
+
+            // Lưu vào bảng locked_items
+            $lockedItem = LockedItem::create([
+                'user_id' => Auth::id(),
+                'cart_id' => $item->id,
+                'variant_id' => $item->variant->id,
+                'quantity' => $requiredQuantity,
+                'locked_at' => now(),
+            ]);
+
+            $inventory = $item->variant->inventoryStock;
+            $inventory->quantity -= $requiredQuantity;
+            $inventory->save();
+        }
+
+        // Kiểm tra nếu coupon có được áp dụng và chưa hết hạn
+        if ($request->coupon_id) {
+            $coupon = Coupon::find($request->coupon_id);
+
+            if ($coupon) {
+                $couponUser = CouponUser::where('user_id', Auth::id())
+                    ->where('coupon_id', $coupon->id)
+                    ->first();
+
+                if ($couponUser) {
+                    return response()->json(['error' => 'Bạn đã sử dụng coupon này trước đó.'], 400);
+                }
+
+                if ($coupon->usage_limit <= 0) {
+                    return response()->json(['error' => 'Coupon này đã hết số lần sử dụng.'], 400);
+                }
+
+                CouponUser::create([
+                    'user_id' => Auth::id(),
+                    'coupon_id' => $coupon->id,
+                ]);
+
+                // Trừ số lượng coupon
+                $coupon->usage_limit -= 1;
+                $coupon->save();
+            } else {
+                return response()->json(['error' => 'Coupon không hợp lệ hoặc không tồn tại.'], 400);
+            }
+        }
+
+        // Xử lý thanh toán
+        try {
+            switch ($paymentMethod) {
+                case 'COD':
+                    return $this->handleOrder($request);
+                case 'VNPAY':
+                    return $this->handleVNPay($request);
+                case 'MOMO':
+                    return $this->handleMoMo($request);
+                default:
+                    return response()->json(['error' => 'Phương thức thanh toán không hợp lệ'], 400);
+            }
+        } catch (\Exception $e) {
+            // Khôi phục lại các sản phẩm bị khóa trong trường hợp lỗi
+            $this->restoreLockedItems(Auth::id());
+            Log::error('Lỗi thanh toán: ' . $e->getMessage());
+            return response()->json(['error' => 'Lỗi hệ thống. Vui lòng thử lại.'], 500);
+        }
+    });
+}
 
 
+
+
+    // public function processPayment(Request $request)
+    // {
+    //     $paymentMethod = $request->payment_method; // Nhận phương thức thanh toán từ form
+
+    //     switch ($paymentMethod) {
+    //         case 'COD':
+    //             return $this->handleOrder($request);
+    //         case 'VNPAY':
+    //             return $this->handleVNPay($request);
+    //         case 'MOMO':
+    //             return $this->handleMoMo($request);
+    //         default:
+    //             return response()->json(['error' => 'Phương thức thanh toán không hợp lệ'], 400);
+    //     }
+    // }
 
         function handleVNPay(Request $request)
     {
@@ -162,10 +206,9 @@ case 'MOMO':
     {
         try {
             return DB::transaction(function () use ($request) {
-
                 $selectedItems = $request->selected_items;
 
-                // Nếu không có sản phẩm nào được chọn
+                // Kiểm tra nếu không có sản phẩm nào được chọn
                 if (empty($selectedItems)) {
                     return response()->json([
                         'error' => 'Bạn chưa chọn sản phẩm nào để thanh toán.'
@@ -187,11 +230,9 @@ case 'MOMO':
                 $data['code'] = $this->generateOrderCode();
                 $data['grand_total'] = 0;
 
-                // Kiểm tra số lượng tồn kho trước khi tính tổng giá trị đơn hàng
+                // Kiểm tra số lượng tồn kho và tính tổng giá trị đơn hàng
                 foreach ($cartItems as $value) {
                     $requiredQuantity = $value->quantity;
-
-
 
                     // Cộng dồn tổng giá trị đơn hàng
                     $data['grand_total'] += $requiredQuantity * ($value->variant->sale_price ?: $value->variant->price);
@@ -208,22 +249,28 @@ case 'MOMO':
                 // Tạo đơn hàng
                 $order = Order::query()->create($data);
 
+                // Xử lý giảm giá từ coupon
                 if ($request->coupon_id && $request->discount_amount) {
-                    $coupon = Coupon::query()->where('id', $request->coupon_id)->first();
-                    $coupon->usage_limit -= 1;
-                    $coupon->save();
+                    $couponUser = CouponUser::query()
+                        ->where('user_id', Auth::id())
+                        ->where('coupon_id', $request->coupon_id)
+                        ->whereNull('used_at') // Chỉ áp dụng nếu chưa sử dụng
+                        ->first();
 
-                    OrderCoupon::query()->create([
-                        'order_id' => $order->id,
-                        'discount_amount' => $request->discount_amount,
-                        'coupon_id' => $request->coupon_id
-                    ]);
+                    if ($couponUser) {
+                        $couponUser->used_at = now();
+                        $couponUser->save();
 
-                    CouponUser::create([
-                        'user_id' => Auth::id(),
-                        'coupon_id' => $request->coupon_id,
-                        'used_at' => now(),
-                    ]);
+                        OrderCoupon::query()->create([
+                            'order_id' => $order->id,
+                            'discount_amount' => $request->discount_amount,
+                            'coupon_id' => $request->coupon_id
+                        ]);
+                    } else {
+                        return response()->json([
+                            'error' => 'Coupon không hợp lệ hoặc đã được sử dụng.'
+                        ]);
+                    }
                 }
 
                 if (!$order) {
@@ -312,6 +359,10 @@ case 'MOMO':
                 }
 
                 Log::warning("Giao dịch thất bại với mã: {$request->vnp_ResponseCode}");
+
+                $this->restoreCouponsForUser(Auth::id());
+
+
                 return response()->json([
                     'status' => 'error',
                     'message' => $responseMessage,
@@ -351,13 +402,39 @@ case 'MOMO':
                     $inventory->save();
                     Log::info("Khôi phục số lượng sản phẩm với mã variant: {$variant->id}, số lượng khôi phục: {$lockedItem->quantity}");
                 }
-                // Xóa sản phẩm khỏi bảng LockedItem
                 $lockedItem->delete();
             }
         });
 
         Log::info("Khôi phục thành công số lượng sản phẩm bị khóa.");
     }
+
+    private function restoreCouponsForUser(int $userId)
+    {
+        Log::info("Bắt đầu khôi phục tất cả coupon chưa sử dụng cho userId: {$userId}");
+
+        $couponsUserHasNotUsed = CouponUser::where('user_id', $userId)
+                                            ->whereNull('used_at') // Chưa sử dụng
+                                            ->get();
+
+        foreach ($couponsUserHasNotUsed as $couponUser) {
+            $coupon = Coupon::find($couponUser->coupon_id);
+
+            if ($coupon) {
+                $coupon->usage_limit += 1;
+                $coupon->save();
+
+                $couponUser->delete();
+
+                Log::info("Hoàn trả số lượng coupon với ID: {$couponUser->coupon_id} cho userId: {$userId}");
+            }
+        }
+
+        Log::info("Khôi phục coupon thành công cho userId: {$userId}");
+    }
+
+
+
 
 
 

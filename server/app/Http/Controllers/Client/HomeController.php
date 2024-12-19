@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Client;
 
 use App\Events\CheckExpiredSalePrices;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\BannerResource;
 use App\Http\Resources\BlogResource;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProductResource;
@@ -11,6 +12,7 @@ use App\Http\Resources\RateAllByProductResource;
 use App\Http\Resources\RateResource;
 use App\Models\Address;
 use App\Models\Answer;
+use App\Models\Banner;
 use App\Models\Blog;
 use App\Models\Category;
 use App\Models\Coupon;
@@ -28,6 +30,11 @@ use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
 {
+    public function listBanner()
+    {
+        $banners = Banner::where('is_active', true)->latest('id')->get();
+        return BannerResource::collection($banners);
+    }
 
     //get one getOneProductBySlug
     public function getOneProductBySlug(Request $request, string $slug)
@@ -273,7 +280,7 @@ class HomeController extends Controller
         $blog = Blog::where('slug', $slug)->firstOrFail();
 
         $related_blogs = Blog::where('id', '!=', $blog->id)
-            ->take(5)
+            ->take(10)
             ->get();
 
         return response()->json([
