@@ -18,7 +18,8 @@ export interface Orders {
     profit:number;
     product: OrderProduct[];
     user: User;
-    coupons:Coupons[]
+    coupons:Coupons[];
+    is_delivered:[]
 }
 export interface ItemProduct {
     id?: number;

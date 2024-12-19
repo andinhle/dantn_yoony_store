@@ -1,25 +1,12 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 
 import { Autoplay } from "swiper/modules";
-import { useEffect, useState } from "react";
 import { IVoucher } from "../../../interfaces/IVouchers";
-import instance from "../../../instance/instance";
 import dayjs  from "dayjs";
-
-const VoucherList = () => {
-  const [vouchers, setVouchers] = useState<IVoucher[]>([]);
-  useEffect(() => {
-    (async () => {
-      try {
-        const {
-          data: { data: response },
-        } = await instance.get("coupon-home");
-        setVouchers(response);
-      } catch (error) {
-        console.log(error);
-      }
-    })();
-  }, []);
+type Prop = {
+  vouchers: IVoucher[];
+};
+const VoucherList = ({ vouchers }: Prop) => {
   return (
     <Swiper
       slidesPerView={4}

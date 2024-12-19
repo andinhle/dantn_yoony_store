@@ -686,7 +686,7 @@ const ManagerOrdersUser = () => {
                         </span>
                       </Table.Cell>
                       <Table.Cell className="whitespace-nowrap text-secondary/75">
-                        {dayjs(orderUser.created_at).format("DD-MM-YYYY")}
+                        {dayjs(orderUser.created_at).format("DD-MM-YYYY HH:mm")}
                       </Table.Cell>
                       <Table.Cell className="whitespace-nowrap text-secondary/75">
                         <span className="text-primary">

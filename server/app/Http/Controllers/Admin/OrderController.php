@@ -168,7 +168,7 @@ class OrderController extends Controller
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
-                    'status'=>$order->status,
+                    'status'=>$order->status_order,
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #ff9800;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
 
@@ -188,7 +188,7 @@ class OrderController extends Controller
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
-                    'status'=>$order->status,
+                    'status'=>$order->status_order,
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #4caf50;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
 
@@ -208,7 +208,7 @@ class OrderController extends Controller
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
-                    'status'=>$order->status,
+                    'status'=>$order->status_order,
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
 
@@ -222,14 +222,13 @@ class OrderController extends Controller
                 ]);
             case Order::STATUS_ORDER_SHIPPING:
                 $order->status_order = $status;
-                $order->shipped_at = now();
                 $order->save();
 
                 $notification = Notification::create([
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
-                    'status'=>$order->status,
+                    'is_delivered'=> json_encode($order->is_delivered),
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #03a9f4;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
 
@@ -256,7 +255,8 @@ class OrderController extends Controller
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
-                    'status'=>$order->status,
+                    'status'=>$order->status_order,
+                    'is_delivered'=> json_encode($order->is_delivered),
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #8bc34a;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
 
@@ -276,7 +276,7 @@ class OrderController extends Controller
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
-                    'status'=>$order->status,
+                    'status'=>$order->status_order,
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #f44336;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
 

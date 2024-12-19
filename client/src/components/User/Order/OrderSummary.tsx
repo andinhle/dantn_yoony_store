@@ -21,7 +21,7 @@ interface IOrderData {
 
 const OrderSummary = ({ setCurrent }: Prop) => {
   const { carts } = useContext(CartContext);
-  const [notes, setNote] = useState<string>("")
+  const [notes, setNote] = useState<string>("");
   const [listSelectCartItem, setListSelectCartItem] = useState<ICart[]>([]);
   const [orderData, setOrderData] = useState<IOrderData>({
     fullName: "",
@@ -231,16 +231,15 @@ const OrderSummary = ({ setCurrent }: Prop) => {
       ...prev,
       payment_method: methodPayment,
       selected_items: idCarts,
-      notes:notes
+      notes: notes,
     }));
-  }, [carts,notes]);
+  }, [carts, notes]);
 
   useEffect(() => {
     if (orderData) {
       localStorage.setItem("orderData", JSON.stringify(orderData));
     }
   }, [orderData]);
-
 
   return (
     <div className="space-y-5">
@@ -287,20 +286,25 @@ const OrderSummary = ({ setCurrent }: Prop) => {
                         {itemCart.variant.product?.name}
                       </Link>
                       <div className="flex gap-2 text-secondary/50 text-sm">
-                        <span>
-                          Size:{" "}
-                          {itemCart.variant.attribute_values.find(
-                            (item: IAttributeValue) =>
-                              item.attribute.slug === "size"
-                          )?.value || "N/A"}
-                        </span>
-                        <span>
-                          Màu:{" "}
-                          {itemCart.variant.attribute_values.find(
-                            (item: IAttributeValue) =>
-                              item.attribute.slug === "color"
-                          )?.value || "N/A"}
-                        </span>
+                        {itemCart.variant.attribute_values.map(
+                          (attribute_value: IAttributeValue, index) => {
+                            return (
+                              <>
+                                <div className="text-[13px]">
+                                  <span>
+                                    {attribute_value?.attribute?.name}
+                                  </span>
+                                  {": "}
+                                  <span>{attribute_value?.value}</span>
+                                </div>
+                                {index <
+                                  itemCart.variant.attribute_values.length - 1 && (
+                                  <span className="text-[13px]">|</span>
+                                )}
+                              </>
+                            );
+                          }
+                        )}
                       </div>
                     </div>
                   </div>
@@ -449,7 +453,12 @@ const OrderSummary = ({ setCurrent }: Prop) => {
       </div>
       <div className="space-y-3">
         <h3 className="font-medium">Ghi chú</h3>
-        <textarea onChange={(e)=>setNote(e.target.value)} rows={3} className="w-full border border-[#f1f1f1] focus:border-[#ededed] rounded-md placeholder:text-sm" placeholder="Nhập ghi chú"></textarea>
+        <textarea
+          onChange={(e) => setNote(e.target.value)}
+          rows={3}
+          className="w-full border border-[#f1f1f1] focus:border-[#ededed] rounded-md placeholder:text-sm"
+          placeholder="Nhập ghi chú"
+        ></textarea>
       </div>
     </div>
   );

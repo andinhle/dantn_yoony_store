@@ -23,7 +23,8 @@ const NavMenuUser = () => {
   const open = Boolean(anchorEl);
   const { carts } = useContext(CartContext);
   const {notifications}=useContext(NotificationsContext)
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -40,6 +41,20 @@ const NavMenuUser = () => {
   const toggleChat = () => {
     setChatVisible(!chatVisible);
   };
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("userInfor");
+    if (storedUser) setUser(JSON.parse(storedUser));
+    const handleAuthChange = () => {
+      const updatedUser = localStorage.getItem("userInfor");
+      setUser(updatedUser ? JSON.parse(updatedUser) : null);
+    };
+
+    window.addEventListener("auth-change", handleAuthChange);
+    return () => {
+      window.removeEventListener("auth-change", handleAuthChange);
+    };
+  }, []);
 
   const userButton = useMemo(
     () => (
