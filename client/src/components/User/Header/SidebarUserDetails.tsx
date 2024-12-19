@@ -1,9 +1,21 @@
 import { Avatar } from "@mui/material";
+import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
-import { useAuth } from "../../../providers/AuthProvider";
 
 const SidebarUserDetails = () => {
-  const { user, logout } = useAuth();
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const storedUser = localStorage.getItem("userInfor");
+    if (storedUser) setUser(JSON.parse(storedUser));
+    const handleAuthChange = () => {
+      const updatedUser = localStorage.getItem("userInfor");
+      setUser(updatedUser ? JSON.parse(updatedUser) : null);
+    };
+    window.addEventListener("auth-change", handleAuthChange);
+    return () => {
+      window.removeEventListener("auth-change", handleAuthChange);
+    };
+  }, []);
   return (
     <div className="col-span-3 lg:col-span-2 min-h-screen bg-util border border-[#f1f1f1] rounded-md">
       <div className="flex items-center p-4 border-b border-[#f1f1f1]">

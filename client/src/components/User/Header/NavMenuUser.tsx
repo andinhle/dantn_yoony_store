@@ -7,23 +7,24 @@ import {
   MenuItem,
   MenuList,
 } from "@mui/material";
-import { MouseEvent, useContext, useEffect, useMemo, useState } from "react";
+import { MouseEvent, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import CartContext from "../../../contexts/CartContext";
 import { Popover } from "antd";
 import ShowMiniCart from "../Show/ShowMiniCart";
-import { useAuth } from "../../../providers/AuthProvider";
 import ChatModal from "./ChatModal";
 import ShowNotificationUser from "../Show/ShowNotificationUser";
 import { Divider } from "antd";
 import { NotificationsContext } from "../../../contexts/NotificationsContext";
+import { AUTH_COOKIE_NAME, USER_INFO_KEY } from "../Auth/Logout";
+import Cookies from "js-cookie";
+import logout from "../Auth/Logout";
 const NavMenuUser = () => {
   const [chatVisible, setChatVisible] = useState(false); // State cho chat modal
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const { carts } = useContext(CartContext);
   const {notifications}=useContext(NotificationsContext)
-  const { logout } = useAuth();
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
@@ -34,7 +35,7 @@ const NavMenuUser = () => {
   };
 
   const handleLogout = () => {
-    logout();
+    logout()
     handleClose();
     navigate("/");
   };
@@ -55,6 +56,15 @@ const NavMenuUser = () => {
       window.removeEventListener("auth-change", handleAuthChange);
     };
   }, []);
+
+  // const checkAuthStatus = useCallback(() => {
+  //   const authCookie = Cookies.get(AUTH_COOKIE_NAME);
+  //   const userInfo = localStorage.getItem(USER_INFO_KEY);
+
+  //   if (!authCookie || !userInfo) {
+  //     clearStorage();
+  //   }
+  // }, []);
 
   const userButton = useMemo(
     () => (

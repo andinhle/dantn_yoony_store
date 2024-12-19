@@ -63,6 +63,7 @@ const UserDetails = () => {
         if (data) {
           message.success("Cập nhật thông tin thành công !");
           localStorage.setItem("userInfor", JSON.stringify(data?.user));
+          window.dispatchEvent(new Event("auth-change"));
         }
       }
 
@@ -102,6 +103,7 @@ const UserDetails = () => {
             setLoading(false);
             message.success("Cập nhật thông tin thành công !");
             localStorage.setItem("userInfor", JSON.stringify(data?.user));
+            window.dispatchEvent(new Event("auth-change"));
             setFileList([
               {
                 uid: "-1",
