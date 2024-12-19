@@ -22,6 +22,7 @@ class Coupon extends Model
         'end_date',
         'status',
         'min_order_value',
+        'max_order_value',
         'max_discout',
         'winning_probability',
         'type'
