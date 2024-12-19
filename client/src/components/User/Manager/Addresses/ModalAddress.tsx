@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { IAddress } from "../../../../interfaces/IAddress";
 import axios from "axios";
 import instance from "../../../../instance/instance";
-import { useAuth } from "../../../../providers/AuthProvider";
 
 type Props = {
   isModalOpen: boolean;
@@ -35,10 +34,10 @@ const ModalAddress = ({
   const [provinces, setProvinces] = useState<IAddressApi[]>([]);
   const [districts, setDistricts] = useState<IAddressApi[]>([]);
   const [wards, setWards] = useState<IAddressApi[]>([]);
+  const [user, setUser] = useState(null);
   const [selectedProvince, setSelectedProvince] = useState<IAddressApi | null>(
     null
   );
-  const {user}=useAuth()
   const [selectedDistrict, setSelectedDistrict] = useState<IAddressApi | null>(
     null
   );
@@ -82,6 +81,20 @@ const ModalAddress = ({
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("userInfor");
+    if (storedUser) setUser(JSON.parse(storedUser));
+    const handleAuthChange = () => {
+      const updatedUser = localStorage.getItem("userInfor");
+      setUser(updatedUser ? JSON.parse(updatedUser) : null);
+    };
+    window.addEventListener("auth-change", handleAuthChange);
+    return () => {
+      window.removeEventListener("auth-change", handleAuthChange);
+    };
+  }, []);
+
 
   const handleOk = async (dataForm: IAddress) => {
     try {

@@ -228,6 +228,7 @@ class OrderController extends Controller
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
+                    'status'=>$order->status_order,
                     'is_delivered'=> json_encode($order->is_delivered),
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #03a9f4;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
@@ -247,7 +248,6 @@ class OrderController extends Controller
                 if (count($order->is_delivered) >= 2) {
                     $order->status_order = Order::STATUS_ORDER_DELIVERED;
                     $order->completed_at = now();
-
                 }
                 $order->save();
 
@@ -392,38 +392,66 @@ class OrderController extends Controller
                     continue; // Bỏ qua nếu không tìm thấy đơn hàng
                 }
     
-                $newStatus = match ($order->status_order) {
-                    Order::STATUS_ORDER_PENDING => Order::STATUS_ORDER_CONFIRMED,
-                    Order::STATUS_ORDER_CONFIRMED => Order::STATUS_ORDER_PREPARING_GOODS,
-                    Order::STATUS_ORDER_PREPARING_GOODS => Order::STATUS_ORDER_SHIPPING,
-                    Order::STATUS_ORDER_SHIPPING => Order::STATUS_ORDER_SHIPPING,
-                    default => null,
-                };
+                switch ($order->status_order) {
+                    case Order::STATUS_ORDER_PENDING:
+                        $newStatus = Order::STATUS_ORDER_CONFIRMED;
+                        $order->status_order = $newStatus;
+                        $order->save();
+                        break;
+                    case Order::STATUS_ORDER_CONFIRMED:
+                        $newStatus = Order::STATUS_ORDER_PREPARING_GOODS;
+                        $order->status_order = $newStatus;
+                        $order->save();
+                        break;
+                    case Order::STATUS_ORDER_PREPARING_GOODS:
+                        $newStatus = Order::STATUS_ORDER_SHIPPING;
+                        $order->status_order = $newStatus;
+                        $order->save();
+                        break;
+                    case Order::STATUS_ORDER_SHIPPING:
+                        $order->shipped_at = now();
+                        $newStatus = Order::STATUS_ORDER_SHIPPING;
+                        $order->status_order = $newStatus;
+                        $order->save();
+                        break;
+                    case Order::STATUS_ORDER_DELIVERED:
+                        $isDelivered = $order->is_delivered ?? [];
+                        
+                        // Gán giá trị `[1]` khi chuyển sang trạng thái DELIVERED
+                        if (empty($isDelivered)) {
+                            $isDelivered = [1];
+                        } else {
+                            $isDelivered[] = 1; // Thêm giá trị nếu đã có
+                        }
+                    
+                        $order->is_delivered = json_encode($isDelivered); // Lưu dưới dạng JSON nếu cần
+                        if (count($isDelivered) >= 2) {
+                            $newStatus = Order::STATUS_ORDER_DELIVERED;
+                            $order->status_order = $newStatus;
+                            $order->completed_at = now();
+                        }
+                    
+                        $order->save();
+                        break;
+                    default:
+                        $newStatus = null;
+                        break;
+                    }
+    
 
                 
     
                 if ($newStatus === null) {
                     continue; // Bỏ qua nếu trạng thái không hợp lệ
-                }
-    
-                // Cập nhật trạng thái
-                $order->status_order = $newStatus;
-                $order->save();
-
-                $isDelivered = $order->is_delivered ?? [];
-                $isDelivered = [1];
-
-                if ($order->status_order === Order::STATUS_ORDER_SHIPPING) {
-                    $order->is_delivered = $isDelivered; // Đánh dấu đơn hàng đã giao
-                    $order->save();
-                }
-    
+}
+                
                 // Tạo thông báo
                 $notification = Notification::create([
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
                     'status' => $newStatus,
+                    'is_delivered' => json_encode($order->is_delivered),
                     'content' => 'Đơn hàng <b>' . $order->code . '</b> đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$newStatus] . '</span>',
                 ]);
     
@@ -459,6 +487,9 @@ class OrderController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+
+    
 
     public function confirmDelivered(Request $request, $code)
     {
