@@ -5,6 +5,7 @@ import { NotificationsContext } from "../../../contexts/NotificationsContext";
 
 const ShowNotificationUser = () => {
   const { notifications } = useContext(NotificationsContext);
+  const reatnotifi = notifications.filter(item => item.is_read==0)
   return (
     <div className="px-2 py-5">
       {notifications.length === 0 ? (
@@ -46,11 +47,11 @@ const ShowNotificationUser = () => {
         </div>
       ) : (
         <div className="max-w-[400px] space-y-3">
-          {notifications.slice(0, 5).map((notification) => {
+          {reatnotifi.slice(0, 5).map((notification) => {
             return (
               <Link
                 key={notification.id}
-                to={`/count-unread-notification/{id}/${notification.order_code}`}
+                to={`/count-unread-notification/{id}/${reatnotifi.filter(item => item.is_read==0)}`}
                 className="block"
               >
                 {HTMLReactParser(notification.content)}
