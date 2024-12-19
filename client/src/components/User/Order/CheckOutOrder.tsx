@@ -193,7 +193,7 @@ const CheckOutOrder = () => {
               ĐẶT HÀNG
             </h2>
             <div className="grid grid-cols-12 gap-5">
-              <div className="col-span-9 steps-order">
+              <div className="col-span-12 lg:col-span-9 steps-order">
                 <Steps
                   labelPlacement="vertical"
                   current={current}

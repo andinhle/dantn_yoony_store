@@ -71,7 +71,6 @@ const ListInventory = () => {
     value: item.slug,
   }));
 
-  console.log(checkedListInventory);
 
   const checkAll = plainOptionsInventory.length === checkedListInventory.length;
   const indeterminate =
@@ -162,7 +161,6 @@ const ListInventory = () => {
         categories: checkedListCategory,
         filter: checkedListInventory,
       });
-      
       if (data) {
         dispatch({
           type: 'LIST',

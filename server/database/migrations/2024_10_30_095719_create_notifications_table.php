@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('order_code')->nullable();
             $table->string('status')->nullable();
             $table->boolean('is_read')->default(false);
+            $table->json('is_delivered')->nullable();
             $table->timestamps();
         });
     }

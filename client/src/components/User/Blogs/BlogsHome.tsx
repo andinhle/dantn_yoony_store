@@ -1,20 +1,10 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { IBlog } from "../../../interfaces/IBlogs";
-import instance from "../../../instance/instance";
 import ButtonSeeMore from "../Button/ButtonSeeMore";
-
-export default function BlogHome() {
-  const [blogs, setBlog] = useState<IBlog[]>([]);
-
-  useEffect(() => {
-    (async () => {
-      const { data } = await instance.get("list-blogs");
-      setBlog(data.data);
-    })();
-  }, []);
-
-  console.log(blogs);
+type Prop = {
+  blogs: IBlog[];
+};
+export default function BlogHome({blogs}:Prop) {
 
   const extractFirstImage = (content: string): string | null => {
     const parser = new DOMParser();

@@ -154,69 +154,7 @@ class OrderController extends Controller
 
     }
 
-    // public function canceledOrder(Request $request, $id)
-    // {
-    //     try {
-    //         $order = Order::query()
-    //             ->with(['items', 'user'])
-    //             ->findOrFail($id);
-
-
-    //         $request->validate([
-    //             'reason' => 'required|max:225'
-    //         ], [
-    //             'reason.required' => 'Vui lòng nhập lý do',
-    //             'reason.max' => 'Tiêu đề không được vượt quá 225 ký tự.',
-    //         ]);
-
-    //         $reason = $request->reason;
-
-    //         $order->update(['status_order' => Order::STATUS_ORDER_CANCELED]);
-
-    //         foreach ($order->items as $value) {
-    //             $inventoryStock = InventoryStock::query()->where('variant_id', $value->variant_id)->first();
-
-    //             if ($inventoryStock) {
-    //                 $inventoryStock->update([
-    //                     'quantity' => $inventoryStock->quantity + $value->quantity
-    //                 ]);
-    //             }
-
-
-    //         }
-
-    //         OrderCancellation::create([
-    //             'reason' => $reason,
-    //             'order_id' => $id,
-    //             'user_id' => Auth::id(),
-    //         ]);
-    //         $order['reason'] = $reason;
-    //         $order['user']['code'] = $order->code;
-    //         // Log::info($order);
-    //         $dataOrder = json_encode($order);
-    //         OrderCanceled::dispatch($dataOrder);
-    //         return response()->json([
-    //             'message' => 'Đơn hàng đã hủy thành công',
-    //             'status' => 'success',
-    //             'data' => $order
-    //         ], Response::HTTP_OK);
-    //     } catch (\Throwable $th) {
-    //         Log::error(__CLASS__ . '@' . __FUNCTION__, [
-    //             'line' => $th->getLine(),
-    //             'message' => $th->getMessage()
-    //         ]);
-
-    //         return response()->json([
-    //             'message' => 'Lỗi tải trang',
-    //             'status' => 'error',
-
-    //         ], Response::HTTP_INTERNAL_SERVER_ERROR);
-    //     }
-
-    // }
-
-
-    public function canceledOrder(Request $request, $id)
+public function canceledOrder(Request $request, $id)
 {
     try {
         // Tìm đơn hàng theo ID, kèm theo các quan hệ liên quan
@@ -390,7 +328,6 @@ class OrderController extends Controller
             ], 500);
         }
     }
-
 
 
 

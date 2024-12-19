@@ -35,7 +35,7 @@ class UpdateCouponRequest extends FormRequest
             'status' => 'boolean',
             'is_featured' => 'boolean',
             'min_order_value' => 'nullable|min:0|numeric',
-            'max_order_value'   => 'nullable|numeric|gt:min_order_value'
+            'max_discout'   => 'nullable|numeric|min:0'
         ];
     }
 
@@ -50,8 +50,8 @@ class UpdateCouponRequest extends FormRequest
             'usage_limit.required' => 'Yêu cầu nhập',
             'min_order_value.min' => 'Giá trị phải là số ',
             'min_order_value.numeric' => 'Vui lòng nhập số',
-            'max_order_value.numeric' => 'Vui lòng nhập số',
-            'max_order_value.gt:min_order_value' => 'Giá trị phải lớn hơn giá trị đơn hàng thấp nhất',
+            'max_discout.numeric' => 'Vui lòng nhập số',
+            'max_discout.gt:min' => 'Giá trị phải là số',
             'status.in' => 'Trạng thái đã chọn không hợp lệ',
             'is_featured.in' => 'Trạng thái đã chọn không hợp lệ',
             'end_date.date' => 'Ngày kết thúc phải là một ngày hợp lệ.',

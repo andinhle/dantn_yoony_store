@@ -34,11 +34,18 @@ class UnlockLockedItems extends Command
                         $inventory->save();
                     }
 
-                    $this->restoreCouponUsage($item);
-
+                    if ($item->user_id) {
+                        try {
+                            $this->restoreCouponsForUser($item->user_id);
+                        } catch (\Exception $e) {
+                            Log::error('Lỗi khi khôi phục coupon', [
+                                'user_id' => $item->user_id,
+                                'error' => $e->getMessage(),
+                            ]);
+                        }
+                    }
                     $item->delete();
 
-                    $this->sendPusherNotification($item->variant_id, $inventory->quantity);
                 }
 
                 $this->info('Unlocked expired items and restored coupons successfully!');
@@ -48,30 +55,35 @@ class UnlockLockedItems extends Command
         }
     }
 
-public function restoreCouponUsage($item)
-{
-    $cart = $item->cart; 
-    if ($cart && $cart->coupon_id) {
-        $coupon = Coupon::find($cart->coupon_id);
-        if ($coupon) {
-            $couponUser = CouponUser::where('user_id', $cart->user_id)
-                                    ->where('coupon_id', $coupon->id)
-                                    ->first();
-            if ($couponUser && !$couponUser->used_at) {
+    private function restoreCouponsForUser(int $userId)
+    {
+        Log::info("Bắt đầu khôi phục tất cả coupon chưa sử dụng cho userId: {$userId}");
+
+        $couponsUserHasNotUsed = CouponUser::where('user_id', $userId)
+            ->whereNull('used_at') 
+            ->get();
+
+        foreach ($couponsUserHasNotUsed as $couponUser) {
+            $coupon = Coupon::find($couponUser->coupon_id);
+
+            if ($coupon) {
                 $coupon->usage_limit += 1;
                 $coupon->save();
 
                 $couponUser->delete();
+
+                Log::info("Hoàn trả số lượng coupon với ID: {$couponUser->coupon_id} cho userId: {$userId}");
             }
         }
+
+        Log::info("Khôi phục coupon thành công cho userId: {$userId}");
     }
-}
 
 
-    public function sendPusherNotification($variantId, $quantity)
+    public function sendPusherNotification($variantId, $quantity,$userId)
     {
         $pusher = new Pusher(
-            env('PUSHER_KEY'),
+            env('PUSHER_APP_KEY'),
             env('PUSHER_SECRET'),
             env('PUSHER_APP_ID'),
             [
@@ -80,12 +92,13 @@ public function restoreCouponUsage($item)
             ]
         );
 
+
         $data = [
             'variant_id' => $variantId,
-            'quantity' => $quantity
+            'quantity' => $quantity,
+            'user_id' => $userId,
         ];
 
-        // Gửi sự kiện "inventory_updated" tới channel "product-channel"
         $pusher->trigger('product-channel', 'inventory-updated', $data);
     }
 }

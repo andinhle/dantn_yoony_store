@@ -23,7 +23,6 @@ const AddAttribute = () => {
 
   const onSubmit = async (dataForm: IAttribute) => {
     try {
-      console.log(dataForm)
       const { data } = await instance.post("attribute", dataForm);
       if (data) {
         dispatch({

@@ -101,7 +101,6 @@ const ChangePasswordUser = () => {
           </div>
         </div>
       </div>
-
       <div className="flex justify-start">
         <button className="bg-primary hover:bg-primary text-white text-sm py-2 px-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-primary flex items-center gap-1.5">
           <svg

@@ -168,7 +168,7 @@ class OrderController extends Controller
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
-                    'status'=>$order->status,
+                    'status'=>$order->status_order,
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #ff9800;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
 
@@ -188,7 +188,7 @@ class OrderController extends Controller
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
-                    'status'=>$order->status,
+                    'status'=>$order->status_order,
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #4caf50;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
 
@@ -208,7 +208,7 @@ class OrderController extends Controller
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
-                    'status'=>$order->status,
+                    'status'=>$order->status_order,
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
 
@@ -228,7 +228,7 @@ class OrderController extends Controller
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
-                    'status'=>$order->status,
+                    'is_delivered'=> json_encode($order->is_delivered),
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #03a9f4;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
 
@@ -255,7 +255,8 @@ class OrderController extends Controller
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
-                    'status'=>$order->status,
+                    'status'=>$order->status_order,
+                    'is_delivered'=> json_encode($order->is_delivered),
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #8bc34a;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
 
@@ -275,7 +276,7 @@ class OrderController extends Controller
                     'user_id' => $order->user_id,
                     'order_id' => $order->id,
                     'order_code' => $order->code,
-                    'status'=>$order->status,
+                    'status'=>$order->status_order,
                     'content' => 'Đơn hàng ' . '<b>' . $order->code . '</b>' . ' đã được cập nhật trạng thái thành <span style="color: #f44336;">' . Order::STATUS_ORDER[$order->status_order] . '</span>',
                 ]);
 
@@ -314,6 +315,13 @@ class OrderController extends Controller
         try {
             $order = Order::query()->where('code', $code)->first();
 
+            if(!$order){
+                return response()->json([
+                            'message' => 'Không tìm thấy sản phẩm',
+                            'status' => 'error',
+                        ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
             $request->validate([
                 'reason' => 'required|max:225'
             ], [
@@ -322,8 +330,19 @@ class OrderController extends Controller
             ]);
 
             $reason = $request->reason;
+            if($order->status_order	 === Order::STATUS_ORDER_CANCELED 
+                || $order->status_order === Order::STATUS_ORDER_SHIPPING
+                || $order->status_order === Order::STATUS_ORDER_DELIVERED)
+            {
+                return response()->json([
+                    'message' => 'Đơn hàng đang được giao. Không thể hủy đơn hàng',
+                    'status' => 'success',
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
 
-            $order->update(['status_order' => Order::STATUS_ORDER_CANCELED]);
+            $order->status_order = Order::STATUS_ORDER_CANCELED;
+            $order->save();
+            // $order->update(['status_order' => Order::STATUS_ORDER_CANCELED]);
 
             OrderCancellation::create([
                 'reason' => $reason,
@@ -377,9 +396,11 @@ class OrderController extends Controller
                     Order::STATUS_ORDER_PENDING => Order::STATUS_ORDER_CONFIRMED,
                     Order::STATUS_ORDER_CONFIRMED => Order::STATUS_ORDER_PREPARING_GOODS,
                     Order::STATUS_ORDER_PREPARING_GOODS => Order::STATUS_ORDER_SHIPPING,
-                    Order::STATUS_ORDER_SHIPPING => Order::STATUS_ORDER_DELIVERED,
+                    Order::STATUS_ORDER_SHIPPING => Order::STATUS_ORDER_SHIPPING,
                     default => null,
                 };
+
+                
     
                 if ($newStatus === null) {
                     continue; // Bỏ qua nếu trạng thái không hợp lệ
@@ -388,6 +409,14 @@ class OrderController extends Controller
                 // Cập nhật trạng thái
                 $order->status_order = $newStatus;
                 $order->save();
+
+                $isDelivered = $order->is_delivered ?? [];
+                $isDelivered = [1];
+
+                if ($order->status_order === Order::STATUS_ORDER_SHIPPING) {
+                    $order->is_delivered = $isDelivered; // Đánh dấu đơn hàng đã giao
+                    $order->save();
+                }
     
                 // Tạo thông báo
                 $notification = Notification::create([
@@ -510,5 +539,3 @@ class OrderController extends Controller
     }
 
 }
-
-

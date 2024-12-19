@@ -1,7 +1,6 @@
 import Pusher from "pusher-js";
 import { useEffect } from "react";
 
-
 const UserRoleListener = () => {
     const userData = JSON.parse(localStorage.getItem("userInfor")!);
     useEffect(() => {
@@ -24,7 +23,7 @@ const UserRoleListener = () => {
           channel.unbind_all();
           channel.unsubscribe();
         };
-      }, [userData?.id]);
+      }, [userData]);
     return null;
 }
 
