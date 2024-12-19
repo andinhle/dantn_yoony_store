@@ -65,7 +65,8 @@ const NavMenuUser = () => {
   //     clearStorage();
   //   }
   // }, []);
-
+  const reatnotifi = notifications.filter(item => item.is_read==0)
+  console.log(notifications);
   const userButton = useMemo(
     () => (
       <button
@@ -180,7 +181,7 @@ const NavMenuUser = () => {
                 className="flex gap-2 items-center rounded-md hover:text-util transtition-all"
               >
                 <IconButton>
-                  <Badge badgeContent={notifications.length} color="warning">
+                  <Badge badgeContent={reatnotifi.length} color="warning">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
