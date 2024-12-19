@@ -23,4 +23,5 @@ export interface IProduct{
     total_quantity_sold?:number
     total_stock_quantity?:number,
     average_rating?:number
+    canceled_quantity?:number
 }

@@ -5,14 +5,13 @@ import { AddressContext } from "../../../contexts/AddressContext";
 import ModalAddress from "../Manager/Addresses/ModalAddress";
 import instance from "../../../instance/instance";
 import { message, Popconfirm } from "antd";
-import { useAuth } from "../../../providers/AuthProvider";
 
 const AddressSelect = ({ onAddressSelect }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { addresses, dispatch } = useContext(AddressContext);
   const [addOrUpdate, setAddOrUpdate] = useState<string>("ADD");
   const [idAddress, setIdAddress] = useState<number>();
-  const {user}=useAuth()
+  const [user, setUser] = useState(null);
   const userData = (() => {
     try {
       const data = localStorage.getItem("userInfor");
@@ -22,7 +21,6 @@ const AddressSelect = ({ onAddressSelect }) => {
       return null;
     }
   })();
-
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -35,6 +33,20 @@ const AddressSelect = ({ onAddressSelect }) => {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("userInfor");
+    if (storedUser) setUser(JSON.parse(storedUser));
+    const handleAuthChange = () => {
+      const updatedUser = localStorage.getItem("userInfor");
+      setUser(updatedUser ? JSON.parse(updatedUser) : null);
+    };
+
+    window.addEventListener("auth-change", handleAuthChange);
+    return () => {
+      window.removeEventListener("auth-change", handleAuthChange);
+    };
+  }, []);
 
   useEffect(() => {
     try {
@@ -68,6 +80,7 @@ const AddressSelect = ({ onAddressSelect }) => {
           payload: id,
         });
         message.success("Xoá địa chỉ thành công !");
+        window.dispatchEvent(new Event("auth-change"));
       }
     } catch (error) {
       console.log(error);
@@ -84,6 +97,7 @@ const AddressSelect = ({ onAddressSelect }) => {
         userData.address_id = data?.default_address_id;
         localStorage.setItem("userInfor", JSON.stringify(userData));
         message.success('Đã thiết lập địa chỉ mặc định')
+        window.dispatchEvent(new Event("auth-change"));
       }
     } catch (error) {
       console.log(error);

@@ -14,7 +14,7 @@ const LayoutUserDetails = () => {
       >
         <SidebarUserDetails />
         <AddressProvider>
-          <div className="col-span-7">
+          <div className="col-span-6 lg:col-span-7">
             <Outlet />
           </div>
         </AddressProvider>

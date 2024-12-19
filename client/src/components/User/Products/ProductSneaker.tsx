@@ -1,17 +1,16 @@
-import ButtonSeeMore from "../Button/ButtonSeeMore";
-import CardProductAll from "./CardProductAll";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { FreeMode, Navigation, HashNavigation } from "swiper/modules";
-import { IProduct } from "../../../interfaces/IProduct";
 import GroupVariantsByColor from "../Show/GroupVariantsByColor";
+import CardProductAll from "./CardProductAll";
+import { IProduct } from "../../../interfaces/IProduct";
 type Prop = {
-  productFeatures: IProduct[];
+  productSneakers: IProduct[];
 };
-const ProductFeature = ({productFeatures}:Prop) => {
+const ProductSneaker = ({productSneakers}:Prop) => {
   return (
     <section className="py-5">
-      <h2 className="text-base md:text-xl lg:text-2xl font-medium uppercase product-feature flex items-center gap-2">
-        Sản phẩm nổi bật
+      <h2 className="text-base md:text-xl lg:text-2xl font-medium uppercase flex justify-center items-center gap-2">
+        Giày Sneaker
       </h2>
       <Swiper
         slidesPerView={5}
@@ -44,7 +43,7 @@ const ProductFeature = ({productFeatures}:Prop) => {
           },
         }}
       >
-        {productFeatures.map((productFeature) => {
+        {productSneakers.map((productFeature) => {
           // const colorVariants = productFeature.variants
           //   .flatMap((variant) =>
           //     variant.attribute_values
@@ -52,7 +51,9 @@ const ProductFeature = ({productFeatures}:Prop) => {
           //       .map((attr) => attr.value)
           //   )
           //   .filter((value, index, self) => self.indexOf(value) === index);
-          const colorVariantsImages= GroupVariantsByColor(productFeature.variants)
+          const colorVariantsImages = GroupVariantsByColor(
+            productFeature.variants
+          );
           return (
             <SwiperSlide className="pb-1 px-0.5" key={productFeature.id}>
               <CardProductAll
@@ -69,9 +70,11 @@ const ProductFeature = ({productFeatures}:Prop) => {
           );
         })}
       </Swiper>
-      {productFeatures.length >5 && <ButtonSeeMore link="search?filter=feature" />}
+      {/* {productFeatures.length > 5 && (
+        <ButtonSeeMore link="search?filter=feature" />
+      )} */}
     </section>
   );
 };
 
-export default ProductFeature;
+export default ProductSneaker;

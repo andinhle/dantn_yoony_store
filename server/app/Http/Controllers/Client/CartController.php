@@ -295,36 +295,36 @@ class CartController extends Controller
                     'status' => 'error',
                 ], Response::HTTP_BAD_REQUEST);
             }
-
+    
             $localCart = $request->input('local_cart', []);
-
+    
             if (empty($localCart) || !is_array($localCart)) {
                 return response()->json([
                     'message' => 'Dữ liệu local_cart không hợp lệ',
                     'status' => 'error',
                 ], Response::HTTP_BAD_REQUEST);
             }
-
+    
             $errors = [];
-
+    
             // Duyệt qua từng item trong local_cart
             foreach ($localCart as $item) {
                 $variantId = $item['variant_id'] ?? null;
                 $quantity = $item['quantity'] ?? 0;
-
+    
                 if (!$variantId || $quantity <= 0) {
                     continue; // Bỏ qua các item không hợp lệ
                 }
-
+    
                 // Kiểm tra xem variant đã tồn tại trong giỏ hàng của user chưa
                 $existingCart = Cart::query()
                     ->where('variant_id', $variantId)
                     ->where('user_id', $id_user)
                     ->first();
-
+    
                 // Lấy thông tin tồn kho từ bảng InventoryStock
                 $inventoryStock = InventoryStock::where('variant_id', $variantId)->first();
-
+    
                 if (!$inventoryStock) {
                     $errors[] = [
                         'variant_id' => $variantId,
@@ -332,10 +332,19 @@ class CartController extends Controller
                     ];
                     continue;
                 }
-
-                // Tính tổng số lượng muốn cập nhật vào giỏ hàng
-                $newQuantity = $existingCart ? $existingCart->quantity + $quantity : $quantity;
-
+    
+                // Nếu sản phẩm đã có trong giỏ hàng, cộng thêm số lượng vào giỏ
+                if ($existingCart) {
+                    // Cộng số lượng mới vào số lượng giỏ hiện tại
+                    $newQuantity = $existingCart->quantity + $quantity;
+    
+                    // Giới hạn số lượng giỏ không vượt quá số lượng tồn kho
+                    $newQuantity = min($newQuantity, $inventoryStock->quantity);
+                } else {
+                    // Nếu sản phẩm chưa có trong giỏ, sử dụng số lượng khách vãng lai muốn thêm
+                    $newQuantity = $quantity;
+                }
+    
                 if ($newQuantity > $inventoryStock->quantity) {
                     // Thêm vào mảng lỗi nhưng không dừng chương trình
                     $errors[] = [
@@ -344,7 +353,7 @@ class CartController extends Controller
                     ];
                     continue; // Bỏ qua sản phẩm này
                 }
-
+// Cập nhật số lượng nếu sản phẩm đã có trong giỏ hàng, hoặc thêm mới nếu chưa có
                 if ($existingCart) {
                     $existingCart->quantity = $newQuantity;
                     $existingCart->save();
@@ -353,17 +362,17 @@ class CartController extends Controller
                     Cart::create([
                         'user_id' => $id_user,
                         'variant_id' => $variantId,
-                        'quantity' => $quantity,
+                        'quantity' => $newQuantity,
                     ]);
                 }
             }
-
+    
             // Lấy lại danh sách giỏ hàng sau khi cập nhật
             $updatedCart = Cart::query()
                 ->with(['variant.product.category', 'variant.attributeValues.attribute', 'variant.inventoryStock'])
                 ->where('user_id', $id_user)
                 ->get();
-
+    
             return response()->json([
                 'message' => 'Giỏ hàng đã được cập nhật thành công',
                 'status' => 'success',
@@ -375,7 +384,7 @@ class CartController extends Controller
                 'line' => $th->getLine(),
                 'message' => $th->getMessage(),
             ]);
-
+    
             return response()->json([
                 'message' => 'Đã xảy ra lỗi vui lòng thử lại',
                 'status' => 'error',

@@ -7,7 +7,6 @@ import instance from "../../../instance/instance";
 import { useEffect, useState } from "react";
 import { WishlistResponse } from "../../../interfaces/IWishlist";
 import { message } from "antd";
-import { useAuth } from "../../../providers/AuthProvider";
 
 type Props = {
   imageProduct: string;

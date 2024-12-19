@@ -75,7 +75,6 @@ const Rates = () => {
             setLoading(true);
             try {
                 const response = await instance.get<ApiResponse>("ratings");
-                console.log("data:", response.data.data)
                 if (response.data && Array.isArray(response.data.data)) {
                     setReviews(response.data.data);
                 } else {
@@ -94,7 +93,6 @@ const Rates = () => {
         const fetchReviewTen = async () => {
             try {
                 const response = await instance.get("ratings");
-                console.log("dataTen", response.data.data);
                 if (response.data && Array.isArray(response.data.data)) {
                     settenReview(response.data.data);
                 } else {

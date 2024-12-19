@@ -238,7 +238,7 @@ const RatingDetailOrder = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {ratingDetail.items.map((item, index) => {
           const isMultipleVariants = item.variant_lists.length !== 1;
-          console.log(item);
+          // console.log(item);
           if (isMultipleVariants) {
             return (
               <ProductRatingItem
