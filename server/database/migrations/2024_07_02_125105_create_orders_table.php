@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('address');
             $table->timestamp('paid_at')->nullable();
             $table->timestamp('completed_at')->nullable();
+            $table->timestamp('shipped_at')->nullable();
             $table->integer('profit')->nullable();
             $table->json('is_delivered')->nullable();
             $table->timestamps();
