@@ -27,7 +27,7 @@ const OrderListsAllAdmin = ({ setListAllCount }: Prop) => {
         setSearchParams({ page: String(page) });
         const {
           data: { data: response },
-        } = await instance.get("admin/orders");
+        } = await instance.get(`admin/orders?page=${page}`);
         setOrders(response.data);
         setListAllCount(response.data.length);
         setMeta(response);

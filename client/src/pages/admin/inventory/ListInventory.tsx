@@ -36,6 +36,7 @@ const ListInventory = () => {
   const [isModalOpenShowDetail, setIsModalOpenShowDetail] = useState(false);
   const [isModalOpenHistory, setIsModalOpenHistory] = useState(false);
   const [categoryFilter, setcategoryFilter] = useState<ICategory[]>([]);
+
   const onChangeCategories = (list: string[]) => {
     setCheckedListCategory(list);
   };
@@ -218,13 +219,14 @@ const ListInventory = () => {
         <div className="space-y-2">
           <h3 className="text-sm font-medium">Tồn kho</h3>
           <ConfigProvider theme={{ token: { colorPrimary: "#ff9900" } }}>
-            <Checkbox
+            {/* <Checkbox
               indeterminate={indeterminate}
               onChange={onCheckAllChange}
               checked={checkAll}
+              disabled
             >
               Tất cả
-            </Checkbox>
+            </Checkbox> */}
             <Checkbox.Group
               options={plainOptionsInventory}
               onChange={onChangeInventory}

@@ -281,7 +281,7 @@ const ModalInventoryImport = ({
         const errorMessage = invalidVariantDetails
           .map(
             (variant) =>
-              `Variant ID ${variant.id} (${variant.attributes}): Thiếu ${variant.missingFields}`
+              `Biến thể ${variant.id} (${variant.attributes}): Thiếu ${variant.missingFields}`
           )
           .join("\n");
 

@@ -16,8 +16,9 @@ import ChatModal from "./ChatModal";
 import ShowNotificationUser from "../Show/ShowNotificationUser";
 import { Divider } from "antd";
 import { NotificationsContext } from "../../../contexts/NotificationsContext";
-import Logout, { AUTH_COOKIE_NAME, clearStorage, USER_INFO_KEY } from "../Auth/Logout";
+import { AUTH_COOKIE_NAME, USER_INFO_KEY } from "../Auth/Logout";
 import Cookies from "js-cookie";
+import logout from "../Auth/Logout";
 const NavMenuUser = () => {
   const [chatVisible, setChatVisible] = useState(false); // State cho chat modal
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -34,7 +35,7 @@ const NavMenuUser = () => {
   };
 
   const handleLogout = () => {
-    Logout()
+    logout()
     handleClose();
     navigate("/");
   };
@@ -56,14 +57,15 @@ const NavMenuUser = () => {
     };
   }, []);
 
-  const checkAuthStatus = useCallback(() => {
-    const authCookie = Cookies.get(AUTH_COOKIE_NAME);
-    const userInfo = localStorage.getItem(USER_INFO_KEY);
+  // const checkAuthStatus = useCallback(() => {
+  //   const authCookie = Cookies.get(AUTH_COOKIE_NAME);
+  //   const userInfo = localStorage.getItem(USER_INFO_KEY);
 
-    if (!authCookie || !userInfo) {
-      clearStorage();
-    }
-  }, []);
+  //   if (!authCookie || !userInfo) {
+  //     clearStorage();
+  //   }
+  // }, []);
+
   const userButton = useMemo(
     () => (
       <button
