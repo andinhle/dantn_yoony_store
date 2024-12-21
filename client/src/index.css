@@ -463,3 +463,12 @@ a:hover .number-cart{
 .shadow-chart{
   box-shadow: rgba(149, 157, 165, 0.2) 0px 0px 20px;
 }
+
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}

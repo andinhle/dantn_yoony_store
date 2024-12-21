@@ -1,10 +1,10 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
-
+import Cookies from 'js-cookie';
 export const AuthMiddleware = () => {
   const location = useLocation();
   const userData = JSON.parse(localStorage.getItem("userInfor") || "{}");
-
+  const token = Cookies.get('authToken');
   // Danh sách route không bị chặn khi đã đăng nhập
   const allowedRoutes = [
     '/auth/register', 
@@ -24,10 +24,12 @@ export const AuthMiddleware = () => {
     '/user-manager/addresses'
   ];
 
+
+
   // Xử lý các trường hợp truy cập
   const handleAccess = () => {
     // Đã đăng nhập
-    if (userData && Object.keys(userData).length > 0) {
+    if (userData && Object.keys(userData).length > 0 && token) {
       // Chặn truy cập các route auth
       if (allowedRoutes.some(route => location.pathname.startsWith(route))) {
         return <Navigate to="/" />;
@@ -72,15 +74,47 @@ export const AuthMiddleware = () => {
 
   return handleAccess();
 };
-
+const restrictedRoutesForManager = [
+  '/admin/products/inventory',
+  '/admin/products/suppliers',
+  '/admin/products/historys',
+  '/admin/users',
+  '/admin/orders',
+  '/admin/thong-ke',
+];
 // Middleware kiểm tra quyền admin
 export const AdminMiddleware = () => {
+  const location = useLocation();
   const userData = JSON.parse(localStorage.getItem("userInfor") || "{}");
+  const token = Cookies.get('authToken');
 
-  if (userData.role !== 'admin' && userData.role !== 'manage') {
-    toast.error('Bạn không có quyền truy cập trang này');
-    return <Navigate to="/" />;
+  // Kiểm tra người dùng đã đăng nhập chưa
+  if ((!userData && !token) || Object.keys(userData).length === 0) {
+    return <Navigate to="/auth/login" state={{ from: location }} />;
   }
 
-  return <Outlet />;
+  // Kiểm tra quyền truy cập với role là admin
+  if (userData.role === 'admin') {
+    return <Outlet />;
+  }
+
+  // Nếu là manage, xử lý các route cụ thể
+  if (userData.role === 'manage') {
+    // Nếu đang truy cập vào Dashboard của admin ("/admin")
+    if (location.pathname === '/admin' || location.pathname === '/admin/') {
+      return <Navigate to="/admin/categorys" />; // Redirect đến trang khác 
+    }
+
+    // Kiểm tra quyền truy cập vào các route restricted khác
+    if (restrictedRoutesForManager.some(route => location.pathname.startsWith(route))) {
+      return <Navigate to="/admin/categorys" />; // Redirect đến trang hợp lệ
+    }
+
+    return <Outlet />;
+  }
+
+  // Nếu không có quyền truy cập
+  toast.error('Bạn không có quyền truy cập trang này');
+  return <Navigate to="/" />;
 };
+

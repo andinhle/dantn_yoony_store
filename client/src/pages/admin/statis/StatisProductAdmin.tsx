@@ -8,6 +8,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import slugify from "react-slugify";
 import { LoadingOverlay } from "@achmadk/react-loading-overlay";
 import { IMeta } from "../../../interfaces/IMeta";
+import StatisFavoriteProduct from "./StatisFavoriteProduct";
 interface ExpandedDataType {
   key: React.Key;
   variant: IVariants;
@@ -43,7 +44,7 @@ interface APIParams {
 }
 const fetchStatisticalData = async (params: APIParams) => {
   const queryParams = new URLSearchParams();
-  
+
   // Dynamic add params
   Object.entries(params).forEach(([key, value]) => {
     if (value) queryParams.append(key, value.toString());
@@ -60,22 +61,18 @@ const StatisProductAdmin = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parseInt(searchParams.get("page") || "1");
   const [meta, setMeta] = useState<IMeta>();
-  const [dateRange, setDateRange] = useState<[string, string] | null>(null);
   const [dateRangeProduct, setDateRangeProduct] = useState<
     [string, string] | null
   >(null);
 
   const { RangePicker } = DatePicker;
-  const handleDateChange = (dates: any, dateStrings: [string, string]) => {
-    setDateRange(dateStrings);
-  };
 
   const handleDateChangeProduct = (
     dates: any,
     dateStringProducts: [string, string]
   ) => {
     setDateRangeProduct(dateStringProducts);
-    setSelect(''); 
+    setSelect("");
   };
 
   const handleSelectClick = (value: string) => {
@@ -88,21 +85,17 @@ const StatisProductAdmin = () => {
       try {
         setLoading(true);
         setSearchParams({ page: String(page) });
-
         const params: APIParams = { page };
-
         if (dateRangeProduct) {
           params.from_date = dateRangeProduct[0];
           params.to_date = dateRangeProduct[1];
-          setSelect(''); // Reset select khi dùng date range
+          setSelect("");
         } else if (select) {
           params.type = select;
         }
-
         const { data } = await fetchStatisticalData(params);
         setMeta(data);
         setStatisticalProducts(data.data);
-
       } catch (error) {
         console.log(error);
       } finally {
@@ -401,22 +394,7 @@ const StatisProductAdmin = () => {
         </div>
         <div className="space-y-5 col-span-4">
           <h3 className="font-medium text-center">TOP 10 SẢN PHẨM YÊU THÍCH</h3>
-          <div>
-            <div className="w-fit mx-auto">
-              <ConfigProvider
-                theme={{
-                  token: {
-                    colorPrimary: "#ff9900",
-                  },
-                }}
-              >
-                <RangePicker
-                  placeholder={["Ngày bắt đầu", "Ngày kết thúc"]}
-                  onChange={handleDateChange}
-                />
-              </ConfigProvider>
-            </div>
-          </div>
+          <StatisFavoriteProduct />
         </div>
       </div>
     </LoadingOverlay>
