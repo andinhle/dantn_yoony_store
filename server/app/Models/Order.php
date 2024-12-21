@@ -50,6 +50,10 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+    public function rates()
+    {
+        return $this->hasMany(Rate::class);
+    }
 
     public function user() 
     {
@@ -62,12 +66,6 @@ class Order extends Model
         return $this->hasMany(OrderCoupon::class);
     }
 
-
-     // Thêm mối quan hệ với Rate
-
-     public function rates()
-     {
-         return $this->hasMany(Rate::class);
-     }
+     
 
 }

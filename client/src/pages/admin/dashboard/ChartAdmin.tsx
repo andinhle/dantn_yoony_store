@@ -1,4 +1,5 @@
 // import ChartAreaProfit from "../../../components/Admin/Chart/ChartAreaProfit";
+import ChartAreaProfit from "../../../components/Admin/Chart/ChartAreaProfit";
 import ChartAreaRevenue from "../../../components/Admin/Chart/ChartAreaRevenue";
 import ChartPieOrder from "../../../components/Admin/Chart/ChartPieOrder";
 
@@ -7,7 +8,7 @@ const ChartAdmin = () => {
     <div className="grid grid-cols-12 gap-5">
       <ChartAreaRevenue />
       <ChartPieOrder />
-      {/* <ChartAreaProfit /> */}
+      <ChartAreaProfit />
     </div>
   );
 };

@@ -73,7 +73,7 @@ Route::get('home/products/{slug}/ratings', [HomeController::class, 'ratingListAl
 
 Route::get('home/products/featured', [HomeController::class, 'getFeaturedProducts']);
 Route::get('home/products/good-deal', [HomeController::class, 'getGoodDealProducts']);
-Route::get('home/product/category/{id}', [HomeController::class, 'getProductsByCategory']);
+Route::get('home/product/category/{slug}', [HomeController::class, 'getProductsByCategory']);
 
 Route::get('auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
 Route::get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
@@ -140,6 +140,19 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         // QL banner
         // Route::put('createBannerMultiple', [BannerController::class, 'createBannerMultiple']);
         // Route::post('updateBannerMultiple', [BannerController::class, 'updateBannerMultiple']);
+
+        //Thống kê
+        Route::get('thong-ke/doanh-thu', [StatisticalController::class, 'doanhThu']);
+        Route::get('thong-ke/san-pham', [StatisticalController::class, 'thongKeSanPham']);
+        Route::get('thong-ke/all-san-pham', [StatisticalController::class, 'thongKeSanPhamAll']);
+        Route::get('thong-ke/mot-san-pham/{slug}', [StatisticalController::class, 'thongKeProductDetailBySlug']);
+        Route::get('thong-ke/don-hang', [StatisticalController::class, 'thongKeDonHang']);
+        Route::get('thong-ke/ngay-thong-ke', [StatisticalController::class, 'NgayThongKe']);
+        Route::get('thong-ke/thong-ke-theo-ngay', [StatisticalController::class, 'thongKeNgay'])->name('thongKeNgay');
+        Route::get('thong-ke/so-luong-bien-the-duoi-10', [StatisticalController::class, 'listSoLuongBienTheDuoi10']);
+        Route::get('thong-ke/so-luong-bien-the-da-het', [StatisticalController::class, 'listSoLuongBienTheDaHet']);
+        Route::get('thong-ke/profit', [StatisticalController::class, 'profit']);
+        Route::get('thong-ke/top10-favorite', [StatisticalController::class, 'top10YeuThich']);
 
         //QL Event
         Route::get('/admin/events/coupons', [EventController::class, 'getEventCoupons']);
@@ -213,19 +226,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
             Route::post('store-answer', [FaqController::class, 'storeAnswers']);
             Route::delete('delete-answer/{id}', [FaqController::class, 'deleteAnswer']);
         });
-
-        //Thống kê
-        Route::get('thong-ke/doanh-thu', [StatisticalController::class, 'doanhThu']);
-        Route::get('thong-ke/san-pham', [StatisticalController::class, 'thongKeSanPham']);
-        Route::get('thong-ke/all-san-pham', [StatisticalController::class, 'thongKeSanPhamAll']);
-        Route::get('thong-ke/mot-san-pham/{slug}', [StatisticalController::class, 'thongKeProductDetailBySlug']);
-        Route::get('thong-ke/don-hang', [StatisticalController::class, 'thongKeDonHang']);
-        Route::get('thong-ke/ngay-thong-ke', [StatisticalController::class, 'NgayThongKe']);
-        Route::get('thong-ke/thong-ke-theo-ngay', [StatisticalController::class, 'thongKeNgay'])->name('thongKeNgay');
-        Route::get('thong-ke/so-luong-bien-the-duoi-10', [StatisticalController::class, 'listSoLuongBienTheDuoi10']);
-        Route::get('thong-ke/so-luong-bien-the-da-het', [StatisticalController::class, 'listSoLuongBienTheDaHet']);
-        Route::get('thong-ke/profit', [StatisticalController::class, 'profit']);
-        Route::get('thong-ke/top10-favorite', [StatisticalController::class, 'top10YeuThich']);
 
         // QL danh mục
         Route::apiResource('category', CategoryController::class);

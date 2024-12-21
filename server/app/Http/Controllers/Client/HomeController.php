@@ -191,27 +191,36 @@ class HomeController extends Controller
 
 
     // getProductsByCategory
-    public function getProductsByCategory(int $categoryId)
+    public function getProductsByCategory(string $categorySlug)
     {
         try {
-            $category = Category::with('product.variants.attributeValues.attribute')->findOrFail($categoryId);
-
+            // Tìm danh mục theo slug
+            $category = Category::where('slug', $categorySlug)->firstOrFail();
+    
+            // Lọc các sản phẩm thuộc danh mục có 'slug' trùng với 'categorySlug' và sản phẩm phải active
             $products = Product::with('category', 'variants.attributeValues.attribute')
-                ->where('category_id', $categoryId)
-                ->where('is_active', true) // Điều kiện kiểm tra sản phẩm phải active
+                ->whereHas('category', function ($query) use ($categorySlug) {
+                    $query->where('slug', $categorySlug); // Lọc theo slug của danh mục
+                })
+                ->where('is_active', true) // Lọc theo trạng thái active của sản phẩm
                 ->paginate(10);
-
+    
+            // Trả về danh sách sản phẩm
             return response()->json([
-                // 'category' => new CategoryResource($category),
                 'data' => ProductResource::collection($products),
             ], 200);
+    
         } catch (ModelNotFoundException $e) {
+            // Nếu không tìm thấy danh mục
             return response()->json(['error' => 'Không tìm thấy danh mục.'], 404);
         } catch (\Throwable $e) {
-            Log::error('Lỗi khi lấy sản phẩm theo danh mục: ' . $e->getMessage(), ['category_id' => $categoryId]);
+            // Ghi log lỗi và trả về thông báo lỗi chung
+            Log::error('Lỗi khi lấy sản phẩm theo danh mục: ' . $e->getMessage(), ['slug' => $categorySlug]);
             return response()->json(['error' => 'Đã xảy ra lỗi khi lấy sản phẩm theo danh mục.'], 500);
         }
     }
+    
+    
 
     // Lọc sản phẩm nổi bật
     public function getFeaturedProducts(): JsonResponse
@@ -324,56 +333,63 @@ class HomeController extends Controller
         try {
             // Lấy user id từ request
             $user = $request->user();
-
+    
             // Lấy danh sách coupon_id đã được user sử dụng
             $usedCouponIds = CouponUser::where('user_id', $user->id)
                 ->whereNotNull('used_at')
                 ->pluck('coupon_id')
                 ->toArray();
-
+    
+            // Xây dựng câu query tìm coupon
             $query = Coupon::query()
                 ->where('status', true)
                 ->where('usage_limit', '>', 0)
                 ->where(function ($q) {
+                    // Kiểm tra thời hạn coupon
                     $q->where(function ($subQ) {
                         // Trường hợp có thời hạn
                         $subQ->where('start_date', '<', Carbon::now())
                             ->where('end_date', '>', Carbon::now());
-                    })->orWhere(function ($subQ) {
+                    })
+                    ->orWhere(function ($subQ) {
                         // Trường hợp không có thời hạn
                         $subQ->whereNull('start_date')
                             ->whereNull('end_date');
                     });
                 })
                 ->whereNotIn('id', $usedCouponIds);
-
-            // Xử lý điều kiện min và max order value
+    
+            // Xử lý điều kiện min_order_value và max_order_value
             $query->where(function ($q) use ($request) {
                 $q->where(function ($subQuery) use ($request) {
                     // Trường hợp 1: Không có cả min và max (null)
                     $subQuery->whereNull('min_order_value')
                         ->whereNull('max_order_value');
-                })->orWhere(function ($subQuery) use ($request) {
+                })
+                ->orWhere(function ($subQuery) use ($request) {
                     // Trường hợp 2: Chỉ có min, không có max
                     $subQuery->where('min_order_value', '<=', $request->totalCart)
                         ->whereNull('max_order_value');
-                })->orWhere(function ($subQuery) use ($request) {
-                    // Trường hợp 3: Có min, có max
+                })
+                ->orWhere(function ($subQuery) use ($request) {
+                    // Trường hợp 3: Có cả min, có max
                     $subQuery->where('min_order_value', '<=', $request->totalCart)
                         ->where('max_order_value', '>=', $request->totalCart);
-                })->orWhere(function ($subQuery) use ($request) {
+                })
+                ->orWhere(function ($subQuery) use ($request) {
                     // Trường hợp 4: Không có min, chỉ có max
                     $subQuery->whereNull('min_order_value')
                         ->where('max_order_value', '>=', $request->totalCart);
                 });
             });
-
-            // Debug query
+    
+            // Debug query để kiểm tra chính xác câu lệnh SQL
             \Log::info($query->toSql());
             \Log::info($query->getBindings());
-
+    
+            // Lấy kết quả
             $data = $query->get();
-
+    
             return response()->json([
                 'status' => 'success',
                 'data' => $data,
@@ -383,13 +399,14 @@ class HomeController extends Controller
                 'line' => $th->getLine(),
                 'message' => $th->getMessage()
             ]);
-
+    
             return response()->json([
                 'message' => 'Đã có lỗi. Vui lòng thử lại',
                 'status' => 'error',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    
 
     // FAQ
     // Lấy ra các câu hỏi đầu tiên

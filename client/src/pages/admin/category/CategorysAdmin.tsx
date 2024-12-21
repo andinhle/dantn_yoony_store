@@ -24,7 +24,7 @@ const CategoryList: React.FC = () => {
   const [categories, setCategories] = useState<ICategory[]>([]);
   const preset_key = import.meta.env.VITE_PRESET_KEY_CLOADINARY;
   const cloud_name = import.meta.env.VITE_CLOUD_NAME_CLOADINARY;
-  const image_type = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+  const image_type = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/svg+xml",];
   const [addOrupdate, SetAddOrUpdate] = useState("ADD");
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [idUpdate, setIdUpdate] = useState<number>();

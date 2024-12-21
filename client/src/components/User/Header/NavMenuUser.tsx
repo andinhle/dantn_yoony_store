@@ -7,24 +7,30 @@ import {
   MenuItem,
   MenuList,
 } from "@mui/material";
-import { MouseEvent, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  MouseEvent,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Link, useNavigate } from "react-router-dom";
 import CartContext from "../../../contexts/CartContext";
 import { Popover } from "antd";
 import ShowMiniCart from "../Show/ShowMiniCart";
-import ChatModal from "./ChatModal";
 import ShowNotificationUser from "../Show/ShowNotificationUser";
 import { Divider } from "antd";
 import { NotificationsContext } from "../../../contexts/NotificationsContext";
-import { AUTH_COOKIE_NAME, USER_INFO_KEY } from "../Auth/Logout";
-import Cookies from "js-cookie";
+import Pusher from "pusher-js";
 import logout from "../Auth/Logout";
+import { IUser } from "../../../interfaces/IUser";
 const NavMenuUser = () => {
   const [chatVisible, setChatVisible] = useState(false); // State cho chat modal
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const { carts } = useContext(CartContext);
-  const {notifications}=useContext(NotificationsContext)
+  const { notifications } = useContext(NotificationsContext);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
@@ -35,7 +41,7 @@ const NavMenuUser = () => {
   };
 
   const handleLogout = () => {
-    logout()
+    logout();
     handleClose();
     navigate("/");
   };
@@ -57,16 +63,43 @@ const NavMenuUser = () => {
     };
   }, []);
 
-  // const checkAuthStatus = useCallback(() => {
-  //   const authCookie = Cookies.get(AUTH_COOKIE_NAME);
-  //   const userInfo = localStorage.getItem(USER_INFO_KEY);
+  const userData = JSON.parse(localStorage.getItem("userInfor") || "{}");
+
+  const initializePusher = useCallback((userData: IUser) => {
+    if (!userData?.id) return;
+
+    Pusher.logToConsole = true;
+
+    const pusher = new Pusher(import.meta.env.VITE_PUSHER_APP_KEY, {
+      cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+      encrypted: true,
+    });
+
+    const channel = pusher.subscribe(`user-role-updates.${userData.id}`);
+    channel.bind("user-role-updated", (data: any) => {
+      const updatedUserData = { ...userData, ...data.user };
+      localStorage.setItem("userInfor", JSON.stringify(updatedUserData));
+      setUser(updatedUserData);
+      window.addEventListener("auth-change", updatedUserData);
+    });
+    return () => {
+      channel.unbind_all();
+      channel.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (userData) {
+      const cleanup = initializePusher(userData);
+      return cleanup;
+    }
+  }, [userData, initializePusher]);
 
   //   if (!authCookie || !userInfo) {
   //     clearStorage();
   //   }
   // }, []);
   const reatnotifi = notifications.filter(item => item.is_read==0)
-  console.log(notifications);
   const userButton = useMemo(
     () => (
       <button
@@ -410,8 +443,6 @@ const NavMenuUser = () => {
           </Menu>
         </li>
       </ul>
-      <ChatModal visible={chatVisible} onClose={toggleChat} />{" "}
-      {/* Hiển thị modal chat */}
     </nav>
   );
 };

@@ -7,6 +7,8 @@ import { IMeta } from "../../../interfaces/IMeta";
 import { ConfigProvider, Pagination } from "antd";
 import { Input } from "antd";
 import Highlighter from "react-highlight-words";
+import axios from "axios";
+import { toast } from "react-toastify";
 const ListSuppliers = () => {
   const { suppliers, dispatch } = useContext(SupplierContext);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -33,8 +35,26 @@ const ListSuppliers = () => {
       }
     })();
   }, [page]);
-  const handleUpdateSupplier=(idSupplier:number)=>{
-    setSearchParams({ id: String(idSupplier)});
+  const handleUpdateSupplier = (idSupplier: number) => {
+    setSearchParams({ id: String(idSupplier) });
+  };
+  const handleDeleteSuppliers=async(id:number)=>{
+    try {
+      await instance.delete(`delete-supplier/${id}`)
+      dispatch({
+        type: "DELETE",
+        payload: id
+      });
+      toast.success('Xoá nhà cung cấp thành công !')
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error);
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Đã xảy ra lỗi không mong muốn");
+      }
+    }
   }
   return (
     <div className="bg-util p-5 rounded-md space-y-5 col-span-9 h-fit">
@@ -144,7 +164,7 @@ const ListSuppliers = () => {
                         <div className="flex gap-2 justify-center">
                           <button
                             className="bg-util shadow py-1.5 px-3 rounded-md"
-                            onClick={()=>handleUpdateSupplier(supplier.id)}
+                            onClick={() => handleUpdateSupplier(supplier.id)}
                           >
                             <svg
                               className="size-5"
@@ -161,7 +181,24 @@ const ListSuppliers = () => {
                               ></path>
                             </svg>
                           </button>
-                          <button className="bg-util shadow py-1.5 px-3 rounded-md">
+                          <button
+                            className="bg-util shadow py-1.5 px-3 rounded-md"
+                            onClick={() => {
+                              swal({
+                                title: "Xoá nhà cung cấp",
+                                text: "Sau khi xoá nhà cung cấp không thể khôi phục !",
+                                icon: "warning",
+                                buttons: ["Hủy", "Xoá"],
+                                dangerMode: true,
+                                className: "my-swal",
+                              }).then((willDelte) => {
+                                if (willDelte) {
+                                  handleDeleteSuppliers(supplier.id!);
+                                }
+                              });
+                              
+                            }}
+                          >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               viewBox="0 0 24 24"

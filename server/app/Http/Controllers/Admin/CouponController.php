@@ -46,12 +46,24 @@ class CouponController extends Controller
         try {
             $data = $request->all();
             
-            if ($data['discount_type'] == 'percentage' && isset($data['max_discount']) && $data['discount'] > $data['max_discount']) {
-                return response()->json(['max_discount' => 'Mức chiết khấu tối đa phải lớn hơn hoặc bằng tỷ lệ phần trăm chiết khấu.'],Response::HTTP_INTERNAL_SERVER_ERROR);
-            }
+            // if ($data['discount_type'] == 'percentage' && isset($data['max_discount']) && $data['discount'] > $data['max_discount']) {
+            //     return response()->json(['max_discount' => 'Mức chiết khấu tối đa phải lớn hơn hoặc bằng tỷ lệ phần trăm chiết khấu.'],Response::HTTP_INTERNAL_SERVER_ERROR);
+            // }
             if(($data['discount'] > 100) && $data['discount_type'] == 'percentage'){
                 return response()->json(['max_discount' => 'Phần trăm tối đa là 100%'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
+            if($data['min_order_value'] == 0 ){
+                $data['min_order_value'] = null;
+            }
+
+            if($data['max_order_value'] == 0 ){
+                $data['max_order_value'] = null;
+            }
+
+            if($data['max_discount'] == 0 ){
+                $data['max_discount'] = null;
+            }
+
             
             $coupon = Coupon::create($data);
 
@@ -112,11 +124,24 @@ class CouponController extends Controller
 
             $model = Coupon::query()->findOrFail($id);
 
-            if ($data['discount_type'] == 'percentage' && isset($data['max_discount']) && $data['discount'] > $data['max_discount']) {
-                return response()->json(['max_discount' => 'Mức chiết khấu tối đa phải lớn hơn hoặc bằng tỷ lệ phần trăm chiết khấu.'],Response::HTTP_INTERNAL_SERVER_ERROR);
-            }
+            // if ($data['discount_type'] == 'percentage' && isset($data['max_discount']) && $data['discount'] > $data['max_discount']) {
+            //     return response()->json(['max_discount' => 'Mức chiết khấu tối đa phải lớn hơn hoặc bằng tỷ lệ phần trăm chiết khấu.'],Response::HTTP_INTERNAL_SERVER_ERROR);
+            // }
             if(($data['discount'] > 100) && $data['discount_type'] == 'percentage'){
                 return response()->json(['max_discount' => 'Phần trăm tối đa là 100%'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+            
+            if(isset($data['min_order_value']) && $data['min_order_value'] == 0 ){
+                
+                $data['min_order_value'] = null;
+            }
+
+            if(isset($data['max_order_value']) && $data['max_order_value'] == 0 ){
+                $data['max_order_value'] = null;
+            }
+
+            if(isset($data['max_discout']) && $data['max_discout'] == 0 ){
+                $data['max_discout'] = null;
             }
 
 

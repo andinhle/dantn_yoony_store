@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import instance from "../../../../instance/instance";
 import { IOrderUserClient } from "../../../../interfaces/IOrderUserClient";
+import dayjs from "dayjs";
 import {
   Steps,
   Popover,
@@ -833,26 +834,26 @@ const UserOrderDetail = () => {
                   {
                     title: "Chờ xác nhận",
                     description:
-                      "Đơn hàng mới được tạo, đang chờ người bán xác nhận",
+                      `Đơn hàng mới được tạo, đang chờ người bán xác nhận`,
                   },
                   {
                     title: "Đã xác nhận",
-                    description: "Người bán đã tiếp nhận và xác nhận đơn hàng",
+                    description: `Người bán đã tiếp nhận và xác nhận đơn hàng`,
                   },
                   {
                     title: "Đang chuẩn bị hàng",
                     description:
-                      "Người bán đang đóng gói và chuẩn bị hàng để giao",
+                      `Người bán đang đóng gói và chuẩn bị hàng để giao`,
                   },
                   {
                     title: "Đang vận chuyển",
                     description:
-                      "Đơn hàng đang được đơn vị vận chuyển giao đến bạn",
+                      `Đơn hàng đang được đơn vị vận chuyển giao đến bạn`,
                   },
                   {
                     title: "Đã giao hàng",
                     description:
-                      "Đơn hàng đã được giao thành công đến người nhận",
+                      `Đơn hàng đã được giao thành công đến người nhận`,
                   },
                 ]}
               />
