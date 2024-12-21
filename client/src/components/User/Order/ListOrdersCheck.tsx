@@ -10,6 +10,7 @@ type Prop = {
 const ListOrdersCheck = ({ datas }: Prop) => {
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [checkStatusCurrent, setCheckStatusCurrent] = useState<number>(0);
+
   const checkPaymentMethod = (method: string) => {
     switch (method) {
       case "COD":

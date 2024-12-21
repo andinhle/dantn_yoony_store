@@ -441,6 +441,7 @@ class OrderController extends Controller
                         $order->is_delivered = $isDelivered;
                         $newStatus = Order::STATUS_ORDER_SHIPPING;
 
+
                         $order->status_order = $newStatus;
                         if (count($order->is_delivered) >= 2) {
                             $order->completed_at = now();
@@ -453,7 +454,7 @@ class OrderController extends Controller
                             'order_id' => $order->id,
                             'order_code' => $order->code,
                             'status' => $newStatus,
-                            'is_delivered' => json_encode($order->is_delivered),
+                            // 'is_delivered' => json_decode($order->is_delivered),
                             'content' => 'Đơn hàng <b>' . $order->code . '</b> đã được cập nhật trạng thái thành <span style="color: #2196f3;">' . Order::STATUS_ORDER[$newStatus] . '</span>',
                         ]);
                         break;
@@ -493,12 +494,9 @@ class OrderController extends Controller
             return response()->json([
                 'message' => 'Lỗi hệ thống.',
                 'status' => 'error',
-], Response::HTTP_INTERNAL_SERVER_ERROR);
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
-
-
     
 
     public function confirmDelivered(Request $request, $code)
@@ -578,5 +576,59 @@ class OrderController extends Controller
             'orders' => $orders
         ]);
     }
+
+    public function filterOrdersByDateRange(Request $request)
+    {
+        try {
+            // Lấy giá trị bắt đầu và kết thúc từ request
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+
+            // Xác thực dữ liệu đầu vào
+            $request->validate([
+                'start_date' => 'required|date|before_or_equal:end_date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+            ], [
+                'start_date.required' => 'Ngày bắt đầu là bắt buộc.',
+                'start_date.date' => 'Ngày bắt đầu không hợp lệ.',
+                'start_date.before_or_equal' => 'Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.',
+                'end_date.required' => 'Ngày kết thúc là bắt buộc.',
+                'end_date.date' => 'Ngày kết thúc không hợp lệ.',
+                'end_date.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.',
+            ]);
+
+            // Truy vấn đơn hàng trong khoảng thời gian
+            $orders = Order::query()
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->with(['items.variant'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // Kiểm tra nếu không có đơn hàng nào
+            if ($orders->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không có đơn hàng nào trong khoảng thời gian này.',
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $orders,
+            ], 200);
+
+        } catch (\Throwable $th) {
+            Log::error(__CLASS__ . '@' . __FUNCTION__, [
+                'line' => $th->getLine(),
+                'message' => $th->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Đã xảy ra lỗi trong quá trình xử lý.',
+                'status' => 'error',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
 }

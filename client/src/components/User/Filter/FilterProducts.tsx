@@ -192,31 +192,43 @@ const FilterProducts = () => {
     handleFiltersChange();
   };
 
-  const handleTagClose = (
-    type: "category" | "attribute" | "price",
-    value: number | string
-  ) => {
+  const handleTagClose = (type: "category" | "attribute" | "price", value: number | string) => {
     switch (type) {
       case "category":
+        // Xoá category đã chọn
         setSelectedCategories((prev) => prev.filter((cat) => cat !== value));
         break;
       case "attribute":
+        // Xoá giá trị thuộc tính đã chọn
         setSelectedAttributes((prev) => {
           const newAttributes = { ...prev };
           Object.keys(newAttributes).forEach((key) => {
-            newAttributes[key] = newAttributes[key].filter(
-              (val) => val !== value
-            );
+            newAttributes[key] = newAttributes[key].filter((val) => val !== value);
           });
           return newAttributes;
         });
         break;
       case "price":
+        // Reset giá slider về giá trị mặc định
         setSliderValue([dataFilter?.price.min, dataFilter?.price.max] as any);
         break;
     }
-    handleFiltersChange();
+  
+    // Kiểm tra nếu không còn tag nào thì reset về mặc định
+    const isAllTagsRemoved = !(
+      selectedCategories.length ||
+      Object.keys(selectedAttributes).length ||
+      sliderValue
+    );
+  
+    // Nếu tất cả các tag đều bị xoá, reset bộ lọc
+    if (isAllTagsRemoved) {
+      handleResetFilters();
+    } else {
+      handleFiltersChange(); // Nếu không phải tất cả tag bị xoá, chỉ cần cập nhật bộ lọc
+    }
   };
+  
 
   const selectedTags = [
     ...selectedCategories.map((catId) => ({

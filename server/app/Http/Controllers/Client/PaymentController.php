@@ -27,7 +27,6 @@ class PaymentController extends Controller
     private $vnpUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
     private $returnUrl = "http://localhost:5173/check-out";
 
-
     // Cấu hình MoMo
     private $momoEndpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
     private $momoPartnerCode = "MOMOBKUN20180529";
@@ -207,7 +206,7 @@ class PaymentController extends Controller
         try {
             return DB::transaction(function () use ($request) {
                 $selectedItems = $request->selected_items;
-
+                Log::info('Start transaction', ['selectedItems' => $request->selected_items]);
                 // Kiểm tra nếu không có sản phẩm nào được chọn
                 if (empty($selectedItems)) {
                     return response()->json([

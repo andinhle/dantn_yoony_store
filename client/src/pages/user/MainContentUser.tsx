@@ -8,7 +8,7 @@ import ProductClothes from "../../components/User/Products/ProductClothes";
 import ProductFeature from "../../components/User/Products/ProductFeature";
 import ProductGlasses from "../../components/User/Products/ProductGlasses";
 import ProductUniForm from "../../components/User/Products/ProductUniForm";
-import ProductSneaker from "../../components/User/Products/ProductSneaker";
+// import ProductSneaker from "../../components/User/Products/ProductSneaker";
 import VoucherList from "../../components/User/Voucher/VoucherList";
 import instance from "../../instance/instance";
 import { LoadingOverlay } from "@achmadk/react-loading-overlay";
@@ -112,7 +112,8 @@ const MainContentUser = () => {
 
   const fetchProductClothesData = useCallback(async () => {
     setLoading('clothes', true);
-    const response = await instance.get('home/product/category/1');
+    const response = await instance.get('home/product/category/ao-nam');
+    console.log(response);
     setProductClothesData(response?.data?.data || []);
     setLoading('clothes', false);
   }, []);
@@ -187,19 +188,18 @@ const MainContentUser = () => {
       </LazyLoadSection>
 
       {/* Product Uniform Section */}
-      <LazyLoadSection onVisible={fetchProductUniformData} loading={loadingStates.uniform}>
+      {/* <LazyLoadSection onVisible={fetchProductUniformData} loading={loadingStates.uniform}>
         <ProductUniForm productUniForms={productUniformData} />
-      </LazyLoadSection>
+      </LazyLoadSection> */}
 
       {/* Product Glasses Section */}
-      <LazyLoadSection onVisible={fetchProductGlassesData} loading={loadingStates.glasses}>
+      {/* <LazyLoadSection onVisible={fetchProductGlassesData} loading={loadingStates.glasses}>
         <ProductGlasses productGlasses={productGlassesData} />
-      </LazyLoadSection>
+      </LazyLoadSection> */}
 
-      {/* Product Sneakers Section */}
-      <LazyLoadSection onVisible={fetchProductSneakersData} loading={loadingStates.sneakers}>
+      {/* <LazyLoadSection onVisible={fetchProductSneakersData} loading={loadingStates.sneakers}>
         <ProductSneaker productSneakers={productSneakers} />
-      </LazyLoadSection>
+      </LazyLoadSection> */}
 
       {/* Blog Section */}
       <LazyLoadSection onVisible={fetchBlogData} loading={loadingStates.blog}>

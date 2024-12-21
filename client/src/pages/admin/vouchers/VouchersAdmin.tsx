@@ -17,7 +17,7 @@ const VouchersAdmin = () => {
   const [status, setStatus] = useState(false);
   const [vouchers, setVoucher] = useState<IVoucher[]>([]);
   const [codeVoucher, setCodeVoucher] = useState("");
-  const { dispatch,meta,page,setSearchParams } = useContext(VoucherContext);
+  const { dispatch, meta, page, setSearchParams } = useContext(VoucherContext);
   const [AddOrUpdate, setAddOrUpdate] = useState<string>("ADD");
   const [idVoucher, setIdVoucher] = useState<string>("");
   const [valueSearch, setValueSearch] = useState<string>("");
@@ -49,7 +49,6 @@ const VouchersAdmin = () => {
         });
         toast.success("Thêm coupon thành công !");
       } else {
-
         const { data } = await instance.put(`coupon/${idVoucher}`, dataForm);
         dispatch({
           type: "UPDATE",
@@ -339,6 +338,26 @@ const VouchersAdmin = () => {
                     </span>
                   </div>
                 </div>
+                {
+                  watch('discount_type')==='percentage' && (
+                    <div className="space-y-1.5">
+                    <label htmlFor="max_discount" className="font-medium text-sm">
+                      Giảm giá tối đa
+                    </label>
+                    <input
+                        type="number"
+                        className="block border border-[#d9d9d9] px-2 py-2 rounded-md w-full h-10 text-sm"
+                        placeholder="Giảm giá tối đa"
+                        {...register("max_discount")}
+                        min={0}
+                        style={{ pointerEvents: "auto" }}
+                      />
+                    <span className="text-sm text-red-400">
+                      {errors.max_discount?.message}
+                    </span>
+                  </div>
+                  )
+                }
                 <div className="space-y-1.5">
                   <label htmlFor="start_date" className="font-medium text-sm">
                     Ngày bắt đầu

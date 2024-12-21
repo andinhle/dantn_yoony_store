@@ -195,67 +195,67 @@ const FormAddOrUpdateProduct = () => {
     setValue("slug", slugify(watch("name")));
   }, [watch("name")]);
 
-  // const handleUploadImageProduct = (e: any) => {
-  //   const imgForms = e.target.files;
-  //   console.log(imgForms);
-  //   if (AddOrUpdate === "ADD") {
-  //     setImagesProduct(imgForms);
-  //     if ([...imagesProduct].length > 0) {
-  //       setImagesProduct(_.uniqBy([...imagesProduct, ...imgForms], "name"));
-  //     }
-  //   } else {
-  //     setImagesProduct([...imagesProduct, ...imgForms]);
-  //   }
-  // };
-
   const handleUploadImageProduct = (e: any) => {
-    const imgForms = Array.from(e.target.files);
-
-    const getFileTypeFromMagicNumber = (header: Uint8Array) => {
-      const headerHex = Array.from(header)
-        .map((byte) => byte.toString(16).padStart(2, "0"))
-        .join("");
-      const magicNumbers: Record<string, string> = {
-        "89504e47": "image/png", // PNG
-        ffd8ffe0: "image/jpeg", // JPEG
-        ffd8ffe1: "image/jpeg", // JPEG
-        ffd8ffe2: "image/jpeg", // JPEG
-        ffd8ffe3: "image/jpeg", // JPEG
-        ffd8ffe8: "image/jpeg", // JPEG
-      };
-      return magicNumbers[headerHex] || "unknown";
-    };
-
-    imgForms.forEach((file: File) => {
-      const reader = new FileReader();
-
-      reader.onload = () => {
-        const header = new Uint8Array(reader.result as ArrayBuffer).subarray(
-          0,
-          4
-        ); // Lấy 4 byte đầu tiên
-        const fileType = getFileTypeFromMagicNumber(header);
-
-        if (["image/png", "image/jpeg"].includes(fileType)) {
-
-          if (AddOrUpdate === "ADD") {
-            if (imagesProduct.length > 0) {
-              setImagesProduct((prev) => _.uniqBy([...prev, file], "name"));
-            } else {
-              setImagesProduct([file]);
-            }
-          } else {
-            setImagesProduct((prev) => _.uniqBy([...prev, file], "name"));
-          }
-        } else {
-          console.error(`❌ Tệp "${file.name}" không phải là ảnh hợp lệ.`);
-          toast.error(`Tệp "${file.name}" không phải là ảnh hợp lệ.`);
-        }
-      };
-
-      reader.readAsArrayBuffer(file); // Đọc file dưới dạng binary buffer
-    });
+    const imgForms = e.target.files;
+    console.log(imgForms);
+    if (AddOrUpdate === "ADD") {
+      setImagesProduct(imgForms);
+      if ([...imagesProduct].length > 0) {
+        setImagesProduct(_.uniqBy([...imagesProduct, ...imgForms], "name"));
+      }
+    } else {
+      setImagesProduct([...imagesProduct, ...imgForms]);
+    }
   };
+
+  // const handleUploadImageProduct = (e: any) => {
+  //   const imgForms = Array.from(e.target.files);
+
+  //   const getFileTypeFromMagicNumber = (header: Uint8Array) => {
+  //     const headerHex = Array.from(header)
+  //       .map((byte) => byte.toString(16).padStart(2, "0"))
+  //       .join("");
+  //     const magicNumbers: Record<string, string> = {
+  //       "89504e47": "image/png", // PNG
+  //       ffd8ffe0: "image/jpeg", // JPEG
+  //       ffd8ffe1: "image/jpeg", // JPEG
+  //       ffd8ffe2: "image/jpeg", // JPEG
+  //       ffd8ffe3: "image/jpeg", // JPEG
+  //       ffd8ffe8: "image/jpeg", // JPEG
+  //     };
+  //     return magicNumbers[headerHex] || "unknown";
+  //   };
+
+  //   imgForms.forEach((file: File) => {
+  //     const reader = new FileReader();
+
+  //     reader.onload = () => {
+  //       const header = new Uint8Array(reader.result as ArrayBuffer).subarray(
+  //         0,
+  //         4
+  //       ); // Lấy 4 byte đầu tiên
+  //       const fileType = getFileTypeFromMagicNumber(header);
+
+  //       if (["image/png", "image/jpeg"].includes(fileType)) {
+
+  //         if (AddOrUpdate === "ADD") {
+  //           if (imagesProduct.length > 0) {
+  //             setImagesProduct((prev) => _.uniqBy([...prev, file], "name"));
+  //           } else {
+  //             setImagesProduct([file]);
+  //           }
+  //         } else {
+  //           setImagesProduct((prev) => _.uniqBy([...prev, file], "name"));
+  //         }
+  //       } else {
+  //         console.error(`❌ Tệp "${file.name}" không phải là ảnh hợp lệ.`);
+  //         toast.error(`Tệp "${file.name}" không phải là ảnh hợp lệ.`);
+  //       }
+  //     };
+
+  //     reader.readAsArrayBuffer(file); // Đọc file dưới dạng binary buffer
+  //   });
+  // };
 
   const handleRemoveImagesProductBlob = (image_name: string) => {
     setImagesProduct(

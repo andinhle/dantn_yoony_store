@@ -125,7 +125,7 @@ const CardProductAll = ({
           <div className="flex gap-2 text-sm">
             {saleVariant ? (
               <>
-                <span className="line-through">
+                <span className="line-through text-secondary/50">
                   {saleVariant.price
                     .toLocaleString("vi-VN", {
                       useGrouping: true,
@@ -133,7 +133,7 @@ const CardProductAll = ({
                     })
                     .replace(/,/g, ".") + "đ"}
                 </span>
-                <span className="text-primary font-medium">
+                <span className="text-primary font-semibold">
                   {saleVariant.sale_price
                     ?.toLocaleString("vi-VN", {
                       useGrouping: true,
@@ -143,7 +143,7 @@ const CardProductAll = ({
                 </span>
               </>
             ) : (
-              <span className="text-primary font-medium">
+              <span className="text-primary font-semibold">
                 {Math.min(...variants.map(variant=>variant.price))
                   .toLocaleString("vi-VN", {
                     useGrouping: true,

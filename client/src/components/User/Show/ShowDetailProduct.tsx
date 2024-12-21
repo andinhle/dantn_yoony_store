@@ -52,6 +52,40 @@ const ShowDetailProduct: React.FC = () => {
     category: string;
     slugproduct: string;
   }>();
+
+  const thumbnailContainerRef = useRef<HTMLDivElement>(null);
+  const thumbnailRefs = useRef<{ [key: string]: HTMLImageElement | null }>({});
+
+  const handleThumbnailClick = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+
+    // Get the clicked thumbnail element
+    const thumbnailElement = thumbnailRefs.current[imageUrl];
+    const containerElement = thumbnailContainerRef.current;
+
+    if (thumbnailElement && containerElement) {
+      // Get the container's scroll position and dimensions
+      const containerRect = containerElement.getBoundingClientRect();
+      const thumbnailRect = thumbnailElement.getBoundingClientRect();
+
+      // Calculate the scroll position
+      const scrollTop = containerElement.scrollTop;
+      const relativeTop = thumbnailRect.top - containerRect.top;
+
+      // Calculate target scroll position to center the thumbnail
+      const targetScroll =
+        scrollTop +
+        relativeTop -
+        (containerRect.height - thumbnailRect.height) / 2;
+
+      // Smooth scroll to the target position
+      containerElement.scrollTo({
+        top: targetScroll,
+        behavior: "smooth",
+      });
+    }
+  };
+
   const [product, setProduct] = useState<IProduct | null>(null);
   const [related_products, setRelated_Products] = useState<IProduct[]>([]);
   const [imageProducts, setImageProducts] = useState<string[]>([]);
@@ -101,25 +135,25 @@ const ShowDetailProduct: React.FC = () => {
     }
   }, [slugproduct, setRelated_Products, dispatch]);
 
-  useEffect(() => {
-    const updateData = async () => {
-      await callApiToUpdateData();
-      if (
-        variants.some((item) => item.sale_price && isSaleActive(item.end_sale))
-      ) {
-        intervalId.current = setTimeout(updateData, 5000);
-      }
-    };
+  // useEffect(() => {
+  //   const updateData = async () => {
+  //     await callApiToUpdateData();
+  //     if (
+  //       variants.some((item) => item.sale_price && isSaleActive(item.end_sale))
+  //     ) {
+  //       intervalId.current = setTimeout(updateData, 5000);
+  //     }
+  //   };
 
-    updateData();
+  //   updateData();
 
-    return () => {
-      if (intervalId.current) {
-        clearTimeout(intervalId.current);
-        intervalId.current = null;
-      }
-    };
-  }, [callApiToUpdateData, variants]);
+  //   return () => {
+  //     if (intervalId.current) {
+  //       clearTimeout(intervalId.current);
+  //       intervalId.current = null;
+  //     }
+  //   };
+  // }, [callApiToUpdateData, variants]);
 
   const isSaleActive = (endSale: string | undefined): boolean => {
     if (!endSale) return false;
@@ -148,27 +182,28 @@ const ShowDetailProduct: React.FC = () => {
       const groups = generateAttributeGroups(processedVariants);
       setAttributeGroups(groups);
 
-      // Check if there's only one variant, handle images accordingly
-      let allImages = productData.images || [];
+      // Collect all images from product and variants
+      let allImages = [];
 
-      if (processedVariants.length === 1) {
-        // If only one variant, include the images from the variant as well
-        allImages = [...allImages, processedVariants[0]?.image].filter(Boolean); // Remove any null or undefined images
-      } else {
-        // Otherwise, include images from each variant
-        allImages = [
-          productData.images?.[0] || "",
-          ...processedVariants.map((v) => v.image).filter(Boolean),
-        ];
+      // Add all product images if they exist
+      if (productData.images && Array.isArray(productData.images)) {
+        allImages = [...productData.images];
       }
+
+      // Add all variant images if they exist
+      const variantImages = processedVariants
+        .map((variant) => variant.image)
+        .filter((image): image is string => !!image); // Filter out null/undefined images
+
+      // Combine and deduplicate images
+      allImages = [...new Set([...allImages, ...variantImages])];
 
       setImageProducts(allImages);
 
-      // Set selected image
-      setSelectedImage(
-        productData.images?.[0] || processedVariants[0]?.image || ""
-      );
+      // Set selected image to first available image
+      setSelectedImage(allImages[0] || "");
 
+      // Handle variant selection
       if (processedVariants.length > 0) {
         const defaultVariant = processedVariants[0];
         const defaultAttributes = Object.entries(
@@ -234,7 +269,6 @@ const ShowDetailProduct: React.FC = () => {
     );
   };
 
-
   const getAvailableAttributeValues = (attributeName: string) => {
     const currentSelectedAttributes = { ...selectedAttributes };
 
@@ -272,11 +306,10 @@ const ShowDetailProduct: React.FC = () => {
     setSelectedVariant(matchingVariant || null);
   }, [selectedAttributes, variants]);
 
-
   const handleAttributeSelect = (attributeName: string, value: string) => {
     // Tạo bản sao các thuộc tính đã chọn
     const updatedAttributes = { ...selectedAttributes };
-  
+
     // Nếu giá trị đã được chọn trước đó, gỡ bỏ nó
     if (updatedAttributes[attributeName] === value) {
       delete updatedAttributes[attributeName];
@@ -284,15 +317,15 @@ const ShowDetailProduct: React.FC = () => {
       // Ngược lại, cập nhật giá trị mới
       updatedAttributes[attributeName] = value;
     }
-  
+
     // Kiểm tra và loại bỏ các thuộc tính không còn khả dụng
-    const finalAttributes: {[key: string]: string} = {};
-  
+    const finalAttributes: { [key: string]: string } = {};
+
     // Kiểm tra các thuộc tính khác
-    attributeGroups.forEach(group => {
+    attributeGroups.forEach((group) => {
       if (updatedAttributes[group.name]) {
         const availableValues = getAvailableAttributeValues(group.name);
-        
+
         // Nếu thuộc tính đã chọn trước đó không còn khả dụng
         if (!availableValues.has(updatedAttributes[group.name])) {
           // Chọn giá trị đầu tiên khả dụng nếu có
@@ -306,18 +339,43 @@ const ShowDetailProduct: React.FC = () => {
         }
       }
     });
-  
+
     // Cập nhật trạng thái
     setSelectedAttributes(finalAttributes);
-  
-    // Cập nhật hình ảnh nếu có
+
+    // Cập nhật hình ảnh và scroll đến thumbnail tương ứng
     const currentGroup = attributeGroups.find(
       (group) => group.name === attributeName
     );
     if (currentGroup) {
       const valueIndex = currentGroup.values.indexOf(value);
       if (valueIndex !== -1 && currentGroup.images[valueIndex]) {
-        setSelectedImage(currentGroup.images[valueIndex]);
+        const newImage = currentGroup.images[valueIndex];
+        setSelectedImage(newImage);
+
+        // Scroll to the corresponding thumbnail
+        const thumbnailElement = thumbnailRefs.current[newImage];
+        const containerElement = thumbnailContainerRef.current;
+
+        if (thumbnailElement && containerElement) {
+          const containerRect = containerElement.getBoundingClientRect();
+          const thumbnailRect = thumbnailElement.getBoundingClientRect();
+
+          // Calculate scroll position
+          const scrollTop = containerElement.scrollTop;
+          const relativeTop = thumbnailRect.top - containerRect.top;
+
+          // Scroll to center the thumbnail
+          const targetScroll =
+            scrollTop +
+            relativeTop -
+            (containerRect.height - thumbnailRect.height) / 2;
+
+          containerElement.scrollTo({
+            top: targetScroll,
+            behavior: "smooth",
+          });
+        }
       }
     }
   };
@@ -332,7 +390,6 @@ const ShowDetailProduct: React.FC = () => {
   };
 
   const validateCartQuantity = (requestedQuantity, selectedVariant, carts) => {
-
     const requiredAttributes = Object.keys(selectedVariant.attributes);
     const selectedAttributeKeys = Object.keys(selectedAttributes);
 
@@ -442,7 +499,7 @@ const ShowDetailProduct: React.FC = () => {
 
       // Chuẩn bị payload mới
       const newCartItem: ICart = {
-        id:selectedVariant?.id,
+        id: selectedVariant?.id,
         variant_id: selectedVariant?.id,
         quantity: totalQuantity,
         variant: variantDetail,
@@ -533,7 +590,9 @@ const ShowDetailProduct: React.FC = () => {
         return (
           <Tooltip
             key={value}
-            title={isAvailable ? (isSelected ? "Bỏ chọn" : value) : "Không có sẵn"}
+            title={
+              isAvailable ? (isSelected ? "Bỏ chọn" : value) : "Không có sẵn"
+            }
             placement="top"
           >
             <div
@@ -591,7 +650,9 @@ const ShowDetailProduct: React.FC = () => {
         return (
           <Tooltip
             key={value}
-            title={isAvailable ? (isSelected ? "Bỏ chọn" : value) : "Không có sẵn"}
+            title={
+              isAvailable ? (isSelected ? "Bỏ chọn" : value) : "Không có sẵn"
+            }
             placement="top"
           >
             <div className="relative overflow-hidden rounded-lg">
@@ -643,7 +704,9 @@ const ShowDetailProduct: React.FC = () => {
         return (
           <Tooltip
             key={value}
-            title={isAvailable ? (isSelected ? "Bỏ chọn" : value) : "Không có sẵn"}
+            title={
+              isAvailable ? (isSelected ? "Bỏ chọn" : value) : "Không có sẵn"
+            }
             placement="top"
           >
             <div className="relative overflow-hidden rounded-lg">
@@ -729,7 +792,11 @@ const ShowDetailProduct: React.FC = () => {
           },
           {
             path: `/${category}`,
-            title: <Link to={`/search?category=${category}`}>{product?.category?.name}</Link>,
+            title: (
+              <Link to={`/search?category=${category}`}>
+                {product?.category?.name}
+              </Link>
+            ),
           },
           {
             className: "!text-primary",
@@ -738,17 +805,21 @@ const ShowDetailProduct: React.FC = () => {
         ]}
       />
       <div className="grid grid-cols-2 gap-9">
-        <div className="grid grid-cols-10 gap-5">
-          <div className="col-span-2 flex flex-col gap-5">
+        <div className="grid grid-cols-10 gap-3">
+          <div
+            ref={thumbnailContainerRef}
+            className="col-span-2 flex flex-col gap-5 max-h-[460px] overflow-y-auto scrollbar-thin scrollbar-none scrollbar-track-gray-100 pe-2 px-1.5 py-1.5"
+          >
             {imageProducts.map((imageProduct, index) => (
               <img
+                ref={(el) => (thumbnailRefs.current[imageProduct] = el)}
                 src={imageProduct}
                 key={index}
                 className={`rounded-lg max-h-[100px] max-w-[100px] w-full object-cover hover:cursor-pointer hover:scale-110 transition-all ${
                   selectedImage === imageProduct ? "border border-primary" : ""
                 }`}
                 alt={`Product image ${index + 1}`}
-                onClick={() => setSelectedImage(imageProduct)}
+                onClick={() => handleThumbnailClick(imageProduct)}
               />
             ))}
           </div>
@@ -759,7 +830,6 @@ const ShowDetailProduct: React.FC = () => {
                 width={"100%"}
                 className="max-h-[460px] w-full rounded-lg img-zoom hover:cursor-zoom-in"
                 zoomScale={2}
-                onClick={handleImageClick}
                 src={selectedImage}
               />
             ) : (
@@ -896,7 +966,7 @@ const ShowDetailProduct: React.FC = () => {
                         </span>
                         <Countdown
                           value={new Date(selectedVariant.end_sale)}
-                          format="H:mm:ss"
+                          format="HH:mm:ss"
                           className="countdowm-sale"
                           valueStyle={{
                             fontSize: 18,
@@ -1230,7 +1300,7 @@ const ShowDetailProduct: React.FC = () => {
           </form>
         </div>
       </div>
-      <ShowDescriptionProduct descriptionProduct={product?.description}  />
+      <ShowDescriptionProduct descriptionProduct={product?.description} />
       <RatingProduct slugProd={slugproduct} />
       <ShowProductRelated related_products={related_products} />
     </section>

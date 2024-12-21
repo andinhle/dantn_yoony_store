@@ -131,39 +131,55 @@ class ReviewController extends Controller
     public function getPendingReviews(Request $request)
     {
         $userId = auth()->id();
-
+    
         if (!$userId) {
             return response()->json(['message' => 'Người dùng chưa đăng nhập.'], 401);
         }
-
+    
         try {
+            // 1. Lấy danh sách đơn hàng đã giao và phân trang
             $orders = Order::where('user_id', $userId)
                 ->where('status_order', Order::STATUS_ORDER_DELIVERED)
-                ->with(['items.variant.product', 'rates','items.variant.attributeValues'])
-                ->get();
-
-            $pendingReviews = $orders->filter(function ($order) {
+                ->with(['items.variant.product', 'rates', 'items.variant.attributeValues'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);  // Điều chỉnh số lượng bản ghi mỗi trang theo nhu cầu
+    
+            // 2. Lọc các đơn hàng chưa được đánh giá
+            $pendingReviews = $orders->getCollection()->filter(function ($order) {
                 foreach ($order->items as $item) {
+                    // Kiểm tra nếu sản phẩm chưa được đánh giá
                     $hasRated = $order->rates->contains('product_id', $item->variant->product_id);
-
+    
+                    // Nếu chưa được đánh giá, thêm hình ảnh nếu có
                     if (!$hasRated) {
-
                         if ($item->variant->product->images) {
                             $item->variant->product->images = is_string($item->variant->product->images)
                                 ? json_decode($item->variant->product->images, true)
                                 : $item->variant->product->images;
                         }
-                        return true;
+                        return true;  // Đánh dấu rằng đơn hàng cần được đánh giá
                     }
                 }
                 return false;
-            })->values();
-
-            return response()->json($pendingReviews);
+            })->values();  // Đảm bảo trả về collection sau khi lọc
+    
+            // 3. Trả về kết quả phân trang cùng với các đơn hàng chưa được đánh giá
+            return response()->json([
+                'data' => $pendingReviews,
+                'pagination' => [
+                    'total' => $orders->total(),  // Tổng số bản ghi
+                    'current_page' => $orders->currentPage(),  // Trang hiện tại
+                    'per_page' => $orders->perPage(),  // Số bản ghi mỗi trang
+                    'last_page' => $orders->lastPage(),  // Trang cuối cùng
+                ]
+            ]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
         }
     }
+    
+    
+    
 
     //lấy chi tiết đánh giá
     public function detailReview(string $code)
@@ -249,99 +265,110 @@ class ReviewController extends Controller
     }
 
     //lấy những sản phẩm đã đánh giá
-    public function getReviewedOrders(Request $request)
-    {
-        $userId = auth()->id();
+//lấy những sản phẩm đã đánh giá
+public function getReviewedOrders(Request $request)
+{
+    $userId = auth()->id();
 
-        if (!$userId) {
-            return response()->json(['message' => 'Người dùng chưa đăng nhập.'], 401);
-        }
+    if (!$userId) {
+        return response()->json(['message' => 'Người dùng chưa đăng nhập.'], 401);
+    }
 
-        try {
-            // Lấy các đơn hàng đã giao và có đánh giá từ người dùng
-            $orders = Order::with([
-                'rates.product.category',
-                'rates.user',
-                'items.variant.attributeValues.attribute'
-            ])
-            ->where('user_id', $userId)
+    try {
+        // 1. Trước tiên lấy các order đã delivered
+        $orders = Order::where('user_id', $userId)
             ->where('status_order', Order::STATUS_ORDER_DELIVERED)
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->get();
 
-            // Lập danh sách đánh giá cho mỗi đơn hàng
-            $reviewedOrders = $orders->filter(function ($order) {
-                return $order->rates->isNotEmpty(); // Kiểm tra nếu có đánh giá
-            })->map(function ($order) {
-                return [
-                    'order_id' => $order->id,
-                    'items' => $order->items ? $order->items->map(function ($item) {
-                        return [
-                            'id' => $item->id,
-                            'variant_id' => $item->variant_id,
-                            'quantity' => $item->quantity,
-                            'unit_price' => $item->unit_price,
-                            'total_price' => $item->total_price,
-                            'attribute_values' => $item->variant ? $item->variant->attributeValues->map(function ($attrValue) {
-                                return [
-                                    'id' => $attrValue->id,
-                                    'value' => $attrValue->value,
-                                    'attribute' => [
-                                        'id' => $attrValue->attribute->id,
-                                        'name' => $attrValue->attribute->name,
-                                    ]
-                                ];
-                            }) : [],
-                        ];
-                    }) : [],
-                    'rates' => $order->rates->map(function ($rate) {
-                        if (is_string($rate->product->images)) {
-                            $rate->product->images = json_decode($rate->product->images, true);
-                        }
+        // 2. Thu thập order_ids có rates
+        $orderIdsWithRates = Rate::whereIn('order_id', $orders->pluck('id'))
+            ->distinct()
+            ->pluck('order_id');
 
-                        return [
-                            'id' => $rate->id,
-                            'content' => $rate->content,
-                            'rating' => $rate->rating,
-                            'product' => [
-                                'id' => $rate->product->id,
-                                'name' => $rate->product->name,
-                                'slug' => $rate->product->slug,
-                                'images' => $rate->product->images,
-                                'category' => [  // Thêm thông tin category
-                                    'id' => $rate->product->category->id,
-                                    'name' => $rate->product->category->name,
-                                    'slug' => $rate->product->category->slug,
+        // 3. Lấy chi tiết orders có rates với eager loading
+        $reviewedOrders = Order::with([
+            'rates.product.category',
+            'rates.user',
+            'items.variant.attributeValues.attribute'
+        ])
+        ->whereIn('id', $orderIdsWithRates)
+        ->get()
+        ->map(function ($order) {
+            return [
+                'order_id' => $order->id,
+                'items' => $order->items->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'variant_id' => $item->variant_id,
+                        'quantity' => $item->quantity,
+                        'unit_price' => $item->unit_price,
+                        'total_price' => $item->total_price,
+                        'attribute_values' => $item->variant ? $item->variant->attributeValues->map(function ($attrValue) {
+                            return [
+                                'id' => $attrValue->id,
+                                'value' => $attrValue->value,
+                                'attribute' => [
+                                    'id' => $attrValue->attribute->id,
+                                    'name' => $attrValue->attribute->name,
                                 ]
-                            ],
-                            'user' => [
-                                'id' => $rate->user->id,
-                                'name' => $rate->user->name,
-                                'email' => $rate->user->email,
-                                'avatar' => $rate->user->avatar,
-                            ],
-                            'order_id' => $rate->order_id,
-                            'created_at' => $rate->created_at,
-                            'updated_at' => $rate->updated_at,
-                        ];
-                    })->values()
-                ];
-            })->values();
+                            ];
+                        })->toArray() : [],
+                    ];
+                })->toArray(),
+                'rates' => $order->rates->map(function ($rate) {
+                    $images = $rate->product->images;
+                    if (is_string($images)) {
+                        $images = json_decode($images, true);
+                    }
 
-            return response()->json([
-                'data' => $reviewedOrders,
-                'pagination' => [
-                    'total' => $orders->total(),
-                    'current_page' => $orders->currentPage(),
-                    'per_page' => $orders->perPage(),
-                    'last_page' => $orders->lastPage(),
-                ]
-            ]);
+                    return [
+                        'id' => $rate->id,
+                        'content' => $rate->content,
+                        'rating' => $rate->rating,
+                        'product' => [
+                            'id' => $rate->product->id,
+                            'name' => $rate->product->name,
+                            'slug' => $rate->product->slug,
+                            'images' => $images,
+                            'category' => [
+                                'id' => $rate->product->category->id,
+                                'name' => $rate->product->category->name,
+                                'slug' => $rate->product->category->slug,
+                            ]
+                        ],
+                        'user' => [
+                            'id' => $rate->user->id,
+                            'name' => $rate->user->name,
+                            'email' => $rate->user->email,
+                            'avatar' => $rate->user->avatar,
+                        ],
+                        'order_id' => $rate->order_id,
+                        'created_at' => $rate->created_at,
+                        'updated_at' => $rate->updated_at,
+                    ];
+                })->toArray()
+            ];
+        })->toArray();
 
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
-        }
+        // 4. Return response với dữ liệu đã xử lý
+        return response()->json([
+            'data' => array_values($reviewedOrders),
+            'pagination' => [
+                'total' => count($reviewedOrders),
+                'current_page' => 1,
+                'per_page' => count($reviewedOrders),
+                'last_page' => 1
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('Error in getReviewedOrders: ' . $e->getMessage());
+        \Log::error($e->getTraceAsString());
+        return response()->json(['message' => 'Đã xảy ra lỗi: ' . $e->getMessage()], 500);
     }
+}
+
 
 
 }

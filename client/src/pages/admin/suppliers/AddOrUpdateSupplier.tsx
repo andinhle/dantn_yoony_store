@@ -7,6 +7,7 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { SupplierContext } from "../../../contexts/SupplierContext";
 import { toast } from "react-toastify";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import axios from "axios";
 const AddOrUpdateSupplier = () => {
   const { suppliers, dispatch } = useContext(SupplierContext);
   const [searchParams] = useSearchParams();
@@ -97,8 +98,13 @@ const AddOrUpdateSupplier = () => {
       reset();
       setCurrentId(null);
     } catch (error) {
-      console.error("Submit Error:", error);
-      toast.error("Có lỗi xảy ra");
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message);
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Đã xảy ra lỗi không mong muốn");
+      }
     }
   };
   return (
