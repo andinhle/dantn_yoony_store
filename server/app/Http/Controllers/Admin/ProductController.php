@@ -68,7 +68,7 @@ public function index()
                 if (count($attributeValues) == 1 && $hasColorAttribute) {
                     // Nếu biến thể có 1 thuộc tính và thuộc tính đó là màu, lưu vào nhóm oneAttributeVariants
                     $oneAttributeVariants[] = $variantColor;
-                } elseif (count($attributeValues) == 2) {
+                } elseif (count($attributeValues) >= 2) {
                     // Nếu biến thể có 2 thuộc tính, lưu vào nhóm twoAttributesVariants
                     $twoAttributesVariants[] = $attributeValues;
                     if ($hasColorAttribute) {
@@ -199,7 +199,7 @@ if (in_array($colorId, $existingColors)) {
                 // Nếu biến thể chỉ có một thuộc tính (màu), lưu vào $oneAttributeVariants
                 if (count($attributeValues) == 1 && $hasColorAttribute) {
                     $oneAttributeVariants[] = $variantColor;
-                } elseif (count($attributeValues) == 2) {
+                } elseif (count($attributeValues) >= 2) {
                     // Nếu biến thể có 2 thuộc tính, lưu vào $twoAttributesVariants
                     $twoAttributesVariants[] = $attributeValues;
                     if ($hasColorAttribute) {
