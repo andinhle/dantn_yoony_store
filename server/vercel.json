@@ -24,11 +24,5 @@
         "CACHE_DRIVER": "array",
         "LOG_CHANNEL": "stderr",
         "SESSION_DRIVER": "cookie"
-    },
-    "build": {
-        "env": {
-            "COMPOSER_MEMORY_LIMIT": "-1"
-        },
-        "command": "curl -sS https://getcomposer.org/installer | php && php composer.phar install --no-dev --optimize-autoloader && npm run build"
     }
 }
