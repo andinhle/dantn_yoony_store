@@ -39,7 +39,6 @@ import { CheckOrder } from "./components/User/Order/CheckOrder.tsx";
 import EventUser from "./components/User/Event/EventUser.tsx";
 import BlogDetail from "./components/User/Blogs/BlogDetail.tsx";
 import FiledsProvider from "./contexts/FiledsContext.tsx";
-import LayoutChatAdmin from "./layouts/Admin/LayoutChatAdmin.tsx";
 import ManagerOrdersUser from "./components/User/Manager/Orders/ManagerOrdersUser.tsx";
 import UserOrderDetail from "./components/User/Manager/Orders/UserOrderDetail.tsx";
 import UserRatings from "./components/User/Manager/Ratings/UserRatings.tsx";
@@ -151,7 +150,6 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="orders" element={<OrdersListAdmin />} />
                 <Route path="users" element={<LayoutUsersAdmin />} />
                 <Route path="vouchers" element={<LayoutVoucherAdmin />} />
-                {/* <Route path="events" element={<LayoutEventAdmin />} /> */}
                 <Route path="banner" element={<BannerList />} />
                 <Route
                   path="orders/orderDetails/:code"
@@ -162,8 +160,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route
                 path="rates/:slug"
                 element={<RatingProductAdmin />}
-              />
-                <Route path="chatbot" element={<LayoutChatAdmin />} />
+                />
               </Route>
             </Route>
           </Route>

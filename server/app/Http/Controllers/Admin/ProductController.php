@@ -38,13 +38,45 @@ public function index()
 
         try {
             $existingVariants = [];
+            $existingColors = []; // Lưu các màu đã có từ các biến thể 2 thuộc tính
+            $oneAttributeVariants = []; // Lưu các biến thể chỉ có 1 thuộc tính (màu)
+            $twoAttributesVariants = []; // Lưu các biến thể có 2 thuộc tính
 
+            // Tách các biến thể ra thành hai nhóm: 1 thuộc tính và 2 thuộc tính
             foreach ($request->variants as $variantData) {
                 $attributeValues = AttributeValue::whereIn('id', $variantData['attribute_values'])
                     ->pluck('value')
                     ->sort()
                     ->values();
 
+                $hasColorAttribute = false;
+                $variantColor = null;
+
+                foreach ($attributeValues as $value) {
+                    $color = AttributeValue::where('value', $value)
+                        ->whereHas('attribute', function ($query) {
+                            $query->where('type', 'color');
+                        })->first();
+
+                    if ($color) {
+                        $hasColorAttribute = true;
+                        $variantColor = $color->id;
+                        break;
+                    }
+                }
+
+                if (count($attributeValues) == 1 && $hasColorAttribute) {
+                    // Nếu biến thể có 1 thuộc tính và thuộc tính đó là màu, lưu vào nhóm oneAttributeVariants
+                    $oneAttributeVariants[] = $variantColor;
+                } elseif (count($attributeValues) >= 2) {
+                    // Nếu biến thể có 2 thuộc tính, lưu vào nhóm twoAttributesVariants
+                    $twoAttributesVariants[] = $attributeValues;
+                    if ($hasColorAttribute) {
+                        $existingColors[] = $variantColor; // Thêm màu vào danh sách màu của biến thể 2 thuộc tính
+                    }
+                }
+
+                // Kiểm tra các giá trị thuộc tính đã tồn tại để tránh trùng lặp
                 foreach ($existingVariants as $existingValues) {
                     if ($existingValues->count() == $attributeValues->count() && $existingValues->diff($attributeValues)->isEmpty()) {
                         return response()->json([
@@ -54,9 +86,20 @@ public function index()
                     }
                 }
 
-                $existingVariants[] = $attributeValues;
+                $existingVariants[] = $attributeValues; // Lưu lại biến thể đã xử lý vào danh sách các biến thể đã tồn tại
             }
 
+            // Kiểm tra các màu trùng lặp giữa biến thể 1 thuộc tính và biến thể 2 thuộc tính
+            foreach ($oneAttributeVariants as $colorId) {
+if (in_array($colorId, $existingColors)) {
+                    return response()->json([
+                        'message' => 'Màu đã tồn tại trong các biến thể khác.',
+                        'error' => 'Không thể thêm màu trùng với các biến thể đã có với 2 thuộc tính.'
+                    ], 422);
+                }
+            }
+
+            // Tạo sản phẩm
             $product = Product::create([
                 'name' => $request->name,
                 'slug' => $request->slug,
@@ -67,8 +110,8 @@ public function index()
                 'is_active' => $request->is_active ?? true,
             ]);
 
+            // Lưu các biến thể của sản phẩm
             foreach ($request->variants as $variantData) {
-                // Lưu biến thể mới
                 $variant = Variant::create([
                     'price' => $variantData['price'],
                     'sale_price' => $variantData['sale_price'],
@@ -127,6 +170,9 @@ public function index()
 
             $variantIds = [];
             $existingVariants = [];
+            $oneAttributeVariants = []; // Mảng lưu các biến thể có 1 thuộc tính (chỉ có màu)
+            $twoAttributesVariants = []; // Mảng lưu các biến thể có 2 thuộc tính
+            $existingColors = []; // Mảng lưu các màu của biến thể 2 thuộc tính
 
             foreach ($request->variants as $variantData) {
                 $attributeValues = AttributeValue::whereIn('id', $variantData['attribute_values'])
@@ -134,18 +180,47 @@ public function index()
                     ->sort()
                     ->values();
 
+                $hasColorAttribute = false;
+                $variantColor = null;
+
+                foreach ($attributeValues as $value) {
+                    $color = AttributeValue::where('value', $value)
+                        ->whereHas('attribute', function ($query) {
+                            $query->where('type', 'color');
+                        })->first();
+
+                    if ($color) {
+                        $hasColorAttribute = true;
+                        $variantColor = $color->id;
+                        break;
+                    }
+                }
+
+                // Nếu biến thể chỉ có một thuộc tính (màu), lưu vào $oneAttributeVariants
+                if (count($attributeValues) == 1 && $hasColorAttribute) {
+                    $oneAttributeVariants[] = $variantColor;
+                } elseif (count($attributeValues) >= 2) {
+                    // Nếu biến thể có 2 thuộc tính, lưu vào $twoAttributesVariants
+                    $twoAttributesVariants[] = $attributeValues;
+                    if ($hasColorAttribute) {
+                        $existingColors[] = $variantColor; // Lưu màu của biến thể 2 thuộc tính
+                    }
+                }
+
+                // Kiểm tra trùng lặp thuộc tính giữa các biến thể đã tồn tại
                 foreach ($existingVariants as $existingValues) {
                     if ($existingValues->count() == $attributeValues->count() && $existingValues->diff($attributeValues)->isEmpty()) {
                         DB::rollBack();
                         return response()->json([
                             'message' => 'Biến thể có giá trị thuộc tính trùng lặp.',
-                            'error' => 'Các giá trị thuộc tính (value) trùng nhau không được phép.'
+'error' => 'Các giá trị thuộc tính (value) trùng nhau không được phép.'
                         ], 422);
                     }
                 }
 
                 $existingVariants[] = $attributeValues;
 
+                // Cập nhật hoặc tạo mới biến thể
                 $variant = Variant::updateOrCreate(
                     ['id' => $variantData['id'] ?? null, 'product_id' => $product->id],
                     [
@@ -156,6 +231,7 @@ public function index()
                     ]
                 );
 
+                // Đồng bộ các giá trị thuộc tính cho biến thể
                 if (isset($variantData['attribute_values'])) {
                     $variant->attributeValues()->sync($variantData['attribute_values']);
                 }
@@ -163,6 +239,18 @@ public function index()
                 $variantIds[] = $variant->id;
             }
 
+            // Kiểm tra các màu trùng lặp giữa biến thể 1 thuộc tính và 2 thuộc tính
+            foreach ($oneAttributeVariants as $colorId) {
+                if (in_array($colorId, $existingColors)) {
+                    DB::rollBack();
+                    return response()->json([
+                        'message' => 'Màu đã tồn tại trong các biến thể khác.',
+                        'error' => 'Không thể thêm màu trùng với các biến thể đã có với 2 thuộc tính.'
+                    ], 422);
+                }
+            }
+
+            // Xóa các biến thể không còn trong danh sách cập nhật
             $product->variants()->whereNotIn('id', $variantIds)->delete();
 
             DB::commit();
@@ -175,9 +263,6 @@ public function index()
             return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
         }
     }
-
-
-
 
 
 

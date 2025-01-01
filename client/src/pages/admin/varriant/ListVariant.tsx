@@ -23,7 +23,7 @@ const ListVariant = () => {
   const [attribute, setAttribute] = useState<IAttribute>();
   const [editingValueId, setEditingValueId] = useState<number | null>(null);
   const [editingValue, setEditingValue] = useState<string>("");
-  const [idAttribute, setIdAttribute] = useState<number>()
+  const [idAttribute, setIdAttribute] = useState<number>();
 
   const handleEditValue = (valueAttribute: IAttributeValue) => {
     setEditingValueId(valueAttribute.id!);
@@ -76,10 +76,10 @@ const ListVariant = () => {
       const { data } = await instance.delete(`attribute/${idAttribute}`);
       if (data) {
         dispatch({
-          type:'DELETE',
-          payload:idAttribute
-        })
-        toast.success('Xoá thuộc tính thành công')
+          type: "DELETE",
+          payload: idAttribute,
+        });
+        toast.success("Xoá thuộc tính thành công");
       }
     } catch (error) {
       console.log(error);
@@ -121,7 +121,7 @@ const ListVariant = () => {
   }, []);
   const handleShowDetailAttribute = async (idAttribute: number) => {
     try {
-      setIdAttribute(idAttribute)
+      setIdAttribute(idAttribute);
       setIsModalOpen(true);
       const {
         data: { data: response },
@@ -132,24 +132,26 @@ const ListVariant = () => {
         type: response.type,
       });
     } catch (error) {
-      setIdAttribute(undefined)
+      setIdAttribute(undefined);
       console.log(error);
     }
   };
-  const handleUpdateAttribute = async(dataForm:IAttribute) => {
+  const handleUpdateAttribute = async (dataForm: IAttribute) => {
     try {
-      const {data:{data:response}}=await instance.put(`attribute/${idAttribute}`,dataForm)
+      const {
+        data: { data: response },
+      } = await instance.put(`attribute/${idAttribute}`, dataForm);
       if (response) {
         dispatch({
-          type:'UPDATE',
-          payload:response
-        })
-        toast.success('Sửa thuộc tính thành công')
+          type: "UPDATE",
+          payload: response,
+        });
+        toast.success("Sửa thuộc tính thành công");
         setIsModalOpen(false);
       }
     } catch (error) {
       setIsModalOpen(false);
-      setIdAttribute(undefined)
+      setIdAttribute(undefined);
       console.log(error);
     }
   };
@@ -203,7 +205,41 @@ const ListVariant = () => {
             </Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
-            {attributes &&
+            {attributes.length === 0 ? (
+              <Table.Row>
+                <Table.Cell colSpan={8}>
+                  <div className="flex flex-col items-center text-secondary/20 space-y-2 justify-center min-h-[50vh]">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="size-16"
+                      viewBox="0 0 64 41"
+                    >
+                      <g
+                        fill="none"
+                        fillRule="evenodd"
+                        transform="translate(0 1)"
+                      >
+                        <ellipse
+                          cx="32"
+                          cy="33"
+                          fill="#f5f5f5"
+                          rx="32"
+                          ry="7"
+                        ></ellipse>
+                        <g fillRule="nonzero" stroke="#d9d9d9">
+                          <path d="M55 12.76L44.854 1.258C44.367.474 43.656 0 42.907 0H21.093c-.749 0-1.46.474-1.947 1.257L9 12.761V22h46v-9.24z"></path>
+                          <path
+                            fill="#fafafa"
+                            d="M41.613 15.931c0-1.605.994-2.93 2.227-2.931H55v18.137C55 33.26 53.68 35 52.05 35h-40.1C10.32 35 9 33.259 9 31.137V13h11.16c1.233 0 2.227 1.323 2.227 2.928v.022c0 1.605 1.005 2.901 2.237 2.901h14.752c1.232 0 2.237-1.308 2.237-2.913v-.007z"
+                          ></path>
+                        </g>
+                      </g>
+                    </svg>
+                    <p>Không có thuộc tính nào</p>
+                  </div>
+                </Table.Cell>
+              </Table.Row>
+            ) : (
               attributes
                 .filter((item) =>
                   item.name.toLowerCase().includes(valSearch.toLowerCase())
@@ -303,7 +339,8 @@ const ListVariant = () => {
                       </Table.Cell>
                     </Table.Row>
                   );
-                })}
+                })
+            )}
           </Table.Body>
         </Table>
         <Modal

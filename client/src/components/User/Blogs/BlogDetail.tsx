@@ -81,7 +81,7 @@ export default function BlogDetail() {
               {(blog.thumbnail || featuredImage) && (
                 <img
                   src={blog.thumbnail || featuredImage}
-                  className="w-full h-[304px] object-cover rounded-sm"
+                  className="w-full h-[386px] object-cover rounded-sm"
                   alt={blog.slug}
                 />
               )}
@@ -132,41 +132,44 @@ export default function BlogDetail() {
           <div className="lg:w-1/3">
             <div className="space-y-6">
               <h3 className="text-xl font-semibold mb-4">Các bài viết khác</h3>
-              {otherBlogs.map((otherBlog) => (
-                <div
-                  key={otherBlog.id}
-                  className="bg-gray-100 p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow"
-                  style={{ height: '250px', overflow: 'hidden' }}
-                >
-                  <a href={`/blogs/${otherBlog.slug}`} className="flex flex-col h-full">
-                    <img
-                      src={otherBlog.thumbnail}
-                      alt={otherBlog.title}
-                      className="w-full h-[120px] object-cover rounded-md mb-3"
-                    />
-                    {/* Title */}
-                    <h4 className="text-lg font-semibold text-gray-800 truncate">
-                      {otherBlog.title}
-                    </h4>
-                    {/* Content with truncation */}
-                    <p className="text-sm text-gray-600 mt-2 line-clamp-2 overflow-hidden">
-                      {HTMLReactParser(otherBlog.content, {
-                        replace: (domNode) => {
-                          if (domNode instanceof Element && domNode.tagName === "p") {
-                            const contentText = domToReact(domNode.children);
-                            const maxLength = 100; 
-                            const shortContent =
-                              typeof contentText === "string" && contentText.length > maxLength
-                                ? contentText.substring(0, maxLength) + "..."
-                                : contentText;
-                            return <>{shortContent}</>;
-                          }
-                        },
-                      })}
-                    </p>
-                  </a>
-                </div>
-              ))}
+              {otherBlogs
+                .filter((otherBlog) => otherBlog.slug !== slug) // Lọc bỏ bài viết hiện tại
+                .map((otherBlog) => (
+                  <div
+                    key={otherBlog.id}
+                    className="bg-gray-100 p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                    style={{ height: '280px', overflow: 'hidden' }}
+                  >
+                    <a href={`/blogs/${otherBlog.slug}`} className="flex flex-col h-full">
+                      <img
+                        src={otherBlog.thumbnail}
+                        alt={otherBlog.title}
+                        className="w-full h-[140px] object-cover rounded-sm mb-3"
+                      />
+                      {/* Title */}
+                      <h4 className="text-sm font-semibold text-gray-800 truncate">
+                        {otherBlog.title}
+                      </h4>
+                      {/* Content with truncation */}
+                      <p className="text-ml text-gray-600 mt-2 line-clamp-2 overflow-hidden">
+                        {HTMLReactParser(otherBlog.content, {
+                          replace: (domNode) => {
+                            if (domNode instanceof Element && domNode.tagName === "p") {
+                              const contentText = domToReact(domNode.children);
+                              const maxLength = 100;
+
+                              const shortContent =
+                                typeof contentText === "string" && contentText.length > maxLength
+                                  ? contentText.substring(0, maxLength) + "..."
+                                  : contentText;
+                              return <>{shortContent}</>;
+                            }
+                          },
+                        })}
+                      </p>
+                    </a>
+                  </div>
+                ))}
             </div>
           </div>
         </div>

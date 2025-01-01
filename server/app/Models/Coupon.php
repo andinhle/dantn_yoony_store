@@ -23,7 +23,7 @@ class Coupon extends Model
         'status',
         'min_order_value',
         'max_order_value',
-        'max_discout',
+        'max_discount',
         'winning_probability',
         'type'
     ];

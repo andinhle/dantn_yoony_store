@@ -40,7 +40,20 @@ const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
           localStorage.getItem("selected_voucher") || "null"
         );
         const finalPaymentAmountVnpay = savedVoucher
-          ? final_total - savedVoucher.discount
+          ? savedVoucher.discount_type === "percentage"
+            ? (() => {
+                const calculatedDiscount =
+                  (final_total * savedVoucher.discount) / 100;
+                const finalDiscount =
+                savedVoucher.max_discount &&
+                  calculatedDiscount > savedVoucher.max_discount
+                    ? savedVoucher.max_discount
+                    : calculatedDiscount;
+                return final_total - finalDiscount;
+              })()
+            : savedVoucher.discount > final_total
+            ? 0
+            : final_total - savedVoucher.discount
           : final_total;
 
         if (isCallbackProcessed || callbackProcessedRef.current) {
@@ -158,10 +171,21 @@ const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
   }, [dispatch, final_total, navigate]);
 
   const finalPaymentAmount = voucherCheck
-    ? voucherCheck.discount_type === "percentage"
-      ? final_total - final_total * (voucherCheck.discount / 100)
-      : final_total - voucherCheck.discount
-    : final_total;
+  ? voucherCheck.discount_type === "percentage"
+    ? (() => {
+        const calculatedDiscount =
+          (final_total * voucherCheck.discount) / 100;
+        const finalDiscount =
+          voucherCheck.max_discount &&
+          calculatedDiscount > voucherCheck.max_discount
+            ? voucherCheck.max_discount
+            : calculatedDiscount;
+        return final_total - finalDiscount;
+      })()
+    : voucherCheck.discount > final_total
+    ? 0
+    : final_total - voucherCheck.discount
+  : final_total;
 
   const { Search } = Input;
 
@@ -413,11 +437,18 @@ const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
                           <h4 className="font-medium line-clamp-1">
                             {voucherCart.name}
                           </h4>
-                          <span className="text-secondary/65 block">
-                            Đơn Tối Thiểu đ
-                            {voucherCart?.min_order_value?.toLocaleString()} - đ
-                            {voucherCart?.max_order_value?.toLocaleString()}
-                          </span>
+                          {voucherCart.discount_type !== "percentage" ? (
+                            <span className="text-secondary/65 block">
+                              Đơn Tối Thiểu đ
+                              {voucherCart?.min_order_value?.toLocaleString()} -
+                              đ{voucherCart?.max_order_value?.toLocaleString()}
+                            </span>
+                          ) : (
+                            <span className="text-secondary/65 block">
+                              Giảm giá {voucherCart?.discount}% - Giảm tối đa: {voucherCart?.max_discount.toLocaleString()}đ
+                            </span>
+                          )}
+
                           <div className="flex items-center gap-2">
                             <p className="flex items-center gap-1 text-primary text-xs bg-primary/10 py-1 px-2 rounded-[2px]">
                               <svg
@@ -545,9 +576,21 @@ const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
               <span className="text-sm text-primary">
                 {voucherCheck
                   ? voucherCheck.discount_type === "percentage"
-                    ? `-${voucherCheck?.discount.toLocaleString()}%`
-                    : `-${voucherCheck?.discount.toLocaleString()}đ`
-                  : `0đ`}
+                    ? (() => {
+                        const calculatedDiscount =
+                          (final_total * voucherCheck.discount) / 100;
+                        const finalDiscount =
+                          voucherCheck.max_discount &&
+                          calculatedDiscount > voucherCheck.max_discount
+                            ? voucherCheck.max_discount
+                            : calculatedDiscount;
+                        return `-${finalDiscount.toLocaleString()}đ`;
+                      })()
+                    : `-${(voucherCheck.discount > final_total
+                        ? final_total
+                        : voucherCheck.discount
+                      ).toLocaleString()}đ`
+                  : "0đ"}
               </span>
             </label>
             <label className="text-sm block">
@@ -560,7 +603,7 @@ const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
       <div className="space-y-2">
         <p className="font-medium">
           Tổng thanh toán:{" "}
-          <span className="text-primary">
+          {/* <span className="text-primary">
             {(voucherCheck
               ? voucherCheck.discount_type === "percentage"
                 ? final_total - (final_total * voucherCheck.discount) / 100
@@ -570,6 +613,25 @@ const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
               : final_total
             ).toLocaleString()}
             đ
+          </span> */}
+          <span className="text-sm text-primary">
+            {(voucherCheck
+              ? voucherCheck.discount_type === "percentage"
+                ? (() => {
+                    const calculatedDiscount =
+                      (final_total * voucherCheck.discount) / 100;
+                    const finalDiscount =
+                      voucherCheck.max_discount &&
+                      calculatedDiscount > voucherCheck.max_discount
+                        ? voucherCheck.max_discount
+                        : calculatedDiscount;
+                    return final_total - finalDiscount;
+                  })()
+                : voucherCheck.discount > final_total
+                ? 0
+                : final_total - voucherCheck.discount
+              : final_total
+            ).toLocaleString()}đ
           </span>
         </p>
       </div>
@@ -602,7 +664,7 @@ const ConfirmOrder = ({ current, setIsLoading }: Prop) => {
         <Modal
           centered
           open={modal2Open}
-          onOk={() => navigate('/gio-hang')}
+          onOk={() => navigate("/gio-hang")}
           onCancel={() => setModal2Open(false)}
           cancelText={"Trở lại"}
           okText={"Giỏ hàng"}

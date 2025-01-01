@@ -165,7 +165,6 @@ const DashboardAdmin = () => {
         <div className="bg-util p-5 col-span-8 rounded-md">
           <StatisticalProductTopSell />
         </div>
-        <div className="col-span-4">ok</div>
       </div>
     </div>
   );

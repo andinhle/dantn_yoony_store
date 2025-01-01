@@ -15,7 +15,7 @@ const ProductClothes = ({productClothes}:Prop) => {
   return (
     <section className="py-5">
       <h2 className="text-base md:text-xl lg:text-2xl font-medium uppercase product-clothes flex items-center gap-2">
-        Quần Áo
+        Áo Nam
       </h2>
       <Swiper
         slidesPerView={5}

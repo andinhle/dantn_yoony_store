@@ -5,12 +5,11 @@ import Divider from "@mui/material/Divider";
 import MenuList from "@mui/material/MenuList";
 import ListItemText from "@mui/material/ListItemText";
 import Avatar from "@mui/material/Avatar";
-import { MouseEvent, useState } from "react";
+import { MouseEvent, useEffect, useState } from "react";
 import Badge from "@mui/material/Badge";
 import { IconButton } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import Logout from "../User/Auth/Logout";
-
 
 const HeaderAdmin = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -24,7 +23,7 @@ const HeaderAdmin = () => {
   };
   const handleLogout = () => {
     setAnchorEl(null);
-    Logout()
+    Logout();
     navigate("/");
   };
   const userData = JSON.parse(localStorage.getItem("userInfor") || "{}");
@@ -69,7 +68,7 @@ const HeaderAdmin = () => {
                 </Link>
               </li>
               <li>
-                <Link to={"/admin"}>/ Bảng điều khiển</Link>
+                <Link to={"/admin"}>Trang quản trị</Link>
               </li>
             </ul>
           </nav>
@@ -88,11 +87,10 @@ const HeaderAdmin = () => {
             className="flex gap-3"
             color="inherit"
           >
-            <Avatar
-              alt="andinhle"
-              src={userData.avatar}
-            />
-            <span className="text-primary hidden md:block">{userData.name}</span>
+            <Avatar alt="andinhle" src={userData.avatar} />
+            <span className="text-primary hidden md:block">
+              {userData.name}
+            </span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -112,7 +110,7 @@ const HeaderAdmin = () => {
             }}
           >
             <MenuList sx={{ width: 175, maxWidth: "100%", padding: 0 }}>
-              <MenuItem onClick={handleClose} className="flex gap-4">
+              <MenuItem onClick={() => navigate("/")} className="flex gap-4">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   xmlnsXlink="http://www.w3.org/1999/xlink"
@@ -132,7 +130,10 @@ const HeaderAdmin = () => {
                   Trang chủ
                 </ListItemText>
               </MenuItem>
-              <MenuItem onClick={handleClose} className="flex gap-4">
+              <MenuItem
+                onClick={() => navigate("/user-manager")}
+                className="flex gap-4"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   xmlnsXlink="http://www.w3.org/1999/xlink"
@@ -152,28 +153,8 @@ const HeaderAdmin = () => {
                   Thông tin tài khoản
                 </ListItemText>
               </MenuItem>
-              <MenuItem onClick={handleClose} className="flex gap-4">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  xmlnsXlink="http://www.w3.org/1999/xlink"
-                  aria-hidden="true"
-                  role="img"
-                  className="MuiBox-root css-0 iconify iconify--material-symbols"
-                  width="1em"
-                  height="1em"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fill="currentColor"
-                    d="m9.25 22l-.4-3.2q-.325-.125-.612-.3t-.563-.375L4.7 19.375l-2.75-4.75l2.575-1.95Q4.5 12.5 4.5 12.338v-.675q0-.163.025-.338L1.95 9.375l2.75-4.75l2.975 1.25q.275-.2.575-.375t.6-.3l.4-3.2h5.5l.4 3.2q.325.125.613.3t.562.375l2.975-1.25l2.75 4.75l-2.575 1.95q.025.175.025.338v.674q0 .163-.05.338l2.575 1.95l-2.75 4.75l-2.95-1.25q-.275.2-.575.375t-.6.3l-.4 3.2zm2.8-6.5q1.45 0 2.475-1.025T15.55 12t-1.025-2.475T12.05 8.5q-1.475 0-2.488 1.025T8.55 12t1.013 2.475T12.05 15.5"
-                  ></path>
-                </svg>
-                <ListItemText primaryTypographyProps={{ fontSize: 14 }}>
-                  Cài đặt
-                </ListItemText>
-              </MenuItem>
               <Divider />
-              <MenuItem onClick={handleClose} className="flex gap-4">
+              <MenuItem onClick={handleLogout} className="flex gap-4">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -185,7 +166,6 @@ const HeaderAdmin = () => {
                 <ListItemText
                   className="text-primary"
                   primaryTypographyProps={{ fontSize: 14 }}
-                  onClick={handleLogout}
                 >
                   Logout
                 </ListItemText>

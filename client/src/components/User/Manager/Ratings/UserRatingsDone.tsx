@@ -44,10 +44,9 @@ const UserRatingsDone = () => {
     (async () => {
       try {
         setSearchParams({ page: String(page) });
-        const { data } = await instance.get("reviews/reviewed-orders");
+        const { data } = await instance.get(`reviews/reviewed-orders?page=${page}`);
         setRatingDoneLists(data.data);
         setMeta(data.pagination);
-        // console.log(data);
       } catch (error) {
         console.log(error);
       }

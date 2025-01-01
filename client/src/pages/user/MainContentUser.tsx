@@ -8,10 +8,10 @@ import ProductClothes from "../../components/User/Products/ProductClothes";
 import ProductFeature from "../../components/User/Products/ProductFeature";
 import ProductGlasses from "../../components/User/Products/ProductGlasses";
 import ProductUniForm from "../../components/User/Products/ProductUniForm";
-import ProductSneaker from "../../components/User/Products/ProductSneaker";
 import VoucherList from "../../components/User/Voucher/VoucherList";
 import instance from "../../instance/instance";
 import { LoadingOverlay } from "@achmadk/react-loading-overlay";
+import ProductSneaker from "../../components/User/Products/ProductSneaker";
 
 const LoadingSpinner = () => (
   <LoadingOverlay
@@ -112,28 +112,28 @@ const MainContentUser = () => {
 
   const fetchProductClothesData = useCallback(async () => {
     setLoading('clothes', true);
-    const response = await instance.get('home/product/category/1');
+    const response = await instance.get('home/product/category/ao-nam');
     setProductClothesData(response?.data?.data || []);
     setLoading('clothes', false);
   }, []);
 
   const fetchProductUniformData = useCallback(async () => {
     setLoading('uniform', true);
-    const response = await instance.get('home/product/category/4');
+    const response = await instance.get('home/product/category/dong-phuc');
     setProductUniformData(response?.data?.data || []);
     setLoading('uniform', false);
   }, []);
 
   const fetchProductGlassesData = useCallback(async () => {
     setLoading('glasses', true);
-    const response = await instance.get('home/product/category/2');
+    const response = await instance.get('home/product/category/kinh-thoi-trang-nam');
     setProductGlassesData(response?.data?.data || []);
     setLoading('glasses', false);
   }, []);
 
   const fetchProductSneakersData = useCallback(async () => {
     setLoading('sneakers', true);
-    const response = await instance.get('home/product/category/3');
+    const response = await instance.get('home/product/category/giay-sneaker');
     setProductSneakers(response?.data?.data || []);
     setLoading('sneakers', false);
   }, []);
@@ -146,8 +146,10 @@ const MainContentUser = () => {
   }, []);
 
   useEffect(() => {
+    console.time('log')
     fetchBannerData();
     fetchVoucherData();
+    console.timeEnd('log')
   }, [fetchBannerData, fetchVoucherData]);
 
   return (
@@ -196,10 +198,9 @@ const MainContentUser = () => {
         <ProductGlasses productGlasses={productGlassesData} />
       </LazyLoadSection>
 
-      {/* Product Sneakers Section */}
-      <LazyLoadSection onVisible={fetchProductSneakersData} loading={loadingStates.sneakers}>
+      {/* <LazyLoadSection onVisible={fetchProductSneakersData} loading={loadingStates.sneakers}>
         <ProductSneaker productSneakers={productSneakers} />
-      </LazyLoadSection>
+      </LazyLoadSection> */}
 
       {/* Blog Section */}
       <LazyLoadSection onVisible={fetchBlogData} loading={loadingStates.blog}>
