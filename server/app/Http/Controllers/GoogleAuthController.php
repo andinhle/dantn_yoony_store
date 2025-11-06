@@ -12,45 +12,37 @@ class GoogleAuthController extends Controller
     // Điều hướng đến Google để đăng nhập
     public function redirectToGoogle()
     {
-        $url = Socialite::driver('google')->stateless()->redirect()->getTargetUrl();
-
-        return response()->json(['url' => $url]);
+        return Socialite::driver('google')
+            ->with(['access_type' => 'offline', 'prompt' => 'consent'])
+            ->redirect();
     }
 
 
     // Xử lý callback từ Google
-    public function handleGoogleCallback()
+  public function handleGoogleCallback()
     {
         try {
-            // Lấy thông tin người dùng từ Google
             $googleUser = Socialite::driver('google')->stateless()->user();
 
-            // Tìm hoặc tạo người dùng
-            $user = User::firstOrCreate(
-                ['provider_id' => $googleUser->getId()],
+            $user = User::updateOrCreate(
+                ['email' => $googleUser->getEmail()],
                 [
                     'name' => $googleUser->getName(),
-                    'email' => $googleUser->getEmail(),
                     'provider' => 'google',
                     'provider_id' => $googleUser->getId(),
+                    'provider_token' => $googleUser->token,
+                    'provider_refresh_token' => $googleUser->refreshToken ?? null,
                     'avatar' => $googleUser->getAvatar(),
-                    'password' => null, // không cần mật khẩu cho OAuth
                 ]
             );
 
-            // Đăng nhập người dùng
             Auth::login($user);
 
-            // Tạo token cho người dùng
             $token = $user->createToken('GoogleLoginToken')->plainTextToken;
 
-            // Trả về JSON chứa token và thông tin người dùng
-            return response()->json([
-                'token' => $token,
-                'user' => $user,
-            ]);
+            // Redirect về React kèm token
+            return redirect()->away('http://localhost:5173/login/success?token=' . $token);
         } catch (\Exception $e) {
-            // Xử lý lỗi khi không thể lấy thông tin người dùng
             return response()->json([
                 'message' => 'Đăng nhập Google thất bại',
                 'error' => $e->getMessage()
