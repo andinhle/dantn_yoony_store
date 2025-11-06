@@ -7,7 +7,7 @@ const LoginGoogleFaceBook = () => {
       window.location.assign(responseCreatLogin.url);
     } catch (error) {
       console.log(error);
-    }
+    } 
   };
   const handleLoginFacebook = async () => {
     try {
